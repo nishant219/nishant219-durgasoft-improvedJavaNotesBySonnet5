@@ -20,7 +20,7 @@ Browse and read all notes in a clean, searchable UI with light/dark mode.
 - Collections, Generics, Regex, File I/O, Serialization
 - Concurrent Collections, Garbage Collection
 
-**Spring Boot (separate channel)**
+**Spring Boot (Chai aur Code)**
 - REST APIs, Database Integration
 
 ## Notes Format
