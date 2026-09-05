@@ -1,0 +1,1374 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>043-interfaces-4</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 043 — Interface vs abstract class vs concrete class</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-14|| interfaces-4</p>
+<p>Source: real YouTube auto-captions (.transcripts/043-VUQGdiKSYKI.txt). ASR decoded in place — keep subing / keep uping = keep writing (board heading); intas / inas / interes / interace / inace / inage = interface; substract / abstractor / obstructor / obstruct = abstract; conrete = concrete; whoops = OOPs; injp = OCJP; surate / suret / serlet / Cate / HP Cate / HTTP Cate = Servlet / HttpServlet; generic surate / gentic surate / generic C = GenericServlet; my own suret = my own Servlet; one not one / 1 not one = 101 (100 parent properties + 1 child property); CH class / jail = child class; ENT RO number = int rollNumber; stringer name / Stringer subject = String name / String subject; so of = super(...); this R name / this a DOT subject = this.name / this.subject; as code / ascod = hashCode; combpor / continue = compile-time error; durasoft / duras s = DurgaSoft; sweer = sweeper; IAS CER officer = IAS officer; Loop Pooles = loopholes; legum / legend = listen; Cent = implementation.</p>
+<p>This lecture is the Java 1.4 / OCJP-era story. He does not teach Java 8 default / static interface methods here — follow the board.</p>
+<h3>00:04 — Keep writing: interface vs abstract class vs concrete class</h3>
+<p>Next topic. Very very important. Board heading (he says keep subing):</p>
+<p>interface vs abstract class vs concrete class</p>
+<p>He writes it several times so everyone copies it (intas versus interface versus abstract class / conrete class in the captions). Make sure you people are aware of the difference. Compulsory you should have clarity.</p>
+<p>Three characters are there, but in reality at the end of the cinema which thing we have to use is concrete class only. With only interface or only abstract class we cannot do anything. At the end the compulsory required concept is concrete class.</p>
+<p>Question of this video:</p>
+<ul><li>when we should go for interface</li></ul>
+<ul><li>when we should go for abstract class</li></ul>
+<ul><li>when we should go for concrete class</li></ul>
+<pre class='code'>// three characters — but service is provided only by a concrete class
+interface Spec { }          // requirement only
+abstract class Partial { }  // partial implementation
+class Concrete { }          // full implementation, ready to provide service</pre>
+<h3>00:48 — Thumb rule: when we should go for which</h3>
+<p>Thumb rule (he says “thumber rule”):</p>
+<ol><li>I don’t know anything about implementation. Just we have requirement specification. Then go for interface. Interface never talks about implementation. “Boss, this is the requirement — these are the things you require to implement.”</li></ol>
+<pre class='code'>interface Requirement {
+    void service1();
+    void service2();
+    // no body — specification only
+    // “I don’t know anything about implementation”
+}</pre>
+<ol><li>I want to talk about implementation, but not completely — partial implementation. Then go for abstract class.</li></ol>
+<pre class='code'>abstract class PartialImpl implements Requirement {
+    public void service1() {
+        System.out.println(&quot;I can implement this much&quot;);
+    }
+    // service2() still not implemented — partial only
+}</pre>
+<ol><li>I am talking about implementation completely, and I am ready to provide service. Then go for concrete class.</li></ol>
+<pre class='code'>class FullImpl extends PartialImpl {
+    public void service2() {
+        System.out.println(&quot;complete implementation — ready to provide service&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        FullImpl obj = new FullImpl();
+        obj.service1();
+        obj.service2();
+        // prints I can implement this much
+        // prints complete implementation — ready to provide service
+    }
+}</pre>
+<h3>02:06 — Best example: Servlet / GenericServlet / HttpServlet / my servlet</h3>
+<p>Best example he wants on the board: Servlet.</p>
+<p>Servlet never talks about any implementation. It only tells: if you want to develop your own Servlet, these are the five methods you require to implement. That specification is available inside the interface.</p>
+<pre class='code'>interface Servlet {
+    void init();
+    void service();
+    void destroy();
+    String getServletConfig();
+    String getServletInfo();
+    // 5 methods — specification only
+    // Servlet never talks about implementation
+}</pre>
+<p>Next: “Sir I’m talking about implementation — but not completely.” That next level is abstract class.</p>
+<ul><li>GenericServlet talks about implementation, but not completely.</li></ul>
+<ul><li>HttpServlet talks about implementation, but not completely.</li></ul>
+<p>These two are abstract classes which implement the Servlet interface.</p>
+<pre class='code'>abstract class GenericServlet implements Servlet {
+    public void init() {
+        System.out.println(&quot;GenericServlet: some implementation&quot;);
+    }
+    public void destroy() {
+        System.out.println(&quot;GenericServlet: some implementation&quot;);
+    }
+    public String getServletConfig() {
+        return &quot;config&quot;;
+    }
+    public String getServletInfo() {
+        return &quot;generic&quot;;
+    }
+    // service() still abstract — talks about implementation, but not completely
+}
+
+abstract class HttpServlet extends GenericServlet {
+    public void service() {
+        System.out.println(&quot;HttpServlet: protocol dispatch — still not a finished servlet&quot;);
+        doGet();
+    }
+    protected abstract void doGet();
+    // talks about implementation, but not completely
+}</pre>
+<p>“I’m talking about implementation completely, and ready to provide service” → concrete class. Example: my own Servlet, which extends HttpServlet.</p>
+<pre class='code'>class MyServlet extends HttpServlet {
+    protected void doGet() {
+        System.out.println(&quot;MyServlet: complete implementation — ready to provide service&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        // at the end of the cinema we need a concrete class
+        MyServlet s = new MyServlet();
+        s.init();
+        s.service();
+        // prints GenericServlet: some implementation
+        // prints HttpServlet: protocol dispatch — still not a finished servlet
+        // prints MyServlet: complete implementation — ready to provide service
+    }
+}</pre>
+<h3>04:06 — Repeat the three rules once</h3>
+<p>He repeats so it sticks:</p>
+<ul><li>Don’t know anything about implementation — just requirement specification → interface.</li></ul>
+<ul><li>Talking about implementation but not completely (partial) → abstract class.</li></ul>
+<ul><li>Talking about implementation completely and ready to provide service → concrete class.</li></ul>
+<p>Best example for that cinema is the Servlet line above.</p>
+<h3>04:44 — Building analogy (plan / 600 floors / fully completed)</h3>
+<p>Small analogy so you can understand easily.</p>
+<p>He wants to construct a 1000-floor building. First thing required is a plan. No one starts construction directly. At plan level everything is ready, then construction starts.</p>
+<p>Plan never talks about implementation. It only highlights: boss, this is the specification. The plan itself is the interface concept.</p>
+<pre class='code'>interface BuildingPlan {
+    int TOTAL_FLOORS = 1000;
+    // plan never talks about implementation
+    // just specification: 1000 floors, this layout, ...
+}</pre>
+<p>He started construction, but not completely. Requirement is 1000 floors; 600 floors completed, still in construction. That is a partially completed building → abstract class. Partially completed building is the next level of the plan.</p>
+<pre class='code'>abstract class PartialBuilding implements BuildingPlan {
+    int completedFloors = 600;
+    // 600 of 1000 done — still under construction
+    // partial implementation
+}</pre>
+<p>He continued the remaining part. One fine day the building is fully completed and ready to accommodate — today you can enter, stay, start your business. Fully completed building and ready to use → concrete class.</p>
+<pre class='code'>class CompletedBuilding extends PartialBuilding {
+    CompletedBuilding() {
+        completedFloors = 1000;
+    }
+
+    void startBusiness() {
+        System.out.println(&quot;fully completed building — ready to use&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        CompletedBuilding b = new CompletedBuilding();
+        b.startBusiness();
+        // prints fully completed building — ready to use
+    }
+}</pre>
+<h3>07:06 — Terminology recap</h3>
+<p>He hopes the terminology is now clear:</p>
+<h3>07:42 — Board point 1: requirement specification → interface</h3>
+<p>He asks whether to take the diagram first or theory first. Theory first.</p>
+<p>Board (he dictates slowly, repeats each line):</p>
+<p>If we don’t know anything about implementation, just we have requirement specification, then we should go for interface.</p>
+<p>Example: Servlet.</p>
+<pre class='code'>interface Servlet {
+    void init();
+    void service();
+    void destroy();
+    String getServletConfig();
+    String getServletInfo();
+    // if we don’t know anything about implementation
+    // just we have requirement specification
+    // then we should go for interface
+}</pre>
+<h3>08:41 — Board point 2: partial implementation → abstract class</h3>
+<p>If we are talking about implementation but not completely (partial implementation), then we should go for abstract class.</p>
+<p>Example: GenericServlet, HttpServlet, etc.</p>
+<pre class='code'>abstract class GenericServlet implements Servlet {
+    public void init() { }
+    public void destroy() { }
+    public String getServletConfig() { return null; }
+    public String getServletInfo() { return null; }
+    // service() still open — partial implementation
+}
+
+abstract class HttpServlet extends GenericServlet {
+    public void service() {
+        // some HTTP-specific implementation — still not complete
+    }
+}</pre>
+<h3>09:52 — Board point 3: complete implementation, ready to provide service → concrete class</h3>
+<p>If we are talking about implementation completely and ready to provide service, then we should go for concrete class.</p>
+<p>Example: my own Servlet.</p>
+<pre class='code'>class MyServlet extends HttpServlet {
+    public void service() {
+        System.out.println(&quot;my own Servlet — ready to provide service&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        new MyServlet().service();
+        // prints my own Servlet — ready to provide service
+    }
+}</pre>
+<h3>10:51 — Board diagram: Servlet hierarchy</h3>
+<p>He draws (pause / music while the class copies):</p>
+<p>interface          abstract class          concrete class
+Servlet    →       GenericServlet    →     MyServlet
+                   HttpServlet</p>
+<p>That is interface, abstract class, concrete class. That’s all for when we should go for which concept.</p>
+<pre class='code'>interface Servlet { void service(); }
+
+abstract class GenericServlet implements Servlet { }
+
+abstract class HttpServlet extends GenericServlet { }
+
+class MyServlet extends HttpServlet {
+    public void service() {
+        System.out.println(&quot;concrete class at the end of the cinema&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Servlet s = new MyServlet();
+        s.service();
+        // prints concrete class at the end of the cinema
+    }
+}</pre>
+<h3>13:02 — Keep writing: differences between interface and abstract class</h3>
+<p>Next terminology. Board heading (keep uping / keep subing):</p>
+<p>differences between interface and abstract class</p>
+<p>Table form: interface | abstract class.</p>
+<p>Listen to the conclusions first; you can document at last. First points are already known — he is not going to keep any new thing at the start.</p>
+<h3>14:07 — Difference 1: purpose (when to use)</h3>
+<p>Same “when” as the first half of the class.</p>
+<ul><li>Interface: don’t know anything about implementation; just requirement specification.</li></ul>
+<ul><li>Abstract class: talking about implementation but not completely (partial implementation).</li></ul>
+<pre class='code'>interface I {
+    void m1();
+    // purpose: requirement specification only
+}
+
+abstract class A {
+    void m1() {
+        System.out.println(&quot;partial implementation&quot;);
+    }
+    abstract void m2();
+    // purpose: implementation, but not completely
+}</pre>
+<h3>14:38 — Difference 2: methods always public and abstract vs need not be</h3>
+<p>Every method present inside interface is always `public` and `abstract`, whether we are declaring or not. Hence interface is also considered as 100% pure abstract class. 100% pure abstract class is nothing but interface.</p>
+<p>Every method present inside abstract class need not be public and abstract. We can take concrete methods also.</p>
+<pre class='code'>interface Inter {
+    void m1();
+    // compiler treats as: public abstract void m1();
+    // whether we are declaring or not
+    // hence interface = 100% pure abstract class
+}
+
+abstract class Abs {
+    abstract void m1();           // abstract — allowed
+    public void m2() { }          // concrete — allowed
+    void m3() { }                 // concrete, default access — allowed
+    // every method need NOT be public and abstract
+}
+
+class Test extends Abs {
+    void m1() {
+        System.out.println(&quot;impl&quot;);
+    }
+    public static void main(String[] args) {
+        new Test().m2();
+    }
+}</pre>
+<h3>15:27 — Difference 3: illegal method modifiers vs no restriction</h3>
+<p>Because every interface method is always public and abstract, we cannot declare an interface method with the following modifiers (he lists them; last session already covered this):</p>
+<ul><li>private</li></ul>
+<ul><li>protected</li></ul>
+<ul><li>final</li></ul>
+<ul><li>static</li></ul>
+<ul><li>synchronized</li></ul>
+<ul><li>native</li></ul>
+<ul><li>strictfp</li></ul>
+<p>No such type of restriction on abstract class method modifiers. Inside abstract class you can take private method, static method, synchronized method. No restrictions on abstract class method modifiers.</p>
+<pre class='code'>interface Inter {
+    private void m1();
+    // CE: modifier private not allowed here
+}
+interface Inter {
+    protected void m1();
+    // CE: modifier protected not allowed here
+}
+interface Inter {
+    final void m1();
+    // CE: modifier final not allowed here
+}
+interface Inter {
+    static void m1();
+    // CE: modifier static not allowed here
+    // (OCJP-era board — Java 8 static interface methods are NOT this lecture)
+}
+interface Inter {
+    synchronized void m1();
+    // CE: modifier synchronized not allowed here
+}
+interface Inter {
+    native void m1();
+    // CE: modifier native not allowed here
+}
+interface Inter {
+    strictfp void m1();
+    // CE: modifier strictfp not allowed here
+}
+abstract class Abs {
+    private void m1() {
+        System.out.println(&quot;private method OK in abstract class&quot;);
+    }
+    static void m2() {
+        System.out.println(&quot;static method OK in abstract class&quot;);
+    }
+    synchronized void m3() {
+        System.out.println(&quot;synchronized method OK in abstract class&quot;);
+    }
+    public abstract void m4();
+    // he said: no restrictions on abstract class method modifiers
+}
+
+class Test extends Abs {
+    public void m4() { }
+    public static void main(String[] args) {
+        Abs.m2();
+        // prints static method OK in abstract class
+    }
+}</pre>
+<p>These two points talk about interface methods. First point talks about purpose. Next he will go for interface variables.</p>
+<h3>16:36 — Board: writing the method half of the table</h3>
+<p>He dictates the table again so you copy it (lots of ASR repeats — same three method points).</p>
+<p>Interface column</p>
+<ol><li>If I don’t know anything about implementation and just we have requirement specification, then we should go for interface.</li></ol>
+<ol><li>Inside interface every method is always public and abstract, whether we are declaring or not. Hence interface is considered as 100% pure abstract class.</li></ol>
+<ol><li>As every interface method is always public and abstract, we can’t declare with the following modifiers: private, protected, final, static, synchronized, native, strictfp.</li></ol>
+<p>Abstract class column</p>
+<ol><li>If we are talking about implementation but not completely (partial implementation), then we should go for abstract class.</li></ol>
+<ol><li>Every method present inside abstract class need not be public and abstract. We can take concrete methods also.</li></ol>
+<ol><li>There are no restrictions on abstract class method modifiers.</li></ol>
+<pre class='code'>interface Inter {
+    void m1();
+    // always public abstract, whether we declare or not
+    // 100% pure abstract class
+}
+
+abstract class Abs {
+    void concrete() {
+        System.out.println(&quot;concrete method also allowed&quot;);
+    }
+    abstract void leftover();
+}
+
+class Test extends Abs {
+    void leftover() { }
+    public static void main(String[] args) {
+        new Test().concrete();
+        // prints concrete method also allowed
+    }
+}</pre>
+<h3>21:49 — Difference 4: variables always public static final vs need not be</h3>
+<p>Last two points talked about methods. Next points talk about variables.</p>
+<p>Every interface variable is always `public static final`, whether we are declaring or not.</p>
+<p>Every variable present inside abstract class need not be public static final. We can take non-public / private variables, instance variables, non-final variables also. No problem at all.</p>
+<pre class='code'>interface Inter {
+    int x = 10;
+    // compiler treats as: public static final int x = 10;
+    // whether we are declaring or not
+}
+
+abstract class Abs {
+    int instanceVar;          // instance — allowed
+    private int secret;       // private — allowed
+    int notFinal = 20;        // non-final — allowed
+    static int s = 30;        // static — allowed, but NOT forced
+    // need NOT be public static final
+}
+
+class Test extends Abs {
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.instanceVar = 99;
+        t.notFinal = 100;
+        System.out.println(Inter.x);
+        System.out.println(t.notFinal);
+        // prints 10
+        // prints 100
+    }
+}</pre>
+<h3>22:32 — Difference 5: illegal variable modifiers vs no restriction</h3>
+<p>As every interface variable is always public static final, we cannot declare it with:</p>
+<ul><li>private</li></ul>
+<ul><li>protected</li></ul>
+<ul><li>volatile</li></ul>
+<ul><li>transient</li></ul>
+<p>No such type of restrictions for abstract class variables. Abstract class variable can be private, can be transient, can be volatile. No problem at all.</p>
+<pre class='code'>interface Inter {
+    private int x = 10;
+    // CE: modifier private not allowed here
+}
+interface Inter {
+    protected int x = 10;
+    // CE: modifier protected not allowed here
+}
+interface Inter {
+    volatile int x = 10;
+    // CE: modifier volatile not allowed here
+}
+interface Inter {
+    transient int x = 10;
+    // CE: modifier transient not allowed here
+}
+abstract class Abs {
+    private int a = 1;
+    protected int b = 2;
+    transient int c = 3;
+    volatile int d = 4;
+    // no restrictions on abstract class variable modifiers
+}
+
+class Test extends Abs {
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(t.b);
+        // prints 2
+    }
+}</pre>
+<h3>23:05 — Difference 6: initialization at declaration vs not required</h3>
+<p>One rule from earlier sessions: for interface variable, compulsory we should perform initialization at the time of declaration, otherwise compile-time error.</p>
+<p>For abstract class variables: no such restriction. Happily later point of time also we can initialize. No problem at all.</p>
+<pre class='code'>interface Inter {
+    int x;
+    // CE: = expected (must initialize at declaration)
+}
+interface Inter {
+    int x = 10; // compulsory initialization at declaration
+}
+
+abstract class Abs {
+    int y; // not required to initialize at declaration
+}
+
+class Test extends Abs {
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.y = 50; // later point of time — allowed
+        System.out.println(Inter.x);
+        System.out.println(t.y);
+        // prints 10
+        // prints 50
+    }
+}</pre>
+<h3>23:40 — Board: writing the variable half of the table</h3>
+<p>He dictates (remaining three variable points):</p>
+<p>Interface</p>
+<ul><li>Every variable present inside interface is always public static final, whether we are declaring or not.</li></ul>
+<ul><li>As every interface variable is always public static final, we can’t declare with: private, protected, volatile, transient.</li></ul>
+<ul><li>For interface variables, compulsory we should perform initialization at the time of declaration only, otherwise we will get compile-time error.</li></ul>
+<p>Abstract class</p>
+<ul><li>Every variable present inside abstract class need not be public static final.</li></ul>
+<ul><li>There are no restrictions on abstract class variable modifiers.</li></ul>
+<ul><li>For abstract class variables we are not required to perform initialization at the time of declaration.</li></ul>
+<pre class='code'>interface Inter {
+    int x = 10; // public static final, initialized at declaration
+}
+
+abstract class Abs {
+    int y; // instance, uninitialized at declaration — OK
+}
+
+class Test extends Abs {
+    public static void main(String[] args) {
+        System.out.println(Inter.x);
+        System.out.println(new Test().y);
+        // prints 10
+        // prints 0
+    }
+}</pre>
+<h3>28:24 — Six points done; next points are important</h3>
+<p>Up to this, six points. Now the next points are important. Listen.</p>
+<h3>28:30 — Difference 7: static and instance blocks</h3>
+<p>Inside interface, can I take a static block? Covered already in the last session. Static block, instance block — such type of terminology not applicable inside interface.</p>
+<p>Inside abstract class, happily you can take instance block, static block. No problem at all.</p>
+<pre class='code'>interface Inter {
+    static {
+        System.out.println(&quot;static block&quot;);
+    }
+    // CE: static initializers not allowed in interfaces
+}
+interface Inter {
+    {
+        System.out.println(&quot;instance block&quot;);
+    }
+    // CE: instance initializers not allowed in interfaces
+}
+abstract class Abs {
+    static {
+        System.out.println(&quot;static block OK in abstract class&quot;);
+    }
+    {
+        System.out.println(&quot;instance block OK in abstract class&quot;);
+    }
+}
+
+class Test extends Abs {
+    public static void main(String[] args) {
+        new Test();
+        // prints static block OK in abstract class
+        // prints instance block OK in abstract class
+    }
+}</pre>
+<h3>29:01 — Difference 8: constructors</h3>
+<p>Inside interface, can I take a constructor? No. Constructor concept not applicable.</p>
+<p>Inside abstract class, can I take a constructor? Yes. Happily we can take constructor inside abstract class. No problem at all. What is the need? He will explain — not required to worry at this point.</p>
+<p>interface Inter {
+    Inter() {
+    }
+    // CE: interfaces cannot have constructors
+}</p>
+<pre class='code'>abstract class Abs {
+    Abs() {
+        System.out.println(&quot;abstract class constructor OK&quot;);
+    }
+}
+
+class Test extends Abs {
+    public static void main(String[] args) {
+        new Test();
+        // prints abstract class constructor OK
+    }
+}</pre>
+<h3>29:23 — Board: writing points 7 and 8</h3>
+<p>He starts writing “we can declare static and instance blocks” then immediately: sorry sorry sorry — we CAN’T declare.</p>
+<p>Interface</p>
+<ul><li>Inside interface we can’t declare static and instance blocks.</li></ul>
+<ul><li>Inside interface we can’t declare constructors.</li></ul>
+<p>Abstract class</p>
+<ul><li>Inside abstract class we can declare static and instance blocks.</li></ul>
+<ul><li>Inside abstract class we can declare constructor.</li></ul>
+<p>That’s all. If any person asks what is the difference between interface and abstract class, spell out all these eight points. Syntactical things — whatever we covered. Most valuable question for the interview room. If you attend 10 interviews, minimum eight interviews this type of question is there. That much worthy.</p>
+<p>There are some loopholes he will discuss anyway.</p>
+<p>Completed 8-point board (study table of what he wrote):</p>
+<pre class='code'>interface Inter {
+    void m1();
+    int x = 10;
+    // no blocks, no constructors
+}
+
+abstract class Abs {
+    int y;
+    Abs() { }
+    static { }
+    { }
+    void concrete() { }
+    abstract void leftover();
+}</pre>
+<h3>31:50 — We cannot create object, but constructor is allowed — what is the need?</h3>
+<p>Very very important point.</p>
+<p>We can’t create an object for abstract class, but abstract class can contain constructor.</p>
+<p>What is the need / what is the purpose? Better to take it in question form. Board:</p>
+<p>Anyway we can’t create object for abstract class, but abstract class can contain constructor. What is the need?</p>
+<pre class='code'>abstract class Abs {
+    Abs() {
+        System.out.println(&quot;constructor exists — but not for new Abs()&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Abs a = new Abs();
+        // CE: Abs is abstract; cannot be instantiated
+    }
+}</pre>
+<h3>33:06 — One-line answer</h3>
+<p>Forget lengthy explanation first. Keep this one-line answer in mind (lengthy example comes next):</p>
+<p>Abstract class constructor will be executed whenever we are creating child class object, for child object initialization only.</p>
+<p>I’m creating child class object. For that child object I require initialization. For that child object initialization, parent constructor also will work. Abstract class constructor also will work.</p>
+<p>Some properties may be inherited from parent. For the child object, to perform initialization of those (inherited) properties, abstract class can contain constructor.</p>
+<p>Is taking constructor inside abstract class advantageous? Yes — code reusability is the big benefit. That part he explains with an example.</p>
+<p>As of now just remember: when the abstract class constructor will be executed — whenever we are creating child object, for child object initialization only.</p>
+<p>Board (he dictates):</p>
+<p>Abstract class constructor will be executed whenever we are creating child class object to perform initialization of child class object.</p>
+<pre class='code'>abstract class Parent {
+    Parent() {
+        System.out.println(&quot;abstract parent constructor — for child object init&quot;);
+    }
+}
+
+class Child extends Parent {
+    Child() {
+        System.out.println(&quot;child constructor&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        new Child();
+        // prints abstract parent constructor — for child object init
+        // prints child constructor
+        // one child object; parent constructor ran for THAT object
+    }
+}</pre>
+<p>Child constructor is there — what is the need of parent constructor? Some properties may be inherited from parent. To initialize those, parent constructor is needed.</p>
+<h3>35:37 — Approach 1: abstract class Person without constructor</h3>
+<p>He will suggest two approaches: without taking constructor in abstract class, and with taking constructor in abstract class. Which is advantageous, you will see with the example.</p>
+<p>Approach 1 — without abstract class constructor.</p>
+<pre class='code'>class Person — every person contains several properties. Person is abstract because we are not telling a particular type of person.</pre>
+<p>Every person contains hundreds of properties: name, age, color, height, weight, qualification, … Assume for the example 100 properties.</p>
+<p>Why didn’t he take a constructor? “I’m not creating an object for abstract class — what is the need of taking constructor? I don’t want to take any constructor inside abstract class.” What is the problem / what is the advantage if we do take one? He will show.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+    String color;
+    // ... 100 properties (name, age, color, height, weight, qualification, ...)
+    // NO constructor — approach 1
+}</pre>
+<h3>37:49 — Approach 1: Student (101 constructor lines)</h3>
+<p>First child: `class Student extends Person`.</p>
+<p>Student-specific property: `int rollNumber`. Assume only one extra property.</p>
+<p>Total properties for a student object: 101 (100 from parent + 1 child).</p>
+<p>Constructor must initialize all 101, because those 100 parent properties are also part of the student object.</p>
+<pre class='code'>class Student extends Person {
+    int rollNumber;
+
+    Student(String name, int age, String color, int rollNumber) {
+        this.name = name;
+        this.age = age;
+        this.color = color;
+        // ... 97 more this.xxx = xxx;   ← first 100 lines from parent
+        this.rollNumber = rollNumber;     // 101st line
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s1 = new Student(&quot;Ravi&quot;, 22, &quot;fair&quot;, 101);
+        // pass 101 properties; constructor has 101 assignment lines
+        System.out.println(s1.name + &quot; &quot; + s1.rollNumber);
+        // prints Ravi 101
+    }
+}</pre>
+<p>Parent class: 100 properties. Child: 1 extra. Total 101. Creating child object: pass 101 arguments. Inside constructor: 101 lines (this.name = name; this.age = age; ... this.rollNumber = rollNumber).</p>
+<h3>41:06 — Approach 1: Teacher (same 100 lines again)</h3>
+<p>Same cinema, one more child: `class Teacher extends Person`.</p>
+<p>Teacher-specific property: `String subject` (he says we could also take experience, salary — he restricts to one property).</p>
+<p>Total again 101 properties. Constructor again: first 100 assignments copied, last line this.subject = subject.</p>
+<pre class='code'>class Teacher extends Person {
+    String subject;
+
+    Teacher(String name, int age, String color, String subject) {
+        this.name = name;
+        this.age = age;
+        this.color = color;
+        // ... 97 more parent assignments — SAME 100 lines again
+        this.subject = subject;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Teacher t = new Teacher(&quot;Durga&quot;, 40, &quot;fair&quot;, &quot;Java&quot;);
+        System.out.println(t.name + &quot; &quot; + t.subject);
+        // prints Durga Java
+    }
+}</pre>
+<p>He lists the 100 lines as: this.name, this.age, this.color, this.motherName, this.fatherName, this.height, this.weight, … — 101 properties we have to keep.</p>
+<h3>44:22 — 1000 child classes → 100 lines written 1000 times</h3>
+<p>One parent, 100 properties. Those 100 are required for every child.</p>
+<p>Assume 1000 child classes: Teacher, Student, Principal, Father, Mother, …</p>
+<p>In every child, constructor is compulsory. If every child has one extra property, every child constructor has 101 lines. The first 100 lines are common.</p>
+<p>You write those 100 lines in Student, again in Teacher, again in the next child — 1000 times, because there are 1000 child classes.</p>
+<p>This code is not programmer friendly. this.name, this.age, … 100 lines in every child class. Unnecessary complexity of the programming is going to rise.</p>
+<p>That’s why: parent already contains those properties, parent is abstract class — why don’t you shift those 100 lines to the parent? If you write them in the parent, they apply by default for every child. Then you are not required to write those 100 lines 1000 times separately.</p>
+<pre class='code'>// approach 1 pain (same 100 assignments in EVERY child)
+class Student extends Person {
+    int rollNumber;
+    Student(String name, int age, int rollNumber) {
+        this.name = name; // copied
+        this.age = age;   // copied
+        this.rollNumber = rollNumber;
+    }
+}
+
+class Teacher extends Person {
+    String subject;
+    Teacher(String name, int age, String subject) {
+        this.name = name; // copied AGAIN
+        this.age = age;   // copied AGAIN
+        this.subject = subject;
+    }
+}
+
+class Principal extends Person {
+    Principal(String name, int age) {
+        this.name = name; // copied AGAIN — × 1000 children
+        this.age = age;
+    }
+}</pre>
+<h3>46:11 — Approach 2: constructor inside abstract Person</h3>
+<p>Same example, but with parent constructor.</p>
+<p>He warns: not that much easy. In last batches only 30 to 40% of the people could understand this example. Take special care. Nothing easy — lengthy example.</p>
+<p>`abstract class Person` — still 100 properties (String name, int age, …).</p>
+<p>Initialization of those 100 properties: perform here only. Take Person constructor with 100 parameters; inside it, 100 lines: this.name = name; this.age = age; ...</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+    String color;
+    // ... 100 properties
+
+    Person(String name, int age, String color) {
+        this.name = name;
+        this.age = age;
+        this.color = color;
+        // ... 100 lines of code — written ONCE in the parent
+    }
+}</pre>
+<p>Biggest advantage of taking constructor inside abstract class — he shows with the children.</p>
+<h3>47:50 — Approach 2: Student with `super(...)`</h3>
+<p>`class Student extends Person`. Child has int rollNumber only.</p>
+<p>Whenever we are creating child object, child constructor still receives 101 properties (100 from parent + 1 specific). But inside the body: not 100 times this.name = name. Only one line:</p>
+<p>`super(` 100 properties `);` then this.rollNumber = rollNumber;</p>
+<p>Call goes to the parent; parent’s 100 lines execute.</p>
+<pre class='code'>class Student extends Person {
+    int rollNumber;
+
+    Student(String name, int age, String color, int rollNumber) {
+        super(name, age, color); // 100 properties → parent constructor
+        this.rollNumber = rollNumber; // only 2 lines in the child constructor
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s1 = new Student(&quot;Ravi&quot;, 22, &quot;fair&quot;, 101);
+        // 101 args in; 100 go to parent constructor; 1 assigned here
+        System.out.println(s1.name + &quot; &quot; + s1.rollNumber);
+        // prints Ravi 101
+    }
+}</pre>
+<p>Does parent constructor work for the student object? Yes. Which object are we creating? Student object. Whenever we create student object, student constructor executes, and as part of that, parent constructor executes. Parent constructor and child constructor both will work for the child object purpose only. Remember this.</p>
+<p>How many constructors got executed? Two. How many objects created? Only one. Both parent and child constructor work for child object purpose only.</p>
+<h3>51:02 — Approach 2: Teacher with `super(...)`</h3>
+<p>`class Teacher extends Person`, String subject.</p>
+<p>Constructor still takes 101 properties. Inside: not 100 times this.name. Only:</p>
+<p>super( 100 properties ); then this.subject = subject;</p>
+<pre class='code'>class Teacher extends Person {
+    String subject;
+
+    Teacher(String name, int age, String color, String subject) {
+        super(name, age, color); // 100 properties
+        this.subject = subject;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Teacher t = new Teacher(&quot;Durga&quot;, 40, &quot;fair&quot;, &quot;Java&quot;);
+        System.out.println(t.name + &quot; &quot; + t.subject);
+        // prints Durga Java
+    }
+}</pre>
+<p>Teacher constructor runs; as part of it, 100 properties initialized in parent constructor, remaining one in child. Total 101 initialized for this teacher object.</p>
+<h3>52:56 — Second approach is advantageous; both constructors serve the child object</h3>
+<p>Which code is the lengthy code — first approach or second? First approach is the lengthy code.</p>
+<p>How many child classes? 1000. In each child constructor we require to write only two lines (super(...) + the one child assignment). In the first case every child constructor needed 101 lines.</p>
+<p>Which is the advantageous feature? Second one.</p>
+<p>Abstract class can contain constructor, but this constructor will work for child object purpose only.</p>
+<p>Constructor purpose is to initialize an object, not to create object. Don’t get confused. This (parent) constructor is initializing the properties which are coming from the parent. This (child) constructor is initializing the remaining properties. Total 101 properties assigned to the teacher object / student object.</p>
+<p>This is the role of constructor present in abstract class.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+    Person(String name, int age) {
+        this.name = name; // inherited properties — initialized here
+        this.age = age;
+    }
+}
+
+class Student extends Person {
+    int rollNumber;
+    Student(String name, int age, int rollNumber) {
+        super(name, age);           // parent constructor: inherited fields
+        this.rollNumber = rollNumber; // child constructor: remaining fields
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        new Student(&quot;Ravi&quot;, 22, 101);
+        // 2 constructors executed, 1 object created
+    }
+}</pre>
+<h3>54:34 — Wrong claim: “parent object is also created”</h3>
+<p>Even some books, some faculty members may tell: whenever we are creating child object, automatically parent object will be created, because parent constructor got executed. Some people may use that word. It’s wrong.</p>
+<p>Parent constructor will execute for child object purpose only.</p>
+<p>Importance of abstract class constructor: suppose if this constructor is not there, programmer life is very horrible — 101 properties here, 101 there, 101 there.</p>
+<h3>55:16 — Board: Approach 1 (not recommended — more code, redundancy)</h3>
+<p>He asks if they want this example on the board. Yes. Better to keep at the beginning.</p>
+<p>Board heading:</p>
+<p>Approach 1 — without having constructor in abstract class</p>
+<p>He can blame this code: length of the code is more; code redundancy problems are there. Better to add comments: this code is not recommended — more code and code redundancy problem is there.</p>
+<p>Not that much easy thing — take it clearly. Abstract class Person, total 100 properties. Class Student extends Person, int rollNumber. Student constructor: String name, int age, ... — 101 properties.</p>
+<pre class='code'>// APPROACH 1 — without constructor in abstract class
+// NOT recommended: more code + code redundancy
+
+abstract class Person {
+    String name;
+    int age;
+    // ... 100 properties
+}
+
+class Student extends Person {
+    int rollNumber;
+
+    Student(String name, int age, int rollNumber) {
+        this.name = name;       // 100 common lines
+        this.age = age;
+        this.rollNumber = rollNumber;
+    }
+}
+
+class Teacher extends Person {
+    String subject;
+
+    Teacher(String name, int age, String subject) {
+        this.name = name;       // same 100 lines AGAIN
+        this.age = age;
+        this.subject = subject;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s1 = new Student(&quot;Ravi&quot;, 22, 101);
+        Teacher t = new Teacher(&quot;Durga&quot;, 40, &quot;Java&quot;);
+        System.out.println(s1.rollNumber);
+        System.out.println(t.subject);
+        // prints 101
+        // prints Java
+    }
+}</pre>
+<h3>1:00:40 — Board: Approach 2 (highly recommended — less code, reusability)</h3>
+<p>Keep writing: Approach 2 — with constructor inside abstract class.</p>
+<p>Here I’m taking constructor inside abstract class. This constructor will work for every child object creation.</p>
+<p>In every child constructor we have to take only two lines. In the first approach, every child constructor had 101 lines.</p>
+<p>This code is highly recommended.</p>
+<p>Why recommended? Less code and code reusability.</p>
+<pre class='code'>// APPROACH 2 — with constructor inside abstract class
+// HIGHLY recommended: less code + code reusability
+// this constructor will work for every child object creation
+
+abstract class Person {
+    String name;
+    int age;
+    // ... 100 properties
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+        // 100 lines — once
+    }
+}
+
+class Student extends Person {
+    int rollNumber;
+
+    Student(String name, int age, int rollNumber) {
+        super(name, age); // only 2 lines in child
+        this.rollNumber = rollNumber;
+    }
+}
+
+class Teacher extends Person {
+    String subject;
+
+    Teacher(String name, int age, String subject) {
+        super(name, age); // only 2 lines in child
+        this.subject = subject;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        new Student(&quot;Ravi&quot;, 22, 101);
+        new Teacher(&quot;Durga&quot;, 40, &quot;Java&quot;);
+        // parent constructor reused for every child object
+    }
+}</pre>
+<h3>1:06:18 — Need of constructor inside abstract class</h3>
+<p>At this point you should be aware: what is the need of constructor inside abstract class. Big example, big picture. Importance of abstract class constructor.</p>
+<h3>1:06:34 — Directly or indirectly we cannot create abstract-class object</h3>
+<p>Can I use this word: we can’t create object for abstract class directly, but indirectly we can create object for abstract class internally?</p>
+<p>No. Take a note:</p>
+<p>Either directly or indirectly, we can’t create object for abstract class.</p>
+<pre class='code'>abstract class Abs {
+    Abs() {
+        System.out.println(&quot;runs for child object — does NOT mean Abs object exists&quot;);
+    }
+}
+
+class Child extends Abs { }
+
+class Test {
+    public static void main(String[] args) {
+        // direct:
+        // Abs a = new Abs();
+        // CE: Abs is abstract; cannot be instantiated
+
+        // creating Child does NOT secretly create an Abs object either
+        Child c = new Child();
+        System.out.println(c instanceof Abs);
+        // prints true   (child IS-A Abs — still ONE object, the child)
+    }
+}</pre>
+<p>instanceof being true does not mean a second parent object was created. One child object; it is also of parent type. He proves that with hashCode next.</p>
+<h3>1:07:39 — Interview: why constructor in abstract class but not in interface?</h3>
+<p>Maybe a chance to ask in the interview room:</p>
+<p>We can’t create object for abstract class and interface. But abstract class can contain constructor, but interface doesn’t contain constructor. What is the reason?</p>
+<p>Simple reason: the main purpose of constructor is to initialize instance variables.</p>
+<p>Inside abstract class there may be instance variables, which are required for the child. To perform initialization of those instance variables, constructor is required inside abstract class.</p>
+<p>Inside interface, every variable is always public static final. There is no chance of existing instance variable. No instance variable means constructor concept is not required for the interface.</p>
+<pre class='code'>abstract class Abs {
+    int x; // instance variable possible — constructor needed to init it for the child
+    Abs(int x) {
+        this.x = x;
+    }
+}
+
+interface Inter {
+    int x = 10; // always public static final — NOT an instance variable
+    // Inter() { }  // CE: no constructor — none needed
+}
+
+class Test extends Abs {
+    Test() {
+        super(10);
+    }
+    public static void main(String[] args) {
+        System.out.println(new Test().x);
+        System.out.println(Inter.x);
+        // prints 10
+        // prints 10
+    }
+}</pre>
+<h3>1:08:48 — Board: reason (instance variables vs public static final)</h3>
+<p>He dictates the interview question and the reason:</p>
+<p>Anyway we can’t create object for abstract class and interface, but abstract class can contain constructor, but interface doesn’t contain constructor. What is the reason?</p>
+<ul><li>The main purpose of constructor is to perform initialization of instance variables (instance variable is the part of object).</li></ul>
+<ul><li>Abstract class can contain instance variables which are required for child object. To perform initialization of those instance variables, constructor is required for abstract class.</li></ul>
+<ul><li>But every variable present inside interface is always public static final, whether we are declaring or not. There is no chance of existing instance variable inside interface. Hence constructor concept is not required for interface.</li></ul>
+<p>Why constructors are not required for interface — now the reason is clear.</p>
+<pre class='code'>abstract class Abs {
+    String name; // instance — part of child object
+    Abs(String name) {
+        this.name = name; // constructor exists for this reason
+    }
+}
+
+interface Inter {
+    String TYPE = &quot;spec&quot;;
+    // public static final only — constructor concept not required
+}
+
+class Test extends Abs {
+    Test() {
+        super(&quot;child&quot;);
+    }
+    public static void main(String[] args) {
+        System.out.println(new Test().name);
+        System.out.println(Inter.TYPE);
+        // prints child
+        // prints spec
+    }
+}</pre>
+<h3>1:14:21 — Creating child object does not create parent object</h3>
+<p>One more statement you people should be aware:</p>
+<p>Whenever we are creating child class object, parent constructor will be executed, but parent object won’t be created.</p>
+<p>Some faculty members draw a diagram as if a parent object is also created, memory structure and so on. No.</p>
+<p>Whenever we are creating child class object, parent constructor will be executed. Reason you already saw in the big Person example: some properties coming from parent to child; to initialize those properties which are required for the child object, parent class can contain constructor. It doesn’t mean we are creating object for parent class.</p>
+<p>Where is the proof? Maybe a chance to ask. Board:</p>
+<p>Whenever we are creating child class object, parent object won’t be created. Just parent class constructor will be executed for the child object purpose only.</p>
+<h3>1:16:37 — Proof: `this.hashCode()` in parent, child, and after `new C()`</h3>
+<p>Simple proof example. `class P`. Inside parent constructor, print `this.hashCode()` — then you immediately know: this constructor got executed on which object, what is the hash code of that object.</p>
+<p>`class C extends P`. Inside C constructor (whether we take it or not, super will be there anyway), also System.out.println(this.hashCode()).</p>
+<p>`class Test` with main. Create child object: C c = new C(); then System.out.println(c.hashCode()).</p>
+<pre class='code'>class P {
+    P() {
+        System.out.println(this.hashCode());
+    }
+}
+
+class C extends P {
+    C() {
+        System.out.println(this.hashCode());
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        System.out.println(c.hashCode());
+        // prints SAME number three times (example: 12345678)
+        // prints 12345678
+        // prints 12345678
+        // only ONE object — the child
+    }
+}</pre>
+<p>How many objects are we creating? Only one — the child object (C c = new C()). If we create child object, because of super, parent constructor runs. Parent constructor and child constructor will work only for child object purpose.</p>
+<p>Assume (wrong theory): whenever we create child object, parent object also got created. Then parent constructor would work for parent object, child constructor for child object — two hash codes, separate hash code here, separate hash code there. And c.hashCode() would match only the child one.</p>
+<p>If we execute this code we won’t get different hash codes. Only one hash code. Suppose we get 100 in parent constructor — that means child object. Same 100 in child constructor. Same 100 from c.hashCode(). If we are getting the same hash code, you should accept: all these constructors will work for the same object only, and that object is the child object only.</p>
+<p>Whenever we are creating child object, automatically parent constructor will be executed for child object purpose, and parent object won’t be created. Proof: execute this example. You are going to get only one hash code, not two, because how many objects we created? Only one.</p>
+<h3>1:20:26 — He types, compiles, and runs `Test.java`</h3>
+<p>He types it on the machine (classroom path he says: C:\Durga classes\Test.java).</p>
+<pre class='code'>class P {
+    P() {
+        System.out.println(this.hashCode());
+    }
+}
+
+class C extends P {
+    C() {
+        System.out.println(this.hashCode());
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        System.out.println(c.hashCode());
+    }
+}</pre>
+<p>javac Test.java — compiles fine. java Test.</p>
+<p>How many objects are we creating? Only one. Whenever we are creating child object, parent constructor will be executed, but parent object won’t be created.</p>
+<p>Observe: how many numbers are we getting? Only one number — of course three numbers are same. Then how many objects got created? Only one object.</p>
+<p>Whenever we are creating child class object, parent constructor will be executed for the child object purpose, but parent object won’t be created.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        System.out.println(c.hashCode());
+        // prints &lt;same&gt;
+        // prints &lt;same&gt;
+        // prints &lt;same&gt;
+        // three SOPs, one object
+    }
+}</pre>
+<h3>1:22:54 — Board: all three SOPs print the same number</h3>
+<p>Take this example clearly.</p>
+<p>Parent constructor will work for child object only. Child constructor also will work for child object only. Both constructors will work for the same child object purpose only.</p>
+<p>In all three cases, same number. Need not be 100, but whatever number we are getting, same number will be there in all three SOPs. Same number by default will be there.</p>
+<pre class='code'>class P {
+    P() {
+        System.out.println(this.hashCode()); // same
+    }
+}
+
+class C extends P {
+    C() {
+        System.out.println(this.hashCode()); // same
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        System.out.println(c.hashCode()); // same
+        // prints &lt;n&gt;
+        // prints &lt;n&gt;
+        // prints &lt;n&gt;
+    }
+}</pre>
+<p>That’s all: whenever we are creating child object, parent object won’t be created — just parent constructor will be executed.</p>
+<h3>1:24:27 — If everything is abstract, go for interface</h3>
+<p>Last one more concept.</p>
+<p>If everything is abstract, then we should go for interface.</p>
+<p>Doubt: even inside interface every method is always abstract. If you want, inside abstract class also we can take only abstract methods. Concrete methods we can take — “I don’t want to take. I want to take only abstract methods inside abstract class.” Then what is the difference between interface and abstract class?</p>
+<p>Inside interface we can take only abstract methods. If you want, inside abstract class also I can take only abstract methods. Then can I replace interface concept with abstract class?</p>
+<pre class='code'>interface Inter {
+    void m1();
+    void m2();
+    // every method is always abstract
+}
+
+abstract class Abs {
+    abstract void m1();
+    abstract void m2();
+    // only abstract methods — also possible
+}</pre>
+<h3>1:27:17 — Can we replace interface with abstract class?</h3>
+<p>Replacement is possible, but it’s not a good programming practice.</p>
+<p>If everything is abstract, highly recommended to go for interface. Don’t go for abstract class.</p>
+<h3>1:27:31 — IAS officer recruited for sweeping</h3>
+<p>Why? Analogy.</p>
+<p>DurgaSoft has multiple venues. Every day after classes, sweeping is required. Newspaper: wanted sweepers for DurgaSoft. Qualification: compulsory should be IAS officer, minimum 15 years of government experience.</p>
+<p>Can I keep this type of thing for sweeper activity? If that appears in the newspaper, definitely some officer will call: “You are going to recruit an IAS officer for sweeping activity?”</p>
+<p>Strictly speaking: can an IAS officer sweep? Maybe at home, years ago as a bachelor he did all the work. Strictly speaking, officer can perform sweeping. No problem. The problem: it’s not good programming practice. We are misusing the role of sweeper activity. IAS person used for sweeping = misusing his role.</p>
+<p>Same: in the place of interface, if I go for abstract class, we are misusing the role of abstract class. When should we go for abstract class? If we are talking about implementation. If we never talk about implementation, choosing abstract class is the worst kind of programming practice.</p>
+<pre class='code'>// everything abstract — CAN be written as abstract class
+abstract class SweeperRole {
+    abstract void sweep();
+}
+
+// but the specification-only job belongs to interface
+interface SweeperRoleSpec {
+    void sweep();
+}
+
+class Test implements SweeperRoleSpec {
+    public void sweep() {
+        System.out.println(&quot;use interface when everything is abstract&quot;);
+    }
+    public static void main(String[] args) {
+        new Test().sweep();
+        // prints use interface when everything is abstract
+    }
+}</pre>
+<h3>1:29:31 — Board: possible, but not good programming practice</h3>
+<p>Board (he dictates):</p>
+<p>We can replace interface with abstract class, but it is not a good programming practice.</p>
+<p>This is something like recruiting IAS officer for sweeping activity.</p>
+<p>If everything is abstract, then it is highly recommended to go for interface.</p>
+<pre class='code'>interface Inter {
+    void m1();
+    void m2();
+}
+
+abstract class Abs {
+    abstract void m1();
+    abstract void m2();
+}
+
+class Impl1 implements Inter {
+    public void m1() { }
+    public void m2() { }
+}
+
+class Impl2 extends Abs {
+    void m1() { }
+    void m2() { }
+    // possible — but not a good programming practice
+    // if everything is abstract, go for Inter, not Abs
+}</pre>
+<h3>1:31:19 — Two technical problems (abstract class X vs interface X)</h3>
+<p>“I want to go for abstract class only — what is the problem?” Technical problems now.</p>
+<p>If everything is abstract, two choices: interface, or abstract class. If I go for interface — what advantage. If I go for abstract class — what problem.</p>
+<p>He takes `abstract class X` (everything abstract) and `interface X`. Either you can go for this or that; interface is recommended, not abstract class. Two problems.</p>
+<pre class='code'>abstract class X {
+    abstract void m1();
+}
+
+interface XI {
+    void m1();
+}</pre>
+<h3>1:32:09 — Problem 1: missing inheritance benefit</h3>
+<p>Approach 1 (abstract class): class Test extends X — we have to implement those methods.</p>
+<p>Our class extending X: is it possible to extend any other class? No. We are missing inheritance benefit. Java won’t allow extending two classes.</p>
+<p>Approach 2 (interface): class Test implements X.</p>
+<p>Our class implementing X: is it possible to extend any other? Yes. You won’t miss any inheritance benefit.</p>
+<p>While extending abstract class we can’t extend any other — we are missing. While implementing interface, happily we can extend any other class — inheritance benefit is there.</p>
+<pre class='code'>abstract class X {
+    abstract void m1();
+}
+
+class Other {
+    void help() {
+        System.out.println(&quot;parent class we wanted to keep&quot;);
+    }
+}
+
+class Test extends X {
+    void m1() { }
+    // class Test extends X, Other  — CE: cannot extend two classes
+    // we are missing inheritance benefit
+}
+
+class Test2 extends Other implements XI {
+    public void m1() { }
+    // implementing interface — we can still extend some other class
+}
+
+interface XI {
+    void m1();
+}
+
+class Demo {
+    public static void main(String[] args) {
+        new Test2().help();
+        // prints parent class we wanted to keep
+    }
+}
+class Test extends X {
+    void m1() { }
+    // already extends X — cannot also extend Other
+}
+
+class TestOk extends Other implements XI {
+    public void m1() { }
+    // while implementing interface we can extend some other class
+    // hence we won’t miss any inheritance benefit
+}</pre>
+<h3>1:33:18 — Problem 2: object creation is costly (2 minutes vs 2 seconds)</h3>
+<pre class='code'>Second problem. Test t = new Test();</pre>
+<p>Whenever we are creating child class object, automatically parent constructor will execute and parent instance control flow will execute and so on. Assume 2 minutes time is required to create Test object (when Test extends abstract class X).</p>
+<p>Whenever Test implements interface X: parent constructor, parent instance control flow — nothing, because it is an interface. Interface doesn’t contain instance block. Interface doesn’t contain constructor. Test t = new Test(); — just in 2 seconds my object is ready.</p>
+<p>Object creation is costly in the abstract-class case. Object creation is not costly in the interface case. 2 minutes vs 2 seconds.</p>
+<p>Which approach is recommended? Interface approach. If everything is abstract, highly recommended to go for interface, but not for abstract class.</p>
+<pre class='code'>abstract class X {
+    {
+        // instance control flow — runs on every new child
+        System.out.println(&quot;parent instance block&quot;);
+    }
+    X() {
+        System.out.println(&quot;parent constructor&quot;);
+    }
+    abstract void m1();
+}
+
+class Test extends X {
+    void m1() { }
+    public static void main(String[] args) {
+        Test t = new Test();
+        // object creation is COSTLY
+        // parent instance block + parent constructor always run
+        // prints parent instance block
+        // prints parent constructor
+        // (he said: assume 2 minutes)
+    }
+}
+interface X {
+    void m1();
+    // no constructor, no instance block
+}
+
+class Test implements X {
+    public void m1() { }
+    public static void main(String[] args) {
+        Test t = new Test();
+        // object creation is NOT costly
+        // (he said: 2 seconds — object is ready)
+        System.out.println(&quot;ready&quot;);
+        // prints ready
+    }
+}</pre>
+<h3>1:34:42 — Board: approach 1 vs approach 2 side by side</h3>
+<p>He repeats: if everything is abstract, highly recommended to go for interface, but not for abstract class.</p>
+<p>Take this part: Approach 1 | Approach 2 side by side. If we go for abstract class | if we go for interface.</p>
+<pre class='code'>// Approach 1 — everything abstract, but we chose abstract class (NOT recommended)
+abstract class X {
+    abstract void m1();
+}
+
+class Test extends X {
+    void m1() { }
+    public static void main(String[] args) {
+        Test t = new Test(); // costly + we already used our one extends
+    }
+}
+// Approach 2 — everything abstract, we chose interface (HIGHLY recommended)
+interface X {
+    void m1();
+}
+
+class Test implements X {
+    public void m1() { }
+    public static void main(String[] args) {
+        Test t = new Test(); // not costly + we can still extend some other class
+    }
+}</pre>
+<h3>1:36:02 — Board notes: inheritance + cost</h3>
+<p>Approach 1 (abstract class)</p>
+<ul><li>While extending abstract class, it is not possible to extend any other class, and hence we are missing inheritance benefit.</li></ul>
+<ul><li>In this case object creation is costly. Example: Test t = new Test(); — just spell out sample board: 2 minutes.</li></ul>
+<p>Approach 2 (interface)</p>
+<ul><li>While implementing interface we can extend some other class, and hence we won’t miss any inheritance benefit.</li></ul>
+<ul><li>In this case object creation is not costly. Test t = new Test(); — 2 seconds.</li></ul>
+<pre class='code'>abstract class X { abstract void m1(); }
+class Other { }
+
+// approach 1 — missing inheritance benefit
+class TestAbs extends X {
+    void m1() { }
+    // cannot also extend Other
+}
+
+// approach 2 — won’t miss inheritance benefit
+interface XI { void m1(); }
+class TestIf extends Other implements XI {
+    public void m1() { }
+}
+
+class Demo {
+    public static void main(String[] args) {
+        TestAbs a = new TestAbs();     // costly (parent ctor / instance flow)
+        TestIf i = new TestIf();       // not costly
+        System.out.println(&quot;done&quot;);
+        // prints done
+    }
+}</pre>
+<h3>1:38:54 — Recommendation</h3>
+<p>If everything is abstract, highly recommended to go for interface, but not for abstract class. Seems we can use abstract class also, but it’s not a good programming practice.</p>
+<pre class='code'>// if everything is abstract → interface, not abstract class
+interface X {
+    void m1();
+}
+
+class Test implements X {
+    public void m1() {
+        System.out.println(&quot;highly recommended: interface&quot;);
+    }
+    public static void main(String[] args) {
+        new Test().m1();
+        // prints highly recommended: interface
+    }
+}</pre>
+<h3>1:39:09 — End of Declarations and Access Modifiers; before OOPs</h3>
+<p>That’s all. This is about Declarations and Access Modifiers concept.</p>
+<p>Before OOPs (whoops in the captions) what you have to learn: all these things. Then learning OOPs will become very easy.</p>
+<p>What this whole chapter covered (he recaps):</p>
+<ul><li>all modifiers whatever are there in Java</li></ul>
+<ul><li>what is Java source file structure</li></ul>
+<ul><li>what about interface — almost on the interface concept only, around 5 hours we spent, so that each and every loophole by default you got</li></ul>
+<p>That’s all.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;Declarations and Access Modifiers complete — next: OOPs&quot;);
+        // prints Declarations and Access Modifiers complete — next: OOPs
+    }
+}</pre>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 43 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 14</td></tr>
+<tr><td>Topic</td><td>interfaces-4</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 39m 46s</td></tr>
+<tr><td>Video ID</td><td>VUQGdiKSYKI</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=VUQGdiKSYKI</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Concept</th><th>Meaning in this lecture</th></tr>
+<tr><td>interface</td><td>don’t know implementation; only requirement specification (the plan)</td></tr>
+<tr><td>abstract class</td><td>talking about implementation, but not completely (partially completed building)</td></tr>
+<tr><td>concrete class</td><td>complete implementation and ready to provide service (fully completed building, ready to use)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Interface</th><th>Abstract class</th></tr>
+<tr><td>1</td><td>Don’t know implementation; only requirement specification</td><td>Talking about implementation, but not completely (partial)</td></tr>
+<tr><td>2</td><td>Every method always public abstract (declared or not) → 100% pure abstract class</td><td>Methods need not be public abstract; concrete methods allowed</td></tr>
+<tr><td>3</td><td>Can’t use private, protected, final, static, synchronized, native, strictfp on methods</td><td>No restrictions on method modifiers</td></tr>
+<tr><td>4</td><td>Every variable always public static final (declared or not)</td><td>Variables need not be public static final</td></tr>
+<tr><td>5</td><td>Can’t use private, protected, volatile, transient on variables</td><td>No restrictions on variable modifiers</td></tr>
+<tr><td>6</td><td>Must initialize variable at declaration, else CE</td><td>Not required to initialize at declaration</td></tr>
+<tr><td>7</td><td>Can’t declare static / instance blocks</td><td>Can declare static / instance blocks</td></tr>
+<tr><td>8</td><td>Can’t declare constructors</td><td>Can declare constructor</td></tr>
+</table>
+</body></html>

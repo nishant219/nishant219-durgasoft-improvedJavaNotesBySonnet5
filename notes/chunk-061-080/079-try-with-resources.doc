@@ -1,0 +1,929 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>079-try-with-resources</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 079 — try-with-resources and multi-catch</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Exception Handling Part-9 || try with resources and multi-catch block</p>
+<p>Source: real YouTube auto-captions (.transcripts/079-0n4Rh2Anlbw.txt). ASR decoded in place: keep subing / keep supporting = keep writing (board); Bufford radar / buffer radar / perer radar / buer rador / Prof = BufferedReader; file radar / file R = FileReader; fileer / file writer FW = FileWriter; input. EXT / XT / exting = input.txt; I exception / IIO = IOException; APA / AP / jpa developer = API developer; perc of / par of / percent of = parseInt; yeser / set of / s of X / assert of = assert; ARR index = ArrayIndexOutOfBoundsException; no class def of found = NoClassDefFoundError; exception in initializer = ExceptionInInitializerError; Tri / TR / Dy block = try; compar / compile / left and right = compile-time error; color / callar = caller; Legion / leg / leged = handle; reability / rity = readability; Artic / arithmatic = ArithmeticException; print stas / print St / print stack = printStackTrace; sop / s of / SF = System.out.println; rised / Riser / raer = raised; formated = formatted; autoc closable = AutoCloseable; CH of = child of; t n = &quot;ten&quot;; in I = int i; ENT room = interview room; O valid = valid; hazed / hitzer / habited = habituated; ly code = lengthy code; rid rid = rigid; rebound = restart; illegal H = IllegalArgumentException / IllegalThreadStateException (by context); 1 12 10 = 1 to 10; bral null = br = null; V / PR = br; try with resources. Java = TryWithResources.java; multi catch block. Java = MultiCatchBlock.java; crck = comment; through new = throw new; read through ing = rethrowing; catcher finally = catch or finally; public wide close = public void close; L leg / analan / anal = listen / and then; some people Sun = Sun people; web.xml error page kept as he said it; sry = sorry; bch = B.Tech; wake up meod = wake up method; Cinema is going to be done (when talking about finally) = cleanup is going to be done.</p>
+<p>This video is Exception Handling Part 9. The first ~32 minutes finish the top 10 exceptions from the morning: items 7–10 (IllegalArgumentException, NumberFormatException, IllegalStateException, AssertionError) plus the JVM vs programmatic summary. Then Java 1.7 two enhancements: try-with-resources and multi-catch. Last ~7 minutes: two extra words — exception propagation and rethrowing an exception. He does not teach suppressed exceptions, reverse close order of resources, or Java 9 existing-variable try-with-resources. Do not invent those.</p>
+<h3>00:07 — Recap: top 10; six already covered</h3>
+<p>In the morning they started top 10 exceptions. Six exception classes already covered: whether checked or unchecked, whether JVM exception or programmatic exception. Four more remain. Keep writing. Sixth is done; seventh.</p>
+<h3>00:29 — Seventh: `IllegalArgumentException`</h3>
+<p>IllegalArgumentException. Child class of `RuntimeException`, and hence unchecked (children of RuntimeException are unchecked).</p>
+<pre class='code'>class IllegalArgumentExceptionIsUnchecked {
+    public static void main(String[] args) {
+        // BOARD:
+        // IllegalArgumentException is the child class of RuntimeException
+        // and hence it is unchecked
+        System.out.println(&quot;IllegalArgumentException -&gt; RuntimeException -&gt; unchecked&quot;);
+    }
+}
+// prints IllegalArgumentException -&gt; RuntimeException -&gt; unchecked</pre>
+<h3>00:50 — When do we get it? Thread priority 1 to 10</h3>
+<p>Make sure you have clear clarity. Very important. He takes a `Thread` object — they covered this example in the morning.</p>
+<p>For every thread there is some priority. The valid range of thread priorities is 1 to 10.</p>
+<pre class='code'>class ThreadPriorityRange {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        // BOARD: the valid range of thread priorities is 1 to 10
+        System.out.println(&quot;valid thread priorities: 1 to 10&quot;);
+        t.setPriority(5); // inside 1..10 — he will contrast 7 vs 15 next
+    }
+}
+// prints valid thread priorities: 1 to 10</pre>
+<h3>01:30 — `setPriority(7)` valid; `setPriority(15)` illegal</h3>
+<p>If we are trying to set the priority other than 1 to 10:</p>
+<pre class='code'>class SetPrioritySeven {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        t.setPriority(7); // valid — 7 is inside 1..10
+    }
+}
+class SetPriorityFifteen {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        t.setPriority(15); // 15 is other than 1 to 10
+    }
+}
+// runtime: IllegalArgumentException</pre>
+<p>Immediately we are going to get runtime exception saying `IllegalArgumentException`.</p>
+<h3>02:01 — Legal vs illegal: programmer / API developer, not JVM</h3>
+<p>Whether the argument is legal or illegal — who is responsible to decide? Either programmer or API developer. JVM doesn’t have that information. That’s why IllegalArgumentException is not a JVM exception. It is a programmatic exception. They discussed that in the morning.</p>
+<h3>02:25 — Two board points for `IllegalArgumentException`</h3>
+<p>Point 1: child class of RuntimeException and hence unchecked.</p>
+<p>Point 2: raised explicitly either by programmer or by API developer to indicate that a method has been invoked with illegal argument.</p>
+<p>Seven is the legal argument. Fifteen is the illegal argument. Observe the difference.</p>
+<pre class='code'>class IllegalArgumentExceptionBoard {
+    public static void main(String[] args) {
+        // BOARD:
+        // 1. child class of RuntimeException and hence unchecked
+        // 2. raised explicitly either by programmer or by API developer
+        //    to indicate that a method has been invoked with illegal argument
+        System.out.println(&quot;raised explicitly: method invoked with illegal argument&quot;);
+    }
+}
+// prints raised explicitly: method invoked with illegal argument</pre>
+<h3>04:28 — Board dictation: valid range 1 to 10</h3>
+<p>Keep writing. He repeats every fragment.</p>
+<p>The valid range of thread priorities is 1 to 10. If we are trying to set the priority with any other value, then we will get runtime exception saying `IllegalArgumentException`.</p>
+<h3>05:51 — Board example: `Thread t = new Thread()`</h3>
+<p>Take this example.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        t.setPriority(7);  // valid
+        t.setPriority(15); // we will get runtime exception saying IllegalArgumentException
+    }
+}
+// runtime: IllegalArgumentException</pre>
+<p>He first writes t.setPriority(7) — valid or invalid? Valid. Then t.setPriority(15) — runtime exception saying IllegalArgumentException. That’s all. What you people should remember: what is IllegalArgumentException.</p>
+<h3>06:56 — Eighth: `NumberFormatException`</h3>
+<p>Keep writing: `NumberFormatException`. Observe a bit carefully.</p>
+<h3>07:15 — `Integer.parseInt(&quot;10&quot;)` is valid</h3>
+<pre class='code'>class ParseIntTenIsValid {
+    public static void main(String[] args) {
+        int i = Integer.parseInt(&quot;10&quot;); // valid — no problem at all
+        System.out.println(i);
+    }
+}
+// prints 10</pre>
+<h3>07:47 — `Integer.parseInt(&quot;ten&quot;)` — string not a number</h3>
+<p>Sometimes: int i = Integer.parseInt(&quot;ten&quot;). Valid or invalid?</p>
+<p>We are trying to convert string to the number, but the string is not properly formatted. This string is not representing a number. Immediately we will get runtime exception saying `NumberFormatException`.</p>
+<p>Take special care. Have you observed the word: string is not properly formatted, string is not representing a number — that’s why NumberFormatException.</p>
+<pre class='code'>class ParseIntTenWord {
+    public static void main(String[] args) {
+        int i = Integer.parseInt(&quot;ten&quot;); // string is not representing a number
+    }
+}
+// runtime: NumberFormatException</pre>
+<h3>08:49 — `NumberFormatException` is a special case of `IllegalArgumentException`</h3>
+<p>Think a bit high level. &quot;10&quot; is the legal argument. &quot;ten&quot; is the illegal argument. Can I use the term: is it IllegalArgumentException or not? For this method this one is illegal argument.</p>
+<p>Don’t think NumberFormatException is a separate new thing. `NumberFormatException` is the special case of `IllegalArgumentException` only.</p>
+<p>In the API: for IllegalArgumentException, child is `NumberFormatException`. He already specified this on the diagram: NumberFormatException is the child of IllegalArgumentException; IllegalArgumentException is the child of RuntimeException. Checked or unchecked? Unchecked.</p>
+<pre class='code'>class NumberFormatIsSpecialIllegalArgument {
+    public static void main(String[] args) {
+        int legal = Integer.parseInt(&quot;10&quot;);   // legal argument
+        int illegal = Integer.parseInt(&quot;ten&quot;); // illegal argument for parseInt
+        // NumberFormatException is special case of IllegalArgumentException only
+    }
+}
+// runtime: NumberFormatException</pre>
+<h3>10:02 — Hierarchy recap (he will correct “direct child of RuntimeException”)</h3>
+<p>NumberFormatException is child class of IllegalArgumentException, which is the child class of RuntimeException, and hence unchecked.</p>
+<p>Second point: we are trying to convert string to number but the string is not properly formatted — then NumberFormatException. Explicitly raised by either programmer or API developer to indicate that we are trying to convert string to number but the string is not properly formatted.</p>
+<h3>10:39 — Board: he starts “direct child of RuntimeException”, then sorry — wrong</h3>
+<p>Keep writing. He starts: it is the direct child class of `RuntimeException`. Then: sorry, sorry, wrong. It is the direct child class of `IllegalArgumentException`, which is the child class of RuntimeException, and hence it is unchecked.</p>
+<p>Raised explicitly either by programmer or by API developer to indicate that we are trying to convert string to number and the string is not properly formatted.</p>
+<pre class='code'>class NumberFormatExceptionBoard {
+    public static void main(String[] args) {
+        // BOARD (after he corrects himself):
+        // NumberFormatException is the direct child class of IllegalArgumentException
+        // which is the child class of RuntimeException
+        // and hence it is unchecked
+        //
+        // raised explicitly either by programmer or by API developer
+        // to indicate that we are trying to convert string to number
+        // and the string is not properly formatted
+        System.out.println(&quot;NFE = child of IAE = child of RuntimeException = unchecked&quot;);
+    }
+}
+// prints NFE = child of IAE = child of RuntimeException = unchecked</pre>
+<h3>13:09 — Board example: `parseInt(&quot;10&quot;)` vs `parseInt(&quot;ten&quot;)`</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int i = Integer.parseInt(&quot;10&quot;);  // completed — valid
+        int j = Integer.parseInt(&quot;ten&quot;); // runtime exception saying NumberFormatException
+    }
+}
+// runtime: NumberFormatException</pre>
+<p>That’s all. He hopes it is clear.</p>
+<h3>14:09 — Ninth: `IllegalStateException`</h3>
+<p>Keep writing: `IllegalStateException`. Listen. What is legal state, which state is illegal state? Make sure you people should be aware.</p>
+<h3>14:41 — Story: wake up on a sleeping person vs a dead person</h3>
+<p>A person happily sleeping. He went there: can you please wake up, shall we go for cinema, shall we go for tea. Can I call wake up method on the sleeping person? Legal — no problem. He is going to wake up and say interested or not interested. Calling wake up on the sleeping person is appropriate, correct time.</p>
+<p>Suppose a person is dead. He went there: Durga, can you please wake up, shall we go for cinema. Can I call wake up on the dead person? Illegal. We are calling wake up method at wrong time. It is not the appropriate time.</p>
+<p>To indicate that a method has been invoked at the wrong time we have to raise `IllegalStateException`. There is not such a type of state. On the dead person if I call wake up, what is the next state? No state is defined. That’s why illegal state.</p>
+<p>This story is not a Java type. The technical example he maps it to is `Thread.start()` twice (next).</p>
+<h3>16:16 — Two points: unchecked; method invoked at wrong time</h3>
+<p>IllegalStateException is the child class of `RuntimeException`. It is unchecked. Raised explicitly either by programmer or by API developer to indicate that a method has been invoked at a wrong time. Wrong time — for that, IllegalStateException will be raised.</p>
+<pre class='code'>class IllegalStateExceptionBoard {
+    public static void main(String[] args) {
+        // BOARD:
+        // child class of RuntimeException and hence unchecked
+        // raised explicitly either by programmer or by API developer
+        // to indicate that a method has been invoked at wrong time
+        System.out.println(&quot;IllegalStateException: method invoked at wrong time&quot;);
+    }
+}
+// prints IllegalStateException: method invoked at wrong time</pre>
+<h3>16:42 — Technical example: thread born, `t.start()`, cannot restart (Brahma / Yama)</h3>
+<p>He created one thread object. One kid just born — or one thread born. Thread life cycle / human being life cycle more or less same.</p>
+<pre class='code'>class ThreadBorn {
+    public static void main(String[] args) {
+        Thread t = new Thread(); // one thread born
+        t.start();               // start its life cycle — valid, no problem
+    }
+}</pre>
+<p>t.start() — happily this person enjoying his life. Almost around 25 or 30 years came. Then this person realized he didn’t study 10th class properly — 35% marks — not getting the job even after B.Tech. He sent a mail to Brahma: I didn’t study 10th properly, can you please restart my life so that happily I can study 10th this time.</p>
+<p>Brahma’s job: just to start your life. I’m not responsible if you kill your life and restart once again. Why don’t you contact Yama for this purpose. The kid sends a second mail to Brahma: I don’t know who is Yama, can you please restart my life once again. Immediately Brahma is going to raise runtime exception saying `IllegalStateException`.</p>
+<p>Same style: t.start() — thread life cycle already started. Now I’m trying to restart the same thread once again.</p>
+<h3>19:02 — Interview: after starting a thread, restart same thread</h3>
+<p>Very important question for the interview room. After starting a thread, if we are trying to restart the same thread once again:</p>
+<pre class='code'>class RestartSameThread {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        t.start(); // first time — appropriate, no problem
+        t.start(); // second time — inappropriate
+    }
+}
+// runtime: IllegalThreadStateException</pre>
+<p>Immediately we will get runtime exception saying `IllegalThreadStateException`. Of course `IllegalStateException` only — by default we are going to get `IllegalThreadStateException`.</p>
+<p>Calling start first time is appropriate. Calling start second time is inappropriate. If we call a method at wrong time, which exception? `IllegalStateException`.</p>
+<h3>20:02 — Board dictation: `IllegalStateException`</h3>
+<p>Keep writing. Child class of RuntimeException and hence unchecked. Raised explicitly either by programmer or by API developer to indicate that a method has been invoked at wrong time.</p>
+<h3>21:25 — Theory example on the board</h3>
+<p>After starting of a thread we are not allowed to restart the same thread once again. Otherwise we will get runtime exception saying `IllegalThreadStateException`.</p>
+<pre class='code'>class AfterStartCannotRestart {
+    public static void main(String[] args) {
+        // BOARD:
+        // after starting of a thread we are not allowed to restart
+        // the same thread once again
+        // otherwise we will get runtime exception saying IllegalThreadStateException
+        Thread t = new Thread();
+        t.start();
+        t.start();
+    }
+}
+// runtime: IllegalThreadStateException</pre>
+<h3>22:40 — Board program: `t.start()` then `t.start()` again</h3>
+<p>Take this example first.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        t.start(); // valid, no problem at all
+        t.start(); // runtime exception saying IllegalThreadStateException
+    }
+}
+// runtime: IllegalThreadStateException</pre>
+<p>Make sure you people should be aware clearly.</p>
+<h3>23:31 — Tenth: `AssertionError`</h3>
+<p>Keep writing: `AssertionError`. In the assertions chapter he will explain much, but compulsory you have basic idea.</p>
+<p>It is the child class of `Error`. Checked or unchecked? Unchecked.</p>
+<p>Raised explicitly by the programmer or API developer to indicate that assert statement fails.</p>
+<h3>24:05 — `assert x &gt; 10`</h3>
+<p>Best example:</p>
+<pre class='code'>class AssertXGreaterThan10 {
+    public static void main(String[] args) {
+        int x = 5;
+        assert x &gt; 10; // if everything goes fine, x should be greater than 10
+    }
+}
+// runtime: AssertionError   (when assertions are enabled: java -ea)</pre>
+<p>If everything goes fine at this point of time, x value should be greater than 10. If it is not greater than 10, something went wrong — raise immediately `AssertionError`. In assertions he will explain. If assert statement condition fails, then we will get AssertionError.</p>
+<p>He also says “runtime exception saying AssertionError” while dictating the example. On the classification board he is clear: child of `Error`, unchecked.</p>
+<h3>24:52 — Board dictation: `AssertionError`</h3>
+<p>It is the child class of `Error` and hence it is unchecked. Raised explicitly by the programmer or by API developer to indicate that assert statement fails.</p>
+<pre class='code'>class AssertionErrorBoard {
+    public static void main(String[] args) {
+        // BOARD:
+        // AssertionError is the child class of Error
+        // and hence it is unchecked
+        // raised explicitly by the programmer or by API developer
+        // to indicate that assert statement fails
+        System.out.println(&quot;AssertionError -&gt; Error -&gt; unchecked&quot;);
+    }
+}
+// prints AssertionError -&gt; Error -&gt; unchecked</pre>
+<h3>26:06 — Board example: `assert x &gt; 10`</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 5;
+        assert x &gt; 10;
+        // if x is not greater than 10 then we will get runtime exception saying AssertionError
+    }
+}
+// runtime: AssertionError   (java -ea)</pre>
+<p>That’s all. These are various important conclusions related to assertions. Not required to keep much explanation now.</p>
+<h3>27:09 — Summarize the top 10 exceptions</h3>
+<p>These are the top 10 exceptions. Let me summarize all these. Observe: exception or error; raised by whom — JVM or programmer / API developer.</p>
+<p>He asks the room to spell them one by one. First six they already covered in the morning:</p>
+<ol><li>`ArrayIndexOutOfBoundsException`</li></ol>
+<ol><li>`NullPointerException`</li></ol>
+<ol><li>`ClassCastException`</li></ol>
+<ol><li>`StackOverflowError`</li></ol>
+<ol><li>`NoClassDefFoundError`</li></ol>
+<ol><li>`ExceptionInInitializerError`</li></ol>
+<h3>27:45 — First six: raised automatically by JVM → JVM exceptions</h3>
+<p>Listen. Up to this, whatever we covered: these things raised automatically by JVM, and hence these are JVM exceptions.</p>
+<pre class='code'>class JvmExceptionsHeListed {
+    public static void main(String[] args) {
+        System.out.println(&quot;ArrayIndexOutOfBoundsException&quot;);
+        System.out.println(&quot;NullPointerException&quot;);
+        System.out.println(&quot;ClassCastException&quot;);
+        System.out.println(&quot;StackOverflowError&quot;);
+        System.out.println(&quot;NoClassDefFoundError&quot;);
+        System.out.println(&quot;ExceptionInInitializerError&quot;);
+        System.out.println(&quot;raised automatically by JVM =&gt; JVM exceptions&quot;);
+    }
+}
+// prints ArrayIndexOutOfBoundsException
+// prints NullPointerException
+// prints ClassCastException
+// prints StackOverflowError
+// prints NoClassDefFoundError
+// prints ExceptionInInitializerError
+// prints raised automatically by JVM =&gt; JVM exceptions</pre>
+<h3>29:33 — Remaining four: raised explicitly → programmatic exceptions</h3>
+<p>Seventh: `IllegalArgumentException`. Next: `NumberFormatException`. Next: `IllegalStateException`. Next: `AssertionError`.</p>
+<p>These things raised explicitly either by programmer or by API developer. That’s why these are programmatic exceptions.</p>
+<pre class='code'>class ProgrammaticExceptionsHeListed {
+    public static void main(String[] args) {
+        System.out.println(&quot;IllegalArgumentException&quot;);
+        System.out.println(&quot;NumberFormatException&quot;);
+        System.out.println(&quot;IllegalStateException&quot;);
+        System.out.println(&quot;AssertionError&quot;);
+        System.out.println(&quot;raised explicitly by programmer or API developer =&gt; programmatic&quot;);
+    }
+}
+// prints IllegalArgumentException
+// prints NumberFormatException
+// prints IllegalStateException
+// prints AssertionError
+// prints raised explicitly by programmer or API developer =&gt; programmatic</pre>
+<h3>31:07 — Exam shape: which are JVM vs programmatic</h3>
+<p>From this, what kind of question for the exam: spell out some four or five — which of the following are JVM exceptions or which of the following are programmatic exceptions or which are raised by the JVM or which are raised by API developer. You have to decide.</p>
+<h3>31:52 — Trap: `ExceptionInInitializerError` is the new one</h3>
+<p>The most dangerous thing — take very special care — is `ExceptionInInitializerError`. For most of the people it is new. Maximum chance to ask in the exam is this one. Take this part clearly.</p>
+<p>That’s all related to top 10 exceptions.</p>
+<h3>32:45 — Heading: 1.7 version enhancements w.r.t. exception handling</h3>
+<p>Keep writing: 1.7 version enhancements with respect to exception handling.</p>
+<p>In the 1.7 version there are two concepts as part of exception handling.</p>
+<h3>33:28 — The two 1.7 concepts</h3>
+<p>First: try with resources. Second: multi-catch block.</p>
+<p>As a part of 1.7 version, in exception handling, the following two concepts introduced:</p>
+<pre class='code'>class Java17ExceptionEnhancements {
+    public static void main(String[] args) {
+        // BOARD:
+        // as a part of 1.7 version in exception handling
+        // the following two concepts introduced
+        // 1. try with resources
+        // 2. multi catch block
+        System.out.println(&quot;1. try-with-resources&quot;);
+        System.out.println(&quot;2. multi-catch block&quot;);
+    }
+}
+// prints 1. try-with-resources
+// prints 2. multi-catch block</pre>
+<h3>34:57 — Try with resources (heading)</h3>
+<p>Keep writing: try with the resources. Simple. Listen well.</p>
+<h3>35:09 — Until 1.6: whatever we open in try, close in finally</h3>
+<p>Until 1.6 version, whatever resources we open as a part of try block, we have to close inside finally block.</p>
+<h3>35:32 — Board: 1.6 `BufferedReader` + `finally` close</h3>
+<p>Carefully. BufferedReader br = null. Try block: br = new BufferedReader(new FileReader(&quot;input.txt&quot;)). Created BufferedReader pointing to input.txt. By using this object happily we can read data present in input.txt. Use br based on our requirement.</p>
+<p>There may be a chance of `IOException`. Catch: corresponding handling code. Then finally: if br is not equal to null (we are pointing to some BufferedReader object pointing to a file), then `br.close()`.</p>
+<p>This is our style until 1.6 version. You won’t feel a problem because we are already habituated with this style. Strictly speaking there are some difficulties. He will show. More simpler code we can write. From programmer point of view this much lengthy code is not required.</p>
+<pre class='code'>import java.io.*;
+
+class Until16CloseInFinally {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(&quot;input.txt&quot;));
+            // use br based on our requirement
+        } catch (IOException e) {
+            // handling code
+        } finally {
+            if (br != null) {
+                br.close();
+            }
+        }
+    }
+}</pre>
+<h3>38:03 — Problems: programmer must close; finally is compulsory</h3>
+<p>Whatever resources we opened as a part of try block, compulsory we should close inside finally block. Is it complexity / burden to the programmer or not? By mistake if I forgot I didn’t close — we are going to waste one resource.</p>
+<ol><li>Compulsory we should close inside finally — burden, complexity of programming increased.</li></ol>
+<ol><li>Compulsory we should write finally block — length of the code increased, readability is going to be down.</li></ol>
+<p>You may not see that much difficulty because we are already habituated. In 1.7 a new concept came: try with resources. Once you see the new syntax, what problem was there with the old — you can get.</p>
+<h3>39:05 — 1.7 advantage: resources closed automatically</h3>
+<p>Same code in 1.7 try-with-resources. Biggest advantage: whatever resources we open as a part of try block will be closed automatically. We are not required to close explicitly.</p>
+<p>If you open database connection inside try — no problem — will be closed automatically. Finally block is not required to write. Complexity of programming reduced. Our work is performed by the syntax itself. Length of the code reduced. Readability improved.</p>
+<h3>40:29 — Board: `try (BufferedReader br = ...)`</h3>
+<p>Until 1.6 vs 1.7. After try, what did we take until 1.6? After try we opened the resource inside the block. In try-with-resources: after try, bracket open — try ( — this is try resource. Don’t think too much. R is nothing but resource: BufferedReader, database connection, network connection, FileWriter — any resource.</p>
+<pre class='code'>import java.io.*;
+
+class TryWithResources17 {
+    public static void main(String[] args) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(&quot;input.txt&quot;))) {
+            // use br based on our requirement
+        } catch (IOException e) {
+            // handling code
+        }
+    }
+}</pre>
+<p>input.txt — this total thing is the resource. Try with the resource. Brace open. BufferedReader already created. Use br based on our requirement. That’s all.</p>
+<p>Once the control reaches end of try block, either normally or abnormally, either with exception or without exception, automatically br will be closed. We are not required to close.</p>
+<p>Just write catch IOException. Can you tell: is finally required? Not required, because br will be closed automatically once control reaches end of try block.</p>
+<h3>43:00 — Which practice is good? 1.7. New version = red carpet</h3>
+<p>Which programming practice is good / easy to the programmer — first one or second one? Second. Easiness of programming by default will be improved with newer versions. That’s why if new version is there we have to give red carpet welcome. Most programmers are a bit rigid to accept new versions. New versions’ main purpose is to simplify programming complexity. If any new version is coming we have to celebrate like a festival — our life is going to be simplified.</p>
+<p>Until 1.6 this much code. Suddenly in 1.7 length reduced. That is the advantage of try-with-resources.</p>
+<p>Which is good programming practice? This one — we are not required to close explicitly, not required to write finally at all.</p>
+<h3>44:07 — Until 1.6 finally is hero; from 1.7 finally is zero</h3>
+<p>Until 1.6 version, finally block is just like hero. From 1.7 version onwards, finally block is zero. Because we are not required to write whatever finally block. Cleanup is going to be done with try syntax only. Advantage feature or not? Try with resources. Observe that.</p>
+<h3>44:30 — He adds comments on the 1.7 try (not extra logic)</h3>
+<p>Let me add some comments so you will get much clarity. Don’t feel this is part of programming logic — just adding comment related to the syntax. Don’t feel length of the code is more here — I’m adding description.</p>
+<pre class='code'>import java.io.*;
+
+class TryWithResourcesComments {
+    public static void main(String[] args) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(&quot;input.txt&quot;))) {
+            // use br based on our requirement
+            // br will be closed automatically once control reaches end of try block
+            // either normally or abnormally
+            // and we are not responsible to close explicitly
+        } catch (IOException e) {
+            // handling code
+        }
+    }
+}</pre>
+<p>This concept is try with the resources.</p>
+<h3>46:15 — Until 1.6: highly recommended to write finally to close resources</h3>
+<p>Until 1.6 version it is highly recommended to write finally block to close resources which are open as a part of try block.</p>
+<h3>47:18 — He rewrites the 1.6 code clearly (first half)</h3>
+<p>Better to write clearly. Take this code only first off.</p>
+<pre class='code'>import java.io.*;
+
+class Until16RewrittenClearly {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(&quot;input.txt&quot;));
+            // use br based on our requirement
+        } catch (IOException e) {
+            // handling code
+        } finally {
+            if (br != null) {
+                br.close();
+            }
+        }
+    }
+}</pre>
+<h3>48:57 — Problems in this approach (two numbered points)</h3>
+<p>The problems in this approach are:</p>
+<p>First: compulsory programmer is required to close the resources inside finally block. It increases complexity of programming.</p>
+<p>Second: compulsory we have to write finally block, and hence it increases length of the code and reduces readability.</p>
+<pre class='code'>class ProblemsUntil16 {
+    public static void main(String[] args) {
+        // BOARD — problems in this approach:
+        // 1. compulsory programmer is required to close the resources
+        //    inside finally block — it increases complexity of programming
+        // 2. compulsory we have to write finally block and hence
+        //    it increases length of the code and reduces readability
+        System.out.println(&quot;1. must close in finally — complexity&quot;);
+        System.out.println(&quot;2. must write finally — length up, readability down&quot;);
+    }
+}
+// prints 1. must close in finally — complexity
+// prints 2. must write finally — length up, readability down</pre>
+<h3>50:55 — To overcome: Sun people introduced try-with-resources in 1.7</h3>
+<p>To overcome above problems, some people (Sun people) introduced try with resources in 1.7 version.</p>
+<h3>51:35 — Main advantage (long dictation)</h3>
+<p>The main advantage of try with resources is: whatever resources we opened as a part of try block will be closed automatically once control reaches end of try block, either normally or abnormally, and hence we are not required to close explicitly, so that complexity of programming will be reduced.</p>
+<p>We are not required to write finally block, so that length of the code will be reduced and readability will be improved.</p>
+<pre class='code'>class MainAdvantageTryWithResources {
+    public static void main(String[] args) {
+        // BOARD:
+        // the main advantage of try with resources is
+        // whatever resources we opened as a part of try block
+        // will be closed automatically once control reaches end of try block
+        // either normally or abnormally
+        // and hence we are not required to close explicitly
+        // so that complexity of programming will be reduced
+        // we are not required to write finally block
+        // so that length of the code will be reduced and readability will be improved
+        System.out.println(&quot;auto close at end of try — no explicit close — no finally required&quot;);
+    }
+}
+// prints auto close at end of try — no explicit close — no finally required</pre>
+<h3>54:28 — Board syntax again (1.7)</h3>
+<p>Take this syntax.</p>
+<pre class='code'>import java.io.*;
+
+class TryWithResourcesSyntax {
+    public static void main(String[] args) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(&quot;input.txt&quot;))) {
+            // use br based on our requirement
+            // br will be closed automatically once control reaches end of try block
+            // either normally or abnormally
+        }
+    }
+}</pre>
+<p>Long copy pause (~56:23–56:52) while the room finishes the syntax.</p>
+<h3>56:57 — Conclusions about the new syntax</h3>
+<p>Keep writing: conclusions about this new syntax. Some conclusions are there.</p>
+<h3>57:14 — Conclusion 1: multiple resources, separated with semicolon</h3>
+<p>How many resources did we declare? Only one BufferedReader. Is it possible to declare multiple resources? Yes. We can declare any number of resources. No problem at all. Don’t feel only one resource.</p>
+<p>These resources should be separated with semicolon.</p>
+<h3>58:43 — Board: `FileWriter` and `FileReader` in one try</h3>
+<p>Syntax and then example. I want to write data. First resource: FileWriter fw = new FileWriter(&quot;output.txt&quot;) — to write data to output.txt. Semicolon. Second resource: FileReader fr = new FileReader(&quot;input.txt&quot;). How many resources? Two. R1, R2. First resource, second resource. We can declare any number of resources.</p>
+<pre class='code'>import java.io.*;
+
+class MultipleResources {
+    public static void main(String[] args) throws IOException {
+        try (FileWriter fw = new FileWriter(&quot;output.txt&quot;);
+             FileReader fr = new FileReader(&quot;input.txt&quot;)) {
+            // First Resource  — write data to output.txt
+            // second resource — read from input.txt
+        }
+    }
+}</pre>
+<h3>1:00:21 — Conclusion 2: resources must be AutoCloseable</h3>
+<p>Whatever resources we are taking — all IO related, all database related (Connection), all network related — compulsory these resources should be AutoCloseable resources.</p>
+<p>When do we say a resource is AutoCloseable? The corresponding class should implement `java.lang.AutoCloseable` interface. If I’m taking FileWriter object, then FileWriter class should implement java.lang.AutoCloseable.</p>
+<p>All file related, database related, network related resources already implement this interface. Being a programmer just we should be aware — we are not required to do anything. Predefined resources already implement AutoCloseable.</p>
+<p>AutoCloseable interface came in the 1.7 version. It contains only one method: `close`. Beyond that nothing.</p>
+<pre class='code'>package java.lang;
+
+public interface AutoCloseable {
+    public void close();
+}</pre>
+<p>He dictates public void close — that is the board method. All IO / DB / network resources already implement it.</p>
+<h3>1:02:44 — Board dictation: AutoCloseable (long copy)</h3>
+<p>All resources should be AutoCloseable resources.</p>
+<p>A resource is said to be AutoCloseable if and only if corresponding class implements `java.lang.AutoCloseable` interface.</p>
+<p>All IO related resources, database related resources, and network related resources are already implemented AutoCloseable interface.</p>
+<p>Being a programmer we are not required to do anything. Just we should aware the point.</p>
+<h3>1:05:34 — `AutoCloseable` came in 1.7; only `close`</h3>
+<p>AutoCloseable interface came in 1.7 version and it contains only one method close. Better to take `public void close`. That’s all. This is the second conclusion. Four or five conclusions are there.</p>
+<pre class='code'>class AutoCloseableCameIn17 {
+    public static void main(String[] args) {
+        // BOARD:
+        // AutoCloseable interface came in 1.7 version
+        // and it contains only one method close
+        // public void close
+        System.out.println(&quot;AutoCloseable: 1.7, only close()&quot;);
+    }
+}
+// prints AutoCloseable: 1.7, only close()</pre>
+<h3>1:06:41 — Conclusion 3: resource reference variables are implicitly final</h3>
+<p>Listen this point. Also very important.</p>
+<h3>1:07:06 — Why final: if you reassign, which resource should close?</h3>
+<p>Whatever resource reference variables we have. Example:</p>
+<pre class='code'>import java.io.*;
+
+class WhyResourceIsFinal {
+    public static void main(String[] args) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(&quot;input.txt&quot;))) {
+            // br pointing to input.txt
+            // who is responsible to close? the try syntax
+            // once control came to end of try block, automatically br should be closed
+            br = new BufferedReader(new FileReader(&quot;output.txt&quot;));
+            // now br pointing to output.txt
+            // which thing will be closed — old BufferedReader or new BufferedReader?
+            // always a confusion because two BufferedReaders are there
+        }
+    }
+}
+// CE: auto-closeable resource br may not be assigned</pre>
+<p>Old one points to input, new one points to output. Syntax is always going to get confusion. Syntax we have to provide in understandable form. That’s why all resource reference variables kept as a part of try — these are implicitly final. If it is final, always pointing to input.txt only. Within the try block we can’t perform reassignment. If I can’t perform reassignment, is there any confusion to my syntax? No. Which thing should be closed? This one only.</p>
+<p>By mistake if you are doing reassignment, immediately compile error.</p>
+<h3>1:09:42 — Live compile: `TryWithResources.java`</h3>
+<p>He compiles: javac TryWithResources.java. Have you observed — because I’m trying to perform reassignment. We are pointing to input.txt, now this br pointing to output.txt. Read the compile error:</p>
+<p>auto-closeable resource br may not be assigned</p>
+<p>That’s the compile message. If he comments the reassignment, the code is going to compile — no problem at all.</p>
+<pre class='code'>import java.io.*;
+
+class TryWithResources {
+    public static void main(String[] args) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(&quot;input.txt&quot;))) {
+            br = new BufferedReader(new FileReader(&quot;output.txt&quot;));
+        }
+    }
+}
+// CE: auto-closeable resource br may not be assigned
+import java.io.*;
+
+class TryWithResourcesCommented {
+    public static void main(String[] args) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(&quot;input.txt&quot;))) {
+            // br = new BufferedReader(new FileReader(&quot;output.txt&quot;));
+            // commented — compiles, no problem at all
+        }
+    }
+}</pre>
+<h3>1:10:53 — Board: implicitly final; cannot reassign</h3>
+<p>All resource reference variables are implicitly final, and hence within the try block we can’t perform reassignment. Otherwise we will get compile-time error.</p>
+<pre class='code'>class ResourceRefsImplicitlyFinal {
+    public static void main(String[] args) {
+        // BOARD:
+        // all resource reference variables are implicitly final
+        // and hence within the try block we can&#x27;t perform reassignment
+        // otherwise we will get compile time error
+        System.out.println(&quot;resource refs are implicitly final — no reassignment&quot;);
+    }
+}
+// prints resource refs are implicitly final — no reassignment</pre>
+<h3>1:12:01 — Complete board program + exact CE line</h3>
+<p>Better to take complete code. Take clearly.</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(&quot;input.txt&quot;))) {
+            br = new BufferedReader(new FileReader(&quot;output.txt&quot;));
+        }
+    }
+}
+// CE: auto-closeable resource br may not be assigned</pre>
+<p>Within the try, for br we are trying to perform reassignment. You have to copy also:</p>
+<p>auto-closeable resource br may not be assigned</p>
+<p>That’s all. Another conclusion related to try-with-resources.</p>
+<h3>1:14:33 — Conclusion 4: try-with-resources without catch or finally</h3>
+<p>Have a look. `try` `finally` — is it a valid syntax or not? They covered various possible combinations of try / catch / finally. try-finally is valid. If an exception occurs, no problem, I want abnormal termination, but before abnormal termination can you please close my database connection. If you have this requirement, we can go for try followed by finally.</p>
+<p>Until 1.6 version, try should be followed by either catch or finally. Try without catch or finally is invalid — compile error.</p>
+<p>If an exception occurs, no problem I want abnormal termination because I don’t know how to handle, but before that close my database connection — that requirement: try-finally.</p>
+<p>Now: try with resource. If I take try-with-resource, is finally required to write? Not required. I can remove finally block. Now this one is perfectly valid syntax. If an exception occurs, whatever resource we opened as a part of try block will be closed automatically. Whatever finally block was doing, here try-with-resource only is doing. Then finally we can remove.</p>
+<p>Conclusion: until 1.6, try should be followed by either catch or finally. Only try is invalid. From 1.7 version onwards, only try with resource is a valid syntax. No problem at all.</p>
+<pre class='code'>class TryFinallyUntil16 {
+    public static void main(String[] args) {
+        try {
+            // if exception occurs: I want abnormal termination
+            // but before that close my database connection
+        } finally {
+            // close resource
+        }
+    }
+}
+class TryAloneUntil16 {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;only try&quot;);
+        }
+    }
+}
+// CE: &#x27;try&#x27; without &#x27;catch&#x27;, &#x27;finally&#x27; or resource declarations</pre>
+<h3>1:16:48 — Board dictation: 1.6 vs 1.7 try association</h3>
+<p>Until 1.6 version, try should be associated with either catch or finally. But from 1.7 version onwards, we can take only try with resource without catch or finally.</p>
+<pre class='code'>import java.io.*;
+
+class OnlyTryWithResource {
+    public static void main(String[] args) throws IOException {
+        try (FileReader r = new FileReader(&quot;input.txt&quot;)) {
+            // try of R — valid from 1.7 without catch or finally
+        }
+    }
+}</pre>
+<p>He writes on the board: try (R) — that’s all.</p>
+<h3>1:18:15 — Summary: finally hero until 1.6, dummy/zero from 1.7</h3>
+<p>Summary. Main advantage of try-with-resources: we are not required to write finally block because we are not required to close resources explicitly. Hence until 1.6 version finally block is hero, but from 1.7 version onwards finally block will become zero.</p>
+<p>Keep writing the main advantage:</p>
+<p>We are not required to write finally block explicitly, because we are not required to close resources explicitly. Hence until 1.6 version finally block is just like hero, but from 1.7 version onwards it is a dummy and becomes zero.</p>
+<pre class='code'>class FinallyHeroThenZero {
+    public static void main(String[] args) {
+        // BOARD:
+        // the main advantage of try with resources is
+        // we are not required to write finally block explicitly
+        // because we are not required to close resources explicitly
+        // hence until 1.6 version finally block is just like hero
+        // but from 1.7 version onwards it is a dummy and becomes zero
+        System.out.println(&quot;1.6 finally = hero; 1.7 finally = dummy / zero&quot;);
+    }
+}
+// prints 1.6 finally = hero; 1.7 finally = dummy / zero</pre>
+<p>That’s what try-with-resources is. A big concept but useful. We are not required to close any resource because try syntax itself is going to close. Complexity of programming by default reduced.</p>
+<h3>1:20:48 — Second 1.7 concept: multi-catch block</h3>
+<p>Keep writing. Second one: multi-catch block. A simple concept. Second benefit to the programmer is this concept. What is the need?</p>
+<h3>1:21:20 — Until 1.6: same handling still needs separate catch</h3>
+<p>Until 1.6 version. I have one try block. Catch ArithmeticException e — handling code e.printStackTrace(). Catch IOException — handling code also e.printStackTrace(). Multiple different exceptions having same type of handling code.</p>
+<p>Catch NullPointerException — System.out.println(e.getMessage()). Catch InterruptedException — also System.out.println(e.getMessage()). Different type of exception, but handling code is the same.</p>
+<p>Even though multiple exceptions having same handling code, compulsory we should write separate catch block for every exception. If one is parent and the other is child, we can take only parent — automatically it can handle child also. But ArithmeticException is different, IOException is different. We can’t combine these two because these are different exceptions.</p>
+<p>Until 1.6, even though multiple different exceptions having same handling code, compulsory separate catch block.</p>
+<h3>1:21:34 — Board: four separate catch blocks (1.6)</h3>
+<pre class='code'>import java.io.*;
+
+class Until16SeparateCatch {
+    void m() {
+        try {
+            // try block is there (he did not write statements in the body)
+        } catch (ArithmeticException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            System.out.println(e.getMessage());
+        } catch (InterruptedException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+// CE: exception IOException is never thrown in body of corresponding try
+// CE: exception InterruptedException is never thrown in body of corresponding try</pre>
+<p>He left the try body as “try block is there”. Only the four catch shapes are on the board. ArithmeticException and IOException share printStackTrace(). NullPointerException and InterruptedException share e.getMessage().</p>
+<h3>1:24:00 — Problem: length of code, readability</h3>
+<p>The problem with this approach: it increases length of the code and reduces readability.</p>
+<h3>1:24:26 — 1.7: one catch that handles multiple types</h3>
+<p>In 1.7, to overcome the problem, some people introduced multi-catch block. Wonderful concept.</p>
+<p>Either ArithmeticException or IOException — handling code is the same. Not required to write separate catch block. A single catch block that can handle multiple different exceptions. Such type of concept is multi-catch block.</p>
+<h3>1:25:09 — Board: `catch (ArithmeticException | IOException e)`</h3>
+<pre class='code'>import java.io.*;
+
+class MultiCatch17 {
+    void m() {
+        try {
+            // try
+        } catch (ArithmeticException | IOException e) {
+            e.printStackTrace();
+        } catch (NullPointerException | InterruptedException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+// CE: exception IOException is never thrown in body of corresponding try
+// CE: exception InterruptedException is never thrown in body of corresponding try</pre>
+<p>Two different catch blocks we can combine by using one single catch. We can write a single catch block that can handle multiple different type of exceptions. Next: NullPointerException and InterruptedException both having same handling code — combine into a single.</p>
+<p>Is it an advantage feature to the programmer or not? This much code now got reduced. Length reduced, readability improved. Such type of beautiful concept is multi-catch block.</p>
+<h3>1:26:45 — Board dictation: until 1.6 (long copy)</h3>
+<p>Until 1.6 version, even though multiple different exceptions having same handling code, for every exception type we have to write a separate catch block. It increases length of the code and reduces readability.</p>
+<p>Take this code only first off — don’t take second. Long copy pause while he writes the 1.6 four-catch version again (~1:28:22–1:30:00).</p>
+<pre class='code'>import java.io.*;
+
+class Until16CopiedAgain {
+    void m() {
+        try {
+        } catch (ArithmeticException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e) {
+            System.out.println(e.getMessage());
+        } catch (InterruptedException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+// CE: exception IOException is never thrown in body of corresponding try
+// CE: exception InterruptedException is never thrown in body of corresponding try</pre>
+<h3>1:30:10 — To overcome: multi-catch in 1.7</h3>
+<p>To overcome this problem, some people introduced multi-catch block in 1.7 version. According to this, we can write a single catch block that can handle multiple different type of exceptions.</p>
+<h3>1:31:27 — Board: two multi-catch blocks</h3>
+<pre class='code'>import java.io.*;
+
+class MultiCatchCopied {
+    void m() {
+        try {
+        } catch (ArithmeticException | IOException e) {
+            e.printStackTrace();
+        } catch (NullPointerException | InterruptedException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+// CE: exception IOException is never thrown in body of corresponding try
+// CE: exception InterruptedException is never thrown in body of corresponding try</pre>
+<p>Main advantage of this approach: length of the code will be reduced and readability will be improved. Convenient to the programmer.</p>
+<h3>1:33:02 — Live: `MultiCatchBlock.java` — `10/0` and `s.length()`</h3>
+<p>Let me execute a small example. File: `MultiCatchBlock.java`. Direct executable code.</p>
+<p>Try: System.out.println(10 / 0). Next: String s = null and System.out.println(s.length()). Catch: what possible exceptions? `ArithmeticException` or `NullPointerException`. System.out.println(e).</p>
+<p>First which exception will be raised? `ArithmeticException`. Here only the problem will come. If ArithmeticException raised, this catch block can handle or not? Yes — ArithmeticException or NullPointerException.</p>
+<pre class='code'>class MultiCatchBlock {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0);
+            String s = null;
+            System.out.println(s.length());
+        } catch (ArithmeticException | NullPointerException e) {
+            System.out.println(e);
+        }
+    }
+}
+// prints java.lang.ArithmeticException: / by zero</pre>
+<p>javac MultiCatchBlock.java compiles fine. java MultiCatchBlock — oh, ArithmeticException / by zero. That catch block handled or not? Yes.</p>
+<h3>1:35:31 — Comment `10/0`: same catch handles `NullPointerException`</h3>
+<p>Let me comment this line. If I comment 10 / 0, then which exception will be raised? `NullPointerException`. Same catch block can handle or not? Yes. Compile is fine. Answer: NullPointerException.</p>
+<p>Whether raised exception is ArithmeticException or NullPointerException, a single catch block is able to handle. We can write a catch block that can handle multiple different type of exceptions — which is nothing but multi-catch block.</p>
+<pre class='code'>class MultiCatchBlockNpe {
+    public static void main(String[] args) {
+        try {
+            // System.out.println(10 / 0);  // commented
+            String s = null;
+            System.out.println(s.length());
+        } catch (ArithmeticException | NullPointerException e) {
+            System.out.println(e);
+        }
+    }
+}
+// prints java.lang.NullPointerException</pre>
+<h3>1:36:10 — Board the live example</h3>
+<p>Take clearly.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0);
+            String s = null;
+            System.out.println(s.length());
+        } catch (ArithmeticException | NullPointerException e) {
+            System.out.println(e);
+        }
+    }
+}
+// prints java.lang.ArithmeticException: / by zero</pre>
+<p>Make sure you people should be aware clearly this conclusion.</p>
+<h3>1:37:44 — In the above example, same catch can handle either</h3>
+<p>In the above example, whether raised exception is either `ArithmeticException` or `NullPointerException`, the same catch block can handle. Same catch block can respond. What is multi-catch? Advantage feature or not? Yes.</p>
+<h3>1:38:38 — Twist: parent–child relationship must not be there</h3>
+<p>One small twist. Listen. Try. Catch: ArithmeticException or Exception. e.printStackTrace().</p>
+<p>If I can take like this, compiler is ready to get left and right. What is the reason? If ArithmeticException occurs, which handling you want? e.printStackTrace(). If Exception occurs, which handling you want? Same handling. There is no difference.</p>
+<p>Exception can handle ArithmeticException or not? Even for ArithmeticException also you are expecting same handling — then can I remove `ArithmeticException` from here? Yes. Same thing. If you are taking parent, what is the need of taking the child?</p>
+<p>That’s why in multi-catch block, between exceptions, parent-to-child relationship should not be there. By mistake if you are taking parent and child also, compiler is going to get left and right. If parent we are taking, child we are not required to take. Compile error: alternatives cannot have subclass relation.</p>
+<pre class='code'>class MultiCatchParentChild {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0);
+        } catch (ArithmeticException | Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+// CE: Alternatives in a multi-catch statement cannot be related by subclassing</pre>
+<h3>1:40:28 — Live CE: alternatives cannot be related by subclassing</h3>
+<p>He takes ArithmeticException and Exception — syntactical mistake. Parent and child / child and parent relation is there. Immediately compiler is ready to give left and right. Can you please read:</p>
+<p>Alternatives in a multi-catch statement cannot be related by subclassing.</p>
+<p>Cannot be related by subclassing is nothing but parent-to-child relationship should not be there. Alternative ArithmeticException is a subclass of alternative Exception. Subclassing should not be there.</p>
+<h3>1:41:15 — Board rule: no relation between exception types</h3>
+<p>In multi-catch block there should not be any relation between exception types (either child to parent or parent to child or same type). Otherwise we will get compile-time error.</p>
+<pre class='code'>class MultiCatchNoRelation {
+    public static void main(String[] args) {
+        // BOARD:
+        // in multi catch block there should not be any relation between exception types
+        // (either child to parent or parent to child or same type)
+        // otherwise we will get compile time error
+        System.out.println(&quot;multi-catch: no parent/child/same-type relation&quot;);
+    }
+}
+// prints multi-catch: no parent/child/same-type relation</pre>
+<h3>1:42:24 — Board the invalid catch + exact CE</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+        } catch (ArithmeticException | Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+// CE: Alternatives in a multi-catch statement cannot be related by subclassing</pre>
+<p>Better to take from screen the compile method:</p>
+<p>Alternatives in a multi-catch statement cannot be related by subclassing.</p>
+<p>That’s all. This is about multi-catch block.</p>
+<h3>1:43:56 — Recap: both 1.7 features reduce complexity</h3>
+<p>Try-with-resources, multi-catch block — these two things are advantage feature to the programmer or not? Yes. Programming complexity by default is going to be reduced.</p>
+<p>Next: some small small words he has to keep explanation. These already we discussed, but just words may be new — concept already known. Just one or two words.</p>
+<h3>1:44:23 — Extra word 1: exception propagation</h3>
+<p>Keep writing: exception propagation. Simple enough.</p>
+<p>Suppose I have `m1` method and I’m calling `m2` method. From m1 I’m calling m2. Inside m2, if an exception raised: System.out.println(10 / 0). Simple. Have you remembered default exception handling we covered.</p>
+<p>Inside a method if an exception raised and if we are not handling that exception, then that exception object will be propagated to caller. Exception object will be propagated to caller by JVM. Then who is responsible to handle? Caller method is responsible to handle. This process is nothing but exception propagation.</p>
+<p>He didn’t use this word before, but the concept you people are aware.</p>
+<pre class='code'>class ExceptionPropagationDemo {
+    public static void main(String[] args) {
+        m1();
+    }
+
+    public static void m1() {
+        m2(); // caller of m2
+    }
+
+    public static void m2() {
+        System.out.println(10 / 0); // exception raised, not handled here
+    }
+}
+// runtime: ArithmeticException  (propagated m2 -&gt; m1 -&gt; main -&gt; JVM default handler)</pre>
+<h3>1:45:47 — Board dictation: exception propagation</h3>
+<p>Inside a method if an exception raised and if we are not handling that exception, then exception object will be propagated to caller. Then caller method is responsible to handle exception. This process is called exception propagation.</p>
+<pre class='code'>class ExceptionPropagationBoard {
+    public static void main(String[] args) {
+        // BOARD:
+        // inside a method if an exception raised
+        // and if we are not handling that exception
+        // then exception object will be propagated to caller
+        // then caller method is responsible to handle exception
+        // this process is called exception propagation
+        System.out.println(&quot;unhandled exception object -&gt; caller = exception propagation&quot;);
+    }
+}
+// prints unhandled exception object -&gt; caller = exception propagation</pre>
+<h3>1:47:31 — Extra word 2: rethrowing exception</h3>
+<p>One more word. I have try block. Within the try, ArithmeticException raised: System.out.println(10 / 0). Catch ArithmeticException. Within that: `throw new NullPointerException()`.</p>
+<p>Have you observed: actually raised exception is `ArithmeticException`, but we are throwing `NullPointerException`. This approach is nothing but rethrowing exception.</p>
+<pre class='code'>class RethrowDemo {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0);
+        } catch (ArithmeticException e) {
+            throw new NullPointerException();
+        }
+    }
+}
+// runtime: NullPointerException</pre>
+<h3>1:48:36 — When: convert one exception type to another (`web.xml` error page)</h3>
+<p>When we can use this? To convert one exception to another exception type. Maybe for NullPointerException I configured some error page in the `web.xml`. If NullPointerException is going to come, that error page will come. Even for ArithmeticException also same error page I want to display — then convert this ArithmeticException into NullPointerException and throw NullPointerException.</p>
+<p>To convert one exception to another exception type we can use this approach. This approach is rethrowing exception. Main advantage: one exception type to another exception type we will convert.</p>
+<h3>1:49:21 — Board: rethrowing exception</h3>
+<p>Keep writing: rethrowing exception. We can use this approach to convert one exception to another exception — one exception type to another exception type.</p>
+<h3>1:50:12 — Board example</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0);
+        } catch (ArithmeticException e) {
+            throw new NullPointerException();
+        }
+    }
+}
+// runtime: NullPointerException</pre>
+<p>That’s all. This is about rethrowing an exception.</p>
+<h3>1:50:51 — Close: ~20 subtopics including 1.7</h3>
+<p>That’s all these are various things what you people should aware related to exception handling. Almost around 20 subtopics we covered. Just go through all that. Then I’m sure definitely you can declare: yes we know, we are very perfect in the exception handling. Just refer all these things. That’s all the total things whatever there inside exception handling including 1.7 versions also. That’s all.</p>
+<p>Video ends 1:51:30. He does not start a new chapter after rethrowing.</p>
+<h2>Board recap he wants in the notebook</h2>
+<p>Top 10 leftovers (this video):</p>
+<p>JVM exceptions (1–6, raised automatically by JVM): ArrayIndexOutOfBoundsException, NullPointerException, ClassCastException, StackOverflowError, NoClassDefFoundError, ExceptionInInitializerError (exam trap — new for most people).</p>
+<p>1.7 try-with-resources: resources closed automatically at end of try (normal or abnormal). No explicit close(), finally not required. Until 1.6 finally is hero; from 1.7 finally is dummy / zero. Multiple resources separated by semicolon. Resources must be `AutoCloseable` (java.lang.AutoCloseable, 1.7, only close()). Resource refs are implicitly final — reassignment CE: auto-closeable resource br may not be assigned. From 1.7, try-with-resource without catch or finally is valid; until 1.6 try must have catch or finally.</p>
+<p>1.7 multi-catch: catch (A | B e) — one catch, multiple types, same handling. Advantage: length down, readability up. No parent/child/same-type relation among alternatives. CE: Alternatives in a multi-catch statement cannot be related by subclassing.</p>
+<p>Exception propagation: unhandled exception object propagated to caller; caller is responsible to handle.</p>
+<p>Rethrowing: catch one type, throw new another type — convert one exception type to another (his web.xml error-page story).</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 79 of 203</td></tr>
+<tr><td>Series</td><td>Exception Handling · Part 9</td></tr>
+<tr><td>Topic</td><td>try with resources and multi-catch block</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 51m 30s</td></tr>
+<tr><td>Video ID</td><td>0n4Rh2Anlbw</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=0n4Rh2Anlbw</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Type</th><th>Raised by</th><th>Notes from this board</th></tr>
+<tr><td>7</td><td>IllegalArgumentException</td><td>programmatic</td><td>child of RuntimeException, unchecked; method invoked with illegal argument; t.setPriority(15)</td></tr>
+<tr><td>8</td><td>NumberFormatException</td><td>programmatic</td><td>child of IllegalArgumentException (he corrects “direct child of RuntimeException”); special case of IAE; Integer.parseInt(&quot;ten&quot;)</td></tr>
+<tr><td>9</td><td>IllegalStateException</td><td>programmatic</td><td>method invoked at wrong time; restarting a started thread → IllegalThreadStateException</td></tr>
+<tr><td>10</td><td>AssertionError</td><td>programmatic</td><td>child of Error, unchecked; assert statement fails</td></tr>
+</table>
+</body></html>

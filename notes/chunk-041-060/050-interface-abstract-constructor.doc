@@ -1,0 +1,267 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>050-interface-abstract-constructor</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 050 — Interface, abstract class, constructor</h1>
+<h2>Video info</h2>
+<p>Title: Java -  Interface  and Abstract class Loopholes Part-7 ||Interface, Abstract class, constructor</p>
+<p>Source: real YouTube auto-captions (.transcripts/050-U7uOLV5yOP0.txt). ASR decoded in place: Loop Poes / Loop Pooles = loopholes; bits = exam bits; Len = listen; Constructor = constructor; obstructor / abstractor = abstract; CH class = child class; invalu / inv = invalid; e8th = eighth.</p>
+<p>This is the last short loophole video: he first listens the class through the bits, then they copy the same list onto the board with tick / cross. It is a summary of the last 1½–2 hours (Parts 1–6): new vs constructor, abstract-class object, child object vs parent constructor, abstract-class constructor, interface constructor.</p>
+<h3>00:25 — Exam bits: listen first, write later</h3>
+<p>There is a possibility to ask the bit for the exam. Observe small small loopholes. Possibility to ask: which of the following are valid?</p>
+<p>Just listen first, and then later you can take. Which of the following are valid. Answers are also there as he goes. Observe.</p>
+<h3>00:40 — Bit 1: purpose of constructor is to create an object — invalid</h3>
+<p>The purpose of constructor is to create an object. Valid or invalid?</p>
+<p>Invalid — because the purpose of constructor is to initialize an object, not to create it.</p>
+<pre class='code'>class Test {
+    Test() {
+        // constructor initializes; it does not create the object
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        // CE would not happen — this compiles
+        // creation is the job of new, not of Test()
+    }
+}</pre>
+<h3>01:03 — Bit 2: constructor initializes, does not create — valid</h3>
+<p>The purpose of constructor is to initialize an object but not to create object. Correct or not? This is the correct wording.</p>
+<h3>01:11 — Bit 3: object creation completes only after constructor — invalid</h3>
+<p>Once the constructor concludes, then only object creation completes.</p>
+<p>This one is wrong, because `new` operator is responsible to create an object, not the constructor. That is why: once new operator completes, automatically the object is ready, and then for initialization purpose constructor will be there.</p>
+<pre class='code'>class Test {
+    int x;
+
+    Test() {
+        x = 10; // initialization only
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        // 1. new creates the object
+        // 2. then constructor runs to initialize it
+        // object creation does NOT wait for constructor to &quot;complete the object&quot;
+    }
+}</pre>
+<h3>01:34 — Bit 4: first object is created, then constructor executes — valid</h3>
+<p>First object will be created and then constructor will be executed. Correct or not? Correct.</p>
+<h3>01:39 — Bit 5: new creates, constructor initializes — valid</h3>
+<p>The purpose of `new` keyword is to create an object and the purpose of constructor is to initialize that object. Yes. They covered this already.</p>
+<pre class='code'>class Test {
+    Test() {
+        System.out.println(&quot;constructor: initialize&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        // prints constructor: initialize
+        // new created t; constructor initialized t
+    }
+}</pre>
+<h3>01:51 — Bit 6: cannot create abstract object directly, but indirectly we can — invalid</h3>
+<p>We cannot create object for abstract class directly, but indirectly we can create. Valid or invalid?</p>
+<p>Invalid. Either directly or indirectly we cannot create object for abstract class. Are you getting.</p>
+<pre class='code'>abstract class Test {
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Test t = new Test();
+        // CE: Test is abstract; cannot be instantiated
+        // not directly, and not &quot;indirectly&quot; either
+    }
+}</pre>
+<p>People sometimes treat a child object as an “indirect abstract-class object.” He rejects that. The child object is a child object. That is not creating an abstract-class object.</p>
+<pre class='code'>abstract class P {
+}
+
+class C extends P {
+    public static void main(String[] args) {
+        P p = new C();
+        // this is a C object, referred by P type
+        // it is NOT an abstract-class object created indirectly
+    }
+}</pre>
+<h3>02:07 — Bit 7: creating child object creates parent object — invalid</h3>
+<p>Whenever we are creating child class object, automatically parent object will be created. Valid or invalid?</p>
+<p>Invalid. Whenever we are creating child class object, only parent constructor will execute, but parent object will not be created. Remember.</p>
+<h3>02:25 — Bit 8: creating child object runs abstract-class constructor — valid</h3>
+<p>Whenever we are creating child class object, automatically abstract class constructor will be executed. Correct or not? Yes.</p>
+<p>When will the abstract class constructor be executed? Whenever we are creating child class object.</p>
+<pre class='code'>abstract class P {
+    P() {
+        System.out.println(&quot;abstract parent constructor&quot;);
+    }
+}
+
+class C extends P {
+    C() {
+        System.out.println(&quot;child constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        C c = new C();
+        // prints abstract parent constructor
+        // prints child constructor
+        // parent constructor ran; parent object was NOT created
+    }
+}</pre>
+<h3>02:41 — Bit 9: child object → parent object created — invalid again</h3>
+<p>Whenever we are creating child class object, automatically parent object will be created. Valid or invalid?</p>
+<p>Invalid. Automatically parent constructor will be executed (that is the true statement). Parent object will not be created.</p>
+<h3>02:53 — Bit 10: parent constructor yes, parent object no — valid</h3>
+<p>Whenever we are creating child class object, automatically parent constructor will be executed, but parent object will not be created. Correct or not? Yes.</p>
+<h3>03:02 — Bit 11: no object for abstract class, hence no constructor — invalid</h3>
+<p>Either directly or indirectly we cannot create objects for abstract class, and hence constructor concept is not applicable for abstract class. Valid or invalid?</p>
+<p>Invalid — because directly or indirectly we cannot create object for abstract class, but abstract class can contain constructor to perform initialization for the instance variables which are required for child class object.</p>
+<pre class='code'>abstract class P {
+    String name;
+    int age;
+
+    P(String name, int age) {
+        this.name = name;
+        this.age = age; // initialization for child object
+    }
+}
+
+class C extends P {
+    C(String name, int age) {
+        super(name, age);
+    }
+
+    public static void main(String[] args) {
+        C c = new C(&quot;durga&quot;, 30);
+        // abstract class constructor is legal and it did run
+        // still no abstract-class object was created
+    }
+}</pre>
+<h3>03:23 — Bit 12: interface can contain constructor — invalid</h3>
+<p>Interface can contain constructor. Valid or invalid?</p>
+<p>Invalid. Constructor concept not applicable for interfaces. Clear for all?</p>
+<p>interface X {
+    X() {
+        // CE: interfaces cannot have constructors
+        // (&#x27;&lt;identifier&gt;&#x27; expected / interface cannot have constructors)
+    }
+}</p>
+<h3>03:34 — Now copy the bit: last 1½–2 hours summary</h3>
+<p>Just take this bit. Last summary of whatever we covered in the last one and a half hour or two hours. Take the bit. Which of the following are valid. From here he dictates the board. For every option there will be a cross mark or a tick mark.</p>
+<h3>03:46 — Board heading</h3>
+<p>Which of the following are valid</p>
+<h3>04:01 — Board 1: purpose of constructor is to create an object</h3>
+<p>The purpose of constructor is to create an object.</p>
+<p>(He already said this is invalid in the listen pass. Cross.)</p>
+<h3>04:32 — Board 2: initialize, not create — tick</h3>
+<p>The purpose of constructor is to initialize an object but not to create object.</p>
+<p>Yes, that is correct. Give the tick mark for that.</p>
+<h3>05:01 — Board 3: once constructor completes, object creation completes — invalid</h3>
+<p>Once a constructor completes, then only object creation completes.</p>
+<p>It is also invalid.</p>
+<h3>05:23 — Board 4: first object created, then constructor executed — correct</h3>
+<p>First object will be created and then constructor will be executed.</p>
+<p>Correct.</p>
+<h3>05:45 — Board 5: new creates; constructor initializes</h3>
+<p>The purpose of `new` keyword is to create object and the purpose of constructor is to initialize that object.</p>
+<p>(He already said yes in the listen pass. Tick.)</p>
+<pre class='code'>class Test {
+    Test() {
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        // new → create
+        // Test() → initialize that object
+    }
+}</pre>
+<h3>06:16 — Board 6: no direct abstract object, but indirect yes — invalid</h3>
+<p>We cannot create object for abstract class directly, but indirectly we can create.</p>
+<p>Invalid.</p>
+<h3>06:54 — Board 7: child object → parent object created internally — invalid</h3>
+<p>Whenever we are creating child class object, automatically parent class object will be created internally.</p>
+<p>This one is the wrong statement. Invalid.</p>
+<h3>07:27 — Board 8: child object → abstract class constructor executes — valid</h3>
+<p>Whenever we are creating child class object, automatically abstract class constructor will be executed.</p>
+<p>Yes. It is valid, because abstract class constructor is for child object initialization only.</p>
+<p>He marks this as the eighth one completed, then repeats the same line so it is written clearly.</p>
+<h3>08:18 — Board 9: child object → parent object created — invalid</h3>
+<p>Whenever we are creating child class object, automatically parent object will be created.</p>
+<p>Invalid.</p>
+<h3>08:55 — Board 10: parent constructor executes, parent object will not — valid</h3>
+<p>Whenever we are creating child class object, automatically parent constructor will be executed, but parent object will not be created.</p>
+<p>Yes. Valid.</p>
+<pre class='code'>abstract class P {
+    P() {
+        System.out.println(&quot;parent constructor only — no parent object&quot;);
+    }
+}
+
+class C extends P {
+    public static void main(String[] args) {
+        C c = new C();
+        // prints parent constructor only — no parent object
+    }
+}</pre>
+<h3>09:31 — Tick and cross on every option</h3>
+<p>Take clearly: for every option, cross mark and tick mark is there.</p>
+<h3>09:49 — Board 11: hence constructor not applicable for abstract class — invalid</h3>
+<p>Either directly or indirectly we cannot create object for abstract class, and hence constructor concept is not applicable for abstract class.</p>
+<p>Invalid, because abstract class can contain constructor.</p>
+<p>abstract class P {
+    P() {
+        // legal: constructor concept IS applicable for abstract class
+    }
+}</p>
+<h3>10:31 — Board 12: interface can contain constructor — wrong</h3>
+<p>Interface can contain constructor.</p>
+<p>It is wrong, because constructor concept not applicable for interfaces.</p>
+<pre class='code'>interface X {
+    // no constructor here — not allowed, not required
+    int x = 10; // public static final only; no instance fields to initialize
+}</pre>
+<h3>10:40 — Close the loophole series</h3>
+<p>I hope clear. That is all. These are loopholes related to interface, abstract class, constructor, `new` operator. I hope the terminology is very clear. That is all for this.</p>
+<p>Valid (tick) vs invalid (cross) as he marked</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 50 of 203</td></tr>
+<tr><td>Series</td><td>Interface and Abstract class Loopholes · Part 7</td></tr>
+<tr><td>Topic</td><td>Interface, Abstract class, constructor</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>11m 12s</td></tr>
+<tr><td>Video ID</td><td>U7uOLV5yOP0</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=U7uOLV5yOP0</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Statement</th><th>Mark</th></tr>
+<tr><td>1</td><td>Purpose of constructor is to create an object</td><td>Cross — invalid</td></tr>
+<tr><td>2</td><td>Purpose of constructor is to initialize an object but not to create object</td><td>Tick — valid</td></tr>
+<tr><td>3</td><td>Once constructor completes, then only object creation completes</td><td>Cross — invalid (new creates)</td></tr>
+<tr><td>4</td><td>First object will be created and then constructor will be executed</td><td>Tick — valid</td></tr>
+<tr><td>5</td><td>Purpose of new is to create; purpose of constructor is to initialize that object</td><td>Tick — valid</td></tr>
+<tr><td>6</td><td>Cannot create abstract-class object directly, but indirectly we can</td><td>Cross — invalid (neither direct nor indirect)</td></tr>
+<tr><td>7</td><td>Creating child object automatically creates parent object internally</td><td>Cross — invalid</td></tr>
+<tr><td>8</td><td>Creating child object automatically executes abstract-class constructor</td><td>Tick — valid (for child initialization)</td></tr>
+<tr><td>9</td><td>Creating child object automatically creates parent object</td><td>Cross — invalid</td></tr>
+<tr><td>10</td><td>Creating child object executes parent constructor, but parent object will not be created</td><td>Tick — valid</td></tr>
+<tr><td>11</td><td>No abstract-class object (direct or indirect), hence constructor not applicable for abstract class</td><td>Cross — invalid (abstract class can contain constructor)</td></tr>
+<tr><td>12</td><td>Interface can contain constructor</td><td>Cross — invalid (constructor not applicable for interfaces)</td></tr>
+</table>
+</body></html>

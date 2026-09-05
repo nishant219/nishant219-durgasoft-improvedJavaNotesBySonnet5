@@ -1,0 +1,497 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>078-top-10-exceptions</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 078 — Top-10 exceptions in Java</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Exception Handling Part-8 || Top-10 Exceptions in java</p>
+<p>ASR decoding used in these notes: checker / and checker → checked / unchecked; Javiyam / Jahcie / Xavierse → JVM; riser / rise → raised; chile / chaila / chail → child; customizer → customized; ABA / APA / A.P.A. developer → API developer; keep supporting / keep sub-adding / keep separating → keep writing (board dictation); Yere / you re → Array; bonds → bounds; class cache to / class cashed → ClassCastException; jail / cello → child; no class depth of found / no class ref bound → NoClassDefFoundError; exception in initializer yarrar → ExceptionInInitializerError; records → recursive; Uchimethan → each method; automatic exception (division context) → ArithmeticException; to young / to world → TooYoungException / custom examples from prior lectures.</p>
+<p>Session arc: After customized (user-defined) exceptions (prior videos), Sir introduces a second way to classify exceptions — by who raises them (JVM vs programmatic). He then begins the top 10 commonly occurring exceptions, covering six fully in this session and starting the seventh (IllegalArgumentException) at the very end. Items 7–10 are completed in Video 079.</p>
+<h3>00:06 — Transition: customized exceptions → top 10</h3>
+<p>Up to this point the series covered how to define customized (user-defined) exceptions and how to use them — an important area for OCJP/SCJP.</p>
+<p>The next topic: top 10 exceptions — ten important exception types, in which case each will be raised, with examples. Before listing them, Sir revisits classification — but with a new division beyond checked vs unchecked.</p>
+<h3>00:51 — New classification: JVM exceptions vs programmatic exceptions</h3>
+<p>You already know one division (from earlier lectures):</p>
+<p>New division — based on *who is raising* the exception:</p>
+<h3>01:33 — Who can raise exceptions in Java?</h3>
+<p>In Java, exceptions can be raised by three actors (Sir counts carefully):</p>
+<ol><li>JVM — e.g. division by zero, calling a method on null</li></ol>
+<ol><li>Programmer — e.g. throw new TooYoungException(), throw new InsufficientFundsException() (from customized-exception examples)</li></ol>
+<ol><li>API developer — library/JDK author who wrote classes like String, Thread</li></ol>
+<p>Important: The end user of an application does not raise exceptions; they only use the upper-layer service.</p>
+<p>The compiler checks syntax and may report compile-time errors — it is not listed as a fourth “raiser” of runtime exceptions in this lecture’s framework.</p>
+<h3>02:09 — JVM exception: division by zero (no `throw new` in your code)</h3>
+<p>Whenever a particular event occurs, JVM automatically raises an exception. You will never see throw new ArithmeticException (or similar) in application code for these cases — JVM is responsible.</p>
+<pre class='code'>class JvmDivisionByZero {
+    public static void main(String[] args) {
+        System.out.println(10 / 0);
+    }
+}
+// runtime: ArithmeticException: / by zero
+// Raised automatically by JVM — a JVM exception</pre>
+<p>Sir stresses: you never wrote throw new … for this; JVM detected the event and raised the exception. Such exceptions are JVM exceptions by default.</p>
+<p>Another JVM example mentioned: calling any method on null → NullPointerException (covered in detail later).</p>
+<h3>03:04 — Programmatic exceptions: programmer and API developer</h3>
+<p>Programmatic exceptions are explicitly raised — either by the programmer or by an API developer — to indicate that something went wrong.</p>
+<pre class='code'>// Programmer raises — programmatic exception (from prior customized-exception lectures)
+class TooYoung extends RuntimeException {
+    TooYoung(String msg) { super(msg); }
+}
+
+class ProgrammerThrows {
+    public static void main(String[] args) {
+        int age = 15;
+        if (age &lt; 18) {
+            throw new TooYoung(&quot;not eligible to vote&quot;);
+        }
+    }
+}
+// runtime: TooYoung — raised explicitly by programmer</pre>
+<p>All customized exceptions are programmatic exceptions (programmer raises them).</p>
+<p>The exceptions explicitly raised by either programmer or API developer fall under programmatic exceptions.</p>
+<h3>05:24 — API developer example: `Thread.setPriority` → `IllegalArgumentException`</h3>
+<p>Students asked for at least one API developer example for clarity.</p>
+<p>Thread priority range: every thread in Java has a priority; valid range is 1 to 10 (not 0–10).</p>
+<pre class='code'>class ThreadPriorityDemo {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        t.setPriority(5);  // valid — inside 1..10
+    }
+}
+class ThreadPriorityInvalid {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        t.setPriority(15); // valid range is 1 to 10
+    }
+}
+// runtime: IllegalArgumentException
+// Raised by API developer logic inside Thread class — programmatic exception</pre>
+<p>Why `IllegalArgumentException`? Sir opens the `Thread` class source (java.lang.Thread in JDK src) and shows setPriority(int newPriority):</p>
+<pre class='code'>class ThreadPriorityTooLow {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        t.setPriority(0); // less than MIN_PRIORITY (1)
+    }
+}
+// runtime: IllegalArgumentException
+// Simplified from java.lang.Thread — JDK source (API developer code)
+public final void setPriority(int newPriority) {
+    if (newPriority &gt; MAX_PRIORITY || newPriority &lt; MIN_PRIORITY) {
+        throw new IllegalArgumentException();
+    }
+    // ... actual priority update ...
+}</pre>
+<ul><li>Who wrote this `throw`? → API developer (Sun/Oracle JDK team).</li></ul>
+<ul><li>Therefore: IllegalArgumentException here is a programmatic exception, not a JVM exception.</li></ul>
+<ul><li>If priority is less than 1 or greater than 10, IllegalArgumentException is thrown immediately.</li></ul>
+<p>Sir copies Thread.java from JDK sources into the IDE to show the real implementation — “It is not my own creation; already defined by Thread.java.”</p>
+<h3>10:12 — Summary: three raisers, two categories</h3>
+<p>No lengthy re-explanation needed — students should keep writing the board notes as Sir dictates.</p>
+<h3>11:06 — Board dictation: JVM vs programmatic (formal definitions)</h3>
+<p>Sir dictates for the notebook (repeated fragments — keep supporting / keep writing):</p>
+<p>Division: All exceptions are divided into two categories based on who is raising the exception:</p>
+<ol><li>JVM exceptions</li></ol>
+<ol><li>Programmatic exceptions</li></ol>
+<p>JVM exceptions — definition:</p>
+<p>The exceptions which are raised automatically by JVM whenever a particular event occurs.</p>
+<p>Examples on board: ArithmeticException, NullPointerException, etc.</p>
+<p>Programmatic exceptions — definition:</p>
+<p>The exceptions which are raised explicitly either by programmer or by API developer to indicate that something goes wrong.</p>
+<p>Examples: customized exceptions (TooYoungException, etc.), `IllegalArgumentException` from JDK APIs, etc.</p>
+<h3>16:03 — Introducing the top 10 commonly occurring exceptions</h3>
+<p>Now Sir moves to 10 important exceptions commonly seen in Java — for each:</p>
+<ul><li>Checked or unchecked?</li></ul>
+<ul><li>JVM exception or programmatic exception?</li></ul>
+<ul><li>In which particular case will it be raised? (with example)</li></ul>
+<p>First exception on the board:</p>
+<h3>16:29 — #1: `ArrayIndexOutOfBoundsException`</h3>
+<p>Spelling note: Single word — `ArrayIndexOutOfBoundsException` (no space in “Array”; ASR often splits it).</p>
+<p>Hierarchy:</p>
+<ul><li>Child class of `IndexOutOfBoundsException`</li></ul>
+<ul><li>Which is a child class of `RuntimeException`</li></ul>
+<ul><li>Hence: unchecked (everything under RuntimeException → unchecked)</li></ul>
+<p>When raised: Whenever we try to access an array element with an out-of-range index (too high or negative).</p>
+<pre class='code'>class ArrayIndexValid {
+    public static void main(String[] args) {
+        int[] x = new int[4];
+        System.out.println(x[0]); // size 4 → valid indexes 0..3
+    }
+}
+// prints 0
+class ArrayIndexTooHigh {
+    public static void main(String[] args) {
+        int[] x = new int[4];
+        System.out.println(x[10]); // 10 is out of range
+    }
+}
+// runtime: ArrayIndexOutOfBoundsException: 10
+class ArrayIndexNegative {
+    public static void main(String[] args) {
+        int[] x = new int[4];
+        System.out.println(x[-10]); // negative index — also out of range
+    }
+}
+// runtime: ArrayIndexOutOfBoundsException: -10</pre>
+<p>Valid index range for new int[4]: 0 to 3 only. Both +10 and -10 are invalid → same exception.</p>
+<p>Board summary for #1:</p>
+<pre class='code'>// Board example — all three cases on one class
+class ArrayIndexOutOfBoundsBoard {
+    public static void main(String[] args) {
+        int[] x = new int[4];
+        System.out.println(x[0]);   // prints 0 — valid
+        System.out.println(x[10]);  // ArrayIndexOutOfBoundsException
+        System.out.println(x[-10]); // ArrayIndexOutOfBoundsException
+    }
+}</pre>
+<h3>22:22 — #2: `NullPointerException`</h3>
+<p>Hierarchy: Child class of `RuntimeException` → unchecked.</p>
+<p>When raised: Automatically by JVM whenever we try to perform any operation on `null` — calling a method, accessing a property, etc.</p>
+<pre class='code'>class NullPointerLength {
+    public static void main(String[] args) {
+        String s = null;
+        System.out.println(s.length());
+    }
+}
+// runtime: NullPointerException
+class NullPointerMethodCall {
+    public static void main(String[] args) {
+        String s = null;
+        System.out.println(s.length()); // method call on null
+    }
+}
+// runtime: NullPointerException
+class NullPointerPropertyAccess {
+    public static void main(String[] args) {
+        int[] arr = null;
+        System.out.println(arr.length); // property (field) access on null
+    }
+}
+// runtime: NullPointerException</pre>
+<p>Board summary for #2:</p>
+<pre class='code'>// Board dictation example
+class NullPointerBoard {
+    public static void main(String[] args) {
+        String s = null;
+        System.out.println(s.length()); // NullPointerException
+    }
+}</pre>
+<h3>25:11 — #3: `ClassCastException`</h3>
+<p>Hierarchy: Child class of `RuntimeException` → unchecked.</p>
+<p>Concept — type casting rules (review):</p>
+<ul><li>Child → parent (upcast): Always valid. Every child object is-a parent type.</li></ul>
+<ul><li>Parent → child (downcast): Valid only if the internal object is actually of the child type.</li></ul>
+<p>Valid upcast — child reference, child object → parent type:</p>
+<pre class='code'>class ClassCastValidUpcast {
+    public static void main(String[] args) {
+        String s = new String(&quot;Durga&quot;);
+        Object o = s; // child object → parent reference — VALID
+    }
+}</pre>
+<p>Invalid downcast — parent object → child type:</p>
+<pre class='code'>class ClassCastInvalidDowncast {
+    public static void main(String[] args) {
+        Object o = new Object();
+        String s = (String) o; // internal object is Object, not String
+    }
+}
+// runtime: ClassCastException
+// JVM automatically raises — JVM exception</pre>
+<p>Valid downcast — parent reference, but internal object is child:</p>
+<pre class='code'>class ClassCastValidDowncast {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;); // parent ref, child object inside
+        String s = (String) o;            // VALID — internal object is String
+    }
+}</pre>
+<p>Key distinction Sir emphasizes:</p>
+<p>You will not see throw new ClassCastException in application code — JVM performs the runtime type check and raises it.</p>
+<p>Board summary for #3:</p>
+<pre class='code'>// Board — valid vs invalid side by side
+class ClassCastBoard {
+    public static void main(String[] args) {
+        // VALID: child → parent
+        String s1 = new String(&quot;Durga&quot;);
+        Object o1 = s1;
+
+        // INVALID: parent object → child type
+        Object o2 = new Object();
+        String s2 = (String) o2; // ClassCastException
+
+        // VALID: parent ref but child object inside
+        Object o3 = new String(&quot;Durga&quot;);
+        String s3 = (String) o3;
+    }
+}</pre>
+<h3>32:25 — #4: `StackOverflowError`</h3>
+<p>Note the word *Error*, not *Exception*.</p>
+<p>Hierarchy: Child class of `Error` (not Exception) → unchecked (errors and runtime exceptions are unchecked).</p>
+<p>When raised: Automatically by JVM when performing recursive method calls without a proper base case — the runtime stack overflows.</p>
+<p>Runtime stack recap (from early exception-handling lectures):</p>
+<ul><li>For every thread, JVM creates one runtime stack.</li></ul>
+<ul><li>In main, only one thread (main thread) → one runtime stack.</li></ul>
+<ul><li>Each method invocation pushes a frame onto that thread’s stack.</li></ul>
+<pre class='code'>class StackOverflowRecursive {
+    public static void m1() {
+        m2();
+    }
+
+    public static void m2() {
+        m1();
+    }
+
+    public static void main(String[] args) {
+        m1();
+    }
+}
+// runtime: StackOverflowError
+// m1 → m2 → m1 → m2 → … until stack overflows</pre>
+<p>Stack growth (conceptual):</p>
+<p>main thread stack:
+  main()
+    m1()
+      m2()
+        m1()
+          m2()
+            m1()
+              ... (continues until overflow)</p>
+<p>At some point the stack overflows → `StackOverflowError` (Sir notes the name contains overflow).</p>
+<p>Board summary for #4:</p>
+<pre class='code'>// Board dictation — same recursive pattern
+class Test {
+    public static void m1() { m2(); }
+    public static void m2() { m1(); }
+    public static void main(String[] args) {
+        m1();
+    }
+}
+// StackOverflowError</pre>
+<h3>38:27 — #5: `NoClassDefFoundError`</h3>
+<p>Hierarchy: Child class of `Error` → unchecked.</p>
+<p>When raised: Automatically by JVM when it is unable to find a required `.class` file at runtime.</p>
+<p>Scenario:</p>
+<p># You ask JVM to run Test
+java Test</p>
+<p>JVM must load `Test.class`. If `Test.class` is not available (missing, wrong classpath, deleted after compile, etc.):</p>
+<p>Exception in thread &quot;main&quot; java.lang.NoClassDefFoundError: Test</p>
+<p>Sir runs a live demo with a non-existent class name (Testar / misspelled name in ASR) — JVM immediately reports `NoClassDefFoundError`.</p>
+<pre class='code'>// Demo: class name that was never compiled — run from command line:
+// java Testar
+// Exception in thread &quot;main&quot; java.lang.NoClassDefFoundError: Testar</pre>
+<p>Board summary for #5:</p>
+<pre class='code'>// Compile-time: this class exists and compiles fine
+class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;Hello&quot;);
+    }
+}</pre>
+<p># If Test.class is missing when you run:
+java Test
+# Exception in thread &quot;main&quot; java.lang.NoClassDefFoundError: Test</p>
+<p>Distinction to remember: This is not ClassNotFoundException (checked, often from explicit class loading). Sir here focuses on `NoClassDefFoundError` when the .class file JVM needs at startup is absent.</p>
+<h3>43:11 — #6: `ExceptionInInitializerError`</h3>
+<p>Hierarchy: Child class of `Error` → unchecked.</p>
+<p>Sir notes many students see this for the first time — compulsory OCJP/SCJP topic; clarity is essential.</p>
+<p>When raised: Automatically by JVM if any exception occurs while executing:</p>
+<ul><li>Static variable assignments, or</li></ul>
+<ul><li>Static blocks</li></ul>
+<p>during class initialization.</p>
+<h4>Example 1 — static variable: division by zero</h4>
+<pre class='code'>class Test {
+    static int x = 10 / 0;
+
+    public static void main(String[] args) {
+        // never reached if class init fails
+    }
+}</pre>
+<p>javac Test.java   # compiles fine
+java Test</p>
+<p>Output (typical):</p>
+<p>Exception in thread &quot;main&quot; java.lang.ExceptionInInitializerError
+Caused by: java.lang.ArithmeticException: / by zero</p>
+<ul><li>Root cause: `ArithmeticException` during static variable initialization.</li></ul>
+<ul><li>Wrapper: `ExceptionInInitializerError` — JVM’s way of reporting failure in the initializer (static init phase).</li></ul>
+<p>Sir initially omitted main and hit a JDK 1.7 vs 1.6 nuance; he adds main and re-runs on JDK 1.6 for the demo.</p>
+<h4>Example 2 — static block: `NullPointerException`</h4>
+<pre class='code'>class Test {
+    static {
+        String s = null;
+        System.out.println(s.length());
+    }
+
+    public static void main(String[] args) {
+    }
+}</pre>
+<p>javac Test.java
+java Test</p>
+<p>Output (typical):</p>
+<p>Exception in thread &quot;main&quot; java.lang.ExceptionInInitializerError
+Caused by: java.lang.NullPointerException</p>
+<p>Board summary for #6:</p>
+<pre class='code'>// Board — Example 1: static variable
+class ExceptionInInitializerExample1 {
+    static int x = 10 / 0;
+    public static void main(String[] args) { }
+}
+// ExceptionInInitializerError
+// Caused by: ArithmeticException: / by zero
+// Board — Example 2: static block
+class ExceptionInInitializerExample2 {
+    static {
+        String s = null;
+        System.out.println(s.length());
+    }
+    public static void main(String[] args) { }
+}
+// ExceptionInInitializerError
+// Caused by: NullPointerException</pre>
+<h3>52:27 — #7 (started): `IllegalArgumentException`</h3>
+<p>Sir closes the sixth exception and begins the seventh — `IllegalArgumentException` — with “keep sub-adding” (keep writing on the board).</p>
+<p>This session ends here (video ~52m 53s; transcript fades on this heading). `IllegalArgumentException` was already introduced earlier via Thread.setPriority(15) and JDK Thread source. Full board treatment of #7–#10 (IllegalArgumentException, NumberFormatException, IllegalStateException, AssertionError) plus a summary table of all 10 continues in Video 079 (Exception Handling Part 9).</p>
+<p>Quick recap from this video for #7:</p>
+<pre class='code'>class IllegalArgumentExceptionPreview {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        t.setPriority(7);  // valid
+        t.setPriority(15); // illegal argument — API developer throws this
+    }
+}
+// runtime: IllegalArgumentException
+// Programmatic exception (API developer), NOT JVM exception</pre>
+<h2>Progress checklist — top 10 (this video vs next)</h2>
+<h2>Master comparison table (exceptions covered in 078)</h2>
+<h2>OCJP / SCJP exam reminders</h2>
+<ol><li>Two independent classifications: checked/unchecked (compile-time contract) vs JVM/programmatic (who raised it).</li></ol>
+<ol><li>`Error` vs `Exception`: StackOverflowError, NoClassDefFoundError, ExceptionInInitializerError are `Error` subclasses, not Exception — still unchecked.</li></ol>
+<ol><li>`ExceptionInInitializerError`: always ask what caused it — look at `Caused by:` (ArithmeticException, NullPointerException, etc.).</li></ol>
+<ol><li>`ClassCastException`: downcast fails when runtime object type does not match; parent reference holding child object can downcast safely.</li></ol>
+<ol><li>API developer exceptions (e.g. IllegalArgumentException in Thread.setPriority) are programmatic, not JVM — JVM does not know valid priority range; the API method validates and throws.</li></ol>
+<h2>Quick reference — exception hierarchy (board)</h2>
+<pre class='code'>// Conceptual hierarchy (not runnable — for notebook)
+// java.lang.Throwable
+//   ├── Error                          (unchecked)
+//   │     ├── StackOverflowError
+//   │     ├── NoClassDefFoundError
+//   │     └── ExceptionInInitializerError
+//   └── Exception
+//         ├── RuntimeException           (unchecked)
+//         │     ├── ArithmeticException
+//         │     ├── NullPointerException
+//         │     ├── ArrayIndexOutOfBoundsException
+//         │     ├── ClassCastException
+//         │     └── IllegalArgumentException
+//         └── ... checked exceptions ...</pre>
+<p>```java` block count: 28</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 78 of 203</td></tr>
+<tr><td>Series</td><td>Exception Handling · Part 8</td></tr>
+<tr><td>Topic</td><td>Top-10 Exceptions in java</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>52m 53s</td></tr>
+<tr><td>Video ID</td><td>b_o6NeSn8pU</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=b_o6NeSn8pU</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Division (already covered)</th><th>Types</th></tr>
+<tr><td>Checked exceptions</td><td>Compiler forces handling</td></tr>
+<tr><td>Unchecked exceptions</td><td>No compile-time handling requirement</td></tr>
+</table>
+<table>
+<tr><th>Category</th><th>Who raises</th><th>Meaning</th></tr>
+<tr><td>JVM exceptions</td><td>JVM (automatically)</td><td>When a particular runtime event occurs, JVM raises an exception without any throw new … in your source</td></tr>
+<tr><td>Programmatic exceptions</td><td>Programmer or API developer (explicitly)</td><td>Raised with throw new … to signal that something went wrong</td></tr>
+</table>
+<table>
+<tr><th>Raiser</th><th>Example context</th></tr>
+<tr><td>Programmer</td><td>In your Test class: throw new TooYoungException()</td></tr>
+<tr><td>API developer</td><td>Inside JDK classes like Thread: throw new IllegalArgumentException()</td></tr>
+</table>
+<table>
+<tr><th>Who raises</th><th>Category</th></tr>
+<tr><td>JVM</td><td>JVM exception</td></tr>
+<tr><td>Programmer or API developer</td><td>Programmatic exception</td></tr>
+</table>
+<table>
+<tr><th>Point</th><th>Detail</th></tr>
+<tr><td>Hierarchy</td><td>Child of RuntimeException → unchecked</td></tr>
+<tr><td>Raised by</td><td>JVM automatically (not programmatic)</td></tr>
+<tr><td>When</td><td>Accessing array element with out-of-range index</td></tr>
+</table>
+<table>
+<tr><th>Point</th><th>Detail</th></tr>
+<tr><td>Hierarchy</td><td>Child of RuntimeException → unchecked</td></tr>
+<tr><td>Raised by</td><td>JVM automatically</td></tr>
+<tr><td>When</td><td>Any operation on `null` (method call, property access, etc.)</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Internal object</th><th>Downcast to child</th></tr>
+<tr><td>Object o = new Object(); (String) o</td><td>Parent (Object)</td><td>Invalid → ClassCastException</td></tr>
+<tr><td>Object o = new String(&quot;Durga&quot;); (String) o</td><td>Child (String)</td><td>Valid</td></tr>
+</table>
+<table>
+<tr><th>Point</th><th>Detail</th></tr>
+<tr><td>Hierarchy</td><td>Child of RuntimeException → unchecked</td></tr>
+<tr><td>Raised by</td><td>JVM automatically</td></tr>
+<tr><td>When</td><td>Typecasting parent object to child type when internal object is not of that child type</td></tr>
+</table>
+<table>
+<tr><th>Point</th><th>Detail</th></tr>
+<tr><td>Hierarchy</td><td>Child of `Error` → unchecked</td></tr>
+<tr><td>Raised by</td><td>JVM automatically</td></tr>
+<tr><td>When</td><td>Recursive method call (infinite / unbounded recursion)</td></tr>
+</table>
+<table>
+<tr><th>Point</th><th>Detail</th></tr>
+<tr><td>Hierarchy</td><td>Child of `Error` → unchecked</td></tr>
+<tr><td>Raised by</td><td>JVM automatically</td></tr>
+<tr><td>When</td><td>JVM unable to find required `.class` file</td></tr>
+</table>
+<table>
+<tr><th>Point</th><th>Detail</th></tr>
+<tr><td>Hierarchy</td><td>Child of `Error` → unchecked</td></tr>
+<tr><td>Raised by</td><td>JVM automatically</td></tr>
+<tr><td>When</td><td>Any exception during static variable assignment or static block execution</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Name</th><th>Covered in 078?</th></tr>
+<tr><td>1</td><td>ArrayIndexOutOfBoundsException</td><td>Yes — full</td></tr>
+<tr><td>2</td><td>NullPointerException</td><td>Yes — full</td></tr>
+<tr><td>3</td><td>ClassCastException</td><td>Yes — full</td></tr>
+<tr><td>4</td><td>StackOverflowError</td><td>Yes — full</td></tr>
+<tr><td>5</td><td>NoClassDefFoundError</td><td>Yes — full</td></tr>
+<tr><td>6</td><td>ExceptionInInitializerError</td><td>Yes — full</td></tr>
+<tr><td>7</td><td>IllegalArgumentException</td><td>Started (detailed in 079)</td></tr>
+<tr><td>8</td><td>NumberFormatException</td><td>Video 079</td></tr>
+<tr><td>9</td><td>IllegalStateException</td><td>Video 079</td></tr>
+<tr><td>10</td><td>AssertionError</td><td>Video 079</td></tr>
+</table>
+<table>
+<tr><th>Exception / Error</th><th>Parent</th><th>Checked?</th><th>JVM or programmatic?</th><th>When raised</th></tr>
+<tr><td>ArrayIndexOutOfBoundsException</td><td>RuntimeException</td><td>Unchecked</td><td>JVM</td><td>Array index out of range</td></tr>
+<tr><td>NullPointerException</td><td>RuntimeException</td><td>Unchecked</td><td>JVM</td><td>Operation on null</td></tr>
+<tr><td>ClassCastException</td><td>RuntimeException</td><td>Unchecked</td><td>JVM</td><td>Invalid parent→child cast</td></tr>
+<tr><td>StackOverflowError</td><td>Error</td><td>Unchecked</td><td>JVM</td><td>Unbounded recursion</td></tr>
+<tr><td>NoClassDefFoundError</td><td>Error</td><td>Unchecked</td><td>JVM</td><td>Required .class missing</td></tr>
+<tr><td>ExceptionInInitializerError</td><td>Error</td><td>Unchecked</td><td>JVM</td><td>Exception in static init</td></tr>
+<tr><td>IllegalArgumentException</td><td>RuntimeException</td><td>Unchecked</td><td>Programmatic</td><td>Illegal method argument (preview)</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,463 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>033-package-statement</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 033 — package statement</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-4 || package statement</p>
+<p>Captions: real YouTube auto-captions. ASR: keep supporting / keep uping = board heading, Java C I D dot = javac -d ., iphone D / iph D = -d, ocjp = folder he used on disk because scjp might already exist, pack pack one = pack1.</p>
+<h2>What this lecture covers</h2>
+<ol><li>What a package is (grouping / encapsulation mechanism).</li></ol>
+<ol><li>Examples: java.sql, java.io, plus java.rmi, java.net, java.util.</li></ol>
+<ol><li>Four advantages: naming conflicts, modularity, maintainability, security (package as a wall).</li></ol>
+<ol><li>Universally accepted naming: internet domain name in reverse.</li></ol>
+<ol><li>How to write package com.durgasoft.scjp;.</li></ol>
+<ol><li>javac Test.java vs javac -d . Test.java (-d = destination).</li></ol>
+<ol><li>-d creates missing package folders; destination drive must already exist.</li></ol>
+<ol><li>Run with fully qualified name: java com.durgasoft.scjp.Test.</li></ol>
+<ol><li>Conclusion 1: at most one package statement.</li></ol>
+<ol><li>Conclusion 2: first non-comment statement must be package (if present).</li></ol>
+<ol><li>Valid source-file structure: package (0–1) → imports (any number) → class/interface/enum (any number).</li></ol>
+<ol><li>Empty source file is a valid Java program.</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:04] Package / packages / package statement</h3>
+<p>General word — don’t overthink it programmatically. South India tour package, North India tour package, Europe tour package. Package is a group of related things.</p>
+<p>Core Java, Advanced Java, Oracle — related courses → “basic package”. Struts, Hibernate, Spring — frameworks package. Complete Java = core through web services.</p>
+<p>In Java: a group of related classes and interfaces into a single unit is a package. It is an encapsulation mechanism (grouping mechanism).</p>
+<h3>[02:01] Example 1 — `java.sql`</h3>
+<p>All classes and interfaces which can be used for database operations are grouped into the SQL package.</p>
+<pre class='code'>class SqlPackageExamples {
+    public static void main(String[] args) {
+        // Connection, DriverManager, Statement — java.sql
+        java.sql.Connection con = null;
+        java.sql.Statement st = null;
+        System.out.println(con);
+        System.out.println(st);
+    }
+}</pre>
+<h3>[02:26] Example 2 — `java.io`</h3>
+<p>All classes and interfaces for file IO (file write, file read) — IO package. FileWriter, BufferedWriter, PrintWriter, FileReader, BufferedReader — inside java.io.</p>
+<pre class='code'>class IoPackageExamples {
+    public static void main(String[] args) {
+        java.io.FileWriter fw = null;
+        java.io.BufferedWriter bw = null;
+        java.io.PrintWriter pw = null;
+        java.io.FileReader fr = null;
+        java.io.BufferedReader br = null;
+        System.out.println(&quot;java.io holds file IO types&quot;);
+    }
+}</pre>
+<p>Also mentioned: RMI package (remote method invocation), net package (networking), util package (general utilities). About 11 or 12 packages. Whatever you group for a particular purpose goes into a package.</p>
+<p>Board:</p>
+<p>Package: it is an encapsulation mechanism to group related classes and interfaces into a single unit, which is nothing but package.</p>
+<p>Example 1: all classes and interfaces which are required for database operations are grouped into a single package which is nothing but java.sql package.</p>
+<p>Example 2: all classes and interfaces which are useful for file IO operations are grouped into a separate package which is nothing but java.io package.</p>
+<h3>[07:30] Advantage 1 — resolve naming conflicts</h3>
+<p>Biggest advantage: we can resolve naming conflicts (unique identification).</p>
+<p>CM story: one CM for Telangana, one for Andhra Pradesh, one for Tamil Nadu, one for Karnataka. If states are not there, only one CM is possible.</p>
+<p>One Date in util, one Date in SQL. If packages were not there, how many Date classes? Only one. Two Date classes would be impossible.</p>
+<pre class='code'>class TwoDateClasses {
+    public static void main(String[] args) {
+        java.util.Date utilDate = new java.util.Date();
+        java.sql.Date sqlDate = new java.sql.Date(0L);
+        // unique identification because of package
+        System.out.println(utilDate);
+        System.out.println(sqlDate);
+    }
+}</pre>
+<p>java.util.Date — this Date belongs to util. java.sql.Date — this Date belongs to SQL. Uniqueness is possible because of the package statement.</p>
+<p>Main purpose of package statement: to resolve naming conflicts.</p>
+<h3>[09:00] Advantage 2 and 3 — modularity and maintainability</h3>
+<p>Package statement improves modularity of the application.</p>
+<p>Order processing module: all classes/interfaces for order processing in one package. Order delivery module: another package. Together they are the order module.</p>
+<pre class='code'>package com.xyz.order.process;
+
+class ProcessOrder {
+    public static void main(String[] args) {
+        System.out.println(&quot;order processing module&quot;);
+    }
+}
+package com.xyz.order.delivery;
+
+class DeliverOrder {
+    public static void main(String[] args) {
+        System.out.println(&quot;order delivery module&quot;);
+    }
+}
+package com.xyz.order;
+
+class OrderModule {
+    public static void main(String[] args) {
+        System.out.println(&quot;order module&quot;);
+    }
+}</pre>
+<p>Divide into modules: order processing, order delivery, payment module, transaction module. If we divide module-wise, maintainability improves. Core Java module, Advanced Java module, Frameworks module. Managing becomes easy instead of keeping everything clumsy.</p>
+<h3>[11:22] Advantage 4 — security (package acts as a wall)</h3>
+<p>Class Test with default access (no modifier). Default means only within the package. Outside person cannot access this class.</p>
+<p>Package acts as a wall for this class. Outside person is restricted. Using packages we get security for our components. Outside people are not allowed to access my method / my class.</p>
+<p>If packages were not there, how would you restrict an outside person?</p>
+<pre class='code'>package pack1;
+
+class Test {
+    // default / package-level class
+    void m1() {
+        System.out.println(&quot;only pack1 can see Test&quot;);
+    }
+}
+package pack2;
+
+class Outside {
+    public static void main(String[] args) {
+        // Test t = new Test();
+        // CE: pack1.Test is not public; cannot be accessed from outside package
+        System.out.println(&quot;package acts as a wall&quot;);
+    }
+}</pre>
+<h3>[12:53] Four advantages on the board</h3>
+<p>The main advantages of package are:</p>
+<ol><li>To resolve naming conflicts (that is, unique identification of our components).</li></ol>
+<ol><li>It improves modularity of the application.</li></ol>
+<ol><li>It improves maintainability of the application.</li></ol>
+<ol><li>It provides a security for our components.</li></ol>
+<h3>[15:14] Naming convention — internet domain name in reverse</h3>
+<p>How to write the package name? Universally accepted naming convention.</p>
+<p>Purpose of package: unique identification. Worldwide programming experts asked: in the universe, which thing is unique? Company name is not unique (Infosys, X Infosys, M Infosys, Y Infosys — several small companies). Client name / service-provider name — not unique.</p>
+<p>Unique feature: internet domain name. How many websites named gmail.com? Only one. yahoo.com? Only one. DurgaSoft / Durga jobs? Only one. If we use that domain in packages, uniqueness comes by default.</p>
+<p>Use internet domain name in reverse for package names.</p>
+<p>Example:</p>
+<pre class='code'>package com.icicibank.loan.housing;
+
+public class Account {
+}</pre>
+<p>Fully qualified name: com.icicibank.loan.housing.Account</p>
+<ul><li>com.icicibank — client’s internet domain name in reverse</li></ul>
+<ul><li>loan — module name</li></ul>
+<ul><li>housing — sub-module name</li></ul>
+<ul><li>Account — class name</li></ul>
+<p>If he finds a paper on the road with package com.icicibank.loan.housing; and public class Account, he need not read further: this class is related to ICICI Bank, loan module, housing loan. Unique identification.</p>
+<p>Don’t use pack1, pack2, packX, packY in institute style. Follow a meaningful convention: com.durgasoft.scjp.</p>
+<pre class='code'>package com.icicibank.loan.housing;
+
+public class Account {
+    public static void main(String[] args) {
+        System.out.println(&quot;com.icicibank = domain reverse&quot;);
+        System.out.println(&quot;loan = module&quot;);
+        System.out.println(&quot;housing = sub-module&quot;);
+        System.out.println(&quot;Account = class&quot;);
+    }
+}</pre>
+<p>Board: there is one universally accepted naming convention for packages: to use internet domain name in reverse.</p>
+<h3>[22:08] How to write the package statement</h3>
+<p>Keyword `package` (Java keyword). Demo related to DurgaSoft SCJP:</p>
+<pre class='code'>package com.durgasoft.scjp;
+
+public class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;package demo&quot;);
+    }
+}</pre>
+<h3>[23:40] Compile normally — `javac Test.java`</h3>
+<p>Does it compile? Yes. Even though the package statement is there, we can compile normally. No issue.</p>
+<p>But the generated class file is placed in the current working directory. Test.class in CWD. He is telling Test is related to com.durgasoft.scjp, but placing Test.class in CWD is meaningless. We want Test.class in the corresponding package / folder structure.</p>
+<pre class='code'>class CompileWithoutDashD {
+    public static void main(String[] args) {
+        // javac Test.java
+        // compiles fine
+        // Test.class is placed in the current working directory
+        System.out.println(&quot;legal but class file not in package folders&quot;);
+    }
+}</pre>
+<h3>[25:17] `javac -d . Test.java`</h3>
+<pre class='code'>class CompileWithDashD {
+    public static void main(String[] args) {
+        // javac -d . Test.java
+        // -d  = destination to place generated .class files
+        // .   = current working directory
+        System.out.println(&quot;place Test.class under CWD package folders&quot;);
+    }
+}</pre>
+<p>Difference: in the current working directory, in the corresponding package structure, please place Test.class.</p>
+<p>CWD → com → durgasoft → scjp → Test.class.</p>
+<p>javac -help shows -d: specify where to place generated class files.</p>
+<h3>[28:38] Board: two compile commands</h3>
+<p>Command 1: javac Test.java</p>
+<p>Generated .class file will be placed in current working directory. Diagram: CWD contains Test.class.</p>
+<pre class='code'>package com.durgasoft.scjp;
+
+public class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;package demo&quot;);
+        // javac Test.java  →  Test.class in CWD
+    }
+}</pre>
+<p>Command 2: javac -d . Test.java</p>
+<p>-d = destination to place generated .class files. . = current working directory.</p>
+<p>Generated .class file will be placed in the corresponding package structure.</p>
+<p>Diagram: CWD / com / durgasoft / scjp / Test.class.</p>
+<p>On the machine he uses `ocjp` in the package (package com.durgasoft.ocjp) because scjp may already exist on disk. Board still says scjp. He compiles, cd com, cd durgasoft, cd ocjp, dir — Test.class created (timestamp 28/09/2014 11:19 in the recording).</p>
+<pre class='code'>package com.durgasoft.ocjp;
+
+public class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;package demo&quot;);
+        // javac Test.java           // OK, class in CWD
+        // javac -d . Test.java      // OK, class in com/durgasoft/ocjp/
+    }
+}</pre>
+<h3>[35:01] Variation 1 — missing package folders</h3>
+<p>What if com is not there, or com is there but durgasoft is not, or com.durgasoft is there but scjp folder is not?</p>
+<p>If the corresponding package structure is not already available, this command itself will create the corresponding package structure. Not required to check whether folders exist. If not already there, javac -d . creates them. No compile error for missing package folders.</p>
+<pre class='code'>class DashDCreatesFolders {
+    public static void main(String[] args) {
+        // javac -d . Test.java
+        // if com/durgasoft/scjp does not exist, javac creates it
+        System.out.println(&quot;package folders created by -d if missing&quot;);
+    }
+}</pre>
+<h3>[37:55] Variation 2 — destination can be any valid directory</h3>
+<p>. means CWD. Instead of . we can take any valid directory name: C:, D:, E:, F:.</p>
+<pre class='code'>class DashDToFColon {
+    public static void main(String[] args) {
+        // javac -d F: Test.java
+        // valid if F: already exists
+        // F:\com\durgasoft\scjp\Test.class
+        System.out.println(&quot;destination instead of dot: any valid directory&quot;);
+    }
+}</pre>
+<p>He compiles javac -d F: Test.java, then cd into F:, com, durgasoft, ocjp — Test.class just created (28/09/2014 11:26).</p>
+<h3>[42:10] Variation 3 — destination drive must already exist</h3>
+<p>javac -d J: Test.java — if J: is not there in the system, will this command create J:? No.</p>
+<p>If the specified directory is not already available, we will get compile-time error.</p>
+<p>Live: javac -d J: Test.java → `directory not found: J:`</p>
+<pre class='code'>class DashDMissingDrive {
+    public static void main(String[] args) {
+        // javac -d J: Test.java
+        // if J: does not exist:
+        // CE: directory not found: J:
+        System.out.println(&quot;specified directory must already exist&quot;);
+    }
+}</pre>
+<p>Difference vs variation 1: package subfolders under a valid destination are created; the destination itself (J:) is not created.</p>
+<h3>[45:23] How to run — fully qualified name</h3>
+<p>Test.class is in CWD / com / durgasoft / scjp / Test.class.</p>
+<p>At execution, compulsory we have to provide fully qualified name.</p>
+<pre class='code'>class RunPackagedClass {
+    public static void main(String[] args) {
+        // java com.durgasoft.scjp.Test
+        // prints package demo
+
+        // java com.durgasoft.ocjp.Test   // what he actually ran (ocjp folder)
+        // prints package demo
+
+        // do NOT cd into com and then try a partial name — it won&#x27;t work
+        System.out.println(&quot;run with FQN&quot;);
+    }
+}
+package com.durgasoft.scjp;
+
+public class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;package demo&quot;);
+        // java com.durgasoft.scjp.Test  →  package demo
+    }
+}</pre>
+<p>He cannot enter inside com and run from there with a short name. Must use FQN.</p>
+<p>Board: at the time of execution we have to use a fully qualified name. Output: package demo.</p>
+<h3>[48:25] SCJP conclusions — only two</h3>
+<h3>[48:36] Conclusion 1 — at most one package statement</h3>
+<p>He writes two package lines (Ameerpet-style pack1 / pack2 for the exam point):</p>
+<pre class='code'>package pack1;
+package pack2;
+
+public class A {
+}</pre>
+<p>How many .class files? Students guess one in pack1 and one in pack2, or which package gets the single class file because pack1 came first.</p>
+<p>Wrong framing. In any Java source file there can be at most one package statement (either one or zero). More than one is not allowed. Immediate compile-time error.</p>
+<p>First package pack1; is valid. After the package statement the compiler expects class or interface or enum (import is optional). Instead you wrote another package →</p>
+<p>`class, interface or enum expected` (at the package pack2 line).</p>
+<pre class='code'>package pack1;
+package pack2;
+
+public class A {
+}
+// javac Test.java
+// even javac -d . Test.java — same problem
+// CE: class, interface or enum expected
+//     (at package pack2)</pre>
+<p>Live: javac Test.java — class, interface or enum expected at package pack2.</p>
+<p>Board: in any Java source file there can be at most one package statement. That is, more than one package statement is not allowed; otherwise we will get compile-time error.</p>
+<pre class='code'>package pack1;
+package pack2;
+public class A {
+}
+// CE: class, interface or enum expected</pre>
+<h3>[54:32] Conclusion 2 — first non-comment statement should be package</h3>
+<pre class='code'>import java.util.*;
+
+package pack1;
+
+public class A {
+}</pre>
+<p>100% invalid. In any Java program the first non-comment statement should be package. Comments can be anywhere. First package then import = acceptable. First import then package = invalid.</p>
+<p>After import, compiler expects class / interface / enum. You misplaced package. Same CE: `class, interface or enum expected` at package pack1.</p>
+<pre class='code'>import java.util.*;
+package pack1;
+
+public class A {
+}
+// javac
+// CE: class, interface or enum expected
+//     (at package pack1)
+package pack1;
+import java.util.*;
+
+public class A {
+    public static void main(String[] args) {
+        System.out.println(&quot;package then import is OK&quot;);
+    }
+}
+// comments anywhere are fine
+package pack1;
+
+import java.util.*;
+
+public class A {
+}</pre>
+<p>If the package is not available, no such rule (no package statement → import or class can come first).</p>
+<p>Board: in any Java program the first non-comment statement should be package statement (if it is available); otherwise we will get compile-time error.</p>
+<h3>[58:58] Valid Java source file structure (summary)</h3>
+<p>This is about Java source file structure (package + import + types).</p>
+<p>Order is important:</p>
+<ol><li>Package statement first (if present) — at most one.</li></ol>
+<ol><li>Import statements next — any number (zero is fine).</li></ol>
+<ol><li>Then class or interface or enum declarations.</li></ol>
+<pre class='code'>package pack1;
+
+import java.util.ArrayList;
+import java.io.File;
+
+class A {
+}
+
+interface I {
+}
+
+enum E {
+}</pre>
+<p>How many package statements? At most one — don’t say “one”; zero is allowed.</p>
+<p>How many imports? Any number (including zero).</p>
+<p>How many class / interface / enum declarations? Students say at least one. He says wait — majority say at least one. He will fill this in a few minutes.</p>
+<h3>[1:02:04] Empty source file and four more files</h3>
+<p>He saves several Test.java variants:</p>
+<p>1. Empty source file — no class, no interface, no package, no import.</p>
+<pre class='code'>// File: Test.java
+// (completely empty)
+// javac Test.java
+// compiles fine
+// an empty source file is a valid Java program</pre>
+<p>2. Only package</p>
+<pre class='code'>package pack1;
+// File: Test.java — only this line
+// valid</pre>
+<p>3. Only import</p>
+<pre class='code'>import java.util.*;
+// File: Test.java — only import
+// valid</pre>
+<p>4. Package + import, no type</p>
+<pre class='code'>package pack1;
+import java.util.*;
+// File: Test.java
+// valid</pre>
+<p>5. Only a class</p>
+<pre class='code'>class Test {
+}
+// File: Test.java
+// valid (the “perfectly valid” one nobody doubts)</pre>
+<p>Live: he deletes everything in Test.java, javac Test.java — happily the code compiles fine. An empty source file is a valid Java program. First one perfectly valid. If empty is valid, remaining are also valid.</p>
+<p>So: how many class / interface / enum declarations are allowed?</p>
+<p>Any number — not at least one, not at most one, not exactly one. Last time people said at least one; no such restriction.</p>
+<h3>[1:05:47] Board — valid structure + empty-file note</h3>
+<p>The following is the valid Java source file structure (this order is important):</p>
+<ol><li>package statement — at most one</li></ol>
+<ol><li>import statements — any number</li></ol>
+<ol><li>class / interface / enum declarations — any number</li></ol>
+<p>Note: an empty source file is a valid Java program.</p>
+<p>Hence the following are valid Java source files:</p>
+<pre class='code'>// 1. Test.java empty
+package pack1;
+// 2. only package
+import java.util.*;
+// 3. only import
+package pack1;
+import java.util.*;
+// 4. package and import
+class Test {
+}
+// 5. only class</pre>
+<p>This is about Java source file structure — the first module in Declarations and Access Modifiers.</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>package com.durgasoft.scjp;
+
+public class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;package demo&quot;);
+        // javac Test.java                    // Test.class in CWD
+        // javac -d . Test.java               // com/durgasoft/scjp/Test.class
+        // javac -d F: Test.java              // F:\com\durgasoft\scjp\Test.class if F: exists
+        // javac -d J: Test.java              // CE: directory not found: J:  (if no J:)
+        // java com.durgasoft.scjp.Test       // prints package demo
+    }
+}</pre>
+<h2>Rules</h2>
+<ol><li>Package = group of related classes and interfaces (encapsulation / grouping).</li></ol>
+<ol><li>Advantages: unique names, modularity, maintainability, security (default members stay inside the package wall).</li></ol>
+<ol><li>Name packages with domain in reverse (com.icicibank.loan.housing).</li></ol>
+<ol><li>Write package com.durgasoft.scjp; then the class.</li></ol>
+<ol><li>javac Test.java compiles; .class stays in CWD.</li></ol>
+<ol><li>javac -d . Test.java puts .class in package folders; creates those folders if needed.</li></ol>
+<ol><li>-d dir — dir must already exist (directory not found otherwise).</li></ol>
+<ol><li>Run: java fully.qualified.ClassName.</li></ol>
+<ol><li>At most one package per file. Second package → class, interface or enum expected.</li></ol>
+<ol><li>If package exists, it must be the first non-comment statement. Import then package → same CE.</li></ol>
+<ol><li>Order: package (0–1) → imports (any) → types (any, including zero).</li></ol>
+<ol><li>Empty `.java` file compiles.</li></ol>
+<h2>Exam traps</h2>
+<ul><li>javac Test.java with a package is valid, but the class file is not in the package tree unless you use -d.</li></ul>
+<ul><li>-d creates com/durgasoft/scjp under a valid destination; it does not create a missing drive J:.</li></ul>
+<ul><li>java Test after -d . fails if you don’t use FQN java com.durgasoft.scjp.Test.</li></ul>
+<ul><li>Two package statements: error is not “duplicate package”; it is `class, interface or enum expected`.</li></ul>
+<ul><li>Import before package: same `class, interface or enum expected`.</li></ul>
+<ul><li>“At least one class per file” — false. Empty file is valid; any number of types including zero.</li></ul>
+<ul><li>Default class is not public: other packages cannot use it (package wall) — he introduces this as a security advantage; access-modifier details continue in later videos.</li></ul>
+<ul><li>Institute names pack1/pack2 are for exam demos; real convention is reverse domain.</li></ul>
+<h2>Recap</h2>
+<p>Video 33 is packages: grouping, four advantages, reverse-domain names, package com.durgasoft.scjp + javac -d . + run with FQN. SCJP: at most one package, first non-comment if present, then any imports, then any number of types. Empty Test.java compiles. That closes Java source file structure (package / import / class order) as the first declarations module.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 33 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 4</td></tr>
+<tr><td>Topic</td><td>package statement, javac -d, at most one package, source-file order, empty file</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 10m 32s</td></tr>
+<tr><td>Video ID</td><td>KHsAkh_JFw0</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=KHsAkh_JFw0</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

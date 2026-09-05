@@ -1,0 +1,328 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>065-default-constructor</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 065 — Default constructor</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-15 || default constructor</p>
+<p>ASR decode (Whisper): Proto-Type / Conceptor = prototype / constructor; norangumine = no-arg meaning; excess modifier = access modifier; so per / Soper / soper = super; piece code / P&#x27;s code = programmer’s code; c is code / C&#x27;s code = compiler-generated code; parent = super(); void test = method named test (not a constructor); this of ten = this(10); KALTO / call to = “call to”; PUST = first; compelty / compil meod = compile-time error; public lawyer Yaman Medan / public void M1 = public void m1(); oper / Twilight Diss = super / this; up e = P (parent class).</p>
+<h3>00:04 — Topic: prototype of the default constructor</h3>
+<p>Next: what is the prototype of the default constructor?</p>
+<p>Compiler will generate the default constructor — what does that generated constructor look like? He writes the points carefully.</p>
+<h3>00:32 — Setup: empty class → compiler generates default constructor</h3>
+<pre class='code'>class Test {
+}</pre>
+<p>Programmer wrote no constructor → compiler generates the default constructor. What is its prototype?</p>
+<h3>00:49 — Point 1: always a no-arg constructor</h3>
+<p>Default constructor is always a no-argument constructor.</p>
+<p>But be careful: every no-arg constructor is not a default constructor.</p>
+<p>Wrong mental model: people see a no-arg constructor and call it “default.” Example — if the programmer writes:</p>
+<pre class='code'>class Test {
+    Test() {
+    }
+}</pre>
+<p>This is a constructor provided by the programmer. It is not a default constructor.</p>
+<p>Compiler-generated constructor = default constructor.</p>
+<p>Summary:</p>
+<ul><li>Default constructor → always no-arg.</li></ul>
+<ul><li>No-arg constructor written by programmer → not called default constructor.</li></ul>
+<h3>02:05 — Point 2: access modifier same as class</h3>
+<p>What is the access modifier of the default constructor?</p>
+<p>Same as the class’s access modifier.</p>
+<ul><li>If the class is public → default constructor is public.</li></ul>
+<ul><li>If the class is default (package-private) → default constructor is default.</li></ul>
+<p>Rule applies for public and default only — because for top-level classes you cannot apply private / protected anyway. So private/protected default-constructor talk is not applicable for top-level classes.</p>
+<h3>03:10 — Point 3: body is exactly one line — `super()`</h3>
+<p>Does the default constructor contain any code?</p>
+<p>Yes — exactly one line:</p>
+<p>super();</p>
+<p>That is a no-argument call to the superclass constructor.</p>
+<p>Default constructor contains only that one line.</p>
+<h3>04:12 — Dictation of the three prototype points</h3>
+<ol><li>Always a no-arg constructor.</li></ol>
+<ol><li>Access modifier of default constructor is exactly same as access modifier of the class (applicable only for public and default).</li></ol>
+<ol><li>Contains only one line: super(); — no-arg call to superclass constructor.</li></ol>
+<p>Highlight: only one line super();.</p>
+<h3>06:55 — Table idea: P’s code vs C’s code</h3>
+<p>He works examples as two columns:</p>
+<p>Do not confuse “parent” wording in ASR with inheritance here — on the board, the inserted line is super();.</p>
+<h3>07:47 — Example 1: empty default class</h3>
+<p>P’s code:</p>
+<pre class='code'>class Test {
+}</pre>
+<p>Compiler generates default constructor? Yes — no constructor written.</p>
+<p>C’s code (effective):</p>
+<pre class='code'>class Test {
+    Test() {
+        super();
+    }
+}</pre>
+<h3>08:31 — Example 2: `public` class</h3>
+<p>P’s code:</p>
+<pre class='code'>public class Test {
+}</pre>
+<p>Compiler generates? Yes.</p>
+<p>C’s code:</p>
+<pre class='code'>public class Test {
+    public Test() {
+        super();
+    }
+}</pre>
+<p>Access modifier of default constructor matches the class → public Test().</p>
+<h3>09:17 — Example 3: method named `test` is not a constructor</h3>
+<p>P’s code:</p>
+<pre class='code'>public class Test {
+    void test() {
+    }
+}</pre>
+<p>Compiler generates default constructor? Yes — because we did not write any constructor.</p>
+<p>void test() is a method (has return type). Programmer may not realize that; compiler still generates the default constructor.</p>
+<p>C’s code:</p>
+<pre class='code'>public class Test {
+    public Test() {
+        super();
+    }
+
+    void test() {
+    }
+}</pre>
+<p>void test() is not the default constructor. The compiler-generated public Test() { super(); } is.</p>
+<h3>10:41 — Example 4: programmer wrote empty no-arg constructor</h3>
+<p>P’s code:</p>
+<pre class='code'>class Test {
+    Test() {
+    }
+}</pre>
+<p>Will compiler generate a default constructor? No — programmer already wrote a constructor, so compiler is “happy” and does not generate another default constructor.</p>
+<p>But compiler still does a second check: did the programmer write the constructor properly?</p>
+<p>Rule: the first line inside every constructor should be either `super(...)` or `this(...)`.</p>
+<p>If we write nothing, compiler always places super(); as the first statement.</p>
+<p>Here programmer wrote a constructor but did not write super or this → compiler inserts super();.</p>
+<p>C’s code:</p>
+<pre class='code'>class Test {
+    Test() {
+        super();   // inserted by compiler
+    }
+}</pre>
+<p>Important: not generating a new default constructor — generating the missing super(); inside the programmer’s constructor.</p>
+<h3>13:05 — Example 5: arg constructor with explicit `super()`</h3>
+<p>P’s code:</p>
+<pre class='code'>class Test {
+    Test(int i) {
+        super();
+    }
+}</pre>
+<p>Compiler generate any constructor / extra code? No.</p>
+<ul><li>Programmer wrote a constructor → no default constructor.</li></ul>
+<ul><li>First line is already super() → written properly.</li></ul>
+<p>Best style: programmer did everything; compiler generates nothing extra. Code stays as written.</p>
+<pre class='code'>class Test {
+    Test(int i) {
+        super();
+    }
+}</pre>
+<h3>14:06 — Example 6: `this(10)` chaining; missing `super` in other ctor</h3>
+<p>P’s code:</p>
+<pre class='code'>class Test {
+    Test() {
+        this(10);
+    }
+
+    Test(int i) {
+    }
+}</pre>
+<p>Checks:</p>
+<ol><li>Programmer wrote constructor(s)? Yes → no default constructor generated.</li></ol>
+<ol><li>Wrote properly?</li></ol>
+<ul><li>First constructor: first line is this(10) → OK (no need to insert super there).</li></ul>
+<ul><li>Second constructor: no super / this → compiler places super();.</li></ul>
+<p>C’s code:</p>
+<pre class='code'>class Test {
+    Test() {
+        this(10);
+    }
+
+    Test(int i) {
+        super();   // generated by compiler
+    }
+}</pre>
+<h3>16:09 — Board recap of P’s / C’s pairs</h3>
+<p>He revisits the table cases (empty class, public class, void test() method case, etc.) with red highlight on compiler-generated parts. Terminology must be clear: programmer’s code vs compiler-generated code.</p>
+<h3>20:34 — Theory reminder (already covered)</h3>
+<p>The first line inside every constructor should be either `super` or `this`.</p>
+<p>If we are not writing anything, compiler always places:</p>
+<p>super();</p>
+<p>Dictation:</p>
+<p>The first line inside every constructor should be either super or this.</p>
+<p>And if we are not writing anything, then compiler will always place super();.</p>
+<h3>22:04 — Three important cases / conclusions</h3>
+<p>Based on that discussion: three important cases about super / this usage.</p>
+<h3>22:22 — Case 1: `super` / `this` only as **first** statement</h3>
+<pre class='code'>class Test {
+    Test() {
+        System.out.println(&quot;Constructor&quot;);
+        super();
+    }
+}</pre>
+<p>Invalid.</p>
+<p>Reason / CE:</p>
+<pre class='code'>// CE: call to super must be first statement in constructor</pre>
+<p>Within a constructor, super(...) or this(...) only in the first line. Anywhere else → compile-time error.</p>
+<p>Valid form:</p>
+<pre class='code'>class Test {
+    Test() {
+        super();
+        System.out.println(&quot;Constructor&quot;);
+    }
+}</pre>
+<p>Live demo of the bad order → same CE message: call to super must be first statement in constructor.</p>
+<p>Case 1 dictation: We can take super or this only in the first line of the constructor. If we try anywhere else → compile-time error.</p>
+<pre class='code'>class Test {
+    Test() {
+        System.out.println(&quot;Constructor&quot;);
+        super();
+    }
+}
+// CE: call to super must be first statement in constructor</pre>
+<h3>26:34 — Case 2: either `super` or `this`, not both</h3>
+<pre class='code'>class Test {
+    Test() {
+        super();
+        this();
+    }
+}</pre>
+<p>First line super() alone would be fine, but second line this() is invalid — super/this only allowed as the first statement, and you can take either super or this, not both simultaneously (only one constructor-call line).</p>
+<p>CE style:</p>
+<pre class='code'>// CE: call to this must be first statement in constructor
+class Test {
+    Test() {
+        super();
+        this();
+    }
+}
+// CE: call to this must be first statement in constructor</pre>
+<p>Case 2 dictation: Within the constructor we can take either super or this, but not both simultaneously.</p>
+<h3>28:40 — Case 3: only inside a constructor — not inside a method</h3>
+<pre class='code'>class Test {
+    public void m1() {
+        super();
+        System.out.println(&quot;Hello&quot;);
+    }
+}</pre>
+<p>Invalid.</p>
+<p>CE (same family of message):</p>
+<pre class='code'>// CE: call to super must be first statement in constructor</pre>
+<p>Why: super() / this() are constructor calls. You can use them only inside a constructor. Inside a method you are misusing them.</p>
+<p>Purpose reminder:</p>
+<ul><li>super(...) → call superclass constructor directly</li></ul>
+<ul><li>this(...) → call current class another constructor</li></ul>
+<p>You can call a constructor directly (superclass or current class) only from a constructor. From a method → invalid / CE.</p>
+<p>Case 3 dictation: We can use super() or this() only inside a constructor. Outside (e.g. in a method) → compile-time error.</p>
+<pre class='code'>class Test {
+    public void m1() {
+        super();
+    }
+}
+// CE: call to super must be first statement in constructor</pre>
+<p>(Same message even though the real issue is “not in a constructor.”)</p>
+<h3>34:36 — Extra line he hammers</h3>
+<p>We can call a constructor directly from another constructor only.</p>
+<h3>35:19 — Summary of `super()` / `this()` rules (constructor calls)</h3>
+<p>Single-line summary:</p>
+<p>`super` / `this` (as constructor calls):</p>
+<ol><li>Only in constructors</li></ol>
+<ol><li>Only in the first line</li></ol>
+<ol><li>Only one — not both simultaneously</li></ol>
+<h3>37:47 — Difference: `super()` / `this()` vs `super` / `this` keywords</h3>
+<p>Interview chance: difference between:</p>
+<ul><li>super() / this() → constructor calls — to call superclass / current-class constructors.</li></ul>
+<ul><li>super / this → keywords — to refer to superclass / current-class instance members.</li></ul>
+<p>Example:</p>
+<pre class='code'>class P {
+    int x = 100;
+}
+
+class C extends P {
+    int x = 200;
+
+    public void m1() {
+        System.out.println(this.x);   // current class x → 200
+        System.out.println(super.x);  // superclass x → 100
+    }
+}</pre>
+<p>this.x → current class instance member.</p>
+<p>super.x → superclass instance member.</p>
+<p>These are keywords, not constructor calls.</p>
+<h3>41:13 — Second conclusion: where can you use each?</h3>
+<p>Why except static? super / this refer to instance members. Instance terminology not allowed in static area.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(super.hashCode());
+    }
+}
+// CE: non-static variable super cannot be referenced from a static context</pre>
+<p>(Object / parent has hashCode; still illegal from static context.)</p>
+<h3>43:47 — Third conclusion: how many times?</h3>
+<h3>44:44 — Comparison table (dictation)</h3>
+<h3>47:26 — Closing example: `super` in static area</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(super.hashCode());
+    }
+}
+// CE: non-static variable super cannot be referenced from a static context</pre>
+<p>Completed: clarity on default-constructor prototype, P’s vs C’s code, and super/this constructor-call rules vs keyword rules.</p>
+<h2>Java block count</h2>
+<p>```java` fenced blocks in this file: 27</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 65 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 15</td></tr>
+<tr><td>Topic</td><td>default constructor</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>48m 56s</td></tr>
+<tr><td>Video ID</td><td>misWPx3VTGI</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=misWPx3VTGI</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (no YouTube auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>P’s code</th><th>C’s code</th></tr>
+<tr><td>Programmer’s code</td><td>Compiler-generated code</td></tr>
+</table>
+<table>
+<tr><th>Constructor calls</th><th>Keywords</th></tr>
+<tr><td>super() / this()</td><td>super / this</td></tr>
+</table>
+<table>
+<tr><th>super() / this()</th><th>super / this</th></tr>
+<tr><td>Only inside constructors, as first line</td><td>Anywhere except static area</td></tr>
+</table>
+<table>
+<tr><th>super() / this()</th><th>super / this</th></tr>
+<tr><td>Only one time in a constructor</td><td>Any number of times (e.g. this.name, this.rollNumber, this.age)</td></tr>
+</table>
+<table>
+<tr><th>Point</th><th>super() / this()</th><th>super / this</th></tr>
+<tr><td>What</td><td>Constructor calls — to call superclass &amp; current-class constructors</td><td>Keywords — to refer to superclass &amp; current-class instance members</td></tr>
+<tr><td>Where</td><td>Only in constructors, as first line</td><td>Anywhere except static area</td></tr>
+<tr><td>How many</td><td>Only once in a constructor</td><td>Any number of times</td></tr>
+</table>
+</body></html>

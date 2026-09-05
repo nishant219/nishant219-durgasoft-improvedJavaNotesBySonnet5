@@ -1,0 +1,454 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>067-singleton-class</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 067 — Singleton class</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-17 || singleton class</p>
+<p>Source: real YouTube auto-captions (.transcripts/067-SniLNfFejiU.txt). ASR decoded in place: singl turn / single turn / single ter / single T / singl t / single time = singleton; ENT your room / enter your room / inter room = interview room; runtime / run time = `Runtime` (java.lang.Runtime); get run time = `getRuntime()`; current runtime / current run time = `currentRuntime`; get a test / get test = `getTest()`; business delegate / business delicate = Business Delegate; service locator / service locator = Service Locator; action Serv = ActionServlet; starts framework = Struts framework; keep subing = keep writing (board heading); duras / duras s / D = Durga Sir; scgp / scjp = SCJP; 3 lakhs / 3 laks / 3 LX / 3 l = ₹3 lakhs; jum / JM / jvm = JVM; WR = reuse; keyboard = `super()` (keyword); comper / comp = compiler; whoops = OOPs; CH class = child class; P has private access in P = `P()` has private access in `P`; last postmortem in the Constructor = last point in the constructor chapter.</p>
+<p>This video is OOPs Part 17. It is the application of private constructors: singleton class. He defines singleton, lists Runtime / Business Delegate / Service Locator (and the Struts ActionServlet debate), tells the ₹3-lakh one-to-one vs 100 students × ₹3,000 story as the reason to reuse one object, shows `Runtime.getRuntime()` as a factory method that never uses new from outside, then two ways to write your own singleton (Test): approach 1 eager private static Test t = new Test() plus getTest() always return t (this is how `Runtime` is implemented), approach 2 lazy t = null and if (t == null) t = new Test() (he calls this one recommended). Twist at the end: class is not `final`, but you still cannot create a child — declare every constructor `private`. C extends P fails because the child constructor must call `super()`. He then closes the OOPs stretch: this was the last constructor-side point; take special care for the interview.</p>
+<p>He does not cover enum singleton, double-checked locking, volatile, synchronized, serialization, clone(), or reflection. Factory method name on the board is `getTest()`, not getInstance().</p>
+<h3>00:05 — Next use of private constructors: singleton classes</h3>
+<p>This session continues private constructors. He already used them in earlier constructor videos. Now the next important application area where private constructors are used: singleton classes.</p>
+<p>Keep that link in your head for the whole 35 minutes: singleton is not a new keyword. It is a class design that needs a private constructor.</p>
+<h3>00:18 — Interview questions he flags (write these)</h3>
+<p>Maybe a chance to ask in the interview room:</p>
+<ul><li>What is a singleton class?</li></ul>
+<ul><li>What is the advantage of a singleton class?</li></ul>
+<ul><li>Is it possible to create our own singleton class or not?</li></ul>
+<ul><li>How to create our own singleton class — explain with an example.</li></ul>
+<ul><li>The whole story about singleton classes.</li></ul>
+<p>He wants those five as the agenda, not a textbook paragraph.</p>
+<h3>00:46 — Definition: the name itself indicates one object only</h3>
+<p>What is a singleton class? The name itself indicates.</p>
+<p>For any Java class, if we are allowed to create only one object, such a type of class is said to be a singleton class.</p>
+<p>Not “a class with one method.” Not “a class with static members.” The restriction is on how many objects the class is allowed to have: only one.</p>
+<h3>01:01 — Examples he lists: Runtime, Business Delegate, Service Locator</h3>
+<p>Can you tell any example?</p>
+<p>`Runtime` is a singleton class. He repeats it so the room writes `Runtime`, not a made-up name.</p>
+<p>Next: Business Delegate. Business Delegate is one type of design pattern, and it is singleton.</p>
+<p>Next: Service Locator. Also singleton.</p>
+<p>Board list he keeps returning to:</p>
+<ul><li>Runtime</li></ul>
+<ul><li>Business Delegate</li></ul>
+<ul><li>Service Locator</li></ul>
+<ul><li>etc.</li></ul>
+<h3>01:39 — Struts ActionServlet: some people say singleton, some do not</h3>
+<p>Some people may consider ActionServlet. In the Struts framework, some people are going to consider it singleton, some people may not. He does not settle the Struts debate. “Anyway it is.” Then he restates the definition and the three solid examples: Runtime, Business Delegate, Service Locator. There are several singleton classes.</p>
+<p>He is not going to implement Business Delegate or Service Locator in this video. They are names you should be able to quote. The class he will actually write is `Test`, plus the predefined `Runtime`.</p>
+<h3>02:10 — What he will cover: advantage, how to create, then the board heading</h3>
+<p>What is the advantage of singleton? How to create a singleton class? First keep writing the heading.</p>
+<p>Singleton classes</p>
+<p>Then he dictates the definition slowly, phrase by phrase, the way he always does for interview lines:</p>
+<h3>02:25 — Board dictation: definition (copy slowly)</h3>
+<p>Keep writing:</p>
+<p>For any Java class, if we are allowed to create only one object, such a type of class is called singleton class.</p>
+<p>He repeats “for any Java class / only one object / such a type of class is called singleton class” many times. That is the whole definition. No extra words.</p>
+<p>Example: Runtime, Business Delegate, Service Locator, etc.</p>
+<h3>03:33 — Advantage: why singleton? (classroom story starts)</h3>
+<p>Immediately: sir, what is the advantage of singleton classes?</p>
+<p>Keep writing the heading:</p>
+<p>Advantage of singleton class</p>
+<p>Make sure what is the biggest advantage. The concept is very small. He does not start with heap diagrams. He starts with an office story.</p>
+<h3>04:05 — Story: “I want SCJP class” → batch next month</h3>
+<p>Usually some people approach the office: sir, I want to attend SCJP class. No problem — a batch is there in the next month; you can register for that batch.</p>
+<h3>04:18 — “I want one-to-one class”</h3>
+<p>Then immediately that lady or gent is going to tell: no, I want one-to-one class.</p>
+<p>Faculties are there to handle one-to-one; maybe junior faculties may handle one-to-one; you can register for that.</p>
+<h3>04:34 — “I want Durga’s classes only” — one-to-one with Durga Sir</h3>
+<p>No: I want Durga’s classes only. Durga is required to take one-to-one.</p>
+<p>People in the office call him: sir, one lady or gent came; he wants one-to-one classes; only Durga Sir should be the faculty. What do I have to tell?</p>
+<h3>05:00 — He can take the session — but the fee is ₹3 lakhs</h3>
+<p>Okay, no problem, I can take the session — but how much fee are you going to quote?</p>
+<p>Fee for that one-to-one session: better to tell ₹3 lakhs.</p>
+<p>If she asks how ₹3 lakhs: simple. In class usually 100 members are there. Every person pays ₹3,000. 100 × 3,000 = ₹3 lakhs. Instead of 100 members he can spend the time only for you — then whatever that money is, you can pay him.</p>
+<p>If the office people tell: Durga is ready to take one-to-one but ₹3 lakhs is the fee — automatically he is sure that person won’t come one second to the office. ₹3 lakhs is too much, even for one-to-one. But no alternative (if you insist it must be only him, only one-to-one).</p>
+<h3>05:56 — If every student had to pay ₹3 lakhs, nobody comes</h3>
+<p>Suppose his personal opinion: I want to take SCJP training, but for every student ₹3 lakhs is the fee. I want to keep this rule. How many people are going to come? No. No one. ₹3 lakhs is high; impossible to pay. This approach won’t work.</p>
+<h3>06:29 — Same requirement: sit 100 people in one classroom</h3>
+<p>All the people whoever have the same requirement — requirement is SCJP only — he will ask all the 100 members: can you please sit in the classroom? Then I can deliver simultaneously for all 100 members.</p>
+<p>100 members, total ₹3 lakhs is my requirement. 3 lakhs / 100 = ₹3,000. Each student can pay ₹3,000. That is enough. If he keeps this arrangement, students are going to come. That is what they are doing.</p>
+<p>This story is the advantage speech. He has not written Java yet. The mapping comes next.</p>
+<h3>07:07 — Punch line (this is the singleton idea)</h3>
+<p>If several people having the same requirement, don’t create a separate object for every person. Create only one object and reuse the same object for every requirement. Memory utilization and performance by default will be improved.</p>
+<p>One faculty, one session, 100 students — not 100 separate one-to-one objects.</p>
+<h3>07:26 — Same idea with `Runtime`: first person, second person, one lakh people</h3>
+<p>Central idea of singleton, now in Java terms.</p>
+<p>First person came: sir, I want a `Runtime` object. Create a Runtime object and give it to that person.</p>
+<p>Second person came: sir, I want a Runtime object. Then: a Runtime object I just created for another person’s sake. Why don’t you reuse the same object? Your purpose is also the same. For the same existing object I will provide another reference.</p>
+<p>Third person came: I want a Runtime object. No problem: existing object only I will provide.</p>
+<p>One lakh members came: no issue at all. Reuse this object.</p>
+<p>Creating one object and share/reuse for one lakh members — or creating one lakh separate objects — which approach is recommended? Create one object and share for all these one lakh members. Memory improvement, performance improvement. This is the concept of singleton classes.</p>
+<h3>08:23 — Need of singleton: performance and memory</h3>
+<p>What is the need of a singleton class? To improve performance of the system, to improve memory utilization.</p>
+<p>If several people have the same requirement, it is not recommended to create a separate object for every requirement. Create only one object and reuse the same object for every similar requirement. That is singleton.</p>
+<p>Main advantage of singleton classes: performance and memory utilization by default will be improved.</p>
+<h3>08:56 — Board dictation: advantage (copy slowly)</h3>
+<p>Keep writing. He repeats each clause:</p>
+<p>If several people have same requirement, then it is not recommended to create a separate object for every requirement. We have to create only one object and we can reuse the same object for every similar requirement, so that performance and memory utilizations will be improved.</p>
+<p>That is the central idea / central advantage of singleton classes. He says “that’s all completed” for the advantage. Then one more pass of “this is the central idea of singleton classes.”</p>
+<h3>11:18 — Best example: how the first person actually gets `Runtime`</h3>
+<p>Best example: first person came, I want a Runtime object. How can you get it?</p>
+<p>You cannot write new Runtime().</p>
+<p>Singleton class objects we can’t create by using constructor or `new` operator. If this person is allowed to call the constructor, he can create as many objects as he wants. That would destroy singleton.</p>
+<p>So singleton objects we create by using a factory method. (He says they covered factory method in the morning / earlier the same day.)</p>
+<h3>11:55 — Board: `Runtime r1 = Runtime.getRuntime();`</h3>
+<p>Not new. Factory method:</p>
+<pre class='code'>class FirstPersonRuntime {
+    public static void main(String[] args) {
+        Runtime r1 = Runtime.getRuntime();
+    }
+}</pre>
+<p>Invalid from outside — constructor is not for you:</p>
+<pre class='code'>class CannotNewRuntime {
+    public static void main(String[] args) {
+        Runtime r = new Runtime();
+        // CE: Runtime() has private access in java.lang.Runtime
+    }
+}</pre>
+<h3>12:03 — Why does the first person want `Runtime`? To talk to the JVM</h3>
+<p>What is your requirement? I want to communicate with the JVM, because a Runtime object can be used to communicate with the JVM. Sir I want a Runtime object to communicate with the JVM. Okay, no problem — get that object. Now r1 person got the first object.</p>
+<h3>12:21 — Second person: `Runtime.getRuntime()` does **not** create a new object</h3>
+<p>After some time, r2 person came:</p>
+<pre class='code'>class SecondPersonRuntime {
+    public static void main(String[] args) {
+        Runtime r1 = Runtime.getRuntime();
+        Runtime r2 = Runtime.getRuntime();
+        // r2 is the same existing Runtime object, not a second JVM Runtime
+    }
+}</pre>
+<p>For the second person also: I want a Runtime object. Requirement: I have to communicate with the JVM — same purpose. Just now I created one Runtime object; why don’t you reuse the same object?</p>
+<p>`Runtime.getRuntime()` method won’t create a new object. It is always going to return the existing object. That is why r2 person also gets the same object.</p>
+<h3>13:03 — One lakh callers, still one object</h3>
+<p>And so on, up to one lakh:</p>
+<pre class='code'>class OneLakhRuntimeCallers {
+    public static void main(String[] args) {
+        Runtime r1 = Runtime.getRuntime();
+        Runtime r2 = Runtime.getRuntime();
+        // ...
+        Runtime r1Lakh = Runtime.getRuntime();
+        // one lakh people using Runtime
+        // how many Runtime objects? only one
+    }
+}</pre>
+<p>How many people are using my Runtime object? One lakh people. How many Runtime objects are there? Only one object.</p>
+<p>If several people have the same requirement, create only one object, reuse the same object for every person, so that memory improvement and performance by default will be improved. This is the advantage of singleton classes. Clear at this point.</p>
+<h3>13:50 — Board example (theory already covered; now write the lines)</h3>
+<p>Keep the example. Theory is already covered. Write:</p>
+<pre class='code'>class RuntimeFactoryDemo {
+    public static void main(String[] args) {
+        Runtime r1 = Runtime.getRuntime();
+        Runtime r2 = Runtime.getRuntime();
+        // ...
+        Runtime r1Lakh = Runtime.getRuntime();
+    }
+}</pre>
+<p>Long copy pause (~14:26–14:59). Terminology is very clear. Completed. Next.</p>
+<h3>15:04 — Is it possible to create **our own** singleton class?</h3>
+<p>Yes. Possible.</p>
+<p>Can you explain with an example how to create our own singleton class? For my `Test` class also, we are allowed to create only one object.</p>
+<p>Keep writing the heading:</p>
+<p>How to create our own singleton classes</p>
+<h3>15:47 — Two approaches; private constructor is compulsory</h3>
+<p>We can create our own singleton class. For this we have to use… There are two approaches. Of course private constructor we have to use in both.</p>
+<p>Approach one — he explains this one first.</p>
+<h3>16:11 — Approach 1 board: `class Test`, eager static object</h3>
+<pre class='code'>class Test {
+    private static Test t = new Test();
+}</pre>
+<p>private static Test t = new Test(); — one variable, type Test, static, private, created with new Test() at the beginning (when the class is loaded / when static variables are created).</p>
+<h3>16:38 — Constructor must be `private`</h3>
+<p>Let me take the constructor as private. If it is not private, an outside person can call it; he can create as many objects as he wants.</p>
+<p>Outside of Test class, this constructor he can’t call. So he can’t create an object with new from outside.</p>
+<pre class='code'>class Test {
+    private static Test t = new Test();
+
+    private Test() {
+    }
+}
+
+class Outside {
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        // CE: Test() has private access in Test
+    }
+}</pre>
+<h3>16:55 — Then how do I get a `Test` object? Factory method — not `new Test()`</h3>
+<p>Sir I want a Test object. Test t1 = … we have to use which one? Factory method. We can’t create by using new Test(), because the constructor is private. From outside of the class we can’t create.</p>
+<pre class='code'>class Test {
+    private static Test t = new Test();
+
+    private Test() {
+    }
+
+    public static Test getTest() {
+        return t;
+    }
+}
+
+class Client {
+    public static void main(String[] args) {
+        Test t1 = Test.getTest();
+        // not: Test t1 = new Test();
+    }
+}</pre>
+<p>He writes `public static Test getTest()`. (ASR: “get a test”.) Return type Test, static so you can call Test.getTest() without an object.</p>
+<h3>17:37 — `getTest()`: don’t create any object; always `return t`</h3>
+<p>If any person is going to ask getTest(), don’t create any object. Can you please always return `t`. That’s all. `return t` always.</p>
+<pre class='code'>class Test {
+    private static Test t = new Test();
+
+    private Test() {
+    }
+
+    public static Test getTest() {
+        return t; // always the same existing object
+    }
+}</pre>
+<h3>18:00 — Static `t` already exists before the first `getTest()`</h3>
+<p>Your Test object got already created at the beginning. Static variables got created at the beginning. This t is a static variable.</p>
+<p>Test t1 = Test.getTest(); → return t → this person gets that object (t1 points to t).</p>
+<h3>18:21 — Second person, one-lakh-th person: still `return t`</h3>
+<p>After some time this person asked:</p>
+<pre class='code'>class Test {
+    private static Test t = new Test();
+
+    private Test() {
+    }
+
+    public static Test getTest() {
+        return t;
+    }
+}
+
+class ManyCallers {
+    public static void main(String[] args) {
+        Test t1 = Test.getTest();
+        Test t2 = Test.getTest();
+        // ...
+        Test t1Lakh = Test.getTest();
+        // getTest() asked one lakh times
+        // always returns the same object
+        // how many Test objects created? only one
+    }
+}</pre>
+<p>getTest() always returns `t`, the existing object only. That’s why t2 person also gets the same. You can ask getTest() one lakh times also; it is always going to return the same object.</p>
+<p>How many Test objects got created? Only one. At any point of time, for my Test class, only one object we can create. That’s why Test class is a singleton class. This is one approach.</p>
+<h3>19:16 — `Runtime` is implemented using **this** approach</h3>
+<p>Is Runtime a singleton class or not? Internally, how is Runtime implemented as a singleton? By using this approach. Let me show.</p>
+<p>Runtime is a predefined class. `Runtime.java`.</p>
+<pre class='code'>public class Runtime {
+    private static Runtime currentRuntime = new Runtime();
+
+    private Runtime() {
+    }
+
+    public static Runtime getRuntime() {
+        return currentRuntime;
+    }
+}</pre>
+<p>He writes on the board (matching Test):</p>
+<ul><li>public class Runtime</li></ul>
+<ul><li>private static Runtime currentRuntime = new Runtime(); — just like private static Test t = new Test();</li></ul>
+<ul><li>public static Runtime getRuntime() return `currentRuntime` — currentRuntime is nothing but that one field.</li></ul>
+<p>This is the way singleton classes are implemented. This is approach one. Runtime class is implemented based on this approach.</p>
+<p>(He is sketching the idea for the room, not pasting the full JDK file. The three pieces are what he wants you to see: private static field created with new at the start, factory method that only returns that field, constructor not usable from outside.)</p>
+<h3>20:23 — Heading restated: we **can** create our own singleton</h3>
+<p>How to create our own singleton classes — at this point: we can create our own singleton classes.</p>
+<h3>20:50 — For this we have to use: three ingredients</h3>
+<p>Keep writing:</p>
+<p>We can create our own singleton classes. For this we have to use:</p>
+<ol><li>private constructor</li></ol>
+<ol><li>private static variable</li></ol>
+<ol><li>public factory method</li></ol>
+<p>All three. Not only private constructor.</p>
+<h3>21:39 — Approach one: create the object **at the beginning**</h3>
+<p>Approach one</p>
+<p>At the beginning only, that one object I will create, and wherever that object is required, happily we can reuse the same object.</p>
+<p>This is approach one: how to create our own singleton classes.</p>
+<p>Copy pause (~22:17–23:19). Terminology is very very clear.</p>
+<h3>23:20 — Second approach exists; a bit complex; he says it is **recommended**</h3>
+<p>Second approach is also there. Anyway it is also a bit complex, but that approach is the recommended.</p>
+<p>Take a note (he is still on approach 1’s notebook page):</p>
+<p>`Runtime` class is internally implemented by using this approach (approach one).</p>
+<p>That’s all for the Runtime-is-approach-1 note.</p>
+<h3>24:03 — Problem with approach 1: object created even if nobody uses it</h3>
+<p>Now my point: here, compulsory at the beginning one object got created. If I’m not using that object, will it become waste or not?</p>
+<p>That’s why: don’t create the object at the beginning.</p>
+<p>Whenever the first time request came, then create the object, and for every consecutive request reuse the same object.</p>
+<p>Don’t create the object first. Whenever the first time a person requested, then create a new object, and in all remaining cases return the existing object only. How we can do that? Simple. Approach two.</p>
+<h3>24:43 — Approach 2 board: `t = null`, same private constructor, same `getTest()`</h3>
+<p>Same thing, small difference:</p>
+<pre class='code'>class Test {
+    private static Test t = null;
+
+    private Test() {
+    }
+
+    public static Test getTest() {
+        if (t == null) {
+            t = new Test();
+        }
+        return t;
+    }
+}</pre>
+<p>private static Test t = null; — not new Test() at the field.</p>
+<p>Private constructor: everything is the same.</p>
+<p>Public static Test getTest() — same factory method name.</p>
+<h3>25:24 — Inside `getTest()`: if `t == null`, object not yet created</h3>
+<p>At the beginning, is any object got created? No.</p>
+<p>What I will do: `if (t == null)` — oh, object not yet created. If it is not yet created, create the new object: t = new Test();.</p>
+<p>If t is not null, that if won’t execute. Then what I will do? `return t`. That’s all.</p>
+<pre class='code'>class Test {
+    private static Test t = null;
+
+    private Test() {
+    }
+
+    public static Test getTest() {
+        if (t == null) {      // first time: true → create
+            t = new Test();
+        }
+        return t;             // first time: the object just created
+                              // later times: existing object
+    }
+}</pre>
+<h3>26:03 — First call vs second call</h3>
+<p>First time: t is null. That’s why create a new object, return that.</p>
+<p>Second time: whenever I’m asking second time Test.getTest(), is t null or not null? Not null. Without creating, `return t` directly. That’s all.</p>
+<p>Instead of creating the object first time at the beginning, whenever your request came first time, now I’m creating an object. Second time onwards, existing object only I’m returning.</p>
+<p>Same terminology. This is the second approach.</p>
+<h3>26:42 — Both approaches are valid; minor difference</h3>
+<p>Approach two. Take this. Two approaches are there for singleton classes. Both are valid, no problem at all. Small minor difference:</p>
+<ul><li>Approach one: the required one object, at the beginning we are creating.</li></ul>
+<ul><li>Approach two: the required one object we are creating yet / when first requested (not at the beginning).</li></ul>
+<p>Copy pause (~27:13–28:04). Completed. Take clearly.</p>
+<h3>28:05 — Closing line for both `Test` programs</h3>
+<p>Add one point:</p>
+<p>At any point of time, for `Test` class, we can create only one object. Hence `Test` class is singleton class.</p>
+<p>That’s all.</p>
+<p>How to create our own singleton classes, what is singleton, what is the advantage — is it clear? You people should be aware clearly.</p>
+<h3>29:10 — Why private constructors? Main use: our own singleton</h3>
+<p>There may be a chance to ask: this is one area where private constructors are helpful.</p>
+<p>Private constructors’ main use: to create our own singleton classes.</p>
+<p>What is the main purpose of private constructor? To create singleton classes. Internally, singleton classes concept is implemented by using private constructor.</p>
+<h3>29:37 — Interview twist: class is **not `final`**, but no child class allowed</h3>
+<p>Another small twist. Maybe a chance to ask.</p>
+<p>If the class is `final`, is it possible to create a child class? For final classes, inheritance is not possible. Is it possible to create a child class? No.</p>
+<p>Now my question:</p>
+<p>Class is not final, but we are not allowed to create child class. Are you getting? Class is not final, but we are not allowed to create a child class. How is it possible?</p>
+<p>Keep writing:</p>
+<p>Class is not final, but we are not allowed to create child classes. How it is possible?</p>
+<h3>30:51 — How: declare **every constructor** as `private`</h3>
+<p>Simple. Declare every constructor as private. If I declare every constructor as private, then you can’t create a child class for that.</p>
+<p>Best example: class P, private constructor. That’s all. He’s sure: for this class you can’t create a child class.</p>
+<pre class='code'>class P {
+    private P() {
+    }
+}</pre>
+<p>P is not final. Still, child class creation is blocked.</p>
+<h3>31:21 — Why? Child constructor **must** call `super()`</h3>
+<p>Suppose if I’m trying to create a child, what will happen? Why are we not allowed?</p>
+<pre class='code'>class P {
+    private P() {
+    }
+}
+
+class C extends P {
+    // if you don&#x27;t write a constructor, compiler generates:
+    // C() { super(); }
+}</pre>
+<p>Compulsory a constructor will be there. If you are not writing, compiler will generate. Compulsory in the child class, somewhere, `super()` keyword must be there.</p>
+<p>If you are not writing, compiler will place super(), meaning: superclass no-argument constructor.</p>
+<p>In the superclass, no-arg constructor is there, but is it possible to call from outside? No, because this constructor is private. Private constructor from outside of the class is not possible — but from the child class you are calling. That’s why it is not possible to create the child class.</p>
+<p>Simple: without declaring the class as `final`, how we can restrict child class creation: declare every constructor as private.</p>
+<h3>32:32 — Live demo: default `P` + `C extends P` compiles</h3>
+<p>He has P.java. Constructor is not there (default constructor). class C extends P — happily the code compiles fine, no problem at all.</p>
+<pre class='code'>class P {
+}
+
+class C extends P {
+}
+
+class CompilesFine {
+    public static void main(String[] args) {
+        C c = new C();
+    }
+}</pre>
+<p>Constructor is not private. Valid or not? Valid. No problem at all.</p>
+<h3>33:05 — Same files, make `P()` private → compile error</h3>
+<p>Now I’m taking P as private. Valid or invalid?</p>
+<p>You can’t create the child class, because from the child class `super()` is there. Compile error by default we are going to get.</p>
+<p>If you observe: `P` has private access in `P` — constructor has private access; you can’t.</p>
+<pre class='code'>class P {
+    private P() {
+    }
+}
+
+class C extends P {
+}
+// CE: P() has private access in P</pre>
+<h3>33:28 — Remove the child: `P` with private constructor is still valid</h3>
+<p>Suppose if I remove the child class — that’s all. Class P valid or not? Because I’m not creating any child class, happily it is valid, no problem at all.</p>
+<pre class='code'>class P {
+    private P() {
+    }
+}
+// valid: private constructor, no child class</pre>
+<p>This is what you people should be aware of.</p>
+<h3>33:41 — Board dictation: restrict child class creation</h3>
+<p>Keep writing:</p>
+<p>By declaring every constructor as private, we can restrict child class creation.</p>
+<p>Take this example:</p>
+<pre class='code'>class P {
+    private P() {
+    }
+}</pre>
+<p>For the above class it is impossible to create child class.</p>
+<p>That’s all. Are you able to understand.</p>
+<h3>34:52 — OOPs stretch ends; last constructor-side point; interview</h3>
+<p>That’s it. There ends OOPs concept. The last postmortem in the constructor is nothing but these things.</p>
+<p>That’s all — the most valuable concept especially for the interview room. Take special care. That’s all.</p>
+<p>(He is closing the OOPs + constructor application: singleton + the not-final-but-no-child trick. He does not start a new chapter in this video.)</p>
+<h2>Board recap (what he wanted in the notebook)</h2>
+<p>Definition: For any Java class, if we are allowed to create only one object, such a type of class is called singleton class.</p>
+<p>Examples: Runtime, Business Delegate, Service Locator (etc.). Struts ActionServlet: some people treat it as singleton, some do not.</p>
+<p>Advantage: If several people have the same requirement, it is not recommended to create a separate object for every requirement. Create only one object and reuse it for every similar requirement, so that performance and memory utilization will be improved. (Classroom story: one-to-one with Durga Sir at ₹3 lakhs vs 100 students × ₹3,000 in one batch.)</p>
+<p>How you get `Runtime`: not new Runtime(). Factory method Runtime.getRuntime(). That method does not create a new object; it always returns the existing object. One lakh callers, one Runtime object. Purpose of that object: communicate with the JVM.</p>
+<p>Own singleton — we can. Use private constructor + private static variable + public factory method.</p>
+<p>Approach 1 (eager; how `Runtime` is implemented): private static Test t = new Test(); created at the beginning (static variables at the beginning). private Test() { }. public static Test getTest() { return t; } — always return `t`, never create inside getTest(). Runtime: private static Runtime currentRuntime = new Runtime(); public static Runtime getRuntime() { return currentRuntime; }.</p>
+<p>Problem of approach 1: object is created at the beginning even if unused → waste.</p>
+<p>Approach 2 (lazy; he calls this recommended, a bit complex): private static Test t = null; same private constructor. In getTest(): if (t == null) { t = new Test(); } then return t. First request creates; later requests reuse. Both approaches valid.</p>
+<p>At any point of time for Test, only one object → `Test` is singleton.</p>
+<p>Main purpose of private constructor: create singleton classes.</p>
+<p>Twist: class is not `final`, but child class not allowed. Declare every constructor private. Child constructor must contain `super()` (compiler inserts it). super() would call parent’s no-arg constructor, which is private → CE: `P()` has private access in `P`. Without a child, class P { private P() { } } is valid. Default (non-private) P + class C extends P compiles.</p>
+<p>Next: he does not announce a new topic; this video ends the OOPs block on this constructor application.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 67 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 17</td></tr>
+<tr><td>Topic</td><td>singleton class</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>35m 18s</td></tr>
+<tr><td>Video ID</td><td>SniLNfFejiU</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=SniLNfFejiU</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

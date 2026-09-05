@@ -1,0 +1,327 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>127-customized-serialization</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 127</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Serialization Part- 3||Customized serialization - 1</p>
+<h3>00:05 — Introduction: Customized Serialization</h3>
+<p>Next topic: Customized Serialization — Durga Sir calls this the most difficult topic in the entire serialization unit. Students must pay very careful attention.</p>
+<p>Flow of this lecture:</p>
+<ol><li>What is the need/purpose of customized serialization?</li></ol>
+<ol><li>How to implement it (covered in this video — Part 1).</li></ol>
+<h3>00:32 — Problem setup: Account class with sensitive password</h3>
+<pre class='code'>class Account implements Serializable {
+    String username = &quot;Durga&quot;;
+    transient String password = &quot;Anushka&quot;;   // secured field — must be transient
+}</pre>
+<p>Fields:</p>
+<ul><li>username — normal String, serialized by default.</li></ul>
+<ul><li>password — secured field; must be declared `transient` so JVM does not write the real value to the file.</li></ul>
+<p>Account object created:</p>
+<p>Account a1 = new Account();
+System.out.println(a1.username + &quot;...&quot; + a1.password);
+// CE/print (before serialization): Durga...Anushka</p>
+<h3>03:49 — Default serialization of Account</h3>
+<pre class='code'>FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+ObjectOutputStream oos = new ObjectOutputStream(fos);
+oos.writeObject(a1);</pre>
+<p>What goes into file `abc.ser`:</p>
+<p>Transient rule (repeated): At serialization time, JVM ignores the original value of a transient variable and saves the default value (null for String) to the file.</p>
+<h3>05:07 — Default deserialization: password lost</h3>
+<p>FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+ObjectInputStream ois = new ObjectInputStream(fis);
+Account a2 = (Account) ois.readObject();
+
+System.out.println(a2.username + &quot;...&quot; + a2.password);
+// CE/print (after deserialization): Durga...null</p>
+<p>Before serialization: username = Durga, password = Anushka ✓</p>
+<p>After deserialization: username = Durga, password = null ✗</p>
+<p>Why null instead of Anushka? Because password was declared `transient`.</p>
+<h3>06:37 — Core problem: loss of information</h3>
+<p>During default serialization, there may be a chance of loss of information because of the `transient` keyword.</p>
+<ul><li>Before serialization: account object provides proper username and password.</li></ul>
+<ul><li>After deserialization: account object provides only username, not password.</li></ul>
+<p>Practical concern: Without the password, how can the receiver use the account information? The data is incomplete.</p>
+<p>Solution: Customized serialization — to recover loss of information caused by the transient keyword.</p>
+<h3>08:47 — Purpose of customized serialization (summary)</h3>
+<p>Purpose of customized serialization: To recover loss of information which happened because of the transient keyword.</p>
+<p>Password is transient → file contains null only → but receiver must get &quot;Anushka&quot; back. Some extra work/magic is required — that magic is customized serialization.</p>
+<h3>08:59 — Live demo: `CustSerializeDemo.java` (problem only)</h3>
+<p>Durga Sir runs the program without customized methods:</p>
+<pre class='code'>// CustSerializeDemo.java — default serialization only
+class Account implements Serializable {
+    String username = &quot;Durga&quot;;
+    transient String password = &quot;Anushka&quot;;
+}
+
+class CustSerializeDemo {
+    public static void main(String[] args) throws Exception {
+        Account a1 = new Account();
+        System.out.println(a1.username + &quot;...&quot; + a1.password);
+        // 1st print: Durga...Anushka
+
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(a1);
+
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Account a2 = (Account) ois.readObject();
+        System.out.println(a2.username + &quot;...&quot; + a2.password);
+        // 2nd print: Durga...null
+    }
+}</pre>
+<p>CE/print output:</p>
+<p>Durga...Anushka    ← before serialization
+Durga...null       ← after deserialization (password lost)</p>
+<h3>11:30 — Board theory (default serialization loss)</h3>
+<p>During default serialization, there may be a chance of loss of information because of transient keyword.</p>
+<p>To recover this loss of information, we should go for customized serialization.</p>
+<p>Diagram to copy:</p>
+<p>Account object (before)  → username: Durga, password: Anushka
+         ↓ serialize
+File abc.ser             → username: Durga, password: null
+         ↓ deserialize
+Account object (after)   → username: Durga, password: null</p>
+<h3>17:42 — Extended board notes (before/after)</h3>
+<p>In the above example, before serialization account object can provide proper username and password. But after deserialization account object can provide only username but not password. This is due to declaring password variable as transient.</p>
+<p>Hence during default serialization there may be a chance of loss of information because of transient keyword. To recover this loss of information we should go for customized serialization.</p>
+<h3>21:41 — Analogy: mango box and money (sender/receiver extra work)</h3>
+<p>Durga Sir explains customized serialization through a real-life story (copy-paste legend):</p>
+<p>Problem: Need to send money (3 lakhs, later 7 lakhs) to native place via cousin Srinu (Shuu) who travels every weekend. Srinu refuses to carry money/gold directly — security risk; if money is misplaced during overnight bus travel, he would be responsible.</p>
+<p>First attempt (3 lakhs): Srinu rejected carrying money outright. Father had to come personally to collect.</p>
+<p>Second attempt (7 lakhs) — customized approach:</p>
+<ol><li>Sender side (Durga Sir): Put 7 lakhs in a pot cover (polythene sheet) at the bottom of a box of mangoes. Pack mangoes neatly on top. Tell Srinu it is a box of mangoes for mother — he can verify by opening (shows real mangoes), then repack carefully.</li></ol>
+<ol><li>Transit: Srinu carries box (thinks mangoes only) — no security objection.</li></ol>
+<ol><li>Receiver side (father): At bus stop, receives box. Opens it, throws mangoes aside, unwraps polythene layers, gets the money.</li></ol>
+<p>Mapping to customized serialization:</p>
+<p>At sender side and receiver side, if we do some extra work, then we can recover loss of information. The extra work itself is customized serialization.</p>
+<p>Key idea: Don&#x27;t send sensitive data directly; do extra work on both sides to hide/recover it.</p>
+<h3>34:53 — Mapping analogy to Account serialization logic</h3>
+<p>Missing data during default serialization: password (because transient).</p>
+<p>Extra work at serialization (sender side):</p>
+<ol><li>Read the password manually.</li></ol>
+<ol><li>Prepare encrypted password — e.g., &quot;123&quot; + originalPassword → &quot;123Anushka&quot;.</li></ol>
+<ol><li>Write encrypted password manually to the file (as a separate object).</li></ol>
+<p>Extra work at deserialization (receiver side):</p>
+<ol><li>Read the encrypted password from file.</li></ol>
+<ol><li>Perform decryption — reverse the modification (remove &quot;123&quot; prefix via substring(3)).</li></ol>
+<ol><li>Assign decrypted value to the original password field.</li></ol>
+<h3>38:18 — Two methods for customized serialization</h3>
+<p>Customized serialization is implemented using two methods (exact signatures are critical):</p>
+<p>Method 1 — serialization hook:</p>
+<pre class='code'>private void writeObject(ObjectOutputStream oos) throws Exception {
+    // extra work at serialization time
+}</pre>
+<p>Method 2 — deserialization hook:</p>
+<pre class='code'>private void readObject(ObjectInputStream ois) throws Exception {
+    // extra work at deserialization time
+}</pre>
+<p>Execution rules:</p>
+<ul><li>writeObject → executed automatically by JVM at serialization time.</li></ul>
+<ul><li>readObject → executed automatically by JVM at deserialization time.</li></ul>
+<ul><li>Programmer writes these methods but never calls them directly — JVM invokes them.</li></ul>
+<p>Board note:</p>
+<p>We can implement customized serialization by using the following two methods:</p>
+<p>1. private void writeObject(ObjectOutputStream oos) throws Exception</p>
+<p>2. private void readObject(ObjectInputStream ois) throws Exception</p>
+<p>`writeObject` — executed automatically at the time of serialization. Hence if we want to perform any activity at serialization time, define it in this method only.</p>
+<p>`readObject` — executed automatically at the time of deserialization. Hence if we want to perform any activity at deserialization time, define it in this method only.</p>
+<h3>47:09 — Callback methods</h3>
+<p>Because JVM executes these methods automatically (programmer does not call them), they are callback methods.</p>
+<p>Other callback method examples:</p>
+<ul><li>main method — JVM calls it.</li></ul>
+<ul><li>Servlet lifecycle methods (init, service, destroy) — container calls them automatically.</li></ul>
+<p>Note: The above methods are callback methods because these are executed automatically by the JVM.</p>
+<h3>48:57 — Where to define these methods: corresponding class</h3>
+<p>Two classes in the example:</p>
+<ol><li>Account — the data class being serialized.</li></ol>
+<ol><li>CustSerializeDemo — demo/main class.</li></ol>
+<p>Question: Where must writeObject and readObject be placed?</p>
+<p>Answer: In the corresponding class — the class of the object being serialized.</p>
+<p>While performing which object serialization we have to do extra work, in the corresponding class we have to define above methods.</p>
+<p>For Account object serialization → define methods inside `Account` class, NOT in CustSerializeDemo.</p>
+<p>Example rule: For Dog object customized serialization → methods go in Dog class.</p>
+<h3>52:47 — Extra work recap before coding</h3>
+<h3>53:17 — Full implementation: Account with customized serialization</h3>
+<pre class='code'>import java.io.*;
+
+class Account implements Serializable {
+    String username = &quot;Durga&quot;;
+    transient String password = &quot;Anushka&quot;;
+
+    // Callback — JVM calls automatically during serialization
+    private void writeObject(ObjectOutputStream oos) throws Exception {
+        // Step 1: default serialization (username → file; transient password → null in file)
+        oos.defaultWriteObject();
+
+        // Step 2: extra work — encrypt and write password manually
+        String ePassword = &quot;123&quot; + password;   // &quot;123Anushka&quot;
+        oos.writeObject(ePassword);              // write encrypted password as separate object
+    }
+
+    // Callback — JVM calls automatically during deserialization
+    private void readObject(ObjectInputStream ois) throws Exception {
+        // Step 1: default deserialization (username restored; password → null)
+        ois.defaultReadObject();
+
+        // Step 2: extra work — read, decrypt, assign
+        String ePassword = (String) ois.readObject();   // read &quot;123Anushka&quot;
+        password = ePassword.substring(3);               // decrypt → &quot;Anushka&quot;
+    }
+}</pre>
+<p>Demo class:</p>
+<pre class='code'>class CustSerializeDemo1 {
+    public static void main(String[] args) throws Exception {
+        Account a1 = new Account();
+        System.out.println(a1.username + &quot;...&quot; + a1.password);
+        // CE/print: Durga...Anushka
+
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(a1);
+
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Account a2 = (Account) ois.readObject();
+        System.out.println(a2.username + &quot;...&quot; + a2.password);
+        // CE/print (with customized methods): Durga...Anushka
+    }
+}</pre>
+<h3>57:19 — JVM flow during serialization of Account</h3>
+<p>When oos.writeObject(a1) is called:</p>
+<ol><li>JVM checks: does Account class contain writeObject method?</li></ol>
+<ol><li>Yes → JVM is happy; programmer takes responsibility. JVM executes writeObject automatically.</li></ol>
+<ol><li>Inside writeObject:</li></ol>
+<ul><li>oos.defaultWriteObject() → performs default serialization (username written; transient password → null in stream).</li></ul>
+<ul><li>Then manual extra work: encrypt password, oos.writeObject(ePassword).</li></ul>
+<p>Critical line — default serialization inside custom hook:</p>
+<p>oos.defaultWriteObject();   // default serialization</p>
+<p>Without this line, even username would not be serialized by default mechanism.</p>
+<h3>1:00:50 — Encryption step detail</h3>
+<p>String ePassword = &quot;123&quot; + password;   // &quot;123&quot; + &quot;Anushka&quot; = &quot;123Anushka&quot;
+oos.writeObject(ePassword);             // manually write encrypted form to file</p>
+<p>File now contains: default-serialized Account state (username=Durga, password=null in default part) plus separate encrypted password object &quot;123Anushka&quot;.</p>
+<h3>1:02:48 — JVM flow during deserialization</h3>
+<p>When ois.readObject() is called for Account:</p>
+<ol><li>JVM checks: does Account class contain readObject method?</li></ol>
+<ol><li>Yes → JVM executes readObject automatically.</li></ol>
+<ol><li>Inside readObject:</li></ol>
+<ul><li>ois.defaultReadObject() → default deserialization (username=Durga, password=null).</li></ul>
+<ul><li>Read encrypted password: (String) ois.readObject() → &quot;123Anushka&quot;.</li></ul>
+<ul><li>Decrypt: ePassword.substring(3) → removes first 3 chars &quot;123&quot; → &quot;Anushka&quot;.</li></ul>
+<ul><li>Assign: password = &quot;Anushka&quot;.</li></ul>
+<p>Critical line — default deserialization inside custom hook:</p>
+<p>ois.defaultReadObject();   // default deserialization</p>
+<p>After default step: a2.username = &quot;Durga&quot;, a2.password = null.</p>
+<p>After extra work: a2.password = &quot;Anushka&quot;.</p>
+<p>CE/print (final): Durga...Anushka — both before and after serialization.</p>
+<h3>1:05:47 — Decryption with substring</h3>
+<p>String ePassword = (String) ois.readObject();   // &quot;123Anushka&quot;
+password = ePassword.substring(3);               // index 3 to end → &quot;Anushka&quot;</p>
+<p>substring(3) removes characters at index 0, 1, 2 (&quot;123&quot;) and returns from index 3 onward.</p>
+<h3>1:08:56 — Experiment: comment out both methods → back to default</h3>
+<p>If writeObject and readObject are commented out:</p>
+<pre class='code'>// private void writeObject(...) { ... }
+// private void readObject(...) { ... }</pre>
+<p>→ Behavior reverts to default serialization.</p>
+<p>CE/print: Durga...Anushka then Durga...null.</p>
+<p>If comments removed (customized methods active):</p>
+<p>CE/print: Durga...Anushka then Durga...Anushka.</p>
+<h3>1:09:39 — Live execution: `CustSerializeDemo1.java`</h3>
+<p>Durga Sir runs on screen:</p>
+<p>With methods commented:</p>
+<p>Durga...Anushka
+Durga...null</p>
+<p>With methods active:</p>
+<p>Durga...Anushka
+Durga...Anushka</p>
+<p>Confirms customized serialization recovers the transient password.</p>
+<h3>1:13:09 — account.class must exist at both sender and receiver</h3>
+<p>Both writeObject (encryption at sender) and readObject (decryption at receiver) live in Account class. Therefore `Account.class` must be available at both sender side and receiver side from the beginning. Encryption and decryption cannot be written separately in different classes — they are paired inside the same serializable class.</p>
+<h3>1:14:04 — Private methods: programmer vs JVM</h3>
+<ul><li>Programmer cannot call private methods from outside the class.</li></ul>
+<ul><li>JVM can call private methods from outside the class — this special ability is required for customized serialization to work.</li></ul>
+<p>Programmer can&#x27;t call private methods directly from outside of the class, but JVM can call private methods directly from outside of the class.</p>
+<p>If JVM could not call private methods, customized serialization would be impossible.</p>
+<h3>1:23:16 — Access modifier must be exactly `private`</h3>
+<p>Critical rule: Methods must be `private`. If you mistakenly use public or protected instead of private, the program will not work — JVM only recognizes the specific private signature form.</p>
+<pre class='code'>// CORRECT — JVM recognizes this
+private void writeObject(ObjectOutputStream oos) throws Exception { ... }
+private void readObject(ObjectInputStream ois) throws Exception { ... }
+
+// WRONG — no guarantee JVM will invoke these
+public void writeObject(ObjectOutputStream oos) throws Exception { ... }</pre>
+<h3>1:17:41 — Local variable naming note</h3>
+<p>ePassword is just a local variable name inside the methods — any name works (ePassword1, x, etc.). It has no special JVM meaning; Durga Sir uses it as a meaningful name for &quot;encrypted password.&quot;</p>
+<h3>1:19:14 — Highlight key lines in notes</h3>
+<p>Students should highlight these two lines in their notes:</p>
+<p>oos.defaultWriteObject();   // ← default serialization (inside writeObject)
+ois.defaultReadObject();    // ← default deserialization (inside readObject)</p>
+<p>These perform the normal/default part; the surrounding code is the extra/custom part.</p>
+<h3>1:20:01 — Output comparison diagram</h3>
+<h3>1:22:01 — Final theory note (with customized serialization)</h3>
+<p>In the above program, before serialization and after serialization (with customized methods active), account object can provide proper username and password.</p>
+<h3>1:24:39 — Video conclusion (Part 1 of customized serialization)</h3>
+<p>Topics covered:</p>
+<ol><li>Need: recover information lost due to transient keyword during default serialization.</li></ol>
+<ol><li>Analogy: sender/receiver extra work (mango box / money).</li></ol>
+<ol><li>Implementation: two callback methods — writeObject and readObject — defined as `private` in the corresponding class.</li></ol>
+<ol><li>Default hooks: defaultWriteObject() and defaultReadObject() preserve normal serialization behavior alongside custom extra work.</li></ol>
+<ol><li>Example: encrypt password as &quot;123&quot; + password on write; read and substring(3) on read.</li></ol>
+<ol><li>JVM invokes private methods automatically; programmer never calls them directly.</li></ol>
+<p>(Part 2 of customized serialization — if any — would be in the next video in the playlist.)</p>
+<p>Java code block count: 16</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Position</td><td>127 of 203</td></tr>
+<tr><td>Series</td><td>Serialization</td></tr>
+<tr><td>Topic</td><td>Customized serialization — Part 1 (need, writeObject / readObject, transient recovery)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 24m 57s</td></tr>
+<tr><td>Video ID</td><td>XmC4bzCDSHc</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=XmC4bzCDSHc</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Value in file</th></tr>
+<tr><td>username</td><td>&quot;Durga&quot;</td></tr>
+<tr><td>password</td><td>null (default value — transient field ignored)</td></tr>
+</table>
+<table>
+<tr><th>Real life</th><th>Serialization</th></tr>
+<tr><td>Money (sensitive)</td><td>transient password (not sent directly)</td></tr>
+<tr><td>Box of mangoes (cover)</td><td>Encrypted password written manually to file</td></tr>
+<tr><td>Sender extra work (hide money in mangoes)</td><td>Extra work at serialization time</td></tr>
+<tr><td>Receiver extra work (unwrap to get money)</td><td>Extra work at deserialization time</td></tr>
+<tr><td>Recover lost information</td><td>Recover password despite transient</td></tr>
+</table>
+<table>
+<tr><th>Phase</th><th>Extra work</th></tr>
+<tr><td>Serialization</td><td>Prepare encrypted password (&quot;123&quot; + password); write encrypted password to file</td></tr>
+<tr><td>Deserialization</td><td>Read encrypted password; perform decryption (substring(3)); assign to password field</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>1st print (before)</th><th>2nd print (after deserialize)</th></tr>
+<tr><td>Default serialization</td><td>Durga...Anushka</td><td>Durga...null</td></tr>
+<tr><td>Customized serialization</td><td>Durga...Anushka</td><td>Durga...Anushka</td></tr>
+</table>
+</body></html>

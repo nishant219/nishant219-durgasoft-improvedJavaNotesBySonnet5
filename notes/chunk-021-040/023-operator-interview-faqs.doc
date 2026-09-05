@@ -1,0 +1,1026 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>023-operator-interview-faqs</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 023 — operator interview FAQs</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Operators &amp; Assignments Part-7  || Interview FAQs</p>
+<h3>What this lecture covers</h3>
+<ol><li>Operators list + precedence (Parts 1–6) are done. This class is interview / OCJP FAQ hour.</li></ol>
+<ol><li>new operator vs newInstance() method — when class name is known at compile time vs at runtime.</li></ol>
+<ol><li>Checked ClassNotFoundException vs unchecked NoClassDefFoundError.</li></ol>
+<ol><li>InstantiationException / IllegalAccessException while using newInstance().</li></ol>
+<ol><li>instanceof operator vs Class.isInstance() method — compile-time type vs runtime type name.</li></ol>
+<ol><li>People confuse `new` vs `instanceof` because both talk about “type / object”. Sir separates creation vs type-check, then maps each to its runtime twin (newInstance / isInstance).</li></ol>
+<ol><li>== vs equals() revision (reference vs content; StringBuffer trap).</li></ol>
+<ol><li>Increment assignment puzzles: x = x++, x = ++x, x = ++x + ++x.</li></ol>
+<ol><li>Boolean vs bitwise: &amp; | ^ vs &amp;&amp; ||, ~ vs !.</li></ol>
+<ol><li>Assignment vs comparison: = vs == inside if / while.</li></ol>
+<ol><li>Reachability-adjacent operator questions: while(true), while(false), if(false), compile-time constant comparisons.</li></ol>
+<ol><li>Full operators-module wrap-up (agenda 1–18). Next chapter: Flow-Control.</li></ol>
+<h3>Classroom opening</h3>
+<p>Sir: Operators chapter almost over. Precedence, operand evaluation — last class. Ippudu leftover interview FAQs. Ee FAQs without preparation interview lo tikkostayi. Board meeda table rasukondi.</p>
+<p>He writes the leftover official agenda in one corner:</p>
+<ol><li>new vs newInstance()</li></ol>
+<ol><li>instanceof vs isInstance()</li></ol>
+<ol><li>ClassNotFoundException vs NoClassDefFoundError</li></ol>
+<p>Then: Same class lo operators revision FAQs kuda — `==` vs `equals`, increment, bitwise vs boolean, `=` vs `==`, unreachable statements with `true`/`false`. Operators module ikkade close.</p>
+<h3>Recap: `new` creates; constructor only initializes</h3>
+<p>Part-5 point, he repeats because today’s comparison starts from new.</p>
+<pre class='code'>class Test {
+    Test() {
+        System.out.println(&quot;constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Test t = new Test();
+        // prints constructor
+        // 1) new creates the Test object
+        // 2) then constructor runs to initialize
+    }
+}</pre>
+<p>There is no delete. GC destroys unused objects.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Test t = new Test();
+        t = null; // object becomes eligible for GC; no delete operator in Java
+        System.out.println(&quot;no delete keyword&quot;); // prints no delete keyword
+    }
+}</pre>
+<p>Condition to use `new`: class name is known at the beginning (hard-coded at compile time). new Test() — compiler must see type Test.</p>
+<h3>FAQ 1 — `new` vs `newInstance()`</h3>
+<p>Sir: `new` operator. `newInstance()` method. Method e class lo undi? `java.lang.Class` lo.</p>
+<p>java.lang.Class is the class that represents .class files in JVM. Every loaded class has one Class object. From that, we can create an instance without writing the class name in source.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        Object o = Class.forName(args[0]).newInstance();
+        System.out.println(o.getClass().getName());
+    }
+}</pre>
+<p>Run (fully qualified name — classroom board often writes String, but JVM needs java.lang.String):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        // java Test java.lang.String
+        Object o = Class.forName(&quot;java.lang.String&quot;).newInstance();
+        System.out.println(o.getClass().getName()); // prints java.lang.String
+        System.out.println(o.equals(&quot;&quot;));           // prints true  (empty String from no-arg ctor)
+    }
+}</pre>
+<p>Same Test class, create Test object dynamically:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        Object o = Class.forName(&quot;Test&quot;).newInstance();
+        System.out.println(o.getClass().getName()); // prints Test
+    }
+}</pre>
+<p>Hard-coded equivalent of the first call:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = new String(); // class name known at compile time
+        System.out.println(s.getClass().getName()); // prints java.lang.String
+    }
+}</pre>
+<p>Sir’s one-line: compile time lo class name teliste `new`. Runtime lo command-line / file / properties nunchi vasthe `Class.forName(name).newInstance()`.</p>
+<p>throws Exception is compulsory on main (or try/catch) because:</p>
+<ul><li>Class.forName → checked ClassNotFoundException</li></ul>
+<ul><li>newInstance → checked InstantiationException, IllegalAccessException</li></ul>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Object o = Class.forName(args[0]).newInstance();
+        System.out.println(o);
+        // CE: unreported exception ClassNotFoundException; must be caught or declared
+        // CE: unreported exception InstantiationException; must be caught or declared
+        // CE: unreported exception IllegalAccessException; must be caught or declared
+    }
+}</pre>
+<h3>Board table — `new` vs `newInstance()`</h3>
+<p>He dictates row by row. After each row, one program.</p>
+<p>Row 1 — nature</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        Test t1 = new Test(); // new is an operator
+        Object t2 = Class.forName(&quot;Test&quot;).newInstance(); // newInstance() is a method of class Class
+        System.out.println(t1.getClass() == t2.getClass()); // prints true
+    }
+}</pre>
+<p>Row 2 — when</p>
+<pre class='code'>class Student {
+}
+class Test {
+    public static void main(String[] args) throws Exception {
+        Student s = new Student(); // we already know the class name: Student
+        Object o = Class.forName(args[0]).newInstance(); // name comes at runtime
+        System.out.println(s.getClass().getName());
+        System.out.println(o.getClass().getName());
+    }
+}</pre>
+<p>Row 3 — missing `.class` at runtime</p>
+<p>Hard-coded new Student() — if Student.class is not available at runtime we get `NoClassDefFoundError` (Error, unchecked).</p>
+<p>Dynamic Class.forName(&quot;Student&quot;) — if not available we get `ClassNotFoundException` (Exception, checked).</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Student s = new Student();
+        System.out.println(s);
+        // if Student.class is missing at RUNTIME (it compiled against Student, then .class deleted):
+        // RE: java.lang.NoClassDefFoundError: Student
+    }
+}
+class Test {
+    public static void main(String[] args) throws Exception {
+        Object o = Class.forName(&quot;Student&quot;).newInstance();
+        System.out.println(o);
+        // if Student.class is not on the classpath:
+        // RE: java.lang.ClassNotFoundException: Student
+    }
+}</pre>
+<p>Row 4 — no-arg constructor</p>
+<p>new Student(10) can call a parameterized constructor. newInstance() internally uses the no-argument constructor. If that constructor is missing → InstantiationException.</p>
+<pre class='code'>class Student {
+    Student(String name) {
+        System.out.println(&quot;param ctor &quot; + name);
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student(&quot;durga&quot;); // valid — we chose the constructor
+        System.out.println(s);
+        // prints param ctor durga
+    }
+}
+class Student {
+    Student(String name) {
+    }
+}
+class Test {
+    public static void main(String[] args) throws Exception {
+        Object o = Class.forName(&quot;Student&quot;).newInstance();
+        System.out.println(o);
+        // RE: java.lang.InstantiationException: Student
+        // (no public no-arg constructor)
+    }
+}</pre>
+<p>java.lang.Integer is the exam’s favourite “no no-arg ctor” class:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        Object o = Class.forName(&quot;java.lang.Integer&quot;).newInstance();
+        System.out.println(o);
+        // RE: java.lang.InstantiationException: java.lang.Integer
+    }
+}</pre>
+<p>Abstract class / interface also cannot be instantiated:</p>
+<pre class='code'>abstract class Animal {
+}
+class Test {
+    public static void main(String[] args) throws Exception {
+        Object o = Class.forName(&quot;Animal&quot;).newInstance();
+        System.out.println(o);
+        // RE: java.lang.InstantiationException
+    }
+}</pre>
+<p>If the no-arg constructor exists but is not accessible (private) → IllegalAccessException.</p>
+<pre class='code'>class Demo {
+    private Demo() {
+    }
+}
+class Test {
+    public static void main(String[] args) throws Exception {
+        Object o = Class.forName(&quot;Demo&quot;).newInstance();
+        System.out.println(o);
+        // RE: java.lang.IllegalAccessException
+        // (constructor Demo() is not accessible)
+    }
+}</pre>
+<p>Sir: `new` ki no-arg constructor compulsory kadu. `newInstance()` ki compulsory. Idi table lo last row — exam guaranteed.</p>
+<h3>FAQ 2 — `ClassNotFoundException` vs `NoClassDefFoundError`</h3>
+<p>He spends a long stretch here because names look similar. Exception vs Error. Checked vs unchecked. Dynamic name vs hard-coded name.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            Class.forName(&quot;NoSuchClass&quot;);
+        } catch (ClassNotFoundException e) {
+            System.out.println(&quot;checked — we can handle&quot;); // prints checked — we can handle
+        }
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        // NoClassDefFoundError is an Error, not Exception — this catch is CE if we write it as Exception-only? 
+        // Error is Throwable. Catching Exception will NOT catch NoClassDefFoundError.
+        try {
+            Helper.touch();
+        } catch (Exception e) {
+            System.out.println(&quot;will NOT catch NoClassDefFoundError&quot;);
+        }
+    }
+}
+class Helper {
+    static Student s = new Student(); // if Student.class gone at runtime → Error during init
+    static void touch() {
+    }
+}</pre>
+<p>Memory sentence he wants: hard-coded missing → `NoClassDefFoundError`. dynamically provided missing → `ClassNotFoundException`.</p>
+<p>Class.forName loads the class (runs static block). newInstance creates the object.</p>
+<pre class='code'>class Student {
+    static {
+        System.out.println(&quot;Student loaded&quot;);
+    }
+    Student() {
+        System.out.println(&quot;Student object&quot;);
+    }
+}
+class Test {
+    public static void main(String[] args) throws Exception {
+        Class c = Class.forName(&quot;Student&quot;);
+        // prints Student loaded
+        Object o = c.newInstance();
+        // prints Student object
+        System.out.println(o.getClass().getName()); // prints Student
+    }
+}</pre>
+<h3>FAQ 3 — `instanceof` recap, then `isInstance()`</h3>
+<p>Part-3 already taught instanceof. FAQ class repeats the board examples, then introduces the method twin.</p>
+<p>Syntax: r instanceof X — r is a reference, X is a class or interface name known at compile time.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        System.out.println(t instanceof Thread);   // prints true
+        System.out.println(t instanceof Object);   // prints true
+        System.out.println(t instanceof Runnable); // prints true
+    }
+}</pre>
+<p>Relation compulsory (parent ↔ child or same type). Otherwise inconvertible types:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        System.out.println(t instanceof String);
+        // CE: inconvertible types
+        // found:    java.lang.Thread
+        // required: java.lang.String
+    }
+}</pre>
+<p>Parent object is not child type:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Object o1 = new Object();
+        System.out.println(o1 instanceof String); // prints false
+        Object o2 = new String(&quot;ashok&quot;);
+        System.out.println(o2 instanceof String); // prints true
+    }
+}</pre>
+<p>null instanceof X is always false:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(null instanceof String);  // prints false
+        System.out.println(null instanceof Object);  // prints false
+        System.out.println(null instanceof Runnable); // prints false
+    }
+}</pre>
+<p>`isInstance(Object)` — method in class Class. Type name can come at runtime.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        Test t = new Test();
+        System.out.println(Class.forName(args[0]).isInstance(t));
+    }
+}</pre>
+<p>Intended runs (pass FQCN for library types):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        Test t = new Test();
+        System.out.println(Class.forName(&quot;Test&quot;).isInstance(t));            // prints true
+        System.out.println(Class.forName(&quot;java.lang.Object&quot;).isInstance(t)); // prints true
+        System.out.println(Class.forName(&quot;java.lang.String&quot;).isInstance(t)); // prints false
+    }
+}</pre>
+<p>Thread / Runnable version — shows interface check at runtime:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        Thread th = new Thread();
+        System.out.println(Class.forName(&quot;java.lang.Thread&quot;).isInstance(th));     // prints true
+        System.out.println(Class.forName(&quot;java.lang.Runnable&quot;).isInstance(th));   // prints true
+        System.out.println(Class.forName(&quot;java.lang.String&quot;).isInstance(th));     // prints false
+    }
+}</pre>
+<p>isInstance argument is the object. Forgetting it is CE:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        System.out.println(Class.forName(&quot;Test&quot;).isInstance());
+        // CE: method isInstance in class java.lang.Class cannot be applied to given types
+        // required: java.lang.Object
+        // found:    no arguments
+    }
+}</pre>
+<h3>`new` vs `instanceof` — why interviewers mix the two names</h3>
+<p>Sir: Students, names similar ga unnai — `new` / `newInstance`, `instanceof` / `isInstance`. Interviewer `new` vs `instanceof` ani adigite panic avvaddu. Renderu completely different purposes.</p>
+<p>Creation is not a type check:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Object o = new String(&quot;durga&quot;); // new → create
+        boolean b = o instanceof String; // instanceof → test
+        System.out.println(b); // prints true
+    }
+}</pre>
+<p>You cannot write instanceof to create, and you cannot write new to test:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = instanceof String;
+        // CE: illegal start of expression / not a statement
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        String s = &quot;durga&quot;;
+        System.out.println(s new String);
+        // CE: &#x27;;&#x27; expected  (new is not an infix type-check operator)
+    }
+}</pre>
+<p>Safe downcast pattern — this is where instanceof is used after new created some parent-typed reference:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Object o = new String(&quot;durga&quot;);
+        if (o instanceof String) {
+            String s = (String) o;
+            System.out.println(s.length()); // prints 5
+        }
+    }
+}</pre>
+<p>Without the check, wrong type → ClassCastException (runtime), not a compile error if types are related:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Object o = new String(&quot;durga&quot;);
+        Integer i = (Integer) o;
+        System.out.println(i);
+        // RE: java.lang.ClassCastException: java.lang.String cannot be cast to java.lang.Integer
+    }
+}</pre>
+<p>So the FAQ mapping he wants in the notebook:</p>
+<ul><li>Known at compile time, create → new</li></ul>
+<ul><li>Known at runtime, create → newInstance()</li></ul>
+<ul><li>Known at compile time, test type → instanceof</li></ul>
+<ul><li>Known at runtime, test type → isInstance()</li></ul>
+<h3>FAQ 4 — `==` vs `equals()` (operators revision)</h3>
+<p>Part-2 one-liner, now as interview question. *== operator — reference / address comparison for objects, value comparison for primitives. equals() method — content comparison, if overridden.*</p>
+<p>Primitives — only == (no equals on primitive):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int a = 10, b = 10;
+        System.out.println(a == b); // prints true
+        // System.out.println(a.equals(b));
+        // CE: int cannot be dereferenced
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        System.out.println(&#x27;a&#x27; == 97);      // prints true  (char vs int promotion)
+        System.out.println(&#x27;a&#x27; == 97.0);    // prints true
+        System.out.println(false == false); // prints true
+        System.out.println(10 == 20);       // prints false
+    }
+}</pre>
+<p>Objects — == is identity:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s1 = new String(&quot;ashok&quot;);
+        String s2 = new String(&quot;ashok&quot;);
+        System.out.println(s1 == s2);        // prints false  (two objects)
+        System.out.println(s1.equals(s2));   // prints true   (String overrides equals)
+    }
+}</pre>
+<p>String literals in the pool (he mentions; full String class later):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s1 = &quot;durga&quot;;
+        String s2 = &quot;durga&quot;;
+        String s3 = new String(&quot;durga&quot;);
+        System.out.println(s1 == s2);      // prints true   (same pool object)
+        System.out.println(s1 == s3);      // prints false
+        System.out.println(s1.equals(s3)); // prints true
+    }
+}</pre>
+<p>`StringBuffer` / `StringBuilder` do not override `equals` — content same, equals still false. Chala important trap.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        StringBuffer sb1 = new StringBuffer(&quot;durga&quot;);
+        StringBuffer sb2 = new StringBuffer(&quot;durga&quot;);
+        System.out.println(sb1 == sb2);      // prints false
+        System.out.println(sb1.equals(sb2)); // prints false  (Object.equals → reference)
+    }
+}</pre>
+<p>Incomparable types for ==:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = &quot;durga&quot;;
+        Thread t = new Thread();
+        System.out.println(s == t);
+        // CE: incomparable types: java.lang.String and java.lang.Thread
+    }
+}</pre>
+<p>null with == is fine; null.equals(...) is NPE:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = null;
+        System.out.println(s == null);     // prints true
+        System.out.println(null == null);  // prints true
+        System.out.println(&quot;durga&quot;.equals(s)); // prints false  (safe if you call equals on the literal)
+        System.out.println(s.equals(&quot;durga&quot;));
+        // RE: java.lang.NullPointerException
+    }
+}</pre>
+<p>Relation required for reference == (parent/child OK):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Object o = new Object();
+        String s = new String(&quot;durga&quot;);
+        Thread t = new Thread();
+        System.out.println(o == s); // prints false  (related: Object / String)
+        System.out.println(o == t); // prints false  (related: Object / Thread)
+    }
+}</pre>
+<h3>FAQ 5 — increment puzzles (assignment + `++`)</h3>
+<p>He brings Part-1 and Part-6 together. Interviewer writes one line and asks output.</p>
+<p>Puzzle A — `x = x++`</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        x = x++;
+        System.out.println(x); // prints 10
+    }
+}</pre>
+<p>Three-step board (Durga material):</p>
+<ol><li>Consider old value of x for assignment → 10.</li></ol>
+<ol><li>Increment x → 11.</li></ol>
+<ol><li>Perform assignment with the considered old value → x = 10.</li></ol>
+<p>Puzzle B — `x = ++x`</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        x = ++x;
+        System.out.println(x); // prints 11
+    }
+}</pre>
+<p>Puzzle C — `x = ++x + ++x`</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 0;
+        x = ++x + ++x;
+        System.out.println(x); // prints 3
+        // ++x → 1; ++x → 2; 1+2=3
+    }
+}</pre>
+<p>Puzzle D — `x = x++ + ++x`</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 0;
+        x = x++ + ++x;
+        System.out.println(x); // prints 2
+        // x++ uses 0 (x=1); ++x → 2; 0+2=2
+    }
+}</pre>
+<p>Puzzle E — two posts</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 5;
+        x = x++ + x++;
+        System.out.println(x); // prints 11
+        // uses 5 (x=6), uses 6 (x=7), 5+6=11
+    }
+}</pre>
+<p>Puzzle F — compound form from Part-6</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int i = 1;
+        i += ++i + i++ + ++i + i++;
+        System.out.println(i); // prints 13
+    }
+}</pre>
+<p>Puzzle G — `++` not on a variable</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 4;
+        int y = ++4;
+        System.out.println(y);
+        // CE: unexpected type
+        // required: variable
+        // found:    value
+    }
+}</pre>
+<p>Puzzle H — final</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        final int x = 4;
+        x++;
+        System.out.println(x);
+        // CE: cannot assign a value to final variable x
+    }
+}</pre>
+<p>Puzzle I — boolean `++`</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        boolean b = true;
+        b++;
+        System.out.println(b);
+        // CE: operator ++ cannot be applied to boolean
+    }
+}</pre>
+<h3>FAQ 6 — boolean vs bitwise</h3>
+<p>Part-3 / Part-4 revision as a comparison table plus programs. Interview: “difference between &amp; and &amp;&amp;.”</p>
+<p>Boolean &amp; | ^:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(true &amp; false); // prints false
+        System.out.println(true | false); // prints true
+        System.out.println(true ^ false); // prints true
+        System.out.println(true ^ true);  // prints false
+    }
+}</pre>
+<p>Integral &amp; | ^ (board binaries 4 → 100, 5 → 101):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(4 &amp; 5); // prints 4
+        System.out.println(4 | 5); // prints 5
+        System.out.println(4 ^ 5); // prints 1
+    }
+}</pre>
+<p>&amp;&amp; || cannot take integrals:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(4 &amp;&amp; 5);
+        // CE: operator &amp;&amp; cannot be applied to int, int
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        System.out.println(4 || 5);
+        // CE: operator || cannot be applied to int, int
+    }
+}</pre>
+<p>~ vs !:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(~4);     // prints -5
+        System.out.println(!false); // prints true
+        // System.out.println(~true); // CE: operator ~ cannot be applied to boolean
+        // System.out.println(!4);    // CE: operator ! cannot be applied to int
+    }
+}</pre>
+<p>Performance / correctness loophole — &amp; vs &amp;&amp; with side effects. Classic x, y table from Part-4, he re-runs all four operators.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10, y = 15;
+        if (++x &lt; 10 &amp; ++y &gt; 15) {
+            x++;
+        } else {
+            y++;
+        }
+        System.out.println(x + &quot;----&quot; + y); // prints 11----17
+        // both increments happen; condition false; else y++
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x = 10, y = 15;
+        if (++x &lt; 10 &amp;&amp; ++y &gt; 15) {
+            x++;
+        } else {
+            y++;
+        }
+        System.out.println(x + &quot;----&quot; + y); // prints 11----16
+        // ++x → 11 &lt; 10 false → ++y SKIPPED; else y++ → 16
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x = 10, y = 15;
+        if (++x &lt; 10 | ++y &gt; 15) {
+            x++;
+        } else {
+            y++;
+        }
+        System.out.println(x + &quot;----&quot; + y); // prints 12----16
+        // both sides; 11&lt;10 false | 16&gt;15 true → if body x++
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x = 10, y = 15;
+        if (++x &lt; 10 || ++y &gt; 15) {
+            x++;
+        } else {
+            y++;
+        }
+        System.out.println(x + &quot;----&quot; + y); // prints 12----16
+        // ++x → 11&lt;10 false, so ++y DOES run (||); 16&gt;15 true → if body x++
+    }
+}</pre>
+<p>Board summary he boxes:</p>
+<p>Divide-by-zero hidden by &amp;&amp; (short-circuit) — exam loves this:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        if (++x &lt; 10 &amp;&amp; (x / 0 &gt; 10)) {
+            System.out.println(&quot;Hello&quot;);
+        } else {
+            System.out.println(&quot;Hi&quot;); // prints Hi
+        }
+        // ++x → 11 &lt; 10 false → (x/0) not evaluated, no ArithmeticException
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        if (++x &lt; 10 &amp; (x / 0 &gt; 10)) {
+            System.out.println(&quot;Hello&quot;);
+        } else {
+            System.out.println(&quot;Hi&quot;);
+        }
+        // RE: java.lang.ArithmeticException: / by zero
+        // &amp; evaluates both sides
+    }
+}</pre>
+<h3>FAQ 7 — assignment vs comparison (`=` vs `==`)</h3>
+<p>Sir: one extra `=` interview ni spoil chestundi. = is assignment (lowest precedence). == is equality.</p>
+<p>For int, if (x = 10) is CE — if needs boolean.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        if (x = 20) {
+            System.out.println(&quot;hello&quot;);
+        }
+        // CE: incompatible types
+        // found:    int
+        // required: boolean
+    }
+}</pre>
+<p>Correct comparison:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        if (x == 20) {
+            System.out.println(&quot;hello&quot;);
+        } else {
+            System.out.println(&quot;hi&quot;); // prints hi
+        }
+    }
+}</pre>
+<p>Boolean exception — this is the OCJP trap. Assignment of boolean is a boolean value (the value assigned). So if (b = true) compiles, assigns, and the condition is true.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        boolean b = false;
+        if (b = true) {
+            System.out.println(&quot;hello&quot;); // prints hello
+        }
+        System.out.println(b); // prints true  (b was assigned)
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        boolean b = false;
+        if (b == true) {
+            System.out.println(&quot;hello&quot;);
+        } else {
+            System.out.println(&quot;hi&quot;); // prints hi
+        }
+        System.out.println(b); // prints false  (unchanged)
+    }
+}</pre>
+<p>Chained assignment inside if — still assignment, still boolean if the variable is boolean:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        boolean b1, b2;
+        b1 = b2 = false;
+        if (b1 = b2 = true) {
+            System.out.println(&quot;yes&quot;); // prints yes
+        }
+        System.out.println(b1 + &quot; &quot; + b2); // prints true true
+    }
+}</pre>
+<p>== vs = with objects in if:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s1 = new String(&quot;durga&quot;);
+        String s2 = new String(&quot;durga&quot;);
+        if (s1 = s2) {
+            System.out.println(&quot;same&quot;);
+        }
+        // CE: incompatible types
+        // found:    java.lang.String
+        // required: boolean
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        String s1 = new String(&quot;durga&quot;);
+        String s2 = new String(&quot;durga&quot;);
+        if (s1 == s2) {
+            System.out.println(&quot;same ref&quot;);
+        } else {
+            System.out.println(&quot;different ref&quot;); // prints different ref
+        }
+    }
+}</pre>
+<h3>FAQ 8 — reachability-adjacent operator questions</h3>
+<p>Next chapter is Flow-Control, but operators produce the constant `true` / `false` that the compiler uses for unreachable-statement errors. Sir: ee mix exam lo vastundi — operator knowledge lekunte flow-control question solve kadu.</p>
+<p>while (true) is an infinite loop. Code after the loop is unreachable.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        while (true) {
+            System.out.println(&quot;hi&quot;);
+        }
+        System.out.println(&quot;hello&quot;);
+        // CE: unreachable statement
+    }
+}</pre>
+<p>while (false) — body is unreachable:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        while (false) {
+            System.out.println(&quot;hi&quot;);
+            // CE: unreachable statement
+        }
+    }
+}</pre>
+<p>`if` is special. if (true) / if (false) are legal, including a dead else. Compiler allows this so we can use flags while developing.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        if (true) {
+            System.out.println(&quot;hi&quot;); // prints hi
+        } else {
+            System.out.println(&quot;hello&quot;); // dead, but NOT a compile error
+        }
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        if (false) {
+            System.out.println(&quot;hi&quot;); // dead, but legal
+        }
+        System.out.println(&quot;hello&quot;); // prints hello
+    }
+}</pre>
+<p>Compile-time constant comparison is the same as writing false:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        final int x = 10;
+        final int y = 20;
+        while (x &gt; y) {
+            System.out.println(&quot;hi&quot;);
+            // CE: unreachable statement  (x &gt; y is constant false)
+        }
+    }
+}</pre>
+<p>Non-final variables — comparison is not a constant. Body is considered reachable even if we “know” 10 is not greater than 20.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        int y = 20;
+        while (x &gt; y) {
+            System.out.println(&quot;hi&quot;); // legal (may never run)
+        }
+        System.out.println(&quot;ok&quot;); // prints ok
+    }
+}</pre>
+<p>Operator on literals that still forms a constant:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        while (true &amp; false) {
+            System.out.println(&quot;hi&quot;);
+            // CE: unreachable statement  (constant false)
+        }
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        while (true | false) {
+            System.out.println(&quot;hi&quot;);
+        }
+        System.out.println(&quot;after&quot;);
+        // CE: unreachable statement  (constant true → infinite)
+    }
+}</pre>
+<p>final boolean is a constant; plain boolean is not:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        final boolean b = false;
+        while (b) {
+            System.out.println(&quot;hi&quot;);
+            // CE: unreachable statement
+        }
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        boolean b = false;
+        while (b) {
+            System.out.println(&quot;hi&quot;); // legal
+        }
+        System.out.println(&quot;ok&quot;); // prints ok
+    }
+}</pre>
+<p>Assignment vs comparison again, inside while — while (b = false) is a boolean assignment, condition is false, body unreachable? For while, the condition is the value of the assignment (false), and it is a constant expression if false is the literal assigned… Actually b = false is not a compile-time constant expression (assignment is not a constant expression). So the body is reachable according to the compiler, but will not run.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        boolean b = true;
+        while (b = false) {
+            System.out.println(&quot;hi&quot;); // legal; does not print
+        }
+        System.out.println(b); // prints false
+    }
+}</pre>
+<p>for ( ; false ; ) same unreachable body as while (false):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        for (;;) {
+            break;
+        }
+        System.out.println(&quot;ok&quot;); // prints ok  (break makes the next line reachable)
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        for (; false;) {
+            System.out.println(&quot;hi&quot;);
+            // CE: unreachable statement
+        }
+    }
+}</pre>
+<h3>Extra operator FAQs he squeezes in before wrap-up</h3>
+<p>Nested relational is illegal (already Part-2; interview repeats):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 &gt; 20 &gt; 30);
+        // CE: operator &gt; cannot be applied to boolean, int
+    }
+}</pre>
+<p>`+` overload — concatenation vs addition (Part-2 FAQ):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String a = &quot;ashok&quot;;
+        int b = 10, c = 20, d = 30;
+        System.out.println(a + b + c + d); // prints ashok102030
+        System.out.println(b + c + d + a); // prints 60ashok
+        System.out.println(b + c + a + d); // prints 30ashok30
+        System.out.println(b + a + c + d); // prints 10ashok2030
+    }
+}</pre>
+<p>Compound vs arithmetic on `byte` (Part-1 / Part-5 FAQ):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 10;
+        b = b + 1;
+        System.out.println(b);
+        // CE: possible loss of precision
+        // found:    int
+        // required: byte
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        byte b = 10;
+        b++;
+        System.out.println(b); // prints 11
+        b += 1;
+        System.out.println(b); // prints 12
+    }
+}</pre>
+<p>Chained compound (Part-5 exam mix):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int a, b, c, d;
+        a = b = c = d = 20;
+        a += b -= c *= d /= 2;
+        System.out.println(a + &quot;........&quot; + b + &quot;........&quot; + c + &quot;........&quot; + d);
+        // prints -160........-180........200........10
+    }
+}</pre>
+<p>Operand evaluation reminder (Part-6, one more time because interviews mix it with FAQs):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(m1(1) + m1(2) * m1(3) / m1(4) * m1(5) + m1(6));
+    }
+    public static int m1(int i) {
+        System.out.println(i);
+        return i;
+    }
+}
+// prints
+// 1
+// 2
+// 3
+// 4
+// 5
+// 6
+// 12</pre>
+<h3>Operators &amp; Assignments — module wrap-up (agenda 1 to 18)</h3>
+<p>Sir scrolls the original operators list and ticks every item. Ikkada operators chapter complete. Next: Flow-Control.</p>
+<p>Closing dictation:</p>
+<ul><li>Operators ki precedence undi; operands always left → right.</li></ul>
+<ul><li>new / instanceof are compile-time-name tools; newInstance / isInstance are runtime-name tools.</li></ul>
+<ul><li>Hard-coded missing class → NoClassDefFoundError. Dynamic missing class → ClassNotFoundException.</li></ul>
+<ul><li>== vs equals: identity vs content (and only if equals is overridden).</li></ul>
+<ul><li>&amp; always evaluates both; &amp;&amp; may skip. That difference is both performance and ArithmeticException.</li></ul>
+<ul><li>if (b = true) is valid Java. if (x = 10) for int x is CE.</li></ul>
+<ul><li>while (false) is CE unreachable; if (false) is not.</li></ul>
+<p>That’s all about operators and assignments. Next class nunchi Flow-Control — `if`, `switch`, loops, `break`, `continue`.</p>
+<h3>Rules (as he states them)</h3>
+<ol><li>new is an operator to create an object when the class name is known at the beginning.</li></ol>
+<ol><li>newInstance() is a method of java.lang.Class to create an object when the class name arrives at runtime. Corresponding class must have an accessible no-arg constructor.</li></ol>
+<ol><li>Class.forName(name) loads the class; missing name → checked ClassNotFoundException.</li></ol>
+<ol><li>Hard-coded new X() with X.class missing at runtime → unchecked NoClassDefFoundError.</li></ol>
+<ol><li>instanceof needs a compile-time type with a relation; null instanceof X is always false.</li></ol>
+<ol><li>Class.isInstance(obj) is the runtime-type version of instanceof.</li></ol>
+<ol><li>== on objects is reference comparison; String.equals is content; StringBuffer.equals is still reference.</li></ol>
+<ol><li>x = x++ assigns the old value back. x = ++x + ++x evaluates operands left to right, then assigns.</li></ol>
+<ol><li>&amp; | ^ work on boolean and integrals; &amp;&amp; || only boolean; ~ only integral; ! only boolean.</li></ol>
+<ol><li>if / while need boolean. boolean assignment is a boolean; int assignment is not.</li></ol>
+<ol><li>Unreachable: while (false) body, code after while (true). if (false) is allowed.</li></ol>
+<h3>Exam traps (from this lecture)</h3>
+<ul><li>Class.forName(&quot;String&quot;) is not java.lang.String — default-package name → ClassNotFoundException. Use java.lang.String.</li></ul>
+<ul><li>newInstance() on Integer / abstract class / no no-arg ctor → InstantiationException, not ClassNotFoundException.</li></ul>
+<ul><li>Private constructor → IllegalAccessException, not InstantiationException.</li></ul>
+<ul><li>Catching Exception does not catch NoClassDefFoundError.</li></ul>
+<ul><li>t instanceof String when t is Thread → CE inconvertible types, not false.</li></ul>
+<ul><li>sb1.equals(sb2) for two StringBuffer(&quot;durga&quot;) → false.</li></ul>
+<ul><li>x = x++ → old value, not incremented.</li></ul>
+<ul><li>if (b = true) compiles and enters the if.</li></ul>
+<ul><li>if (x = 10) for int x → CE required boolean.</li></ul>
+<ul><li>while (false) { } → CE; if (false) { } → valid.</li></ul>
+<ul><li>&amp;&amp; can skip / 0; &amp; cannot.</li></ul>
+<ul><li>4 &amp;&amp; 5 → CE; 4 &amp; 5 → 4.</li></ul>
+<h3>Recap</h3>
+<p>Part-7 is the operators interview hour: creation vs type-check (new / instanceof) and their runtime twins (newInstance / isInstance); the two “class missing” throwables; then a rapid-fire of ==/equals, ++ assignment, bitwise vs short-circuit, = vs ==, and true/false reachability. That closes Operators &amp; Assignments (7 of 7). Flow-Control starts next video.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 23 of 203</td></tr>
+<tr><td>Series</td><td>Operators &amp; Assignments · Part 7 of 7</td></tr>
+<tr><td>Topic</td><td>Operator interview FAQs: new vs newInstance(), instanceof vs isInstance(), ClassNotFoundException vs NoClassDefFoundError, new vs instanceof, == vs equals(), increment puzzles, boolean vs bitwise, = vs ==, reachability-adjacent operator questions; wrap-up of the operators module</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 25m 34s</td></tr>
+<tr><td>Video ID</td><td>K0bLAbhVyqw</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=K0bLAbhVyqw</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Captions</td><td>None on YouTube. Notes reconstructed from this lecture topic as Durga Sir teaches it, with full Java board examples.</td></tr>
+</table>
+<table>
+<tr><th></th><th>ClassNotFoundException</th><th>NoClassDefFoundError</th></tr>
+<tr><td>Type</td><td>Exception (checked)</td><td>Error (unchecked)</td></tr>
+<tr><td>When</td><td>class name provided dynamically (forName, loadClass, …)</td><td>class name hard-coded, .class missing at runtime</td></tr>
+<tr><td>Typical API</td><td>Class.forName(&quot;Student&quot;)</td><td>new Student()</td></tr>
+<tr><td>Handling</td><td>must catch or declare</td><td>usually not caught; Error</td></tr>
+</table>
+<table>
+<tr><th></th><th>new</th><th>instanceof</th></tr>
+<tr><td>Purpose</td><td>create an object</td><td>check whether an object is of a type</td></tr>
+<tr><td>Result</td><td>a reference to a new object</td><td>boolean</td></tr>
+<tr><td>Twin at runtime</td><td>Class.newInstance()</td><td>Class.isInstance()</td></tr>
+</table>
+<table>
+<tr><th>Operator</th><th>Boolean operands</th><th>Integral operands</th><th>Short-circuit?</th><th></th><th></th></tr>
+<tr><td>&amp; `\</td><td> ^`</td><td>yes</td><td>yes</td><td>no — both sides always evaluated</td><td></td></tr>
+<tr><td>&amp;&amp; `\</td><td>\</td><td>`</td><td>yes</td><td>no</td><td>yes</td></tr>
+<tr><td>~</td><td>no</td><td>yes</td><td>n/a (unary)</td><td></td><td></td></tr>
+<tr><td>!</td><td>yes</td><td>no</td><td>n/a (unary)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>operator</th><th>x</th><th>y</th><th></th><th></th></tr>
+<tr><td>&amp;</td><td>11</td><td>17</td><td></td><td></td></tr>
+<tr><td>`\</td><td>`</td><td>12</td><td>16</td><td></td></tr>
+<tr><td>&amp;&amp;</td><td>11</td><td>16</td><td></td><td></td></tr>
+<tr><td>`\</td><td>\</td><td>`</td><td>12</td><td>16</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Topic</th><th>Where</th><th></th><th></th></tr>
+<tr><td>1</td><td>increment &amp; decrement</td><td>Part-1</td><td></td><td></td></tr>
+<tr><td>2</td><td>arithmetic</td><td>Part-1</td><td></td><td></td></tr>
+<tr><td>3</td><td>string concatenation +</td><td>Part-2</td><td></td><td></td></tr>
+<tr><td>4</td><td>relational &lt; &lt;= &gt; &gt;=</td><td>Part-2</td><td></td><td></td></tr>
+<tr><td>5</td><td>equality == !=</td><td>Part-2</td><td></td><td></td></tr>
+<tr><td>6</td><td>instanceof</td><td>Part-3</td><td></td><td></td></tr>
+<tr><td>7</td><td>bitwise `&amp; \</td><td>^ ~ !`</td><td>Part-3</td><td></td></tr>
+<tr><td>8</td><td>short-circuit `&amp;&amp; \</td><td>\</td><td>`</td><td>Part-4</td></tr>
+<tr><td>9</td><td>type-cast</td><td>Part-4</td><td></td><td></td></tr>
+<tr><td>10</td><td>assignment = += …</td><td>Part-5</td><td></td><td></td></tr>
+<tr><td>11</td><td>conditional ?:</td><td>Part-5</td><td></td><td></td></tr>
+<tr><td>12</td><td>new</td><td>Part-5</td><td></td><td></td></tr>
+<tr><td>13</td><td>[]</td><td>Part-5</td><td></td><td></td></tr>
+<tr><td>14</td><td>operator precedence</td><td>Part-6</td><td></td><td></td></tr>
+<tr><td>15</td><td>operand evaluation order</td><td>Part-6</td><td></td><td></td></tr>
+<tr><td>16</td><td>new vs newInstance()</td><td>Part-7</td><td></td><td></td></tr>
+<tr><td>17</td><td>instanceof vs isInstance()</td><td>Part-7</td><td></td><td></td></tr>
+<tr><td>18</td><td>ClassNotFoundException vs NoClassDefFoundError</td><td>Part-7</td><td></td><td></td></tr>
+</table>
+</body></html>

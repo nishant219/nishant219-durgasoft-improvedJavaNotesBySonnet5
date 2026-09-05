@@ -1,0 +1,446 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>077-customized-exceptions</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 077 — Customized exceptions</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Exception Handling Part-7 || Customized Exceptions</p>
+<h2>Overview</h2>
+<p>This session completes the five exception-handling keywords (try, catch, finally, throw, throws), reviews common compile-time errors, then introduces customized (user-defined) exceptions — how to define them, how to use them with throw, and three important design conclusions: `throw` is best for user-defined exceptions, extend `RuntimeException` (unchecked), and `super(msg)` makes the message visible to the default exception handler.</p>
+<h3>00:07 — Recap: `throw` and `throws`</h3>
+<p>Before customized exceptions, Durga Sir briefly recaps the two keywords from the previous session:</p>
+<p>These are among the most frequently asked interview topics.</p>
+<h3>00:43 — The five exception-handling keywords (summary)</h3>
+<p>All five keywords related to exception handling in Java:</p>
+<ol><li>`try`</li></ol>
+<ol><li>`catch`</li></ol>
+<ol><li>`finally`</li></ol>
+<ol><li>`throw`</li></ol>
+<ol><li>`throws`</li></ol>
+<p>Purpose of each:</p>
+<p>You should be able to explain all five clearly in an interview.</p>
+<h3>03:43 — Interview hot topic: difference between `throw` and `throws`</h3>
+<p>Durga Sir notes this is one of the most common viewer requests — many students ask for a dedicated video on `throw` vs `throws`. It also appears frequently in FAQ books and interviews.</p>
+<p>Quick answer:</p>
+<ul><li>`throw` → hand over a created exception object to the JVM</li></ul>
+<ul><li>`throws` → delegate exception-handling responsibility to the caller</li></ul>
+<h3>05:05 — `throw`, `throws`, and **`thrown`** (NOT a keyword)</h3>
+<p>Durga Sir warns about English verb confusion (like give / gave / given, take / took / taken):</p>
+<p>If an interviewer or FAQ asks about `thrown`, the expected answer is: there is no such keyword in Java. Do not invent a story about a thrown keyword.</p>
+<p>Board summary:</p>
+<pre class='code'>// Exception-handling keywords in Java (5 total):
+// try      → risky code
+// catch    → exception-handling code
+// finally  → cleanup code
+// throw    → hand exception object to JVM manually
+// throws   → delegate handling to caller
+// &quot;thrown&quot; → NOT a Java keyword</pre>
+<h3>07:36 — Five keywords (final board recap)</h3>
+<pre class='code'>/*
+ * try     → maintain risky code
+ * catch   → maintain exception-handling code
+ * finally → maintain cleanup code
+ * throw   → hand over our created exception object to JVM manually
+ * throws  → delegate responsibility of exception handling to caller
+ */</pre>
+<h3>08:40 — Various possible compile-time errors in exception handling</h3>
+<p>Durga Sir lists eight compile-time errors covered across the exception-handling series. Each error itself is an important exam/interview conclusion.</p>
+<ol><li>Unreported exception XXX must be caught or declared to be thrown</li></ol>
+<ol><li>Exception XXX has already been caught (duplicate catch in multiple catch blocks)</li></ol>
+<ol><li>Exception XXX is never thrown in body of corresponding try statement</li></ol>
+<ol><li>Unreachable statement (e.g., code after throw)</li></ol>
+<ol><li>Incompatible types: found XXX, required java.lang.Throwable</li></ol>
+<ol><li>try without catch or finally</li></ol>
+<ol><li>catch without try</li></ol>
+<ol><li>finally without try</li></ol>
+<p>These were already demonstrated with examples in earlier videos; here they are consolidated as a checklist.</p>
+<pre class='code'>// CE: Unreported exception IOException must be caught or declared to be thrown
+class Demo1 {
+    void m1() {
+        throw new java.io.IOException(&quot;fail&quot;);
+    }
+}
+// CE: exception ArithmeticException has already been caught
+class Demo2 {
+    public static void main(String[] args) {
+        try {
+            int x = 10 / 0;
+        } catch (Exception e) {
+        } catch (ArithmeticException e) { // duplicate — already caught above
+        }
+    }
+}
+// CE: exception FileNotFoundException is never thrown in body of corresponding try statement
+class Demo3 {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (java.io.FileNotFoundException e) {
+        }
+    }
+}
+// CE: unreachable statement
+class Demo4 {
+    public static void main(String[] args) {
+        throw new RuntimeException();
+        System.out.println(&quot;hello&quot;); // unreachable
+    }
+}
+// CE: incompatible types: found String, required java.lang.Throwable
+class Demo5 {
+    public static void main(String[] args) {
+        throw &quot;not an exception&quot;; // String is not Throwable
+    }
+}
+// CE: &#x27;try&#x27; without &#x27;catch&#x27;, &#x27;finally&#x27; or resource declarations
+class Demo6 {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;risky&quot;);
+        } // missing catch or finally
+    }
+}
+// CE: &#x27;catch&#x27; without &#x27;try&#x27;
+class Demo7 {
+    public static void main(String[] args) {
+        catch (Exception e) { // illegal without try
+        }
+    }
+}
+// CE: &#x27;finally&#x27; without &#x27;try&#x27;
+class Demo8 {
+    public static void main(String[] args) {
+        finally {
+            System.out.println(&quot;cleanup&quot;);
+        }
+    }
+}</pre>
+<h3>14:01 — Customized / user-defined exceptions (introduction)</h3>
+<p>Definition: Sometimes, to meet our program requirement, we can create our own exceptions. Such exceptions are called:</p>
+<ul><li>Customized exceptions, or</li></ul>
+<ul><li>User-defined exceptions, or</li></ul>
+<ul><li>Programmer-defined exceptions</li></ul>
+<p>Real-world-style examples (names used in the lecture):</p>
+<ul><li>TooYoungException</li></ul>
+<ul><li>TooOldException</li></ul>
+<ul><li>InsufficientFundsException</li></ul>
+<h3>15:04 — Motivating example: matrimonial website age validation</h3>
+<p>(Durga Sir uses a long, humorous real-life tangent about matrimonial sites to motivate customized exceptions. The technical takeaway is the age-validation scenario below.)</p>
+<p>Scenario: A matrimonial web application supports registration only for ages 18 to 60.</p>
+<ul><li>If someone registers at age 99 → raise `TooYoungException` with message: &quot;Please wait some more time. Definitely you will get the best match.&quot; (Sir uses reversed naming humorously in parts of the demo — see code below for the actual logic mapping.)</li></ul>
+<ul><li>If someone registers at age 14 → raise `TooOldException` with message: &quot;Your age already crossed marriage age. No chance of getting marriage.&quot;</li></ul>
+<p>Legal context mentioned: In India, minimum marriage age is typically 18 for ladies and 21 for gents (legal rule). The app&#x27;s supported range in the example is 18–60.</p>
+<p>These are not predefined Java exceptions — they are our own created exceptions to meet program requirements.</p>
+<pre class='code'>// Conceptual age rules for the matrimonial site example:
+// Supported registration age: 18 to 60
+// age &lt; 18  → TooYoungException (underage for the app)
+// age &gt; 60  → TooOldException   (over supported limit)
+// 18 &lt;= age &lt;= 60 → success message</pre>
+<h3>35:02 — What are customized exceptions? (formal definition)</h3>
+<p>Sometimes, to meet program requirement, we can define our own exceptions. Such type of exceptions are called customized / user-defined exceptions.</p>
+<p>Examples:</p>
+<ul><li>TooYoungException</li></ul>
+<ul><li>TooOldException</li></ul>
+<ul><li>InsufficientFundsException</li></ul>
+<h3>37:40 — How to define customized exceptions</h3>
+<p>Key rule: Every exception is a Java class. If we want to define our own exception, that class must be a child class of `Throwable` — either directly or indirectly.</p>
+<p>Highly recommended: extend `RuntimeException` (reason explained later — keeps the exception unchecked).</p>
+<p>Minimal definition pattern:</p>
+<pre class='code'>class TooYoungException extends RuntimeException {
+    TooYoungException(String msg) {
+        super(msg);
+    }
+}</pre>
+<p>If no description/message is needed, even the constructor is optional — the empty class extending RuntimeException is enough:</p>
+<pre class='code'>class TooYoungException extends RuntimeException {
+}</pre>
+<p>Second customized exception:</p>
+<pre class='code'>class TooOldException extends RuntimeException {
+    TooOldException(String msg) {
+        super(msg);
+    }
+}</pre>
+<p>General template:</p>
+<pre class='code'>// Step 1: class name ending with &quot;Exception&quot; (convention)
+// Step 2: extends RuntimeException (recommended)
+// Step 3: constructor with String arg calling super(msg) if message needed
+
+class MyCustomException extends RuntimeException {
+    MyCustomException(String msg) {
+        super(msg); // makes description available to default handler
+    }
+}</pre>
+<h3>41:08 — How to use customized exceptions (full demo)</h3>
+<p>Class: `CustomExceptionDemo` — reads age from command line and throws appropriate customized exception.</p>
+<pre class='code'>class TooYoungException extends RuntimeException {
+    TooYoungException(String msg) {
+        super(msg);
+    }
+}
+
+class TooOldException extends RuntimeException {
+    TooOldException(String msg) {
+        super(msg);
+    }
+}
+
+class CustomExceptionDemo {
+    public static void main(String[] args) {
+        int age = Integer.parseInt(args[0]);
+
+        if (age &gt; 60) {
+            throw new TooYoungException(
+                &quot;Please wait some more time. You will get the best match soon.&quot;);
+        } else if (age &lt; 18) {
+            throw new TooOldException(
+                &quot;Your age already crossed marriage age. No chance of getting marriage.&quot;);
+        } else {
+            System.out.println(&quot;You will get match details soon by email.&quot;);
+        }
+    }
+}</pre>
+<p>Note on naming in the lecture: Durga Sir deliberately swaps exception names vs messages for humor in places (&quot;reverse exceptions&quot;). The logic above matches the board execution: age &gt; 60 → TooYoungException, age &lt; 18 → TooOldException. Follow the code executed on screen, not the spoken joke.</p>
+<h3>46:04 — Execution and output</h3>
+<p>Compile:</p>
+<p>javac CustomExceptionDemo.java</p>
+<p>Run with age 99:</p>
+<p>java CustomExceptionDemo 99</p>
+<pre class='code'>// prints:
+// Exception in thread &quot;main&quot; TooYoungException: Please wait some more time. You will get the best match soon.</pre>
+<p>Run with age 14:</p>
+<p>java CustomExceptionDemo 14</p>
+<pre class='code'>// prints:
+// Exception in thread &quot;main&quot; TooOldException: Your age already crossed marriage age. No chance of getting marriage.</pre>
+<p>Run with age 27 (valid range):</p>
+<p>java CustomExceptionDemo 27</p>
+<pre class='code'>// prints:
+// You will get match details soon by email.</pre>
+<h3>53:17 — Conclusion 1: When to raise customized exceptions</h3>
+<p>Predefined exceptions — JVM/library knows when to raise them:</p>
+<p>Customized exceptions — JVM does NOT know when to raise them. We must decide based on our program requirement.</p>
+<p>Example: if matrimonial site policy changes from 18–60 to 21–70:</p>
+<pre class='code'>class CustomExceptionDemo {
+    public static void main(String[] args) {
+        int age = Integer.parseInt(args[0]);
+
+        if (age &gt; 70) {
+            throw new TooYoungException(&quot;Please wait some more time...&quot;);
+        } else if (age &lt; 21) {
+            throw new TooOldException(&quot;Your age already crossed marriage age...&quot;);
+        } else {
+            System.out.println(&quot;You will get match details soon by email.&quot;);
+        }
+    }
+}</pre>
+<p>To create and raise our own exceptions, we need the `throw` keyword.</p>
+<h3>55:12 — Conclusion 1 (continued): `throw` is best for user-defined exceptions</h3>
+<pre class='code'>/*
+ * NOTE:
+ * throw keyword is BEST for user-defined / customized exceptions,
+ * but NOT typically for predefined exceptions.
+ *
+ * Reason: JVM knows when to raise predefined exceptions (NPE, ArithmeticException, etc.).
+ *         We must decide when to raise our own exceptions based on business rules.
+ */</pre>
+<p>Example — business rule triggers custom exception:</p>
+<pre class='code'>class InsufficientFundsException extends RuntimeException {
+    InsufficientFundsException(String msg) {
+        super(msg);
+    }
+}
+
+class Account {
+    int balance = 1000;
+
+    void withdraw(int amount) {
+        if (amount &gt; balance) {
+            throw new InsufficientFundsException(&quot;Balance insufficient: &quot; + balance);
+        }
+        balance -= amount;
+    }
+}</pre>
+<p>Predefined exceptions are usually raised automatically by JVM/API; customized ones are raised manually with throw.</p>
+<h3>56:46 — Conclusion 2: Extend `RuntimeException` (unchecked), not `Exception` (checked)</h3>
+<p>Highly recommended: define customized exceptions as unchecked by extending `RuntimeException`.</p>
+<p>Reason:</p>
+<ul><li>Child of RuntimeException → unchecked exception</li></ul>
+<ul><li>When throwing unchecked exceptions, compiler does NOT force try-catch or throws</li></ul>
+<ul><li>If we extend `Exception` instead → checked exception → compiler enforces handling</li></ul>
+<p>Checked version (NOT recommended):</p>
+<pre class='code'>class TooYoungException extends Exception {
+    TooYoungException(String msg) {
+        super(msg);
+    }
+}
+class CustomExceptionDemo {
+    public static void main(String[] args) {
+        int age = Integer.parseInt(args[0]);
+        if (age &gt; 60) {
+            throw new TooYoungException(&quot;Please wait...&quot;); // CE without try-catch or throws
+        }
+    }
+}
+// CE: unreported exception TooYoungException; must be caught or declared to be thrown</pre>
+<p>Even though our intent is simply to signal that something went wrong, the compiler demands try-catch or throws first — unnecessary boilerplate for programmer-defined business-rule exceptions.</p>
+<p>Unchecked version (recommended):</p>
+<pre class='code'>class TooYoungException extends RuntimeException {
+    TooYoungException(String msg) {
+        super(msg);
+    }
+}
+
+class CustomExceptionDemo {
+    public static void main(String[] args) {
+        int age = Integer.parseInt(args[0]);
+        if (age &gt; 60) {
+            throw new TooYoungException(&quot;Please wait...&quot;); // compiles fine
+        }
+    }
+}</pre>
+<p>Board conclusion:</p>
+<p>It is highly recommended to define customized exceptions as unchecked — i.e., extend `RuntimeException`, but NOT `Exception`.</p>
+<h3>1:00:38 — Conclusion 3: Why `super(msg)` is required in the constructor</h3>
+<p>When an exception is thrown and not caught, the default exception handler prints details to the console using `printStackTrace()`, which is defined in `Throwable`.</p>
+<p>Inheritance chain for customized exception:</p>
+<pre class='code'>/*
+ * TooYoungException
+ *   └── RuntimeException
+ *         └── Exception
+ *               └── Throwable   ← printStackTrace() lives here
+ */</pre>
+<p>Flow of the message string:</p>
+<pre class='code'>class TooYoungException extends RuntimeException {
+    TooYoungException(String msg) {
+        super(msg); // passes msg up the chain
+    }
+}</pre>
+<ol><li>We pass description string to TooYoungException constructor</li></ol>
+<ol><li>super(msg) forwards it to RuntimeException → Exception → Throwable</li></ol>
+<ol><li>`Throwable` stores the message</li></ol>
+<ol><li>Default exception handler calls `printStackTrace()`, which uses that stored description</li></ol>
+<ol><li>Console shows: TooYoungException: Please wait some more time...</li></ol>
+<p>Without `super(msg)`:</p>
+<pre class='code'>class TooYoungException extends RuntimeException {
+    TooYoungException(String msg) {
+        // super(msg) missing — message NOT passed to Throwable
+    }
+}</pre>
+<p>The exception still occurs, but the custom message may not appear in default handler output as expected.</p>
+<p>Comment to add in your code:</p>
+<pre class='code'>class TooYoungException extends RuntimeException {
+    TooYoungException(String msg) {
+        super(msg); // to make description available to default exception handler
+    }
+}</pre>
+<h3>1:05:22 — Session wrap-up: three key takeaways</h3>
+<p>Three important conclusions:</p>
+<ol><li>`throw` keyword is best for user-defined/customized exceptions, not for deciding when predefined exceptions occur</li></ol>
+<ol><li>Extend `RuntimeException` (unchecked) — not `Exception` (checked)</li></ol>
+<ol><li>`super(msg)` in constructor — to make the description available to the default exception handler via Throwable&#x27;s message mechanism and printStackTrace()</li></ol>
+<h2>Quick reference card</h2>
+<pre class='code'>// DEFINE
+class TooYoungException extends RuntimeException {
+    TooYoungException(String msg) {
+        super(msg); // message for default handler
+    }
+}
+
+// USE
+class App {
+    public static void main(String[] args) {
+        int age = Integer.parseInt(args[0]);
+        if (age &lt; 18) {
+            throw new TooYoungException(&quot;Too young to register&quot;);
+        }
+        System.out.println(&quot;Registration successful&quot;);
+    }
+}</pre>
+<h2>Exception-handling keyword cheat sheet (Videos 073–077)</h2>
+<pre class='code'>/*
+ * KEYWORD SUMMARY
+ * ─────────────────────────────────────────────────────────
+ * try     → risky code
+ * catch   → exception-handling code
+ * finally → cleanup code
+ * throw   → hand created exception object to JVM (manual)
+ * throws  → delegate handling responsibility to caller
+ *
+ * COMPILE-TIME ERRORS (8 common ones)
+ * ─────────────────────────────────────────────────────────
+ * 1. unreported exception ... must be caught or declared
+ * 2. exception ... has already been caught
+ * 3. exception ... is never thrown in body of try
+ * 4. unreachable statement
+ * 5. incompatible types (not Throwable)
+ * 6. try without catch/finally
+ * 7. catch without try
+ * 8. finally without try
+ *
+ * CUSTOMIZED EXCEPTIONS
+ * ─────────────────────────────────────────────────────────
+ * - Extend RuntimeException (unchecked) — recommended
+ * - Use throw to raise based on YOUR business rules
+ * - super(msg) passes message to default exception handler
+ * - &quot;thrown&quot; is NOT a Java keyword
+ */</pre>
+<p>```java block count: 32```</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 77 of 203</td></tr>
+<tr><td>Series</td><td>Exception Handling · Part 7</td></tr>
+<tr><td>Topic</td><td>Customized Exceptions</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 05m 45s</td></tr>
+<tr><td>Video ID</td><td>t-9RCfuHsAk</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=t-9RCfuHsAk</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Keyword</th><th>Purpose</th></tr>
+<tr><td>`throw`</td><td>To hand over our created exception object to the JVM manually</td></tr>
+<tr><td>`throws`</td><td>To delegate responsibility of exception handling to the caller (caller may be another method or the JVM)</td></tr>
+</table>
+<table>
+<tr><th>Keyword</th><th>Need / Purpose</th></tr>
+<tr><td>`try`</td><td>To maintain risky code</td></tr>
+<tr><td>`catch`</td><td>To maintain exception-handling code</td></tr>
+<tr><td>`finally`</td><td>To maintain cleanup code (cleanup activities)</td></tr>
+<tr><td>`throw`</td><td>To hand over our created exception object to the JVM manually</td></tr>
+<tr><td>`throws`</td><td>To delegate responsibility of exception handling to the caller</td></tr>
+</table>
+<table>
+<tr><th>Form</th><th>Exists in Java?</th></tr>
+<tr><td>throw</td><td>✅ Yes — keyword</td></tr>
+<tr><td>throws</td><td>✅ Yes — keyword</td></tr>
+<tr><td>thrown</td><td>❌ No such keyword in Java</td></tr>
+</table>
+<table>
+<tr><th>Exception</th><th>When raised</th></tr>
+<tr><td>ArithmeticException</td><td>Division by zero</td></tr>
+<tr><td>NullPointerException</td><td>Operation on null reference</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Takeaway</th></tr>
+<tr><td>1</td><td>What customized/user-defined exceptions are — our own exception classes for program requirements</td></tr>
+<tr><td>2</td><td>How to define — class extending Throwable hierarchy; preferably RuntimeException</td></tr>
+<tr><td>3</td><td>How to use — validate business rules, throw new MyException(&quot;message&quot;)</td></tr>
+</table>
+</body></html>

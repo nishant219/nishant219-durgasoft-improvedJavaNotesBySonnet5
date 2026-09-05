@@ -1,0 +1,551 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>035-class-modifier-abstract</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 035 — Class level modifiers: abstract</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-6|| Class Level Modifiers: abstract</p>
+<p>YouTube captions are blocked on this upload. These notes follow Durga Sir’s Declarations board: concrete vs abstract, abstract methods, “cannot new”, child must implement or stay abstract, abstract+final illegal, abstract+public legal, empty abstract class, and every modifier combination as a Java snippet.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Concrete class vs abstract class</li></ol>
+<ol><li>Abstract method = signature, no body</li></ol>
+<ol><li>new AbstractClass() is CE</li></ol>
+<ol><li>If a class has even one abstract method, the class must be abstract</li></ol>
+<ol><li>A class may be abstract even with zero abstract methods (HttpServlet-style)</li></ol>
+<ol><li>Child must implement every inherited abstract method or declare itself abstract</li></ol>
+<ol><li>Three-level Parent / Child / GrandChild with m1, m2, m3</li></ol>
+<ol><li>abstract is for classes and methods, never variables</li></ol>
+<ol><li>Combination table as compilable / CE snippets</li></ol>
+<ol><li>Empty abstract class is legal</li></ol>
+<h2>Detailed notes</h2>
+<h3>Concrete class vs abstract class</h3>
+<p>Concrete class: a class for which we can create an object. Almost every class we have written so far.</p>
+<pre class='code'>class Test {
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(&quot;object created&quot;);
+        // prints object created
+    }
+}</pre>
+<p>Abstract class: a class for which we cannot create an object. We declare it with the abstract modifier.</p>
+<pre class='code'>abstract class Test {
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Test t = new Test(); // CE: Test is abstract; cannot be instantiated
+    }
+}</pre>
+<p>Durga’s line: abstract class is incomplete. JVM will not give you an object of an incomplete type.</p>
+<h3>We can still declare a reference</h3>
+<p>new is illegal. A reference variable of the abstract type is legal. It will point at a child object (later, polymorphism).</p>
+<pre class='code'>abstract class Parent {
+}
+
+class Child extends Parent {
+}
+
+class Test {
+    public static void main(String[] args) {
+        Parent p;              // valid — reference only
+        p = new Child();       // valid — object is concrete Child
+        System.out.println(p);
+        // prints Child@hashcode
+        // Parent p2 = new Parent(); // CE
+    }
+}</pre>
+<h3>Abstract method</h3>
+<p>A method without implementation (no body, semicolon after the signature). It is incomplete, so it must be marked abstract.</p>
+<pre class='code'>abstract class Test {
+    public abstract void m1();
+}</pre>
+<p>Body is illegal:</p>
+<pre class='code'>abstract class Test {
+    public abstract void m1() { // CE: abstract methods cannot have a body
+        System.out.println(&quot;no&quot;);
+    }
+}</pre>
+<p>Concrete method in the same abstract class is legal — abstract class can mix complete and incomplete members.</p>
+<pre class='code'>abstract class Test {
+    public abstract void m1();
+
+    public void m2() {
+        System.out.println(&quot;concrete method&quot;);
+    }
+}
+class Demo extends Test {
+    public void m1() {
+        System.out.println(&quot;implemented m1&quot;);
+    }
+
+    public static void main(String[] args) {
+        Demo d = new Demo();
+        d.m1();
+        // prints implemented m1
+        d.m2();
+        // prints concrete method
+    }
+}</pre>
+<h3>If the class has an abstract method, the class must be abstract</h3>
+<p>Otherwise CE: Test is not abstract and does not override abstract method m1().</p>
+<pre class='code'>class Test {
+    public abstract void m1(); // CE: Test is not abstract and does not override abstract method m1()
+}</pre>
+<p>Fix: mark the class abstract.</p>
+<pre class='code'>abstract class Test {
+    public abstract void m1();
+}</pre>
+<h3>Empty abstract class is legal</h3>
+<p>Zero abstract methods, still abstract. Meaning: “do not instantiate this class.”</p>
+<p>abstract class Test {
+}</p>
+<pre class='code'>class Demo {
+    public static void main(String[] args) {
+        Test t = new Test(); // CE: Test is abstract; cannot be instantiated
+    }
+}</pre>
+<p>Abstract class with only concrete methods:</p>
+<pre class='code'>abstract class Test {
+    public void m1() {
+        System.out.println(&quot;m1&quot;);
+    }
+
+    public void m2() {
+        System.out.println(&quot;m2&quot;);
+    }
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Test t = new Test(); // CE: Test is abstract; cannot be instantiated
+    }
+}</pre>
+<p>Durga’s API story: `HttpServlet` is an abstract class whose service/doGet/doPost methods already have default implementations. It is still abstract so nobody writes new HttpServlet(). We extend it (MyServlet extends HttpServlet) and override what we need.</p>
+<pre class='code'>abstract class HttpServletDemo {
+    public void doGet() {
+        System.out.println(&quot;default doGet&quot;);
+    }
+
+    public void doPost() {
+        System.out.println(&quot;default doPost&quot;);
+    }
+}
+
+class MyServlet extends HttpServletDemo {
+    public void doGet() {
+        System.out.println(&quot;my doGet&quot;);
+    }
+
+    public static void main(String[] args) {
+        MyServlet s = new MyServlet();
+        s.doGet();
+        // prints my doGet
+        s.doPost();
+        // prints default doPost
+        // new HttpServletDemo(); // CE
+    }
+}</pre>
+<h3>Why abstract methods exist</h3>
+<p>Parent knows that a child must do something, but not how. Example: every vehicle has wheels, but the number differs.</p>
+<pre class='code'>abstract class Vehicle {
+    public abstract int getNoOfWheels();
+}
+
+class Bus extends Vehicle {
+    public int getNoOfWheels() {
+        return 6;
+    }
+}
+
+class Auto extends Vehicle {
+    public int getNoOfWheels() {
+        return 3;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Vehicle v1 = new Bus();
+        System.out.println(v1.getNoOfWheels());
+        // prints 6
+        Vehicle v2 = new Auto();
+        System.out.println(v2.getNoOfWheels());
+        // prints 3
+        // Vehicle v3 = new Vehicle(); // CE
+    }
+}</pre>
+<p>Person / work:</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+
+    public abstract void work();
+}
+
+class Student extends Person {
+    public void work() {
+        System.out.println(&quot;studies&quot;);
+    }
+}
+
+class Employee extends Person {
+    public void work() {
+        System.out.println(&quot;job&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Person p1 = new Student();
+        p1.work();
+        // prints studies
+        Person p2 = new Employee();
+        p2.work();
+        // prints job
+    }
+}</pre>
+<h3>Child must implement or stay abstract</h3>
+<p>If Parent has abstract methods, Child has two legal choices:</p>
+<ol><li>Provide implementation for every abstract method → Child can be concrete</li></ol>
+<ol><li>Leave any of them unimplemented → Child must be abstract</li></ol>
+<pre class='code'>abstract class Parent {
+    public abstract void m1();
+    public abstract void m2();
+    public abstract void m3();
+}</pre>
+<p>Child implements only m1 → Child is still incomplete → must be abstract:</p>
+<pre class='code'>abstract class Child extends Parent {
+    public void m1() {
+        System.out.println(&quot;m1&quot;);
+    }
+}</pre>
+<p>If we forget abstract on Child:</p>
+<pre class='code'>class Child extends Parent { // CE: Child is not abstract and does not override abstract method m2()
+    public void m1() {
+        System.out.println(&quot;m1&quot;);
+    }
+}</pre>
+<p>GrandChild implements the rest → concrete:</p>
+<pre class='code'>class GrandChild extends Child {
+    public void m2() {
+        System.out.println(&quot;m2&quot;);
+    }
+
+    public void m3() {
+        System.out.println(&quot;m3&quot;);
+    }
+}</pre>
+<p>Who can we new?</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // Parent p = new Parent();       // CE: Parent is abstract
+        // Child c = new Child();         // CE: Child is abstract
+        GrandChild g = new GrandChild();
+        g.m1();
+        // prints m1
+        g.m2();
+        // prints m2
+        g.m3();
+        // prints m3
+        Parent p = new GrandChild();
+        p.m1();
+        // prints m1
+    }
+}</pre>
+<p>Partial GrandChild still abstract:</p>
+<pre class='code'>abstract class GrandChild extends Child {
+    public void m2() {
+        System.out.println(&quot;m2&quot;);
+    }
+    // m3 still abstract
+}</pre>
+<h3>Abstract class can have a `main` method — we can even run it</h3>
+<p>We cannot instantiate it. We can start the JVM with it if main is present. He compiles and runs this.</p>
+<pre class='code'>abstract class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;abstract class main&quot;);
+        // prints abstract class main
+    }
+}
+class RunNote {
+    public static void main(String[] args) {
+        // javac Test.java
+        // java Test
+        // prints abstract class main
+        System.out.println(&quot;running an abstract class is allowed; new Test() is not&quot;);
+    }
+}</pre>
+<p>Abstract class can have constructors, static methods, instance methods, instance variables, static variables. Constructor talk is expanded in the later “loopholes” videos. Board seed:</p>
+<pre class='code'>abstract class Test {
+    int x = 10;
+    static int y = 20;
+
+    Test() {
+        System.out.println(&quot;abstract class constructor&quot;);
+    }
+
+    public void m1() {
+        System.out.println(&quot;instance method&quot;);
+    }
+
+    public static void m2() {
+        System.out.println(&quot;static method&quot;);
+    }
+
+    public abstract void m3();
+}
+
+class Child extends Test {
+    public void m3() {
+        System.out.println(&quot;m3&quot;);
+    }
+
+    public static void main(String[] args) {
+        Child c = new Child();
+        // prints abstract class constructor
+        System.out.println(c.x);
+        // prints 10
+        System.out.println(y);
+        // prints 20
+        c.m1();
+        // prints instance method
+        m2();
+        // prints static method
+        c.m3();
+        // prints m3
+    }
+}</pre>
+<h3>`abstract` is never for variables</h3>
+<pre class='code'>class Test {
+    abstract int x = 10; // CE: modifier abstract not allowed here
+}
+abstract class Test {
+    abstract int x; // CE: modifier abstract not allowed here
+}</pre>
+<p>Instance / static / local variables cannot be abstract. Incomplete behaviour is a method problem, not a field problem.</p>
+<h3>Combination table as Java snippets</h3>
+<p>Durga fills a modifier-combination table on the board. Below, each cell is a class or method declaration, not a prose row.</p>
+<h4>Class: `public` + `abstract` — legal</h4>
+<pre class='code'>public abstract class Test {
+    public abstract void m1();
+}
+public abstract class EmptyPublicAbstract {
+}</pre>
+<h4>Class: `public` + `final` — legal (previous video)</h4>
+<pre class='code'>public final class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;public final ok&quot;);
+        // prints public final ok
+    }
+}</pre>
+<h4>Class: `final` + `abstract` — **illegal**</h4>
+<p>Opposite meanings: cannot extend vs must extend.</p>
+<p>final abstract class Test { // CE: illegal combination of modifiers: abstract and final
+}</p>
+<p>abstract final class Test2 { // CE: order does not matter; still illegal combination
+}</p>
+<pre class='code'>public final abstract class Test3 { // CE: illegal combination of modifiers: abstract and final
+}</pre>
+<h4>Class: `abstract` + `strictfp` — legal</h4>
+<p>strictfp on a class applies to the concrete code inside. Abstract class may contain concrete methods.</p>
+<pre class='code'>abstract strictfp class Test {
+    public void m1() {
+        System.out.println(10.0 / 3);
+    }
+
+    public abstract void m2();
+}
+public abstract strictfp class Test2 {
+}</pre>
+<h4>Class: `final` + `strictfp` — legal</h4>
+<pre class='code'>final strictfp class Test {
+    public static void main(String[] args) {
+        System.out.println(10.0 / 3);
+    }
+}</pre>
+<h4>Class: `public` + `strictfp` — legal</h4>
+<pre class='code'>public strictfp class Test {
+}</pre>
+<h4>Method: `abstract` + `public` — legal (common)</h4>
+<pre class='code'>abstract class Test {
+    public abstract void m1();
+}
+abstract class Test2 {
+    abstract void m1(); // default access abstract method — also legal
+}
+abstract class Test3 {
+    protected abstract void m1(); // legal
+}</pre>
+<h4>Method: `abstract` + `final` — **illegal**</h4>
+<p>final method cannot be overridden. abstract method must be overridden (implemented) in a child.</p>
+<pre class='code'>abstract class Test {
+    public abstract final void m1(); // CE: illegal combination of modifiers: abstract and final
+}
+abstract class Test2 {
+    final abstract void m1(); // CE
+}</pre>
+<h4>Method: `abstract` + `private` — **illegal**</h4>
+<p>Private members are not visible in the child, so the child cannot implement the method.</p>
+<pre class='code'>abstract class Test {
+    private abstract void m1(); // CE: illegal combination of modifiers: abstract and private
+}</pre>
+<h4>Method: `abstract` + `static` — **illegal**</h4>
+<p>static is class-level; abstract is instance overriding. Also: static methods are not overridden (they are hidden).</p>
+<pre class='code'>abstract class Test {
+    public abstract static void m1(); // CE: illegal combination of modifiers: abstract and static
+}
+abstract class Test2 {
+    static abstract void m1(); // CE
+}</pre>
+<h4>Method: `abstract` + `synchronized` — **illegal**</h4>
+<p>synchronized talks about the implementation (lock the object / class while the body runs). Abstract method has no body.</p>
+<pre class='code'>abstract class Test {
+    public abstract synchronized void m1(); // CE: illegal combination of modifiers: abstract and synchronized
+}</pre>
+<h4>Method: `abstract` + `native` — **illegal**</h4>
+<p>native means “body is in C / C++.” Abstract means “no body here, child will provide Java body.” Two different “no Java body” stories that cannot be combined.</p>
+<pre class='code'>abstract class Test {
+    public abstract native void m1(); // CE: illegal combination of modifiers: abstract and native
+}</pre>
+<h4>Method: `abstract` + `strictfp` — **illegal**</h4>
+<p>strictfp applies to floating-point implementation. No body → nothing to apply to.</p>
+<pre class='code'>abstract class Test {
+    public abstract strictfp void m1(); // CE: illegal combination of modifiers: abstract and strictfp
+}</pre>
+<p>Contrast with class-level abstract strictfp, which is legal (snippet above).</p>
+<h4>Method: concrete + `strictfp` — legal</h4>
+<pre class='code'>class Test {
+    public strictfp void m1() {
+        System.out.println(10.0 / 3);
+    }
+
+    public static void main(String[] args) {
+        new Test().m1();
+    }
+}</pre>
+<h3>Implementation in the child is overriding</h3>
+<p>The child’s method is a concrete override of the parent’s abstract method. Signature must match (overriding rules come in OOPs). Minimum for this video: same name, same argument types, compatible return, not weaker access.</p>
+<pre class='code'>abstract class Parent {
+    public abstract void m1();
+}
+
+class Child extends Parent {
+    public void m1() {
+        System.out.println(&quot;override / implement&quot;);
+    }
+
+    public static void main(String[] args) {
+        Parent p = new Child();
+        p.m1();
+        // prints override / implement
+    }
+}</pre>
+<p>Weaker access is CE (preview of overriding + access):</p>
+<pre class='code'>abstract class Parent {
+    public abstract void m1();
+}
+
+class Child extends Parent {
+    void m1() { // CE: attempting to assign weaker access privileges; was public
+        System.out.println(&quot;default cannot hide public&quot;);
+    }
+}</pre>
+<h3>Abstract class vs interface (seed only)</h3>
+<p>He says: “wait for the interface videos.” One line on the board: both can have abstract methods; differences later (variables, constructors, multiple inheritance).</p>
+<pre class='code'>abstract class A {
+    public abstract void m1();
+}
+
+interface B {
+    void m1(); // public abstract by default — later videos
+}</pre>
+<h2>Code from the lecture</h2>
+<p>Parent / Child / GrandChild board program:</p>
+<pre class='code'>abstract class Parent {
+    public abstract void m1();
+    public abstract void m2();
+    public abstract void m3();
+}
+
+abstract class Child extends Parent {
+    public void m1() {
+        System.out.println(&quot;m1 method&quot;);
+    }
+}
+
+class GrandChild extends Child {
+    public void m2() {
+        System.out.println(&quot;m2 method&quot;);
+    }
+
+    public void m3() {
+        System.out.println(&quot;m3 method&quot;);
+    }
+
+    public static void main(String[] args) {
+        GrandChild g = new GrandChild();
+        g.m1();
+        // prints m1 method
+        g.m2();
+        // prints m2 method
+        g.m3();
+        // prints m3 method
+        Parent p = new GrandChild();
+        p.m1();
+        // prints m1 method
+        // Parent p2 = new Parent(); // CE
+        // Child c = new Child();     // CE
+    }
+}</pre>
+<h2>Rules</h2>
+<ol><li>Abstract class → cannot instantiate (new is CE). Reference is fine.</li></ol>
+<ol><li>Abstract method → no body; class that contains it must be abstract.</li></ol>
+<ol><li>Abstract class may have zero abstract methods.</li></ol>
+<ol><li>Child implements all abstract methods → may be concrete; otherwise child must be abstract.</li></ol>
+<ol><li>abstract + final (class or method) → CE.</li></ol>
+<ol><li>abstract + public (class or method) → OK.</li></ol>
+<ol><li>Method combos that are CE: abstract with private, static, synchronized, native, strictfp, final.</li></ol>
+<ol><li>Class combo abstract strictfp is OK; method combo abstract strictfp is not.</li></ol>
+<ol><li>Variables cannot be abstract.</li></ol>
+<ol><li>Empty abstract class A {} is valid.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>“Abstract class cannot have a constructor / main / static method” — false.</li></ul>
+<ul><li>“Abstract class must have at least one abstract method” — false.</li></ul>
+<ul><li>abstract final class is always CE — favourite combination question.</li></ul>
+<ul><li>new on abstract type is CE even if the class has no abstract methods.</li></ul>
+<ul><li>Forgetting to mark Child abstract when m2/m3 remain abstract.</li></ul>
+<ul><li>public abstract strictfp void m1(); is CE; abstract strictfp class Test is not.</li></ul>
+<h2>Recap</h2>
+<p>Last video: final class = complete, no child. This video: abstract class = incomplete, child must exist to finish it. Next video: member-level modifiers — public / protected / &lt;default&gt; / private on methods and variables, with pack1 / pack2.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 35 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 6 of 14</td></tr>
+<tr><td>Topic</td><td>Abstract classes and abstract methods; modifier combinations</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 19m 08s (4748 seconds)</td></tr>
+<tr><td>Video ID</td><td>UykTzY45Jyc</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=UykTzY45Jyc</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

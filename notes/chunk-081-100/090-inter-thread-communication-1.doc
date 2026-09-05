@@ -1,0 +1,261 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>090-inter-thread-communication-1</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 090 — Inter Thread Communication Part-1</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-10 || Inter Thread Communication Part-1</p>
+<p>Source: real YouTube auto-captions (.transcripts/090-Ev0mltHfYh0.txt). ASR decoded in place: weight / weit / waight = wait; threats = threads; Postman / post man = postman; D / Durga = waiting person (T1); relig / religious / reles / relases = releases; lack / luck = lock; illegal monitor State / shate = IllegalMonitorStateException; SEMA Force = semaphores; ENT / tjp / scjp = SCJP/interview; Noy / Noyify = notify; Mond / NS = ms / ns; 18 person / waiting = waiting thread; keep subing = keep writing; vo / void = void; runable = runnable; scheder / threaded = thread scheduler; Packers and movers / PST = post office digression.</p>
+<p>This part is mostly theory + signatures + life-cycle transitions for wait / notify / notifyAll. (Full producer-style program is later sessions.)</p>
+<h3>00:06 — Topic intro: inter-thread communication</h3>
+<p>Next topic: inter-thread communication — how two threads communicate with each other.</p>
+<p>Not a “traditional” topic like “ways to define a thread” or priorities. Requires thinking (like synchronization). Many people lack full confidence here.</p>
+<h3>01:40 — Letter / post-box analogy (polling is bad)</h3>
+<p>Story (evening ~6:00 call): dear says she posted a letter; may arrive tomorrow morning. He keeps checking the personal post-box at the gate every 15–45 minutes all night into next afternoon (~1:45 p.m.) until the letter arrives. Content: “leaving for native place — don’t call/message until back.” Huge anxiety wasted on something that could have been said on the phone.</p>
+<p>Mapping:</p>
+<ul><li>He expects updation of post-box</li></ul>
+<ul><li>Postman performs the update</li></ul>
+<ul><li>Polling every few minutes = waste of system time → not recommended</li></ul>
+<p>Better approach: put a sticker — “eagerly waiting; if you update, please notify me” → sleep/wait; postman updates and notifies; only two communications with the box (place sticker; collect after notify).</p>
+<p>Advantage: unnecessary waiting / system time not wasted when threads can communicate.</p>
+<h3>12:00 — Core rule (board)</h3>
+<pre class='code'>/*
+Two threads can communicate with each other
+by using wait, notify and notifyAll methods
+
+The thread which is expecting updation
+is responsible to call wait method
+→ immediately the thread will enter into waiting state
+
+The thread which is responsible to perform updation
+after performing updation
+is responsible to call notify method
+→ then waiting thread will get that notification
+and continue its execution with those updated items
+*/</pre>
+<h3>17:19 — Why `wait`/`notify`/`notifyAll` are in `Object`, not `Thread`</h3>
+<p>Fact (SCJP favorite): methods present in `Object` class, not in Thread class.</p>
+<p>Wrong student reason: “maybe Thread class didn’t have enough space.” Space is not the issue.</p>
+<p>Wrong shallow reason: “so Thread inherits them too” — then everything could live in Object.</p>
+<p>Real reason:</p>
+<ul><li>You call start() / join() only on Thread objects → those methods belong in Thread</li></ul>
+<ul><li>You call wait() / notify() / notifyAll() on any Java object that is being waited on (post-box, Stack, Queue, Student, Customer, …)</li></ul>
+<ul><li>If a method must be callable on every Java object → it must live in `Object`</li></ul>
+<pre class='code'>/*
+wait, notify, notifyAll methods present in Object class
+but not in Thread class
+because thread can call these methods on any Java object
+*/
+// Illustrative contrast
+Thread t = new Thread();
+t.start();   // only on Thread → defined in Thread
+t.join();    // only on Thread → defined in Thread
+
+Object postBox = new Object();
+// any object can be wait/notify target → defined in Object
+synchronized (postBox) {
+    postBox.wait();     // expecting updation
+    // ...
+    postBox.notify();   // after updation
+}</pre>
+<h3>28:15 — Must be owner / must be in synchronized area</h3>
+<p>To call wait on an object, the thread must be owner of that object = must have the lock of that object = must be inside synchronized area for that object.</p>
+<p>Analogy: you can wait on your post-box; waiting on neighbor’s post-box → trouble / exception.</p>
+<p>If you call wait / notify / notifyAll outside synchronized method/block → runtime exception: IllegalMonitorStateException (monitor ≈ lock / OS semaphore idea).</p>
+<pre class='code'>/*
+To call wait or notify or notifyAll methods on any object,
+thread should be owner of that object
+that is the thread should has lock of that object
+that is the thread should be inside synchronized area
+
+Hence we can call wait, notify and notifyAll methods
+only from synchronized area
+otherwise we will get runtime exception saying
+IllegalMonitorStateException
+*/
+class Bad {
+    public void m1() {
+        try {
+            wait(); // not in synchronized area
+            // Runtime: IllegalMonitorStateException
+        } catch (InterruptedException e) {
+        }
+    }
+}
+
+class Good {
+    public synchronized void m1() {
+        try {
+            wait(); // OK — thread owns this object&#x27;s lock
+        } catch (InterruptedException e) {
+        }
+    }
+}</pre>
+<p>Three conclusions so far:</p>
+<ol><li>Threads communicate via wait / notify / notifyAll</li></ol>
+<ol><li>Those methods live in Object, not Thread</li></ol>
+<ol><li>Call only from synchronized area, else IllegalMonitorStateException</li></ol>
+<h3>35:26 — Effect of `wait` on the lock (immediately; that object only)</h3>
+<p>If T1 calls wait on an object:</p>
+<ol><li>It immediately releases the lock of that particular object</li></ol>
+<ol><li>Then enters waiting state</li></ol>
+<p>Two critical words:</p>
+<ul><li>immediately</li></ul>
+<ul><li>lock of that particular object only — not all locks the thread may hold</li></ul>
+<p>If T1 holds 10 locks and calls wait on one object → releases only that one lock.</p>
+<p>Why release? Otherwise the updating thread (postman) cannot acquire the lock to update and notify.</p>
+<pre class='code'>/*
+If a thread calls wait method on any object
+it immediately releases the lock of that particular object
+and entered into waiting state
+*/</pre>
+<h3>39:05 — Effect of `notify` (releases lock, but may NOT immediately)</h3>
+<p>Long postman digression (old cycle + bell + uniform vs modern Splendor, post-office policies, packers &amp; movers) → two postman styles:</p>
+<ol><li>Deliver / update first, shout “post!” (notify) last</li></ol>
+<ol><li>Shout “post!” first, then still search/hand over letter (work after notify)</li></ol>
+<p>So both patterns exist: update-then-notify, or notify-then-more-work.</p>
+<p>Therefore:</p>
+<pre class='code'>/*
+If a thread calls notify method on any object
+it releases the lock of that object
+but may not immediately
+*/</pre>
+<p>After notify, the notifier may still need to do work while holding the lock; lock release happens later when leaving the synchronized area.</p>
+<p>Except wait / notify / notifyAll, there is no other method where a thread releases the lock (for this classical model):</p>
+<p>Why must wait/notify release? Waiting thread gave up lock so updater can enter; notifier must eventually release so waiter can re-enter synchronized area and continue.</p>
+<h3>51:38 — SCJP-style “which is valid?” checklist</h3>
+<p>He frames options:</p>
+<ol><li>wait → immediately waiting without releasing any lock → INVALID</li></ol>
+<ol><li>wait → releases lock of that object but may not immediately → INVALID (wait is immediate)</li></ol>
+<ol><li>wait → releases all locks acquired by that thread and enters waiting → INVALID (only that object’s lock)</li></ol>
+<ol><li>wait → immediately releases lock of that particular object and enters waiting → VALID</li></ol>
+<ol><li>notify → immediately releases lock of that particular object → INVALID (word “immediately” wrong for notify)</li></ol>
+<ol><li>notify → releases lock of that object but may not immediately → VALID</li></ol>
+<p>Correct: 4 and 6.</p>
+<p>Five theoretical conclusions he asks students to cross-check:</p>
+<ol><li>Communicate via wait / notify / notifyAll</li></ol>
+<ol><li>Present in Object, not Thread</li></ol>
+<ol><li>Only from synchronized area else IllegalMonitorStateException</li></ol>
+<ol><li>wait → immediately release that object’s lock → waiting</li></ol>
+<ol><li>notify → release that object’s lock but may not immediately; except these three, no other method releases the lock</li></ol>
+<h3>58:39 — Method prototypes in `Object`</h3>
+<pre class='code'>public final void wait() throws InterruptedException
+// wait forever until notification
+
+public final native void wait(long ms) throws InterruptedException
+// wait at most ms milliseconds; then continue even if no notify
+
+public final void wait(long ms, int ns) throws InterruptedException
+// wait ms + ns (stricter timing)
+
+public final native void notify()
+
+public final native void notifyAll()</pre>
+<p>Notes from lecture:</p>
+<ul><li>wait is overloaded (three forms)</li></ul>
+<ul><li>Of the wait family: the wait(long) form is native; he says first and third are not native in the way he presents (stress: only one wait is native; notify and notifyAll are both native)</li></ul>
+<ul><li>Calling wait → release lock → waiting state; another thread may interrupt → `InterruptedException`</li></ul>
+<ul><li>Every wait method throws InterruptedException (checked) → must handle with try/catch or throws, else CE</li></ul>
+<ul><li>notify / notifyAll do not throw InterruptedException (no waiting state from notify itself)</li></ul>
+<pre class='code'>/*
+Every wait method throws InterruptedException
+which is a checked exception
+Hence whenever we are using wait method
+compulsory we should handle this InterruptedException
+either by try-catch or by throws keyword
+otherwise we will get compile time error
+*/
+class Demo {
+    public synchronized void expectUpdate() {
+        // CE if InterruptedException not handled:
+        // wait();
+        try {
+            wait();
+        } catch (InterruptedException e) {
+        }
+    }
+}</pre>
+<h3>1:06:38 — Impact on thread life-cycle / transition diagram</h3>
+<p>Normal path he redraws:</p>
+<ol><li>new MyThread() → New / Born</li></ol>
+<ol><li>t.start() → Ready / Runnable</li></ol>
+<ol><li>Thread scheduler allocates processor → Running</li></ol>
+<ol><li>run() completes → Dead</li></ol>
+<p>New transition: running thread calls wait() (e.g. obj.wait(), obj.wait(1000), obj.wait(1000, 100)) → Waiting state (and immediately releases that object’s lock).</p>
+<p>How to leave waiting (any of):</p>
+<ul><li>got notification</li></ul>
+<ul><li>time expires (timed wait)</li></ul>
+<ul><li>got interrupted</li></ul>
+<p>Exam trap: after leaving wait, does the thread go directly to Running? Or Ready/Runnable?</p>
+<p>Students often say Ready/Runnable. He says that transition is wrong for the full story.</p>
+<p>After wait, to continue you need two things: notification (or timeout/interrupt path) and the lock again. Notification alone is not enough if the notifier still holds the lock (notify may not release immediately).</p>
+<p>So: waiting thread got notification → enters another waiting state — to get lock.</p>
+<p>When waiting thread got the lock → then Ready/Runnable → scheduler → Running → eventually Dead.</p>
+<pre class='code'>/*
+Life cycle (wait path):
+
+New/Born --t.start()--&gt; Ready/Runnable
+Ready/Runnable --scheduler allocates CPU--&gt; Running
+Running --run completes--&gt; Dead
+
+Running --obj.wait() / wait(ms) / wait(ms,ns)--&gt; Waiting
+Waiting --notification OR time expires OR interrupted--&gt;
+         Another waiting state (to get lock)
+Another waiting (for lock) --got lock--&gt; Ready/Runnable
+Ready/Runnable --scheduler--&gt; Running
+*/
+
+/*
+VERY IMPORTANT (SCJP):
+If waiting thread got notification,
+it will NOT go to Running directly
+and NOT simply &quot;Ready&quot; as the only next box in a naive diagram —
+it goes to another waiting state to get the lock
+(because after notify, lock may not be released immediately)
+*/</pre>
+<h3>1:18:09 — Close of Part-1</h3>
+<p>Theoretical foundations of inter-thread communication, Object vs Thread placement, synchronized requirement, wait vs notify lock-release timing, method signatures, and the waiting→waiting-for-lock life-cycle twist. Practical programs continue in later parts.</p>
+<p>Java fenced blocks in this file: 11</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 90 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 10</td></tr>
+<tr><td>Topic</td><td>Inter Thread Communication Part-1</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 18m 26s</td></tr>
+<tr><td>Video ID</td><td>Ev0mltHfYh0</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=Ev0mltHfYh0</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Role</th><th>Thread</th></tr>
+<tr><td>Person expecting letter (Durga)</td><td>T1 — expects updation → calls `wait` on post-box object → enters waiting state</td></tr>
+<tr><td>Postman</td><td>T2 — performs updation → calls `notify` on that object → waiting T1 continues with updated items</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Releases lock?</th></tr>
+<tr><td>yield()</td><td>No</td></tr>
+<tr><td>join()</td><td>No</td></tr>
+<tr><td>sleep()</td><td>No</td></tr>
+<tr><td>wait()</td><td>Yes (immediately, that object)</td></tr>
+<tr><td>notify()</td><td>Yes (but may not immediately)</td></tr>
+<tr><td>notifyAll()</td><td>Yes (but may not immediately)</td></tr>
+</table>
+</body></html>

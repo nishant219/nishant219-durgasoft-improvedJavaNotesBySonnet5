@@ -1,0 +1,293 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>098-thread-pools</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 098 — Java thread pools (Executor framework)</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 4|| java thread pools</p>
+<p>ASR decode: keep subing = keep writing; thread pole / thre = thread pool / thread; executor / executors = ExecutorService / Executors; fixure / fixed thre pool = newFixedThreadPool; runable / rable = Runnable; cable / callable = Callable; color = caller; written type = return type; retri = retrieve; DGA / dura / durga = Durga; pan = Pavan; Sur = Suresh; legend = listen; TR catch = try-catch.</p>
+<h3>00:05 — Topic: Thread pools (Executor framework)</h3>
+<p>Board: Thread pools (Executor framework).</p>
+<h3>00:45 — Connection-pool analogy (JDBC)</h3>
+<p>Creating a DB connection every time, using it, closing it → performance and memory problems. Instead: create a pool of connections at start; borrow one; return to pool; reuse.</p>
+<p>Replace “connection” with “thread”: same idea for jobs.</p>
+<h3>02:05 — Why thread pools</h3>
+<p>Creating a new thread for every independent job, running, then terminating → if 10 jobs, 10 threads → performance and memory problems.</p>
+<p>Better: create a pool of e.g. 5 threads; submit jobs to the pool; threads reuse for multiple jobs (first 5 jobs, then remaining 5 by same threads).</p>
+<p>Benefit: don’t create a separate thread per job; reuse → performance and memory improved.</p>
+<h3>04:21 — Board: need of thread pool</h3>
+<pre class='code'>// Creating a new thread for every job
+// may create performance and memory problems
+//
+// To overcome this we should go for Thread pool
+//
+// Thread pool is a pool of already created threads
+// ready to do our job
+//
+// Java 1.5 version introduces thread pool framework
+// to implement thread pools
+//
+// Thread pool framework also known as Executor framework</pre>
+<h3>06:39 — Creating a thread pool</h3>
+<pre class='code'>import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+ExecutorService service = Executors.newFixedThreadPool(3);
+// pool of 3 threads (use 4, 10, ... as needed)</pre>
+<h3>08:05 — Submit Runnable job; shutdown</h3>
+<pre class='code'>// Runnable job:
+class MyRunnable implements Runnable {
+    public void run() {
+        // job
+    }
+}
+
+MyRunnable job = new MyRunnable();
+service.submit(job);
+
+// after jobs done:
+service.shutdown();</pre>
+<p>Board:</p>
+<pre class='code'>// We can submit a Runnable job by using submit method
+// We can shut down ExecutorService by using shutdown method</pre>
+<p>Programmer defines jobs and submits; framework creates/starts/reuses threads.</p>
+<h3>10:16 — Demo: PrintJob + ExecutorDemo</h3>
+<pre class='code'>import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+class PrintJob implements Runnable {
+    String name;
+
+    PrintJob(String name) {
+        this.name = name;
+    }
+
+    public void run() {
+        System.out.println(name + &quot; job started by &quot;
+                + Thread.currentThread().getName());
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+        }
+        System.out.println(name + &quot; job completed by &quot;
+                + Thread.currentThread().getName());
+    }
+}
+
+class ExecutorDemo {
+    public static void main(String[] args) {
+        PrintJob[] jobs = {
+            new PrintJob(&quot;Durga&quot;),
+            new PrintJob(&quot;Ravi&quot;),
+            new PrintJob(&quot;Shiva&quot;),
+            new PrintJob(&quot;Pavan&quot;),
+            new PrintJob(&quot;Suresh&quot;),
+            new PrintJob(&quot;Anil&quot;)
+        };
+
+        ExecutorService service = Executors.newFixedThreadPool(3);
+
+        for (PrintJob job : jobs) {
+            service.submit(job);
+        }
+        service.shutdown();
+    }
+}</pre>
+<p>Without executor: create 6 Runnable + 6 Thread + start — lots of code. With pool: framework takes care of create/start.</p>
+<h3>13:45 — Live runs: pool size 1, 2, 3, 4, 5 with 6 jobs</h3>
+<p>He changes newFixedThreadPool(n) and runs:</p>
+<p>Key point: a single thread can be reused for multiple jobs.</p>
+<h3>24:03 — Board restatement after copying program</h3>
+<pre class='code'>// In the above example three threads are responsible
+// to execute six jobs
+// so that a single thread can be reused for multiple jobs</pre>
+<h3>28:11 — Where thread pools are used</h3>
+<p>Web / application servers: many requests; for each request a thread processes it; servers keep a pool of threads; after request, thread returns to pool.</p>
+<p>Default pool size often ~60 (configurable in server console). While designing/developing web servers and application servers → thread pool concept.</p>
+<pre class='code'>// Board note:
+// While developing web servers and application servers
+// we can use thread pool concept</pre>
+<h3>30:33 — Runnable limitation: no return value</h3>
+<p>Normal approach:</p>
+<pre class='code'>class MyRunnable implements Runnable {
+    public void run() {
+        // job
+    }
+}
+
+MyRunnable r = new MyRunnable();
+Thread t = new Thread(r);
+t.start();
+// after job, thread terminates; run() return type is void
+// thread won&#x27;t return anything to the caller</pre>
+<p>If after completing the job the thread must return something to the caller → use `Callable` instead of Runnable.</p>
+<h3>32:21 — Callable vs Runnable (intro)</h3>
+<p>Callable: after job, thread returns something. Runnable: after job, returns nothing.</p>
+<p>Interview-important difference.</p>
+<h3>34:27 — Submitting Callable; Future holds result</h3>
+<pre class='code'>import java.util.concurrent.*;
+
+ExecutorService service = Executors.newFixedThreadPool(3);
+
+for (Callable job : callableJobs) {
+    Future f = service.submit(job); // hold returned value
+    System.out.println(f.get());    // retrieve result
+}
+service.shutdown();</pre>
+<p>Future object: hold / retrieve the return value of a Callable job.</p>
+<h3>37:00 — Board: Callable and Future</h3>
+<pre class='code'>// In the case of Runnable job
+// thread won&#x27;t return anything after completing the job
+//
+// If a thread is required to return some result after execution
+// then we should go for Callable
+//
+// Callable interface contains only one method: call
+// public Object call() throws Exception
+//
+// If we submit a Callable object to executor
+// then after completing the job
+// thread returns an object of the type Future
+//
+// Future object can be used to retrieve the result
+// from Callable job</pre>
+<h3>41:04 — CallableFutureDemo: sum of first n numbers</h3>
+<pre class='code'>import java.util.concurrent.*;
+
+class MyCallable implements Callable {
+    int num;
+
+    MyCallable(int num) {
+        this.num = num;
+    }
+
+    public Object call() throws Exception {
+        System.out.println(Thread.currentThread().getName()
+                + &quot; is responsible to find sum of first &quot; + num + &quot; numbers&quot;);
+        int sum = 0;
+        for (int i = 1; i &lt;= num; i++) {
+            sum = sum + i;
+        }
+        return sum;
+    }
+}
+
+class CallableFutureDemo {
+    public static void main(String[] args) throws Exception {
+        MyCallable[] jobs = {
+            new MyCallable(10),
+            new MyCallable(20),
+            new MyCallable(30),
+            new MyCallable(40),
+            new MyCallable(50),
+            new MyCallable(60)
+        };
+
+        ExecutorService service = Executors.newFixedThreadPool(3);
+        for (MyCallable job : jobs) {
+            Future f = service.submit(job);
+            System.out.println(f.get());
+        }
+        service.shutdown();
+    }
+}</pre>
+<p>Sums (n(n+1)/2): he lists</p>
+<pre class='code'>// prints (among thread messages) results:
+// 55    (sum 1..10)
+// 210   (sum 1..20)
+// 465   (sum 1..30)
+// 820   (sum 1..40)
+// 1275  (sum 1..50)
+// 1830  (sum 1..60)</pre>
+<p>If thread returns something → Callable; if not → Runnable.</p>
+<h3>50:24 — Differences between Runnable and Callable (full board)</h3>
+<pre class='code'>// 1. If a thread is not required to return anything after completing the job
+//      → go for Runnable
+//    If a thread is required to return something after completing the job
+//      → go for Callable
+//
+// 2. Runnable interface contains only one method: run
+//    Callable interface contains only one method: call
+//
+// 3. Runnable job not required to return anything
+//      → return type of run method is void
+//    Callable job is required to return something
+//      → return type of call method is Object
+//
+// 4. Within run method, if chance of checked exception
+//      → compulsory handle by try-catch
+//      → because we can&#x27;t use throws for run method
+//        (parent Runnable.run doesn&#x27;t throw checked;
+//         overriding rule)
+//    Within call method, if chance of checked exception
+//      → not required to handle by try-catch
+//      → because call already throws Exception
+//
+// 5. Runnable present in java.lang package
+//    Callable present in java.util.concurrent package
+//
+// 6. Runnable introduced in 1.0 version
+//    Callable introduced in 1.5 version (with thread pools / Executor)</pre>
+<p>Illustrating run vs throws:</p>
+<pre class='code'>class MyRunnable implements Runnable {
+    public void run() {
+        try {
+            Thread.sleep(1000); // checked → must try-catch
+        } catch (InterruptedException e) {
+        }
+        // public void run() throws Exception { }  // CE: incompatible with Runnable.run
+    }
+}
+
+class MyCallable implements Callable {
+    public Object call() throws Exception {
+        Thread.sleep(1000); // OK: call already throws Exception
+        return &quot;ok&quot;;
+    }
+}</pre>
+<h3>59:55 — Session wrap</h3>
+<p>Covered: advantage of thread pools; how to create; Executor framework; need of Callable &amp; Future; differences Runnable vs Callable. Basic idea only (not full API encyclopedia).</p>
+<p>` ```java ` block count: 13</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 98 of 203</td></tr>
+<tr><td>Series</td><td>Multithreading Enhancement · Part 4</td></tr>
+<tr><td>Topic</td><td>java thread pools · Executor framework · Callable &amp; Future</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 00m 27s</td></tr>
+<tr><td>Video ID</td><td>Qgz6p-y-YUE</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=Qgz6p-y-YUE</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Pool size</th><th>Jobs</th><th>Behavior he describes</th></tr>
+<tr><td>1</td><td>6</td><td>Same one thread does jobs one by one (Durga→Ravi→Shiva→Pavan→Suresh→Anil) — slowest</td></tr>
+<tr><td>2</td><td>6</td><td>Two jobs at a time; each thread ~3 jobs; faster</td></tr>
+<tr><td>3</td><td>6</td><td>Three start; then next three; each thread ~2 jobs</td></tr>
+<tr><td>4</td><td>6</td><td>First 4 jobs on 4 threads; then 2 remaining on 2 of those; some threads do 2 jobs (he notes thread-1 and thread-3 in one run)</td></tr>
+<tr><td>5</td><td>6</td><td>Five start; one leftover job — only one thread does two jobs (e.g. thread-4 does Pavan and Anil in his narration)</td></tr>
+</table>
+<table>
+<tr><th></th><th>Runnable</th><th>Callable</th></tr>
+<tr><td>Method</td><td>run()</td><td>call()</td></tr>
+<tr><td>Return type</td><td>void</td><td>Object (returns something)</td></tr>
+<tr><td>Checked exceptions in body</td><td>must handle with try-catch (can&#x27;t easily throws on run)</td><td>call() already throws Exception</td></tr>
+</table>
+</body></html>

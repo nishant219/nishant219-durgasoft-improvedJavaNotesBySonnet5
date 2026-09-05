@@ -1,0 +1,710 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>054-overloading</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 054 — Overloading</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming)Part-4 ||overloading</p>
+<p>Source: real YouTube auto-captions (.transcripts/054-tSv-XlP_1JA.txt). ASR decoded in place: vid / ward / wire / while = void; ymon / v1 / SM / P do M1 / T1 = t.m1; in ar / int ar / in arite / in dark = int-arg; float arc = float-arg; care / car / A = char &#x27;a&#x27;; bite = byte; 10 l = 10L; 10.5 f / 10.5 fuh / 10.5 FA = 10.5f; da / dura / durka / dal = &quot;durga&quot;; where / varch / va / wherearch / where are = var-arg; compet / compat / compile the matter = compile-time error; CJP / enjoy = SCJP; entry room / Enter your room = interview room; interflat = int-float; floating into / float in = float-int; MBQS = ambiguous; single buffer = StringBuffer; 1 version = 1.0; animal g = Animal a; pane = parent.</p>
+<p>He already started overloading in video 053. This whole hour is loopholes — five or six exam / interview cases, not a generic “what is overloading” intro. Everyone knows the definition; the compiler’s internal resolution is what he drills.</p>
+<h3>00:05 — This video is loopholes, not the definition</h3>
+<p>Last session they just started overloading. Next target: several internal loopholes. Around five to six cases, every one important for the exam and for the interview room.</p>
+<p>Then: case one.</p>
+<h3>00:45 — Case 1: `int` version vs `float` version</h3>
+<p>Class Test. Two instance methods, same name, different argument types.</p>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;int-arg method&quot;);
+    }
+
+    public void m1(float f) {
+        System.out.println(&quot;float-arg method&quot;);
+    }
+}</pre>
+<p>Total how many methods? Two. Can we call them overloaded? Yes — same name, different argument types.</p>
+<h3>02:06 — `main`, `t.m1(10)`, `t.m1(10.5f)`</h3>
+<p>He adds main, creates Test t = new Test(), then calls.</p>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;int-arg method&quot;);
+    }
+
+    public void m1(float f) {
+        System.out.println(&quot;float-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10); // prints int-arg method
+    }
+}</pre>
+<p>Exact match always gets high priority. 10 is int → int-arg method.</p>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;int-arg method&quot;);
+    }
+
+    public void m1(float f) {
+        System.out.println(&quot;float-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10.5f); // prints float-arg method
+    }
+}</pre>
+<p>10.5f is float → float-arg method.</p>
+<h3>03:11 — The reception-chair story (why `char` → `int` matters)</h3>
+<p>Before the next call he tells a story from “four or five years back” when he had only the morning 7–9 batch, few students, and was sitting in the reception chair after class.</p>
+<p>A senior person wanted to join the SCJP course. Next batch in a month / month and a half. Can he join the existing batch? Durga asked: do you have a basic idea in Java? The person said he had been working in Java for the last four years. Wrong question. Why come to class with that experience? Because interview questions are mostly SCJP/OCJP-style; he wanted perfection.</p>
+<p>Then the visitor complained that “very stupid people” sit in the interview room without subject knowledge. Durga: possible. At his then-company, every Friday the lead asked for “10 important Java questions.” Durga: questions only, or answers also? Lead: only questions. How do you judge without answers? Lead: by how much confidence the candidate answers with.</p>
+<p>Same visitor’s last interview, four years experience, one “simple silly question”:</p>
+<p>There is a method which can take an int argument. I am passing a char argument. Will that method get the chance or not?</p>
+<p>The visitor said no — exact match is not there, so the int method should not run. The interviewer did not accept that answer (visitor called him a “pretty stupid person”), asked three times, then sent him out of the interview room.</p>
+<p>Break over; Durga went to class. The same senior asked to sit from that day. If Durga told the batch “for char, the int method will get the chance,” the senior might think this trainer has no subject. So he asked the students. Some said yes, some said no; loudest voice wins in a classroom, and he was not in a position to just declare. He executed the program and showed: for a char argument, the int-arg method does get the chance. After execution, confirmation.</p>
+<p>That is the setup for the next call.</p>
+<h3>09:32 — `t.m1(&#x27;a&#x27;)` and the generalized promotion rule</h3>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;int-arg method&quot;);
+    }
+
+    public void m1(float f) {
+        System.out.println(&quot;float-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(&#x27;a&#x27;); // prints int-arg method
+    }
+}</pre>
+<p>If a method can take int and you pass char, that method will execute. Internal / generalized rule:</p>
+<p>In overloading method resolution, the compiler first checks for an exact match. If exact match is there, that method runs. If it is not there, the compiler does not immediately raise a compile-time error. It promotes the argument to the next level and checks again.</p>
+<p>char can be promoted to int. Match found → int-arg method.</p>
+<p>If that match were also missing, promote again: next level long, then float, then double. Same idea: byte → short → int.</p>
+<p>Promotion happens automatically. We are not responsible to write a cast. That is automatic promotion in overloading.</p>
+<p>While resolving overloaded methods: if exact matched method is not available, compiler will not CE immediately. Promote to next level; if match available, consider it; if not, promote again. Continue until all possible promotions are done. Still no match → then compile-time error.</p>
+<h3>12:11 — `t.m1(10L)` vs `t.m1(10.5)`</h3>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;int-arg method&quot;);
+    }
+
+    public void m1(float f) {
+        System.out.println(&quot;float-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10L); // prints float-arg method
+    }
+}</pre>
+<p>10L is long. No long-arg method. Promote long → float. Float method exists → float-arg method.</p>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;int-arg method&quot;);
+    }
+
+    public void m1(float f) {
+        System.out.println(&quot;float-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10.5); // CE: cannot find symbol
+                    // symbol: method m1(double)
+                    // location: class Test
+    }
+}</pre>
+<p>10.5 by default is `double`. No double-arg method. Can you promote double to a next level? No. Match not there, promotions not possible → CE cannot find symbol, symbol m1(double), location class Test.</p>
+<p>That whole case is automatic promotion in overloading.</p>
+<h3>14:05 — Board note (he dictates it slowly)</h3>
+<p>Automatic promotion in overloading.</p>
+<p>In overloading, while resolving overloaded methods, if exact matched method is not available, then we won’t get any compile-time error immediately. First it will promote the argument to the next level and check whether matched method is available or not. If a matched method is available, then it will be considered. If the matched method is not available, then compiler promotes the argument once again to the next level. This process will be continued until all possible promotions. Still if the matched method is not available, then we will get compile-time error.</p>
+<h3>18:14 — All possible promotions (board diagram)</h3>
+<p>The following are all possible promotions in overloading. Same widening diagram they have seen several times:</p>
+<pre class='code'>class PromotionInOverloading {
+    // byte  -&gt; short -&gt; int -&gt; long -&gt; float -&gt; double
+    //                    ^
+    //                   char
+}</pre>
+<ul><li>byte to short</li></ul>
+<ul><li>short to int</li></ul>
+<ul><li>int to long</li></ul>
+<ul><li>long to float</li></ul>
+<ul><li>float to double</li></ul>
+<ul><li>char to int</li></ul>
+<p>This process is called automatic promotion in overloading.</p>
+<h3>19:54 — Recopy Case 1 (full board program)</h3>
+<p>He recopies the example and the CE so they can take it cleanly.</p>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;int-arg method&quot;);
+    }
+
+    public void m1(float f) {
+        System.out.println(&quot;float-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10);     // prints int-arg method
+        t.m1(10.5f);  // prints float-arg method
+        t.m1(&#x27;a&#x27;);    // prints int-arg method
+        t.m1(10L);    // prints float-arg method  (long -&gt; float)
+        // t.m1(10.5); // CE: cannot find symbol
+                       // symbol: method m1(double)
+                       // location: class Test
+    }
+}</pre>
+<p>The double call is the one he writes with cannot find symbol / method m1(double) / location class Test.</p>
+<p>Case one completed. Next: case two.</p>
+<h3>22:15 — Case 2: `String` version vs `Object` version</h3>
+<p>Same m1 name, small difference: reference types, not primitives.</p>
+<pre class='code'>class Test {
+    public void m1(String s) {
+        System.out.println(&quot;String version&quot;);
+    }
+
+    public void m1(Object o) {
+        System.out.println(&quot;Object version&quot;);
+    }
+}</pre>
+<p>String version and Object version. Overloaded? Yes — same name, different arguments. Compiler considers them overloaded methods.</p>
+<h3>24:01 — Exact match: `new Object()` and `&quot;durga&quot;`</h3>
+<pre class='code'>class Test {
+    public void m1(String s) {
+        System.out.println(&quot;String version&quot;);
+    }
+
+    public void m1(Object o) {
+        System.out.println(&quot;Object version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(new Object()); // prints Object version
+    }
+}</pre>
+<p>Exact match always high priority. Passing an Object → Object version.</p>
+<pre class='code'>class Test {
+    public void m1(String s) {
+        System.out.println(&quot;String version&quot;);
+    }
+
+    public void m1(Object o) {
+        System.out.println(&quot;Object version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(&quot;durga&quot;); // prints String version
+    }
+}</pre>
+<p>&quot;durga&quot; is a String argument → String version. No problem.</p>
+<h3>25:08 — `t.m1(null)`: child vs parent</h3>
+<pre class='code'>class Test {
+    public void m1(String s) {
+        System.out.println(&quot;String version&quot;);
+    }
+
+    public void m1(Object o) {
+        System.out.println(&quot;Object version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(null); // prints String version
+    }
+}</pre>
+<p>null is a valid value for String and for Object. Who gets the chance — String version, Object version, or compile-time error?</p>
+<p>People who already attended: stay silent so others can think.</p>
+<p>Object is the parent, String is the child.</p>
+<h3>26:05 — Collector-office analogy</h3>
+<p>You go ~50 km to the collector office for a collector-level sign (higher education in the US). Plan: finish by 11–12, watch a movie, back to native place by evening. After waiting you get two or three minutes with the collector. You must say: so-and-so village, this district, I need the sign on this letter.</p>
+<p>You do not ask the collector which theatre is playing the movie, whether it is nearby, whether you can walk there. Collector will call the attender and throw you out. Movie questions go to the attender outside.</p>
+<p>If the work can complete at attender level, what is the need of talking at collector level?</p>
+<p>Same: null is valid for String (child) and Object (parent). If work can complete at child level, no need of parent.</p>
+<h3>28:54 — Child type gets more priority; recopy Case 2</h3>
+<p>Output for t.m1(null) is String version only. Very important for job, written test, SCJP.</p>
+<p>Parent method and child method both match. Child always gets more / high priority than parent.</p>
+<pre class='code'>class Test {
+    public void m1(String s) {
+        System.out.println(&quot;String version&quot;);
+    }
+
+    public void m1(Object o) {
+        System.out.println(&quot;Object version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(new Object()); // prints Object version
+        t.m1(&quot;durga&quot;);      // prints String version
+        t.m1(null);         // prints String version
+    }
+}</pre>
+<h3>31:48 — Board note (Case 2 rule)</h3>
+<p>While resolving overloaded methods, compiler will always give the precedence for child type argument when compared with the parent type argument.</p>
+<h3>32:50 — Case 3: `String` vs `StringBuffer` (same level)</h3>
+<p>Small change. Decide the output.</p>
+<pre class='code'>class Test {
+    public void m1(String s) {
+        System.out.println(&quot;String version&quot;);
+    }
+
+    public void m1(StringBuffer sb) {
+        System.out.println(&quot;StringBuffer version&quot;);
+    }
+}</pre>
+<p>First: String version. Second: StringBuffer version.</p>
+<p>Object is parent. One child is String. Another child is StringBuffer. Both children sit at the same level.</p>
+<h3>33:58 — Exact matches still win</h3>
+<pre class='code'>class Test {
+    public void m1(String s) {
+        System.out.println(&quot;String version&quot;);
+    }
+
+    public void m1(StringBuffer sb) {
+        System.out.println(&quot;StringBuffer version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(&quot;durga&quot;); // prints String version
+    }
+}</pre>
+<p>&quot;durga&quot; is String — exact match — String version.</p>
+<pre class='code'>class Test {
+    public void m1(String s) {
+        System.out.println(&quot;String version&quot;);
+    }
+
+    public void m1(StringBuffer sb) {
+        System.out.println(&quot;StringBuffer version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(new StringBuffer(&quot;durga&quot;)); // prints StringBuffer version
+    }
+}</pre>
+<p>new StringBuffer(&quot;durga&quot;) is a StringBuffer object, not a String → StringBuffer version.</p>
+<h3>34:55 — `t.m1(null)` is ambiguous</h3>
+<pre class='code'>class Test {
+    public void m1(String s) {
+        System.out.println(&quot;String version&quot;);
+    }
+
+    public void m1(StringBuffer sb) {
+        System.out.println(&quot;StringBuffer version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(null); // CE: reference to m1 is ambiguous
+    }
+}</pre>
+<p>null is valid for String and for StringBuffer. String version or StringBuffer version or CE?</p>
+<p>String and StringBuffer are both at the same level. If one were parent and the other child, child would win (Case 2). Here neither is child of the other.</p>
+<p>If compiler gave the chance to String, StringBuffer would “give left and right.” If it gave StringBuffer, String would complain. Both methods matched, both same level → immediately compile-time error:</p>
+<p>reference to m1 is ambiguous</p>
+<p>Ambiguity: both methods got matched; which one to execute is the problem. Very important for the exam.</p>
+<h3>36:29 — Recopy Case 3</h3>
+<pre class='code'>class Test {
+    public void m1(String s) {
+        System.out.println(&quot;String version&quot;);
+    }
+
+    public void m1(StringBuffer sb) {
+        System.out.println(&quot;StringBuffer version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(&quot;durga&quot;);                   // prints String version
+        t.m1(new StringBuffer(&quot;durga&quot;)); // prints StringBuffer version
+        // t.m1(null);                   // CE: reference to m1 is ambiguous
+    }
+}</pre>
+<p>He writes the CE line as reference to m1 is ambiguous. Case three completed.</p>
+<h3>39:18 — Case 4: order of arguments (`int,float` vs `float,int`)</h3>
+<p>Also a bit important. Listen carefully.</p>
+<pre class='code'>class Test {
+    public void m1(int i, float f) {
+        System.out.println(&quot;int-float version&quot;);
+    }
+
+    public void m1(float f, int i) {
+        System.out.println(&quot;float-int version&quot;);
+    }
+}</pre>
+<p>Two methods: int-float version and float-int version. Overloaded? Yes — at least a change in the order of arguments is enough.</p>
+<h3>40:41 — Exact-match two-arg calls</h3>
+<pre class='code'>class Test {
+    public void m1(int i, float f) {
+        System.out.println(&quot;int-float version&quot;);
+    }
+
+    public void m1(float f, int i) {
+        System.out.println(&quot;float-int version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10, 10.5f); // prints int-float version
+    }
+}</pre>
+<p>Exact match high priority → int-float version.</p>
+<pre class='code'>class Test {
+    public void m1(int i, float f) {
+        System.out.println(&quot;int-float version&quot;);
+    }
+
+    public void m1(float f, int i) {
+        System.out.println(&quot;float-int version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10.5f, 10); // prints float-int version
+    }
+}</pre>
+<p>10.5f is float, 10 is int → float-int version.</p>
+<h3>41:41 — `t.m1(10, 10)`: both match (India vs Pakistan joke)</h3>
+<pre class='code'>class Test {
+    public void m1(int i, float f) {
+        System.out.println(&quot;int-float version&quot;);
+    }
+
+    public void m1(float f, int i) {
+        System.out.println(&quot;float-int version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10, 10); // CE: reference to m1 is ambiguous
+    }
+}</pre>
+<p>Think carefully. 10, 10 — both int.</p>
+<p>Is there a method with int first? Yes (int-float). Second argument int — can int be promoted to float? Yes → int-float matches.</p>
+<p>Classroom joke: in India we usually consider left to right, so maybe you match first int then promote the second. “But you are in Pakistan, maybe they consider right to left” — then the second 10 matches the int of float-int, and the first 10 promotes to float. So “in India the answer is int-float, in Pakistan float-int.” Is Java a country-dependent language? No.</p>
+<p>Both methods matched. Compiler is not in a position to decide. Immediately CE: reference to m1 is ambiguous.</p>
+<h3>43:40 — `t.m1(10.5f, 10.5f)`: neither matches</h3>
+<pre class='code'>class Test {
+    public void m1(int i, float f) {
+        System.out.println(&quot;int-float version&quot;);
+    }
+
+    public void m1(float f, int i) {
+        System.out.println(&quot;float-int version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10.5f, 10.5f); // CE: cannot find symbol
+                            // symbol: method m1(float,float)
+                            // location: class Test
+    }
+}</pre>
+<p>First argument is float.</p>
+<ul><li>First method: first parameter is int. float → int conversion is not there (widening is int → float, not the reverse). First method not matched.</li></ul>
+<ul><li>Second method: first argument float — OK. Second argument you pass float, method expects int. Again float → int is not there. Second method not matched.</li></ul>
+<p>No method matched → CE cannot find symbol, symbol method m1(float, float), location class Test.</p>
+<p>When do we get “cannot find symbol” vs “reference to m1 is ambiguous”? He tells them to observe the difference: both match → ambiguous; none match → cannot find symbol.</p>
+<h3>45:21 — Recopy Case 4</h3>
+<pre class='code'>class Test {
+    public void m1(int i, float f) {
+        System.out.println(&quot;int-float version&quot;);
+    }
+
+    public void m1(float f, int i) {
+        System.out.println(&quot;float-int version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10, 10.5f);     // prints int-float version
+        t.m1(10.5f, 10);     // prints float-int version
+        // t.m1(10, 10);     // CE: reference to m1 is ambiguous
+        // t.m1(10.5f, 10.5f); // CE: cannot find symbol
+                               // symbol: method m1(float,float)
+                               // location: class Test
+    }
+}</pre>
+<p>First call int-float version, second float-int version, 10, 10 ambiguous, 10.5f, 10.5f cannot find symbol. Case four done.</p>
+<h3>48:43 — Case 5: general method vs var-arg</h3>
+<p>Also bit important. In the exam this is a normal / general method vs a var-arg method. They already covered var-arg (video 012); he still wants them aware.</p>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;general method&quot;);
+    }
+
+    public void m1(int... x) {
+        System.out.println(&quot;var-arg method&quot;);
+    }
+}</pre>
+<p>Overloaded? Yes — same name, different argument types. One takes a single int; the var-arg can be called by passing any number of int values.</p>
+<h3>49:48 — Zero args, two args, one arg</h3>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;general method&quot;);
+    }
+
+    public void m1(int... x) {
+        System.out.println(&quot;var-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(); // prints var-arg method
+    }
+}</pre>
+<p>No-arg call: first method not matched. Second matched — you can call var-arg with any number of ints including zero. Output: var-arg method.</p>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;general method&quot;);
+    }
+
+    public void m1(int... x) {
+        System.out.println(&quot;var-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10, 20); // prints var-arg method
+    }
+}</pre>
+<p>Two ints: first method not matched. Second: any number of ints, two is fine → var-arg method.</p>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;general method&quot;);
+    }
+
+    public void m1(int... x) {
+        System.out.println(&quot;var-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10); // prints general method
+    }
+}</pre>
+<p>One int: first method matched and second method matched. Then who wins — general method or var-arg method?</p>
+<h3>51:08 — Old version (1.0) beats new version (1.5)</h3>
+<p>He says they covered this somewhere. General method has “19 plus years of industry experience”: general method concept came in 1.0; var-arg came in 1.5. In a fight between old and new, old version always gets the chance, to keep compatibility with old code. Output: general method.</p>
+<h3>52:04 — Recopy Case 5</h3>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;general method&quot;);
+    }
+
+    public void m1(int... x) {
+        System.out.println(&quot;var-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1();       // prints var-arg method
+        t.m1(10, 20); // prints var-arg method
+        t.m1(10);     // prints general method
+    }
+}</pre>
+<p>These are overloaded methods. Take it clearly.</p>
+<h3>53:51 — Conclusion: var-arg has least priority (like `default` in switch)</h3>
+<p>Special property of var-arg methods: in general, var-arg will get least priority. If no other method matched, then only var-arg gets the chance.</p>
+<ul><li>First two calls: no other method matched → var-arg.</li></ul>
+<ul><li>Third call: other method matched → var-arg does not get the chance.</li></ul>
+<p>Exactly the same as default inside switch: case 1, case 2, … last one default. Default runs only if no other case matched. Same here.</p>
+<pre class='code'>class SwitchDefaultAnalogy {
+    public static void main(String[] args) {
+        int x = 10;
+        switch (x) {
+            case 1:
+                System.out.println(&quot;case 1&quot;);
+                break;
+            case 2:
+                System.out.println(&quot;case 2&quot;);
+                break;
+            default:
+                System.out.println(&quot;default&quot;); // only if no other case matched
+        }
+    }
+}</pre>
+<p>Board note he dictates:</p>
+<p>In general, var-arg method will get the least priority. That is, if no other method matched, then only var-arg method will get the chance. It is exactly same as the default case inside the switch.</p>
+<p>That is one case. Last case: a bit very important. Case 6.</p>
+<h3>56:37 — Case 6: `Animal` vs `Monkey`</h3>
+<pre class='code'>class Animal {
+}</pre>
+<p>Any child class of Animal? Students say Dog, Tiger. He writes his favorite:</p>
+<pre class='code'>class Monkey extends Animal {
+}</pre>
+<h3>57:28 — Why the child is named `Monkey` (classroom comment)</h3>
+<p>He repeats a comment he says US / Europe people make about Indian software engineers — “monkeys” — and the reason he gives is job hopping. In India, working 2–3 years at IBM is common; 20–25–30 years at one company is rare. In the US / Europe you see mails: “today Tommy completed his 15th year in IBM,” “20th year in IBM.” In Hyderabad Hi-tech City, you and a friend in the same company — next day he has jumped to another building for 30% hike; resume updated with that 30% before joining; another offer at 50% and he goes again. Package / salary gets more importance; no guarantee today this company, tomorrow that company. That is why he writes class Monkey extends Animal.</p>
+<h3>59:34 — `Test`: Animal version and Monkey version</h3>
+<pre class='code'>class Animal {
+}
+
+class Monkey extends Animal {
+}
+
+class Test {
+    public void m1(Animal a) {
+        System.out.println(&quot;Animal version&quot;);
+    }
+
+    public void m1(Monkey m) {
+        System.out.println(&quot;Monkey version&quot;);
+    }
+}</pre>
+<p>Two methods. Overloaded? Yes — same name, different argument types (Animal vs Monkey).</p>
+<h3>1:01:04 — Three calls: exact parent, exact child, parent-ref + child-obj</h3>
+<pre class='code'>Both methods are instance methods, so a Test object is required: Test t = new Test();</pre>
+<p>First: parent reference, parent object.</p>
+<pre class='code'>class Animal {
+}
+
+class Monkey extends Animal {
+}
+
+class Test {
+    public void m1(Animal a) {
+        System.out.println(&quot;Animal version&quot;);
+    }
+
+    public void m1(Monkey m) {
+        System.out.println(&quot;Monkey version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        Animal a = new Animal();
+        t.m1(a); // prints Animal version
+    }
+}</pre>
+<p>a is Animal type, object is Animal type. Exact match always gets the chance → Animal version.</p>
+<p>Second: child reference, child object.</p>
+<pre class='code'>class Animal {
+}
+
+class Monkey extends Animal {
+}
+
+class Test {
+    public void m1(Animal a) {
+        System.out.println(&quot;Animal version&quot;);
+    }
+
+    public void m1(Monkey m) {
+        System.out.println(&quot;Monkey version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        Monkey m = new Monkey();
+        t.m1(m); // prints Monkey version
+    }
+}</pre>
+<p>m is Monkey type — exact match — Monkey version.</p>
+<p>Third: parent reference, child object.</p>
+<pre class='code'>class Animal {
+}
+
+class Monkey extends Animal {
+}
+
+class Test {
+    public void m1(Animal a) {
+        System.out.println(&quot;Animal version&quot;);
+    }
+
+    public void m1(Monkey m) {
+        System.out.println(&quot;Monkey version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        Animal a1 = new Monkey(); // parent reference, child object
+        t.m1(a1); // prints Animal version
+    }
+}</pre>
+<p>Who gets the chance — Monkey version or Animal version?</p>
+<p>Remember from last session: in overloading, compiler is responsible for method resolution based on reference type. Runtime object never plays any role in overloading. Resolution is always based on reference type, by the compiler only.</p>
+<p>a1 is type Animal → Animal version (even though the object is a Monkey).</p>
+<p>By contrast, t.m1(m) — m is type Monkey → Monkey version. t.m1(a) — a is type Animal → Animal version. This third possibility may be asked.</p>
+<h3>1:04:27 — Recopy Case 6 (full board)</h3>
+<pre class='code'>class Animal {
+}
+
+class Monkey extends Animal {
+}
+
+class Test {
+    public void m1(Animal a) {
+        System.out.println(&quot;Animal version&quot;);
+    }
+
+    public void m1(Monkey m) {
+        System.out.println(&quot;Monkey version&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+
+        Animal a = new Animal();
+        t.m1(a); // prints Animal version
+
+        Monkey m = new Monkey();
+        t.m1(m); // prints Monkey version
+
+        Animal a1 = new Monkey();
+        t.m1(a1); // prints Animal version  (reference type Animal)
+    }
+}</pre>
+<p>These two methods are overloaded methods.</p>
+<h3>1:05:52 — Board note (same point as last session)</h3>
+<p>He recopies the last-session point:</p>
+<p>In overloading, method resolution always takes care by compiler based on reference type.</p>
+<p>In overloading, runtime object won’t play any role.</p>
+<h3>1:07:19 — Wrap-up; next session is overriding</h3>
+<p>These are various loopholes related to overloading. Next session he will talk about overriding.</p>
+<h2>Cases at a glance (this video only)</h2>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 54 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 4</td></tr>
+<tr><td>Topic</td><td>overloading</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 07m 40s</td></tr>
+<tr><td>Video ID</td><td>tSv-XlP_1JA</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=tSv-XlP_1JA</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Case</th><th>What is on the board</th><th>Resolution</th></tr>
+<tr><td>1</td><td>m1(int) vs m1(float)</td><td>Exact match first; else automatic promotion (char→int, long→float); double cannot widen further → CE cannot find symbol</td></tr>
+<tr><td>2</td><td>m1(String) vs m1(Object)</td><td>Exact match; null → child (String) beats parent</td></tr>
+<tr><td>3</td><td>m1(String) vs m1(StringBuffer)</td><td>Exact match; null → ambiguous (same-level siblings)</td></tr>
+<tr><td>4</td><td>m1(int,float) vs m1(float,int)</td><td>Exact match; 10,10 both match → ambiguous; 10.5f,10.5f neither matches → cannot find symbol</td></tr>
+<tr><td>5</td><td>m1(int) vs m1(int...)</td><td>Var-arg is least priority (like switch default); old 1.0 general method beats 1.5 var-arg</td></tr>
+<tr><td>6</td><td>m1(Animal) vs m1(Monkey)</td><td>Compiler uses reference type; runtime object plays no role</td></tr>
+</table>
+</body></html>

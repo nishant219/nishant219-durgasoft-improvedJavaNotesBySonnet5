@@ -1,0 +1,1249 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>120-file-io-intro</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 120 — File I/O Part 1: Introduction &amp; `File` class</h1>
+<h2>Video info</h2>
+<p>Import for all demos in this video:</p>
+<pre class='code'>import java.io.*;
+// or
+import java.io.File;</pre>
+<h2>00:04 — Why File I/O matters (historical SCJP / OCJP context)</h2>
+<p>File I/O is one of the foundational Java topics for persistent storage — moving data out of RAM and onto disk (or reading it back).</p>
+<h3>Exam weight across Java versions</h3>
+<h3>Why it was removed in Java 1.4</h3>
+<ul><li>Java 1.0 released in 1995 — database concepts were not yet mainstream.</li></ul>
+<ul><li>The most common storage area for data was the file system.</li></ul>
+<ul><li>By 2003–2004 (Java 1.4 era), database storage (JDBC, enterprise apps) became the default.</li></ul>
+<ul><li>Certification dropped File I/O because enterprise Java developers were expected to use databases, not raw files.</li></ul>
+<h3>Why it came back in Java 1.5 / 1.6</h3>
+<ul><li>Not every program needs a full database server.</li></ul>
+<ul><li>Example: storing one `count` variable — installing a separate DB server and table for that is overkill (wasteful).</li></ul>
+<ul><li>Rule of thumb (Durga Sir):</li></ul>
+<ul><li>Small amount of data → prefer file</li></ul>
+<ul><li>Huge amount of data → prefer database</li></ul>
+<ul><li>Being a certified Java programmer still requires basic file literacy — hence File I/O returned with reduced weight (2–3 questions).</li></ul>
+<p>Exam takeaway: File I/O is not the heaviest topic anymore, but the File class traps (especially new File() vs createNewFile()) appear regularly.</p>
+<h2>04:31 — File I/O series agenda (six classes)</h2>
+<p>This multi-part lecture series covers these `java.io` classes:</p>
+<p>This video (120) covers only `File` — constructors and important methods. Reading/writing data comes in later videos.</p>
+<h2>05:54 — ★ Critical twist: `new File()` does NOT create a physical file</h2>
+<h3>The most common beginner mistake</h3>
+<pre class='code'>File f = new File(&quot;ABC.txt&quot;);</pre>
+<p>Wrong assumption: &quot;This line creates a new physical file named ABC.txt on disk, and `f` is the reference variable for that file.&quot;</p>
+<p>Correct understanding: This line creates a Java `File` object in memory that represents the name ABC.txt. No physical file is created on disk.</p>
+<h3>Internal behavior of `new File(String name)`</h3>
+<ol><li>JVM checks: does a physical file/directory with this name already exist?</li></ol>
+<ol><li>If yes → f simply refers to (points to) that existing entity.</li></ol>
+<ol><li>If no → still only creates a Java object representing the name — does not create anything on disk.</li></ol>
+<h3>Board diagram (conceptual)</h3>
+<p>Line 1:  File f = new File(&quot;ABC.txt&quot;);
+         → Creates Java File OBJECT in heap (represents name &quot;ABC.txt&quot;)
+         → Disk: (nothing created)
+
+Line 3:  f.createNewFile();
+         → NOW physical file ABC.txt appears on disk</p>
+<h3>Proof program — board demo #1</h3>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws Exception {
+        File f = new File(&quot;ABC.txt&quot;);
+        System.out.println(f.exists());   // false — no physical file yet
+
+        f.createNewFile();                  // NOW physical file is created
+        System.out.println(f.exists());     // true
+    }
+}</pre>
+<p>First run output:</p>
+<p>false
+true</p>
+<p>Second run output (file already exists from first run):</p>
+<p>true
+true</p>
+<h3>Live execution demo — board demo #2</h3>
+<p>Durga Sir uses a unique filename so it definitely does not exist on the system:</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws Exception {
+        File f = new File(&quot;ABC01092014.txt&quot;);
+        System.out.println(f.exists());   // false
+        // f.createNewFile();             // uncomment to create
+    }
+}</pre>
+<p>Compile &amp; run:</p>
+<p>&gt; javac Test.java
+&gt; java Test
+false</p>
+<p>OS verification (Windows `dir`):</p>
+<p>&gt; dir ABC01092014.txt
+File Not Found</p>
+<p>Physical file is not there — confirming new File() alone does nothing on disk.</p>
+<p>After adding `createNewFile()`:</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws Exception {
+        File f = new File(&quot;ABC01092014.txt&quot;);
+        System.out.println(f.exists());   // false
+        f.createNewFile();
+        System.out.println(f.exists());   // true
+    }
+}</pre>
+<p>Output: false then true. Running dir now shows the file with a fresh timestamp (created &quot;just now&quot;).</p>
+<p>100% exam trap: new File(&quot;x.txt&quot;) → never creates a physical file. Only createNewFile() (or writing via streams in later lectures) creates the actual file.</p>
+<h2>17:06 — Unix philosophy: `File` object represents files AND directories</h2>
+<h3>Key concept</h3>
+<p>In Unix, everything is a file — even directories are treated as files.</p>
+<p>Java&#x27;s File I/O model is implemented based on the Unix operating system. Therefore a File object can represent:</p>
+<ul><li>A regular file</li></ul>
+<ul><li>A directory</li></ul>
+<h3>Directory demo — board demo #3</h3>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws Exception {
+        File f = new File(&quot;Durga123&quot;);       // represents directory name
+        System.out.println(f.exists());      // false if not present
+
+        f.mkdir();                           // create physical directory
+        System.out.println(f.exists());      // true
+    }
+}</pre>
+<p>Note: mkdir() creates only the final directory in the path (parent must already exist). For nested paths, mkdirs() exists (covered in later lectures).</p>
+<h3>Board notes (copy verbatim)</h3>
+<p>In Unix, everything is treated as a file.</p>
+<p>Java File I/O concept is implemented based on Unix operating system.</p>
+<p>Hence, Java File object can be used to represent both files and directories.</p>
+<h3>Full directory flow demo — board demo #4</h3>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws Exception {
+        File f = new File(&quot;Durga123&quot;);
+        System.out.println(f.exists());   // false
+        f.mkdir();
+        System.out.println(f.exists());   // true
+    }
+}</pre>
+<h2>23:03 — `File` class constructors (three)</h2>
+<p>All three constructors create a Java `File` object to represent a file or directory name — they do not by themselves create physical files/directories (unless followed by createNewFile() / mkdir()).</p>
+<pre class='code'>// Constructor 1 — name in CURRENT WORKING DIRECTORY
+File(String pathname)
+
+// Constructor 2 — name in SPECIFIED subdirectory / path
+File(String parent, String child)
+
+// Constructor 3 — child relative to existing File reference
+File(File parent, String child)</pre>
+<h3>Constructor selection guide</h3>
+<h2>30:04 — Example 1: Create file in current working directory</h2>
+<p>Requirement: Create file ABC.txt in the current working directory.</p>
+<h3>Board demo #5</h3>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws Exception {
+        File f = new File(&quot;ABC.txt&quot;);   // Constructor 1
+        f.createNewFile();              // physical file created HERE
+    }
+}</pre>
+<ul><li>new File(&quot;ABC.txt&quot;) → Java object only (no disk file).</li></ul>
+<ul><li>createNewFile() → physical ABC.txt appears in CWD.</li></ul>
+<h2>33:02 — Example 2: Directory + file inside (all 3 constructors)</h2>
+<p>Requirement: In current working directory:</p>
+<ol><li>Create directory `Durga123`</li></ol>
+<ol><li>Inside it, create file `demodata.txt`</li></ol>
+<h3>Step 1 — create directory (Constructor 1) — board demo #6</h3>
+<pre class='code'>File f = new File(&quot;Durga123&quot;);
+f.mkdir();</pre>
+<h3>Step 2a — create file inside (Constructor 2) — board demo #7</h3>
+<pre class='code'>File f1 = new File(&quot;Durga123&quot;, &quot;demodata.txt&quot;);
+f1.createNewFile();</pre>
+<h3>Step 2b — alternative using Constructor 3 — board demo #8</h3>
+<pre class='code'>File f  = new File(&quot;Durga123&quot;);
+f.mkdir();
+
+File f1 = new File(f, &quot;demodata.txt&quot;);   // parent already pointed by f
+f1.createNewFile();</pre>
+<h3>Resulting directory structure</h3>
+<p>(current working directory)/
+    Durga123/
+        demodata.txt</p>
+<h3>Complete combined program — board demo #9</h3>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws Exception {
+        // Step 1: create directory
+        File f = new File(&quot;Durga123&quot;);
+        f.mkdir();
+
+        // Step 2: create file inside (Constructor 2)
+        File f1 = new File(&quot;Durga123&quot;, &quot;demodata.txt&quot;);
+        f1.createNewFile();
+
+        // Alternative (Constructor 3):
+        // File f1 = new File(f, &quot;demodata.txt&quot;);
+        // f1.createNewFile();
+    }
+}</pre>
+<p>After this example you should know how to use all three constructors.</p>
+<h2>37:45 — Example 3: Create file in another drive/folder</h2>
+<p>Requirement: Create ABC.txt inside `E:\xyz\` (Windows path).</p>
+<h3>Board demo #10</h3>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws Exception {
+        File f = new File(&quot;E:\\xyz&quot;, &quot;ABC.txt&quot;);   // Constructor 2
+        f.createNewFile();
+    }
+}</pre>
+<h3>Prerequisites for success</h3>
+<ul><li>Drive `E:` must exist on the system.</li></ul>
+<ul><li>Folder `E:\xyz` must already exist (mkdir() only creates the final directory; parent chain must be present).</li></ul>
+<h3>Real student error (Durga Sir anecdote)</h3>
+<p>A student reported FileNotFoundException with this code. Root cause: his machine had only C: and D: drives — no E: drive. Without the drive and folder, creation fails.</p>
+<p>Rule: Assume E:\xyz folder is already available before running the example.</p>
+<h2>42:16 — Important methods in `File` class</h2>
+<p>Methods already used in earlier examples: exists(), createNewFile(), mkdir().</p>
+<p>Full method reference for this session:</p>
+<h2>47:36 — `exists()` detailed behavior</h2>
+<p>boolean exists()</p>
+<ul><li>Returns `true` if the specified file or directory is available on the filesystem.</li></ul>
+<ul><li>Returns `false` otherwise.</li></ul>
+<ul><li>Works for both files and directories.</li></ul>
+<h2>48:30 — `createNewFile()` detailed behavior (intelligent method)</h2>
+<p>boolean createNewFile()</p>
+<p>Algorithm:</p>
+<ol><li>Check: is the specified file already available?</li></ol>
+<ol><li>If already there → return `false` without creating anything.</li></ol>
+<ol><li>If not there → create new physical file → return `true`.</li></ol>
+<h3>Demo</h3>
+<p>File f = new File(&quot;demo.txt&quot;);
+System.out.println(f.createNewFile());   // true — created
+System.out.println(f.createNewFile());   // false — already exists, nothing created</p>
+<p>Same logic applies to `mkdir()` for directories (returns false if directory already exists).</p>
+<h3>Method return-value traps (exam)</h3>
+<h2>52:03 — `isFile()` and `isDirectory()`</h2>
+<p>A File reference may point to either a file or a directory. To distinguish:</p>
+<p>f.isFile()        // true if physical file
+f.isDirectory()   // true if physical directory</p>
+<p>Because File can represent both (Unix model), you cannot tell from the reference alone — you must call these methods after the entity exists on disk.</p>
+<h2>53:12 — `list()` method</h2>
+<p>String[] list()</p>
+<ul><li>Applicable when File object represents a directory.</li></ul>
+<ul><li>Returns `String[]` — names of all files and subdirectories inside that directory.</li></ul>
+<ul><li>Returns `null` if File is not a directory or an I/O error occurs.</li></ul>
+<ul><li>Return type is `String[]`, not List&lt;String&gt; (legacy API).</li></ul>
+<h2>54:16 — `length()` method</h2>
+<p>long length()</p>
+<ul><li>Returns number of bytes in the specified file.</li></ul>
+<ul><li>Return type is `long`, not `int`, because large files can exceed Integer.MAX_VALUE.</li></ul>
+<p>long len = f.length();</p>
+<h2>55:08 — `delete()` method</h2>
+<p>boolean delete()</p>
+<ul><li>Deletes the specified file or directory.</li></ul>
+<ul><li>Returns true if deletion succeeded.</li></ul>
+<p>Caution: delete() on a non-empty directory may fail (platform-dependent). It does not recurse — typically works on empty directories only.</p>
+<h2>55:44 — Demo: List all files and directories in a folder</h2>
+<p>Requirement: Display names of all files and directories in C:\DurgaClasses.</p>
+<h3>Board demo #11 — list everything</h3>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) {
+        File f = new File(&quot;C:\\DurgaClasses&quot;);
+        String[] names = f.list();
+
+        int count = 0;
+        for (String s : names) {
+            count++;
+            System.out.println(s);
+        }
+        System.out.println(&quot;Total number: &quot; + count);
+    }
+}</pre>
+<p>Sample output: 19 names listed → Total number: 19 (mix of files and directories).</p>
+<p>Durga Sir&#x27;s live run showed 819 total entries in his C:\DurgaClasses folder (large teaching directory). The pattern is what matters for the exam.</p>
+<h2>1:02:33 — Filter: display ONLY file names (not directories)</h2>
+<h3>Wrong approach — compile error — board demo #12</h3>
+<p>for (String s1 : s) {
+    if (s1.isFile()) {   // CE — isFile() is NOT on String
+        count++;
+        System.out.println(s1);
+    }
+}
+// CE: cannot find symbol — method isFile() on String</p>
+<p>Why it fails: isFile() and isDirectory() are `File` class methods, not `String` methods. The list() array contains names only (String), not File objects.</p>
+<p>Key insight: File class methods must be applied on `File` objects, not on String names.</p>
+<h3>Correct approach — board demo #13</h3>
+<p>For each name, create a File object relative to the parent directory (Constructor 3), then call isFile():</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) {
+        int count = 0;
+        File f = new File(&quot;C:\\DurgaClasses&quot;);
+        String[] s = f.list();
+
+        for (String s1 : s) {
+            File f1 = new File(f, s1);    // Constructor 3 — parent + child name
+            if (f1.isFile()) {
+                count++;
+                System.out.println(s1);
+            }
+        }
+        System.out.println(&quot;Total number of files: &quot; + count);
+    }
+}</pre>
+<p>Result in Durga Sir&#x27;s demo: 8 files out of 19 total entries — remaining 11 are directories.</p>
+<h2>1:07:49 — Filter: display ONLY directory names</h2>
+<p>Same program; replace isFile() with isDirectory() — board demo #14:</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) {
+        int count = 0;
+        File f = new File(&quot;C:\\DurgaClasses&quot;);
+        String[] s = f.list();
+
+        for (String s1 : s) {
+            File f1 = new File(f, s1);
+            if (f1.isDirectory()) {
+                count++;
+                System.out.println(s1);
+            }
+        }
+        System.out.println(&quot;Total number of directories: &quot; + count);
+    }
+}</pre>
+<p>Result: 11 directories (19 total − 8 files = 11 directories). Counts must add up.</p>
+<h2>1:08:43 — Summary code pattern (board copy)</h2>
+<h3>List only files — board demo #15</h3>
+<pre class='code'>int count = 0;
+File f = new File(&quot;C:\\DurgaClasses&quot;);
+String[] s = f.list();
+
+for (String s1 : s) {
+    File f1 = new File(f, s1);
+    if (f1.isFile()) {
+        count++;
+        System.out.println(s1);
+    }
+}
+System.out.println(&quot;Total number of files: &quot; + count);</pre>
+<h3>List only directories</h3>
+<p>Replace f1.isFile() → f1.isDirectory(). No other changes needed.</p>
+<h2>1:12:08 — Session wrap-up</h2>
+<h3>Key points from Part 1</h3>
+<ol><li>new File(name) → Java object only; no physical file/directory on disk.</li></ol>
+<ol><li>createNewFile() → creates physical file; returns false if already exists.</li></ol>
+<ol><li>mkdir() → creates physical directory; returns false if already exists.</li></ol>
+<ol><li>File represents files and directories (Unix model).</li></ol>
+<ol><li>Three constructors: current dir, parent+child strings, File parent + child.</li></ol>
+<ol><li>Important methods: exists, createNewFile, mkdir, isFile, isDirectory, list, length, delete.</li></ol>
+<ol><li>list() returns String[] of names — must use new File(parent, name) before calling isFile() / isDirectory().</li></ol>
+<ol><li>length() returns `long`, not int.</li></ol>
+<p>Next (Part 2, Video 121): FileWriter — writing character data to files.</p>
+<h2>Quick reference card</h2>
+<p>File I/O Part 1 — java.io.File
+├── new File(name)           → Java object ONLY (no disk file)
+├── createNewFile()          → physical file (false if exists)
+├── mkdir()                  → physical directory (false if exists)
+├── exists()                 → boolean — on disk?
+├── isFile() / isDirectory() → type check (on File object, NOT String)
+├── list()                   → String[] names in directory
+├── length()                 → long bytes in file
+└── delete()                 → remove file or empty directory
+
+Constructors
+├── File(String pathname)              → CWD
+├── File(String parent, String child)  → other path
+└── File(File parent, String child)    → relative to File ref
+
+Storage choice
+├── Small data  → file
+└── Huge data   → database
+
+Series (6 classes): File → FileWriter → FileReader → BufferedWriter → BufferedReader → PrintWriter</p>
+<h2>Interview / exam trap questions</h2>
+<ol><li>Does `new File(&quot;a.txt&quot;)` create a file? → No. Only a Java object representing the name.</li></ol>
+<ol><li>Which line creates the physical file? → createNewFile() (or stream write in later lectures).</li></ol>
+<ol><li>`createNewFile()` returns false — why? → File already existed; nothing created.</li></ol>
+<ol><li>`list()` return type? → String[] (not List).</li></ol>
+<ol><li>Can you call `s1.isFile()` where `s1` is from `list()`? → No — compile error. Wrap: new File(parent, s1).isFile().</li></ol>
+<ol><li>`length()` return type? → long (large files exceed int).</li></ol>
+<ol><li>Can `File` represent a directory? → Yes (Unix model).</li></ol>
+<ol><li>Constructor for `E:\xyz\abc.txt`? → new File(&quot;E:\\xyz&quot;, &quot;abc.txt&quot;).</li></ol>
+<ol><li>First run vs second run `exists()` after `createNewFile()`? → false→true first run; true→true second run.</li></ol>
+<ol><li>Why was File I/O removed then re-added to SCJP? → DB dominance in 1.4; small-data use cases brought it back in 1.5.</li></ol>
+<h2>ASR decode notes (Whisper STT corrections)</h2>
+<p>Java code block count in notes: 16</p>
+<h2>Full transcript</h2>
+<p>Source: Local Whisper STT · Video ID rxo1SZmq9VE · Duration 1h 12m 26s</p>
+<p>[00:04] File Ivo, File Ivo, File Ivo, File Ivo.</p>
+<p>[00:14] Okay, File Ivo.</p>
+<p>[00:15] So related to File Ivo, there are few things I have to talk.</p>
+<p>[00:20] File Ivo, related to this File Ivo, there are few conclusions I have to talk just up,</p>
+<p>[00:26] In the SCJP point of view even normal general Java side also in the world and days whenever</p>
+<p>[00:36] Java 1.0 1.1 version 1.2 1.3 versions file concept is very important concept in Java look</p>
+<p>[00:48] that is say for these versions, for these versions, SEJP is there, SEJP is there, SEJP 1.1,</p>
+<p>[00:58] SEJP 1.2 version, SEJP is there for these versions also.</p>
+<p>[01:02] At that time, file concept is a very important concept, minimum 7 to 8 questions were there</p>
+<p>[01:09] in this.</p>
+<p>[01:10] But whenever the situation comes to 1.4 and 1.5 versions, 1.4 version especially.</p>
+<p>[01:18] Some people remove the file concept from SEJP cell bus.</p>
+<p>[01:23] File concept is not there.</p>
+<p>[01:25] But Shadan is 1.5 or 1.6 version.</p>
+<p>[01:28] Shadan&#x27;s file concept came into the picture.</p>
+<p>[01:31] Okay.</p>
+<p>[01:32] What is the reason for that?</p>
+<p>[01:34] In the Java 1.0 version release,</p>
+<p>[01:37] at what time this was after?</p>
+<p>[01:39] 1995.</p>
+<p>[01:40] 1995.</p>
+<p>[01:41] This was in 1995.</p>
+<p>[01:43] In 1995, database concepts are not that much popular.</p>
+<p>[01:48] Correct or not database concepts not that much popular.</p>
+<p>[01:51] The very common storage area is an nothing but file only for data.</p>
+<p>[01:57] I want to store my data. Very common storage area is an nothing but file concept only.</p>
+<p>[02:03] That&#x27;s why you know Erda time file is very important.</p>
+<p>[02:06] That&#x27;s why 728 questions you can expect.</p>
+<p>[02:09] So, in this CGP exams from the file, but 1.4 version, almost around 2003, 2004 like</p>
+<p>[02:19] look at this, at that time, so database concepts are more popular, more popular.</p>
+<p>[02:24] Being some sort of a Java program, not required to have idea on the files because the reason</p>
+<p>[02:30] is everyone is going for what database, that&#x27;s why file I go, not there in the CGP 1.4</p>
+<p>[02:37] in the 1.5 version, 1 second some people kept the file level concept, why? Because database</p>
+<p>[02:44] is a very common storage area, but I want to store only one count variable. Sir, only</p>
+<p>[02:53] one count variable I want to store. If I want to store one count variable, going for</p>
+<p>[03:00] separate database, install separate database server, store this count value in the database</p>
+<p>[03:05] server in the table is it recommend? No right? So for small amount of data, going for</p>
+<p>[03:11] databases is nothing but a vast. If the huge data is there, going for databases is okay</p>
+<p>[03:16] well, but small amount of data, going for databases is the vast. That&#x27;s why what are some people</p>
+<p>[03:21] did is nothing but, you know, being some certified Java programmer, compulsory basic idea</p>
+<p>[03:27] in the file concept must be required.</p>
+<p>[03:30] regarding like they felt that shadow with the introduced file concept in the 1.5</p>
+<p>[03:35] or jump but the importance got reduced just 2 to 3 questions only there in the 1.5 or</p>
+<p>[03:42] 1.6 version of Java related to the files.</p>
+<p>[03:45] I&#x27;ll get in the point right ok this is what you people should weigh what is what is</p>
+<p>[03:51] what is the why file a concept came so importance is not there but we have to</p>
+<p>[03:57] in detail not required to worry.</p>
+<p>[03:59] So file either 2 to 3 questions we can able to get.</p>
+<p>[04:03] Database file. Small amount of data.</p>
+<p>[04:06] Better to go for file concept.</p>
+<p>[04:08] Huge amount of data. Better to go for water.</p>
+<p>[04:11] Database concept. That&#x27;s why small amount of data</p>
+<p>[04:14] sometimes we may require. Sometimes we may require to store.</p>
+<p>[04:17] That&#x27;s why. So being some certified Java programmer,</p>
+<p>[04:20] our varical certified Java programmer,</p>
+<p>[04:22] compulsory basic idea in the file,</p>
+<p>[04:24] that&#x27;s why some people introduced once again file logo concept in the higher versions</p>
+<p>[04:29] right clear for all of you.</p>
+<p>[04:31] Next up, yaza part of file, file live, which things we are going to discuss.</p>
+<p>[04:36] The first, first let me talk about file concept, first first file is a Java class file concept</p>
+<p>[04:44] then file writer, file writer, next file writer, file writer, file writer, file writer,</p>
+<p>[04:57] file writer, fourth one, bufford, bufford writer, bufford writer, bufford, bufford writer,</p>
+<p>[05:10] Next, bufford reader, next one print writer, print writer like we have, print writer like</p>
+<p>[05:27] that is all this is the agenda related to the file.</p>
+<p>[05:30] I am getting file I have related to this for the agenda.</p>
+<p>[05:33] These are six classes we require to discuss.</p>
+<p>[05:36] now keeps operating file, let me start the system with a small twist, okay, file anywhere</p>
+<p>[05:54] right, let me start with a small twist, the people who attend the dollar, they be silent</p>
+<p>[05:59] just observe.</p>
+<p>[06:00] So, I am taking file F is equal to, file F is equal to new file A, B, C, A dot, T,</p>
+<p>[06:16] X, T. Final F is equal to F, F is B, C dot, T, X, T. Can you tell because of this line,</p>
+<p>[06:24] what we are doing? Because of this line what we are doing? File F is called new file of</p>
+<p>[06:30] ABC.exe what we are doing? We are creating a new file named with ABC.exe and F is reference</p>
+<p>[06:41] variable for that. So, here just observe this is ABC.exe a new file we are creating</p>
+<p>[06:50] or feel the reference variable for that.</p>
+<p>[06:52] Correct or not?</p>
+<p>[06:53] Oh, correct or not?</p>
+<p>[06:55] Any explanation is required up to this.</p>
+<p>[06:57] No, make sure this one is 100% per car wrong.</p>
+<p>[07:02] Ok, remember it is another thing which is going to be happened.</p>
+<p>[07:06] Sir, this line, this line won&#x27;t create any physical file.</p>
+<p>[07:12] Simple remember, Saram creating Java file object.</p>
+<p>[07:16] object. Sir, I am creating a Java file object, not a physical file. We are just creating</p>
+<p>[07:23] a Java file object to represent the name ABC.exe. This line won&#x27;t create any physical</p>
+<p>[07:31] file. Are you getting that? Look at this. First it will check. Sir, either physical file</p>
+<p>[07:36] ABC.exe already there or not. If it is already there, you have to simply point into that.</p>
+<p>[07:42] If it is not already there, it won&#x27;t create physical file.</p>
+<p>[07:46] Just we are creating Java file object to represent ABC.xt in name.</p>
+<p>[07:52] Is it clear for all of you?</p>
+<p>[07:53] Just we are creating Java file object to represent ABC.xt in name that&#x27;s all,</p>
+<p>[07:59] physical file won&#x27;t be created.</p>
+<p>[08:01] Clear for all of you.</p>
+<p>[08:02] Okay. Now, survey the proof.</p>
+<p>[08:04] Can you please show like?</p>
+<p>[08:05] Sir, I&#x27;m taking system.out.println.</p>
+<p>[08:09] F dot exists, I can&#x27;t take it. F dot exists, sir. Is that physical file already there?</p>
+<p>[08:24] Arna. Sir, this is positive I&#x27;m keeping. That&#x27;s why word answer by default we are going</p>
+<p>[08:29] to get. False is the answer. There is no such type of file. False is the answer. Is it clear?</p>
+<p>[08:35] So if this is there, then automatically true I have to get it.</p>
+<p>[08:40] Are you getting it?</p>
+<p>[08:41] Because this line won&#x27;t create any physical file.</p>
+<p>[08:44] That&#x27;s why SOPFF.exe is nothing but false.</p>
+<p>[08:47] Next up, sir, I want that physical file.</p>
+<p>[08:51] Sir, I want that physical file.</p>
+<p>[08:53] Then what we have to do?</p>
+<p>[08:54] Now, for data create a new file.</p>
+<p>[08:59] For data create a new file.</p>
+<p>[09:03] Now my question is, physical file will be created.</p>
+<p>[09:08] That line number one or line number three.</p>
+<p>[09:11] That line number one or three.</p>
+<p>[09:13] Physical file will be created at line number three.</p>
+<p>[09:17] Not at line number one.</p>
+<p>[09:19] Now the physical file got created.</p>
+<p>[09:21] Ya Fitha reference variable for that. Now ask the same question. Yes, hope ya F, F</p>
+<p>[09:28] for that exists. Ya F for that exists. And I cannot tell, what the answer by the if or</p>
+<p>[09:35] if we are going to get? Ya, what the answer? True itself is the answer. I am getting</p>
+<p>[09:40] true because, there is physical failure created already. That is why true is the answer</p>
+<p>[09:44] So, if I run this program, if I run run this program, first time, sir, if I run this program,</p>
+<p>[09:53] first time, first run, first time, first run, first time, first run, first time, false</p>
+<p>[10:00] rule, true is the answer, false follow-up, two is answer. If I run the program second time,</p>
+<p>[10:07] second run, word answer, word answer, because physical file already created, already there,</p>
+<p>[10:16] a swap law of that exists, word answer true, and the second I am word answer true right,</p>
+<p>[10:22] are you able to get, so clear indication, this line won&#x27;t create any physical file, just</p>
+<p>[10:28] we are creating Java file objects, are very proof, let me execute this code, here see,</p>
+<p>[10:37] just 1 minute 1 minute here see this one just have a look once Saram Taikang class test</p>
+<p>[10:51] okay here see this one class test file of is equal to new file of all these things are</p>
+<p>[10:58] not there can I can I spell out any any name any name which should not be which is not</p>
+<p>[11:03] there in my system. A, B, C, today is a word that is 01092014.T, stick. Okay, like,</p>
+<p>[11:15] sir, I am sure today date is not there. A, B, C is not like I am, F, dot, X, J. Can you</p>
+<p>[11:21] tell, is that physical file? Is it there or not there? Not there. This line won&#x27;t create any</p>
+<p>[11:29] any physical file. I am sure one create any physical file. Let me compile under let me run this code.</p>
+<p>[11:35] Let me compile under let me run Java C Java C test dot Java. The code compiles find next</p>
+<p>[11:45] and after that Java test. For the answer false Java test or the answer false is the answer because</p>
+<p>[11:51] there is no such type of file. Let me run one second one second one second false only even physically if</p>
+<p>[11:56] If you want to check, DIR, ABC, 01092014.TXT is it there or not there?</p>
+<p>[12:07] Not there, you know, file not found.</p>
+<p>[12:10] Is it nothing but like?</p>
+<p>[12:11] File not found.</p>
+<p>[12:12] Is a physical is also not there.</p>
+<p>[12:14] So, now, can I use the term, this line will create a physical file or not?</p>
+<p>[12:20] No, this line won&#x27;t create any physical files.</p>
+<p>[12:23] Sir, I want that physical file.</p>
+<p>[12:25] Can you finish by the code?</p>
+<p>[12:27] Create</p>
+<p>[12:29] Create a new file</p>
+<p>[12:31] Now the physical file got created</p>
+<p>[12:33] If you want you can</p>
+<p>[12:35] CRAG Check</p>
+<p>[12:37] What is the answer we are going to get?</p>
+<p>[12:39] If you can you can CRAG Check</p>
+<p>[12:41] Here see</p>
+<p>[12:43] This one</p>
+<p>[12:45] Compile is fine</p>
+<p>[12:47] Answer false true</p>
+<p>[12:49] If I run second time</p>
+<p>[12:51] If I run second I more than 2 true okay this is</p>
+<p>[12:55] Sir when this file got created if you want to know</p>
+<p>[12:59] DIR like can you please catch it when this file got created</p>
+<p>[13:03] 0109 2014 year 2033 is another</p>
+<p>[13:08] but 833 is another much now just now file got created right</p>
+<p>[13:12] I hope you people can have a clear so cinema starts with the twist only</p>
+<p>[13:17] okay this is first it keeps a wedding file</p>
+<p>[13:20] under then only this line, do not take any other, only first line. File F is equal to,</p>
+<p>[13:27] file F is equal to, new file of ABC dot A, stick. File F is equal to, new file of ABC dot</p>
+<p>[13:37] at A, stick. ABC dot at T, stick. File F is equal to new file of ABC dot at T, stick.</p>
+<p>[14:15] There is no physical file. First it will check is there any physical file? Name it with</p>
+<p>[14:22] them. Is there any physical file? Name it with them. A, B, C, dot, T, X, T. Is there any</p>
+<p>[14:29] physical file? Name it with A, B, C, dot, T, X, T. Is available or not? Is available</p>
+<p>[14:37] not, is available or not or not. If it is available, if it is available, if it is available,</p>
+<p>[14:52] if it is available, then then F, then F simply refers to that file, F simply refers to</p>
+<p>[14:59] If simply refers to that file, then you have to file that file.</p>
+<p>[15:14] If it is not available, then we are just creating.</p>
+<p>[15:27] creating, then we are just creating, then we are just creating, and we are just creating</p>
+<p>[15:36] Java file object.</p>
+<p>[15:38] We are just creating Java file object, Java file object, file object to represent the name,</p>
+<p>[15:49] to represent the name ABC dot at EXT.</p>
+<p>[15:56] To represent the name ABC dot at EXT, to represent the name ABC ABC dot at EXT, EXT, that&#x27;s all.</p>
+<p>[16:02] Are you able to understand?</p>
+<p>[16:03] Okay.</p>
+<p>[16:04] Now take this complete example once again.</p>
+<p>[16:07] Take this one.</p>
+<p>[16:09] Take this complete example.</p>
+<p>[16:11] In the current working director.</p>
+<p>[16:30] Completed right?</p>
+<p>[16:36] So, first run, second run.</p>
+<p>[16:38] Even I hope you people took this diagram also.</p>
+<p>[16:40] Compulsory you have to take.</p>
+<p>[16:42] So, file will be created at line number 1 or line number 3.</p>
+<p>[16:50] Line number 3.</p>
+<p>[16:52] Okay, we have just creating Java file object, but not physical file.</p>
+<p>[16:58] Here we are creating physical file.</p>
+<p>[17:00] Now, observe.</p>
+<p>[17:03] Are you getting the point right clearly?</p>
+<p>[17:05] Next up.</p>
+<p>[17:06] You know, in Unix, I hope you people may have unique operating system.</p>
+<p>[17:13] In Unix, everything is your file.</p>
+<p>[17:17] Everything is considered as a file, correct Aataan, even directory also is treated as a file</p>
+<p>[17:23] only.</p>
+<p>[17:24] Directory also treated as a file.</p>
+<p>[17:25] So Java file aivo concept is implemented based on Unix operating system.</p>
+<p>[17:31] That&#x27;s why Java file object.</p>
+<p>[17:34] F. Java file object can be used to represent a directory also. Is it clear right now?</p>
+<p>[17:41] Let&#x27;s take example. Let me take one more one more example here.</p>
+<p>[17:46] object. File F is equal to, so I am taking, File F is equal to new file of new file of</p>
+<p>[17:59] Sir Durga 1 to 3, Sir Durga 1 to 3, Durga 1 to 3 is File name or Director name, Director</p>
+<p>[18:08] name, so it is a Durga 1 to 3, that director. Now I am taking, system dot out that print</p>
+<p>[18:14] So, if you want to create a file which you matter we use create new file.</p>
+<p>[18:43] If you want to create a directory, which method will you add?</p>
+<p>[18:46] Create a new directory.</p>
+<p>[18:50] You have for data MKDAR.</p>
+<p>[18:54] Oh, not create a new directory.</p>
+<p>[18:56] But we have method name MKDAR.</p>
+<p>[18:59] So even it&#x27;s a command I hope.</p>
+<p>[19:01] It&#x27;s a command to make a directory.</p>
+<p>[19:06] You have for that MKDAR.</p>
+<p>[19:08] Automatically, there is a directory named with the</p>
+<p>[19:12] Now, system dot out that print on f dot x is a, yes hope you have got x is a, but</p>
+<p>[19:26] cannot tell what the answer we are going to get now, f dot x is a true itself is the answer.</p>
+<p>[19:31] Hope any explanation is required about this a terminal jana, so we can use a Java file</p>
+<p>[19:38] object, two represent by rectory also, territory also, because Java file is a concept is implemented</p>
+<p>[19:45] based on Unix operating system right, we can use Java file object, we can use Java file</p>
+<p>[19:57] object, to represent, we can use Java file object to represent, to represent by rectory also</p>
+<p>[20:07] So we can use Java file object to represent a directory, to represent a directory also,</p>
+<p>[20:14] a directory also, take a wish one.</p>
+<p>[20:19] File F is equal to, new file of, file F is equal to new file of Durga123, Sopya of F.XJ,</p>
+<p>[20:32] next time falls, can you please make that a directory, f dot m k d a r, f dot m k m k</p>
+<p>[20:41] d a r, next I hope you have that x j is nothing but true true itself we are going to get,</p>
+<p>[20:51] f dot m k d a r, and I hope you have that x j is, but the answer by the following you are</p>
+<p>[20:58] going to get a true itself with the answer. Any explanation is required about this one</p>
+<p>[21:05] like terminology is that clear for you people. Better to take diagram also. Take this diagram</p>
+<p>[21:13] Next, note, note, note, note.</p>
+<p>[21:22] In Unix, in Unix, in Unix, in Unix, everything is in Unix, everything, everything is treated as a file.</p>
+<p>[21:38] In Unix everything is treated as a file.</p>
+<p>[21:42] In Unix everything is treated as a file.</p>
+<p>[21:45] As a file, file.</p>
+<p>[21:47] Java fileivo concept, Java fileivo concept, Java fileivo concept is implemented.</p>
+<p>[21:57] Java fileivo concept is implemented based on Unix operating system.</p>
+<p>[22:03] Java file.ivo concept is implemented based on unique operating system based on unique</p>
+<p>[22:09] operating system.</p>
+<p>[22:11] Inx operating system.</p>
+<p>[22:14] Inx operating system.</p>
+<p>[22:16] Inx operating system.</p>
+<p>[22:18] Hence, hence, hence, Java file object.</p>
+<p>[22:23] Java file object can be user.</p>
+<p>[22:27] Yawa file object can be used to represent both files under directories.</p>
+<p>[22:48] to represent both the files and the directories.</p>
+<p>[22:53] Okay, that&#x27;s all.</p>
+<p>[22:55] So this is the way how to create a file,</p>
+<p>[22:59] how to create a directorie, I hope you people have here.</p>
+<p>[23:03] Now in the file class, what are various constructors are there?</p>
+<p>[23:08] In the file, we use already one constructor,</p>
+<p>[23:11] but what are various constructors?</p>
+<p>[23:13] Keep somebody.</p>
+<p>[23:14] File class constructors, file class constructors, file class constructors, file class constructors,</p>
+<p>[23:31] okay.</p>
+<p>[23:32] Now observe this point, here the first one file F is equal to, new file of analysis</p>
+<p>[24:13] in current work in directory then this constructor we have to use but sometimes my requirement is</p>
+<p>[24:19] that can you please create a file name it with a bc.exe in E colon some other location</p>
+<p>[24:28] any E colon or E colon x magic folder like you may so in some other location how we can</p>
+<p>[24:35] create is an ATM which can set up a how to use a file F is equal to new file of</p>
+<p>[24:45] a physical new file of string string sub d a y r name string sub d a r name pass what</p>
+<p>[24:54] is that in which a sub director you want to create a file comma string name is an ATM</p>
+<p>[25:02] like. Sir, in this sub directorate, I want to create a file named with ABC.exchange</p>
+<p>[25:09] is nothing but like. So, if you want to create or if you want to represent a file or directory</p>
+<p>[25:16] in current working directory, use this constructor. In some other location, use this constructor,</p>
+<p>[25:22] regarding that look at this. Third one, file F is equal to new file of, sir, if this</p>
+<p>[25:32] is subdirectory already pointed by some file reference, sir inside Durga123, sir</p>
+<p>[25:39] Durga123 already pointed by, so some file reference, then not required to spell out subdirectory</p>
+<p>[25:47] the name, if you want you can pass the corresponding reference also.</p>
+<p>[25:51] File, sub-di-ar, file sub-di-ar, reference, file reference, comma string name is an</p>
+<p>[26:02] nothing but like.</p>
+<p>[26:03] But how to use these constructors, I will explain with the example, so that then you will</p>
+<p>[26:07] get much clarity.</p>
+<p>[26:08] But just observe, sir, I want to create a file-ar directory, in current working directory,</p>
+<p>[26:15] then we should go for pass one.</p>
+<p>[26:17] So I want to create a filer directory in the specified location, in the specified sub</p>
+<p>[26:22] location then we should go for second and third constructors write any explanation is required</p>
+<p>[26:27] about this at an all janna at this point.</p>
+<p>[26:30] I will explain with the example then we will get much clarity at first constructors only</p>
+<p>[27:06] Create a Java File object to represent the object to represent the name of the file.</p>
+<p>[27:16] Create a Java File object to represent the name of the file or directory.</p>
+<p>[27:22] Name of the file or directory.</p>
+<p>[27:26] In current working directory, in current working directory, in current working directory,</p>
+<p>[27:35] in current working directory, directory.</p>
+<p>[27:38] Next up, second one, File is equal to, File is equal to.</p>
+<p>[27:46] New file of.</p>
+<p>[27:48] File a physical to new file of.</p>
+<p>[27:53] String sub d.I.R name.</p>
+<p>[27:55] String sub d.I.R name.</p>
+<p>[27:58] Subdirector name.</p>
+<p>[28:00] Cama string name.</p>
+<p>[28:02] File a physical name.</p>
+<p>[28:04] File a string sub d.I.R name.</p>
+<p>[28:06] Cama string name name.</p>
+<p>[28:08] Got the theory.</p>
+<p>[28:11] Creates.</p>
+<p>[28:12] a Java file object creates, a Java file object creates a Java file object to</p>
+<p>[28:21] represent creates a Java file object to represent to represent name of the name of the</p>
+<p>[28:32] name of the file or directory, name of the file or directory, name of the file or directory</p>
+<p>[28:40] present in, present in, present in, present in some other, present in specified sub directory</p>
+<p>[28:51] present in specified sub directory, present in specified sub directory, specified sub directory</p>
+<p>[29:00] is the second extra taba file F is equal to new file of file F is equal to new file of file</p>
+<p>[29:14] sub DAIR file F is equal to new file of file sub DAIR comma string the name file sub DAIR</p>
+<p>[29:24] name.</p>
+<p>[29:25] File a physical to new file file sub to you are comma string the name name.</p>
+<p>[29:32] Creates creates one minute one minute.</p>
+<p>[29:38] Not required to give.</p>
+<p>[29:39] Same thing right.</p>
+<p>[29:40] Okay this is not required to give any explanation that&#x27;s all.</p>
+<p>[29:43] But once if you see the example then you will come to no much clarity.</p>
+<p>[29:48] But remember if you want to create a filer directory,</p>
+<p>[29:52] in current working directory, better to go for first one.</p>
+<p>[29:55] In the specified sub directory, better to go for next one.</p>
+<p>[29:59] Three or four of it is a little bit different.</p>
+<p>[30:01] Now, better to take example one.</p>
+<p>[30:04] How to use these I will explain.</p>
+<p>[30:06] Example one.</p>
+<p>[30:08] Write code, write code, write code, write code,</p>
+<p>[30:14] to create a file to create a file to create a file named with the right code to create a file named with the ABC dot TXT in current</p>
+<p>[30:33] current working director.</p>
+<p>[30:35] I am going to be with ABC.exe.</p>
+<p>[30:37] In current working director.</p>
+<p>[30:40] In current working director.</p>
+<p>[30:43] In current working director.</p>
+<p>[30:45] Director.</p>
+<p>[30:46] Can you spell out?</p>
+<p>[30:48] In current working director.</p>
+<p>[30:50] I want to create a file.</p>
+<p>[30:51] I am going to be with ABC.exe.</p>
+<p>[30:53] What is that option?</p>
+<p>[30:54] Can you carry out?</p>
+<p>[30:55] What is the code?</p>
+<p>[30:56] File F is equal to</p>
+<p>[31:00] New file of ABC dot txt.</p>
+<p>[31:09] Regarding f dot, create a new file.</p>
+<p>[31:17] Automatically, in the current working director,</p>
+<p>[31:21] ABC dot txt file by default will be created.</p>
+<p>[33:02] DEMO.DOT.TXT.</p>
+<p>[33:07] DEMO.DOT.TXT.</p>
+<p>[33:11] DEMO.DOT.TXT.</p>
+<p>[33:14] DEMO.DOT.TXT.</p>
+<p>[33:17] DEMO.DOT.TXT.</p>
+<p>[33:20] DEMO.DOT.TXT.</p>
+<p>[33:23] So, this current director, we have to create water.</p>
+<p>[33:29] to 3 folder, in the we have to create a file name with what demo data takes to it.</p>
+<p>[33:35] Is it not in my life?</p>
+<p>[33:36] Now observe, observe the file.</p>
+<p>[33:39] Sir, first what is our requirement?</p>
+<p>[33:42] Create a directory, directory Durga 1 to 3, in current work in directory.</p>
+<p>[33:48] file okay you are safe file F is equal to new file of file F is equal to new file of</p>
+<p>[34:00] what is the code of the Durga 123 okay Durga 123 F for dot mkdi r you have that mkdi r</p>
+<p>[34:13] is nothing but like. Now do you know, yeah Durga 1, 2, 3 direct array got created, name</p>
+<p>[34:22] with Durga 1, 2, 3 created, Fieda reference variable for that. Up to this which concept</p>
+<p>[34:30] are we use first concept like. Now in this Durga 1, 2, 3 I want to create a file name</p>
+<p>[34:38] with the a, b, a, d, m, dot at e, x, d. This is my requirement right. So, in this,</p>
+<p>[34:45] name it with the d, m, dot, e, x, d, m, dot, e, x, d, I have to create f1 is the reference</p>
+<p>[34:52] variable. I want to create this, that&#x27;s my job. Then what I have to do, which code I have</p>
+<p>[34:57] to write? File f1 is equal to new file of, file f1 is equal to new file of, what is the</p>
+<p>[35:08] name demodata txt sorry sorry.</p>
+<p>[35:12] Hey, file of fun is equal to you file of in Durga 1 to 3 we have to create a demodata</p>
+<p>[35:19] txt that is why Durga 1 to 3 comma demodata txt like I am taking.</p>
+<p>[35:31] Indurga 1 to 3 demodata txt.</p>
+<p>[35:33] Can you tell which concept are we using?</p>
+<p>[35:36] Now, instead of second constructor, can you tell any other, what is the other way?</p>
+<p>[35:48] File F is equal to, file F1 is equal to, instead of this one, file F1 is equal to, new file</p>
+<p>[35:57] of, Sir Durga 1 to 3 already pointed by F. That&#x27;s why F, Kama, Demo, Data, Txt, F, Kama,</p>
+<p>[36:11] Demo, Data, Txt. Now here F means water, this one only. In that Demo, Data, Txt is nothing</p>
+<p>[36:17] like. Sir, which constructor I am using? Thar constructor. Now you know, how to use all the</p>
+<p>[36:23] three constructors right. If one dot create new file, if one dot create new file is an</p>
+<p>[36:32] nothing but like any explanation is required. Okay, this is take this part completed right.</p>
+<p>[36:47] Now, from this example, you can aware how to use all the three constructors. File,</p>
+<p>[36:58] file, F is equal to new file of vrg123, F dot mkdi, F1 is equal to new file of like this</p>
+<p>[37:14] is compulsory or to take diagram also, this is vrg123 within that demo that TXT is there</p>
+<p>[37:27] This is how to use all the three constructors.</p>
+<p>[37:40] Next example 3.</p>
+<p>[37:45] Example 3.</p>
+<p>[37:46] Completed right?</p>
+<p>[37:51] Example 3.</p>
+<p>[37:53] Yeah, no.</p>
+<p>[37:54] Write code.</p>
+<p>[37:58] Write code.</p>
+<p>[38:01] Create a.</p>
+<p>[38:02] Write code to create a.</p>
+<p>[38:04] To create a.</p>
+<p>[38:06] To create a file.</p>
+<p>[38:08] To create a file.</p>
+<p>[38:10] Name it with ABC.exe.</p>
+<p>[38:12] write code to create a file name it with a, b, c dot, x, d in, in, in, e colon, in e colon,</p>
+<p>[38:26] in e colon x, y, z, folder, in e colon x, y, z, folder, e colon x, y, z, folder, folder,</p>
+<p>[38:37] okay, in e colon x, y, z, folder write a code. What is the possibility, write, and all this</p>
+<p>[38:43] is fine. So, very very simple, file F is equal to, new file of Sir in this location we</p>
+<p>[38:55] have to create a file. So, which constructor we have to use? Second constructor, E colon</p>
+<p>[39:02] x, y, z, kama, a, b, c, dot, t, x, t. Okay. And then f for dot, f for dot, what is the</p>
+<p>[39:12] method? Create, create new file. Automatically, in this location, a, b, c, dot, t, x, t,</p>
+<p>[39:23] file got created right. Are you able to understand? Okay, this is it. So in some other location</p>
+<p>[39:29] how to create a file at this one.</p>
+<p>[39:33] File app is equal to file of equal on x file j comma a b c dot x t. You have for dot</p>
+<p>[39:45] create new file. You have dot create create new file. You have dot create new file.</p>
+<p>[39:54] So, completed I hope now take this diagram anyway this one also take you know so sometime</p>
+<p>[40:11] in the last batch somewhere I covered this example but after one or two days some one</p>
+<p>[40:18] one student can sir in my system this last example not working properly like he told</p>
+<p>[40:26] Then I ask, maybe based on problem I can tell the solution, then I ask, Sir what problem</p>
+<p>[40:33] you are facing? Sir, file not found exception, I am getting like. Then, Uche example like</p>
+<p>[40:39] I ask, E colon XYJ, can you please create ABC.exe that code not working sir, like. Then</p>
+<p>[40:46] immediate I ask, in your system, E colon is there, I am not. Then immediate rate that</p>
+<p>[40:52] person told, oh no sir I have only C 100 D drive sir. E drive is not there.</p>
+<p>[40:57] Hey without having E drive how this one is going to work? That&#x27;s why.</p>
+<p>[41:02] Asium compels are in our system equal and should be there. In that X Y Y Y Y should be there.</p>
+<p>[41:08] Then only this program is going to work. Are getting, if E column is there, X Y Y Y is not there.</p>
+<p>[41:13] Are E column not there then we are going to get final form exception on there.</p>
+<p>[41:17] for Allah for the Dukadis, tomorrow you may ask the same question, better to get the</p>
+<p>[41:21] point.</p>
+<p>[41:22] Assume that, assume that, assume that, equal and xyz folder, assume that equal and xyz folder,</p>
+<p>[41:32] equal and xyz folder is already available.</p>
+<p>[41:36] Assume that, equal and xyz folder is already available, already available in our system.</p>
+<p>[41:44] is already available in our system.</p>
+<p>[41:47] In our system, that&#x27;s all.</p>
+<p>[41:50] Are you getting?</p>
+<p>[41:51] So this is the basic idea how to create a file, how to create a directory and the</p>
+<p>[41:56] Vatar various constructors and so on.</p>
+<p>[41:59] I took a this.</p>
+<p>[42:00] Listen, in the last session, so just we covered how to create a file, how to create a</p>
+<p>[42:07] directory.</p>
+<p>[42:08] Next also in the current work in the directory to create and even in some other location</p>
+<p>[42:14] how to create a file these things.</p>
+<p>[42:16] Now in the file class what are various important methods present in the file.</p>
+<p>[42:22] In the last session some methods we covered already.</p>
+<p>[42:25] Can I can spell out the methods what we covered some methods we covered already.</p>
+<p>[42:30] Which methods we covered already.</p>
+<p>[42:33] So it says have you ever remembered it says this method we covered.</p>
+<p>[42:38] can you please crochet? Whether the physical file available or not? Whether the physical</p>
+<p>[42:44] file available, physical directory available or not? Okay, this is your dot adjacent.</p>
+<p>[42:50] Next, sorry, if the file is not available, can you please create new file? What is the method</p>
+<p>[42:56] we use at f of dot? Create new file. Okay, we cover this one. Next, f of dot, mkdo,</p>
+<p>[43:06] Now I have one file reference is there.</p>
+<p>[43:13] Can you tell, is this a file reference pointing to a file R point into the director?</p>
+<p>[43:24] Because it can point into a file R it can point into a director.</p>
+<p>[43:28] Whether I want to check, whether it is representing a file or whether it is representing a director.</p>
+<p>[43:34] I am saying this is the directory. If you want to know, simple, F for data is a file.</p>
+<p>[43:41] F for data is a directory. Are you getting F for data is a file? F for data is a directory.</p>
+<p>[43:49] These methods can check whether F for 0.20 or whether F for 0.20 is a directory or not.</p>
+<p>[43:56] Is it clear? I have to say similar line. You are just make sure.</p>
+<p>[44:00] So, my F pointing to a director, assume F is pointing to the director, can you tell within</p>
+<p>[44:09] the director which things will be there?</p>
+<p>[44:11] Within the director which things will be there?</p>
+<p>[44:14] There are some files there, there are some sub directories also there.</p>
+<p>[44:18] I want to check how many files are there?</p>
+<p>[44:21] How many sub directories are there?</p>
+<p>[44:23] Can you please list all files and sub directories?</p>
+<p>[44:28] present all files and subdirectories present in the specified directory can you please list</p>
+<p>[44:33] out then f dot list method.</p>
+<p>[44:37] Okay, it is written the names of all files, the names of subdirectories present in this</p>
+<p>[44:45] directory.</p>
+<p>[44:46] Are you getting?</p>
+<p>[44:47] Can you finish me?</p>
+<p>[44:48] What is the return type of this method?</p>
+<p>[44:49] The return type, e string, here.</p>
+<p>[44:53] Look at, different name is one file.</p>
+<p>[44:56] This group of file names, or this group of director in name is a</p>
+<p>[45:00] present in this director.</p>
+<p>[45:02] Isanati Maa, string a array.</p>
+<p>[45:05] Arigatang, this is also one method we have.</p>
+<p>[45:08] Now, asium, f, point into the file.</p>
+<p>[45:12] Sir, f point into the file.</p>
+<p>[45:14] In the file, how many amani characters are there?</p>
+<p>[45:17] Huge number of characters are there.</p>
+<p>[45:19] There may be a chance of several several characters present in the file.</p>
+<p>[45:23] I want to know how many number of characters present in the file?</p>
+<p>[45:27] Or what is the length of this file?</p>
+<p>[45:29] How many number of characters present in the file?</p>
+<p>[45:32] F dot the length of method you can.</p>
+<p>[45:35] So, do you know, can you tell what is the return type of length method?</p>
+<p>[45:39] What is the return type of length method?</p>
+<p>[45:42] The return type of length method is not the input.</p>
+<p>[45:45] Because the number of characters may exceed the inter-inches.</p>
+<p>[45:49] if it is a big file the number of characters may exceed interchange that&#x27;s why the return</p>
+<p>[45:54] type of this method is long.</p>
+<p>[45:57] Long L is equal to f dot length, long L is equal to f dot length of method right now.</p>
+<p>[46:02] Next step terminology, sir can you please delete this file?</p>
+<p>[46:06] Sir, or can you please delete this directory then we should go for f dot deleted.</p>
+<p>[46:43] Can you tell how many characters are there in the file?</p>
+<p>[46:45] The fact that length of method, so can you please delete this file?</p>
+<p>[46:49] Or can you please delete this directly?</p>
+<p>[46:51] Then we should go for what?</p>
+<p>[46:52] F.delete method, right?</p>
+<p>[46:54] Are you able to understand?</p>
+<p>[46:55] Important methods present in file class is nothing but like.</p>
+<p>[47:00] Now, keep sabiting.</p>
+<p>[47:01] Important methods.</p>
+<p>[47:03] Important methods.</p>
+<p>[47:06] Important methods present in important methods.</p>
+<p>[47:12] present in file file class important methods present in file file class file class just</p>
+<p>[47:22] better to take from the screen better to take from the from the screen anyway take only</p>
+<p>[47:28] first method don&#x27;t take any other only first method Boolean Boolean exists Boolean exists</p>
+<p>[47:36] x axis, Boolean x axis, so can you can you spell out when this method returns true and</p>
+<p>[47:46] when this method returns false, this method returns true and when this method returns</p>
+<p>[47:51] true if the specified file or directory is available then this method returns true otherwise</p>
+<p>[47:59] returns a true true returns a true redness.</p>
+<p>[48:06] If this specify return a true if the specified if the specified file or directory returns stronger</p>
+<p>[48:21] the term set root has specified a file at directory, available, available, available,</p>
+<p>[48:28] available, okay, is the first one.</p>
+<p>[48:30] Next, second one, Boolean create a new file, Boolean create a new file, create new file,</p>
+<p>[48:42] Boolean create new file.</p>
+<p>[48:44] Sir, can you explain on Boolean create new file, just observe, you bit careful it.</p>
+<p>[48:49] Can you tell when this method returns true when this method returns false?</p>
+<p>[48:56] William create U file when this method returns true when this method returns false.</p>
+<p>[49:01] If the file is already available then this method returns false because I didn&#x27;t create</p>
+<p>[49:10] any file because it&#x27;s already there that&#x27;s why it returns false without creating any file</p>
+<p>[49:15] because it&#x27;s already there.</p>
+<p>[49:16] So, if the specified file not there, then this method creates a new file under return</p>
+<p>[49:22] subtrugu.</p>
+<p>[49:23] Are you getting?</p>
+<p>[49:24] This method will work a bit intelligent way.</p>
+<p>[49:26] First, it will check, is it already there or not?</p>
+<p>[49:28] If it is already there, if the file is already there, then returns false without creating</p>
+<p>[49:34] any file.</p>
+<p>[49:35] So, if the file is not there, create any file under return subtrugu.</p>
+<p>[49:39] Is it clear for all of you?</p>
+<p>[49:41] Okay, at this point.</p>
+<p>[49:43] First this method will check, first this method will check,</p>
+<p>[49:50] whether the specified file, whether the specified file is already available or not,</p>
+<p>[50:01] whether the specified file is already available or not,</p>
+<p>[50:10] If it is already available, then this method returns, can I call it as my law, then this</p>
+<p>[50:28] method returns false, then this method returns false, without creating, then this method returns</p>
+<p>[50:38] without creating, without creating any physical file. Then this method returns false without</p>
+<p>[50:46] creating any physical file. Any physical file, any any physical file.</p>
+<p>[50:51] Next up, if the file is not already available, if the file is not already available, if</p>
+<p>[51:01] the file is not already available, not already available, then this method will create, then</p>
+<p>[51:09] this method will create a new file, then this method will create a new file, then this method</p>
+<p>[51:16] creates a new file under returns a true, then this method creates a new file under returns</p>
+<p>[51:22] a true, under returns a true true, under returns a true that is all.</p>
+<p>[51:28] So this is what is the second method that Boolean create new file.</p>
+<p>[51:34] And the CN story applicable for Boolean MKDR.</p>
+<p>[51:38] So I can tell what is the difference between second method and third method?</p>
+<p>[51:41] Everything is the same but instead of file, we&#x27;ll have to talk in terms of what is directly</p>
+<p>[51:46] the, that&#x27;s why no explanation is required.</p>
+<p>[51:48] Boolean, Boolean, Yum K D I R, Boolean, Yum K D I R, Boolean Yum K D I R, okay.</p>
+<p>[52:00] Not required to keep any expolension, but next method.</p>
+<p>[52:03] Boolean, Boolean, E sub file, Boolean E sub file, Boolean E is file, okay add.</p>
+<p>[52:14] に nEIyin is a file and if that is specified is the file object point</p>
+<p>[52:40] physical file, point into physical file, physical file, next up.</p>
+<p>[52:47] Boolean is a directory. Boolean is a directory. Boolean is a directory. Boolean is a directory.</p>
+<p>[52:59] Okay, not required to keep any explanation. Returns a true, don&#x27;t write it. Returns a true</p>
+<p>[53:04] So, if you have a pointing to director, is not required.</p>
+<p>[53:08] So, next stringer list.</p>
+<p>[53:12] stringer, erer list.</p>
+<p>[53:14] Now, can you tell stringer list?</p>
+<p>[53:17] What is matter returns?</p>
+<p>[53:18] List of matter returns.</p>
+<p>[53:19] stringer, what it means?</p>
+<p>[53:21] This matter returns.</p>
+<p>[53:24] The names of, if this matter returns, the names of all files of the director is.</p>
+<p>[53:33] Files and subdirectories present in the space field directory, this method returns, this</p>
+<p>[53:39] method returns, the names of all files and subdirectories, all files and subdirectories,</p>
+<p>[53:54] is present in specific directory, present in specific directory, present in specific</p>
+<p>[54:06] directory, present in specific directory, directory.</p>
+<p>[54:10] Okay, is an atrimat like this method, next one, next step.</p>
+<p>[54:16] So, long length, long length, not required to keep any explanation what this long length</p>
+<p>[54:28] returns, returns, returns number of characters present in, returns number of characters present</p>
+<p>[54:37] in, present in specified file, returns number of characters present in the specified file</p>
+<p>[54:45] the terms number of characters present in the specified file, next up Boolean, delete,</p>
+<p>[54:56] Boolean, delete, delete, delete, delete, delete, to delete, to delete, to delete, specified</p>
+<p>[55:08] file to delete specified file or directory to delete specified file or directory or</p>
+<p>[55:17] directory specified file or directory.</p>
+<p>[55:22] Like if you if you observe here if you if you see the point sir here almost all the methods</p>
+<p>[55:29] exist method we covered.</p>
+<p>[55:31] Create new file already we use in the last examples.</p>
+<p>[55:34] MKDAER we use it. The remaining methods also just to use the remaining, just let me go for</p>
+<p>[55:40] one or two examples, I took a add, add one example.</p>
+<p>[55:44] Write a program, write a program, write a program to display, write a program to display,</p>
+<p>[55:53] to display the names of, write a program to display the names of, the names of all files and</p>
+<p>[56:01] directories, radio program to display the names of all files and directories, the names</p>
+<p>[56:07] of all files and directories, present in, present in C colon, C colon Durga classes, present</p>
+<p>[56:19] in C colon Durga classes, present in C colon Durga classes, Durga classes. Is it clear</p>
+<p>[56:30] for all of the doggat this. What is the option or what is the possibility that C colon</p>
+<p>[56:35] Durga classes? So in C colon Durga classes, visually my current work in directoria now,</p>
+<p>[56:41] yeah, there are several files are there. Sir, there are several directories also there.</p>
+<p>[56:48] There are several files are there, several directories are there. Can you please list out the</p>
+<p>[56:53] The names of all file summary directories present in C column Durga classes.</p>
+<p>[57:00] Correct or not?</p>
+<p>[57:01] This is my requirement right.</p>
+<p>[57:02] C column Durga classes, in this, what are various file summary directories are there can</p>
+<p>[57:07] if we just out is my requirement right.</p>
+<p>[57:09] Very simple, let me go for, okay let me let me have write the code further very very simple.</p>
+<p>[57:15] are seen. First file F is equal to, file F is equal to new file of, file F is equal</p>
+<p>[57:25] to new file of C colon slash Durga classes. Is that nothing but like, file F is equal</p>
+<p>[57:32] to new file of C colon slash Durga classes. Now just I created a file difference for this</p>
+<p>[57:38] director. Sir in this director, how many files are there? How many directories are there?</p>
+<p>[57:44] Please list out the names all. Can you tell which method you have to use?</p>
+<p>[57:48] Oh, which method? Yafada. List method. Now the return type of this method is string</p>
+<p>[57:57] array. Yes. Now that list string array. Yes. Now I got. Sir, for, for each string,</p>
+<p>[58:06] s1 in yesa for every system. So it may be file name or it may be directory name for</p>
+<p>[58:13] every name for every system guess 1 in yesa system dot out dot print ln of yesa 1.</p>
+<p>[58:21] So I want count also total amani amani files are there are amani directories are there</p>
+<p>[58:29] in the count is equal to 0 for every filing count plus plus, count plus plus, no. So,</p>
+<p>[58:40] if you have that out there print, count plus plus, I suppose you have the total number,</p>
+<p>[58:46] the total number is an estimate lying plus a count. That&#x27;s all. So, in this total cinema,</p>
+<p>[58:54] Okay, which method is the central?</p>
+<p>[58:56] Is it not this one?</p>
+<p>[58:58] Correct or not?</p>
+<p>[58:59] You have to at least, can you please list all the names of all five subdirectories present</p>
+<p>[59:05] in this directory?</p>
+<p>[59:06] Is it not like we have?</p>
+<p>[59:08] Now let me, so go for let me execute this code on a, here see.</p>
+<p>[59:13] See this point well, one minute, one minute.</p>
+<p>[59:17] Let me go for a simple example.</p>
+<p>[59:25] Let me take a simple example.</p>
+<p>[59:29] Class test like import java.io.star class test.</p>
+<p>[59:34] Intercount is equal to 0.</p>
+<p>[59:36] File app is equal to you file app is equal to you.</p>
+<p>[59:39] Go through the classes string.</p>
+<p>[59:41] Go to the same code.</p>
+<p>[59:43] For each string is 1 in yesa.</p>
+<p>[59:46] count to plus plus S for P of S 1. The total number is an Atima plus account. Let me say</p>
+<p>[59:53] this code has a test dot java. Let me say this code has a test dot java. Now let me compile.</p>
+<p>[1:00:02] So, C is my current working director. There are huge number of functions of directories are there.</p>
+<p>[1:00:10] Okay, Javasis A test dot Java.</p>
+<p>[1:00:14] The code compiles fine.</p>
+<p>[1:00:15] Now Java test.</p>
+<p>[1:00:17] Java test, ERC.</p>
+<p>[1:00:19] Regating there are several several files and subdirectories are there in my system.</p>
+<p>[1:00:26] Okay, this is total.</p>
+<p>[1:00:27] How many files and directories are there?</p>
+<p>[1:00:31] Eight, 19.</p>
+<p>[1:00:32] Is it clear for all of you to look at this?</p>
+<p>[1:00:34] Total eight, 19, 8 file are directories.</p>
+<p>[1:00:38] total number in SQL and Durga class is 8, 19 number is there. Is it clear for all of</p>
+<p>[1:00:44] the Durga, take this example, take take clearly. So, this is the simple demo program, how</p>
+<p>[1:00:56] to use, so list, list method. So, in a particular folder, how many files are there, how many</p>
+<p>[1:01:05] And directories are there like, how many files and how many directories are there, this</p>
+<p>[1:01:12] is the way, not required to keep much explanation about this one, completed right.</p>
+<p>[1:01:51] So I hope you people so completed, so take take clear like, the total number is an</p>
+<p>[1:02:01] that total number number itself is plus count. I hope it is clear for all of you write plus</p>
+<p>[1:02:11] count anywhere. Now here okay well you want to take the output right 19 lines are there</p>
+<p>[1:02:22] Now, here that E19 number, it may be a file or it may be both. Suppose my programmer</p>
+<p>[1:02:33] required, I want to display only filenames, I want to display only filenames but not directories.</p>
+<p>[1:02:40] this is keep sub adding to display to display to display only file names only file names</p>
+<p>[1:02:55] so to display only file names only only file names okay so can you can you spell out</p>
+<p>[1:03:04] where we have to change the code and only one new file names can I spell out where we have to change in this program</p>
+<p>[1:03:11] we got all names for every string S1 in yes for the next</p>
+<p>[1:03:18] good can you spell out the code?</p>
+<p>[1:03:22] what is the code?</p>
+<p>[1:03:24] quote. Can you spell out? If, which one is the E&#x27;s file? Yes, one dot the E&#x27;s of file.</p>
+<p>[1:03:36] If S1 dot is a file, now if S1 dot is a file, count the plus plus, count the plus plus.</p>
+<p>[1:03:45] Can you please print the SOP of S1 and of this and then end of the for loop? I am getting</p>
+<p>[1:03:54] So now, system dot out that print and the total number of files, the total number of files</p>
+<p>[1:04:04] is an atima plus account, correct or not total number of files is plus account.</p>
+<p>[1:04:10] If I can take like this, compiler will give you the left hand right.</p>
+<p>[1:04:13] Look at this, compiler number will give you are going to get.</p>
+<p>[1:04:16] If I can take like, I am doing a silly mistake, small mistake, what that mistake is,</p>
+<p>[1:04:22] What is the object? Can I spell out what mistake I am doing?</p>
+<p>[1:04:28] Yes, we are doing a small mistake in this code, what mistake we are doing?</p>
+<p>[1:04:33] Because we are calling ease of file method on S1.</p>
+<p>[1:04:39] We are calling ease file method on S1.</p>
+<p>[1:04:42] S1 is what type?</p>
+<p>[1:04:44] It is thing type. Sir, ease of file method present in which class?</p>
+<p>[1:04:48] File class. File class method, how you can apply on the string object.</p>
+<p>[1:04:54] Are you getting file class method we have to apply on file object. File class method we</p>
+<p>[1:05:00] have to apply on file object. But not on string object. Immodiacal compound another cannot</p>
+<p>[1:05:05] find symbol which is symbol symbol is a file method. In mutual location Java dot lambda string</p>
+<p>[1:05:11] are getting in the string class is file method is not there like compound method which you</p>
+<p>[1:05:16] So, all the file objects will have to call.</p>
+<p>[1:05:20] Now, with this name whatever the name,</p>
+<p>[1:05:24] so what is this name? This name can be a file name or can be directory name.</p>
+<p>[1:05:31] Either file or directory, present in this directory.</p>
+<p>[1:05:36] So, you call them drug classes.</p>
+<p>[1:05:38] In this EF, correct or not?</p>
+<p>[1:05:40] Vitteth is a name, create a file, I&#x27;m getting Vitteth is a name, create a file object.</p>
+<p>[1:05:46] What is the way, no? File, file, F1 is equal to, new file of, F1 is equal to new file</p>
+<p>[1:05:55] of, make sure this S1 is available in some other location, in sub directory.</p>
+<p>[1:06:01] That&#x27;s why, what is the code? F1, comma, S1.</p>
+<p>[1:06:06] F1 means what? C column of the classes.</p>
+<p>[1:06:11] In the S1 is an ATM of this file name.</p>
+<p>[1:06:13] Are you getting how to create a file object to represent a file, present in some other location.</p>
+<p>[1:06:18] Is an ATM like this is a concept.</p>
+<p>[1:06:21] Now, if what is the code will have to take?</p>
+<p>[1:06:24] F1 dot is file.</p>
+<p>[1:06:26] The very man is still wise the same.</p>
+<p>[1:06:28] If it is a file, increment count print value.</p>
+<p>[1:06:31] If it is not file, that&#x27;s all.</p>
+<p>[1:06:33] I will show anyway right just observe have a look once yeah see total how many number</p>
+<p>[1:06:44] is there?</p>
+<p>[1:06:46] 819 819 now see can you please guide and up here we have to change the code for within</p>
+<p>[1:06:54] of a loop, can not tell what the file F1 is equal to new file of F comma S1, F comma S1</p>
+<p>[1:07:04] 1 minute term, F comma S1 and then if F1 dot is a file, so if it is a file, is it a</p>
+<p>[1:07:14] Can you please increment count value under then system dot output print like this.</p>
+<p>[1:07:21] Are you getting a spoopy?</p>
+<p>[1:07:22] The total number of files or the total number no problem at all.</p>
+<p>[1:07:27] Now do you know what is the output by default you are going to get?</p>
+<p>[1:07:30] I am sure the answer should not be 819 because there are some directories also there right.</p>
+<p>[1:07:36] Yes are you getting can you please cut what is the number?</p>
+<p>[1:07:42] 800 exactly.</p>
+<p>[1:07:43] Oh 8 on it.</p>
+<p>[1:07:45] Then how many directories are there?</p>
+<p>[1:07:47] Ninety and directories are there, are you getting?</p>
+<p>[1:07:49] Suppose my requirement is to display only directories.</p>
+<p>[1:07:54] To display only directories.</p>
+<p>[1:07:56] Sir this is the code to display only files.</p>
+<p>[1:07:58] To display only directories.</p>
+<p>[1:08:00] Where we have to change?</p>
+<p>[1:08:02] Where we have to change?</p>
+<p>[1:08:03] Use of file method, replace with water.</p>
+<p>[1:08:06] Use a directorie method.</p>
+<p>[1:08:08] Let me do that.</p>
+<p>[1:08:09] How many directories are there?</p>
+<p>[1:08:11] Ninety.</p>
+<p>[1:08:12] Because total number is 19.</p>
+<p>[1:08:14] in the t-100 files then the remaining characters,</p>
+<p>[1:08:17] how many characters are there?</p>
+<p>[1:08:18] 19 characters are there, isn&#x27;t that much like</p>
+<p>[1:08:21] now here see file F is equal to you file.</p>
+<p>[1:08:24] If E is what is the method?</p>
+<p>[1:08:27] Directary, E is a directory like this.</p>
+<p>[1:08:31] Now have you looked?</p>
+<p>[1:08:33] What is the output by default here going to get?</p>
+<p>[1:08:35] Isn&#x27;t that much?</p>
+<p>[1:08:36] How many number are not 19?</p>
+<p>[1:08:38] Is it match or not?</p>
+<p>[1:08:40] That&#x27;s what you have to remember, will.</p>
+<p>[1:08:42] Okay, this is it.</p>
+<p>[1:08:43] What what? Heading you took Keneke Nishpala to display only file names. Okay. Better to take this code.</p>
+<p>[1:08:50] Not required to complete program. Take this one. In the count is equal to 0.</p>
+<p>[1:08:56] File F is equal to new file of C colon slash slash Durga classes.</p>
+<p>[1:09:07] string array, s is equal to f dot least method, string array s is equal to f dot least</p>
+<p>[1:09:19] least method next time. For each string to s1 in s, for each string s1 in s, in s, file</p>
+<p>[1:09:31] In yes, file of one is equal to file of F, S, 1 like better to use.</p>
+<p>[1:09:38] This is the demo program to demonstrate how to use ease of file method.</p>
+<p>[1:09:45] Number of files is nothing but plus count.</p>
+<p>[1:10:04] The total number of files is plus count like completed right?</p>
+<p>[1:10:16] That&#x27;s all.</p>
+<p>[1:10:20] This is what what you people should aware clearly write.</p>
+<p>[1:10:23] in count is equal to 0, file your physical to new file of like, is it clear for all of</p>
+<p>[1:10:35] you that look at this is, now the next one, okay this is keep sabading, can I complete</p>
+<p>[1:10:42] that right, next up, to display, to display, to display only, only directory names, to</p>
+<p>[1:10:58] to display only directory names.</p>
+<p>[1:11:05] Okay, not required to take this total code.</p>
+<p>[1:11:08] Can you tell what change we have to do?</p>
+<p>[1:11:11] Yes, a file method, can you replace with water?</p>
+<p>[1:11:15] Yes, a directory method.</p>
+<p>[1:11:18] Beyond that, there is nothing.</p>
+<p>[1:11:20] Okay, add.</p>
+<p>[1:11:21] In the above program, in the above program,</p>
+<p>[1:11:26] We have to replace and by above program we have to replace and by above program we have</p>
+<p>[1:11:33] to replace replace.</p>
+<p>[1:11:35] E is a file, we have to replace E is a file, E is file method, E is file method with the</p>
+<p>[1:11:45] with the E is a directory method, E is file method with the E is a directory method, E is</p>
+<p>[1:11:54] a directory method, method like, so that&#x27;s all. I hope you people can aware now what</p>
+<p>[1:12:02] is the purpose, I mean E is file method out to use E is a directory list method like that&#x27;s</p>
+<p>[1:12:08] all this is above what are various important methods present in file class and how to use</p>
+<p>[1:12:14] that&#x27;s right.</p>
+<p>[1:12:15] Okay.</p>
+<p>End of Video 120 notes — File I/O Part 1: Introduction &amp; File class</p>
+<table>
+<tr><th>Field</th><th>Detail</th><th></th><th></th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: File I/O Part-1 \</td><td>\</td><td>Introduction \</td><td>\</td><td>File</td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP (Durga Sir)</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Position</td><td>120 of 203</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Series</td><td>File I/O · Part 1</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Topic</td><td>Introduction to File I/O; java.io.File class — constructors &amp; important methods</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 12m 26s</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>rxo1SZmq9VE</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=rxo1SZmq9VE</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (no YouTube auto-captions)</td><td></td><td></td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Era</th><th>SCJP version</th><th>File I/O on exam?</th><th>Typical questions</th></tr>
+<tr><td>Java 1.0–1.3 (1995+)</td><td>SCJP 1.1, 1.2</td><td>Very important</td><td>7–8 questions</td></tr>
+<tr><td>Java 1.4 (~2003–2004)</td><td>SCJP 1.4</td><td>Removed</td><td>Databases became dominant</td></tr>
+<tr><td>Java 1.5–1.6</td><td>SCJP 1.5/1.6</td><td>Reintroduced</td><td>2–3 questions</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Class</th><th>Purpose (preview)</th></tr>
+<tr><td>1</td><td>`File`</td><td>Represent file/directory path; metadata &amp; filesystem operations</td></tr>
+<tr><td>2</td><td>`FileWriter`</td><td>Character output to file</td></tr>
+<tr><td>3</td><td>`FileReader`</td><td>Character input from file</td></tr>
+<tr><td>4</td><td>`BufferedWriter`</td><td>Buffered character output</td></tr>
+<tr><td>5</td><td>`BufferedReader`</td><td>Buffered character input</td></tr>
+<tr><td>6</td><td>`PrintWriter`</td><td>Formatted character output</td></tr>
+</table>
+<table>
+<tr><th>Line</th><th>Action</th><th>Physical file on disk?</th></tr>
+<tr><td>File f = new File(&quot;ABC.txt&quot;);</td><td>Create Java object representing name</td><td>NO</td></tr>
+<tr><td>f.createNewFile();</td><td>Create actual file if absent</td><td>YES (if didn&#x27;t exist)</td></tr>
+</table>
+<table>
+<tr><th>Goal</th><th>Method</th></tr>
+<tr><td>Create file</td><td>createNewFile()</td></tr>
+<tr><td>Create directory</td><td>mkdir()</td></tr>
+</table>
+<table>
+<tr><th>Constructor</th><th>Use when</th></tr>
+<tr><td>File(String name)</td><td>File/directory in current working directory</td></tr>
+<tr><td>File(String parent, String child)</td><td>File/directory in another location (e.g. E:\\xyz\\ABC.txt)</td></tr>
+<tr><td>File(File parent, String child)</td><td>Parent directory already referenced by another File object</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Constructor</th></tr>
+<tr><td>demo.txt in current folder</td><td>new File(&quot;demo.txt&quot;)</td></tr>
+<tr><td>demo.txt in Durga123/</td><td>new File(&quot;Durga123&quot;, &quot;demo.txt&quot;)</td></tr>
+<tr><td>demo.txt when File dir already points to Durga123</td><td>new File(dir, &quot;demo.txt&quot;)</td></tr>
+<tr><td>ABC.txt in E:\\xyz\\</td><td>new File(&quot;E:\\xyz&quot;, &quot;ABC.txt&quot;)</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>Creates physical entity?</th></tr>
+<tr><td>new File(&quot;x.txt&quot;)</td><td>No — object only</td></tr>
+<tr><td>new File(&quot;x.txt&quot;).createNewFile()</td><td>Yes — file (if absent)</td></tr>
+<tr><td>new File(&quot;dir&quot;).mkdir()</td><td>Yes — directory (if absent)</td></tr>
+<tr><td>new File(&quot;E:\\xyz&quot;, &quot;a.txt&quot;).createNewFile()</td><td>Yes — if E:\xyz exists</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Return type</th><th>Purpose</th></tr>
+<tr><td>exists()</td><td>boolean</td><td>true if specified file or directory exists on disk</td></tr>
+<tr><td>createNewFile()</td><td>boolean</td><td>Create new file if absent</td></tr>
+<tr><td>mkdir()</td><td>boolean</td><td>Create new directory if absent</td></tr>
+<tr><td>isFile()</td><td>boolean</td><td>true if this File object points to a file</td></tr>
+<tr><td>isDirectory()</td><td>boolean</td><td>true if this File object points to a directory</td></tr>
+<tr><td>list()</td><td>String[]</td><td>Names of all files and subdirectories in this directory</td></tr>
+<tr><td>length()</td><td>long</td><td>Number of bytes in file (not int — large files exceed int range)</td></tr>
+<tr><td>delete()</td><td>boolean</td><td>Delete specified file or directory</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Returns false when</th></tr>
+<tr><td>createNewFile()</td><td>File already exists (no new file created)</td></tr>
+<tr><td>mkdir()</td><td>Directory already exists</td></tr>
+<tr><td>exists()</td><td>File/directory not on disk</td></tr>
+<tr><td>delete()</td><td>Deletion failed</td></tr>
+</table>
+<table>
+<tr><th>Heard (Whisper)</th><th>Intended</th></tr>
+<tr><td>File Ivo / file aivo / file logo</td><td>File I/O</td></tr>
+<tr><td>SEJP / CGP / shadow</td><td>SCJP / certification exam</td></tr>
+<tr><td>ABC.exe / ABC.xt / at EXT</td><td>ABC.txt</td></tr>
+<tr><td>mkdi r / MKDAR / mkdo</td><td>mkdir</td></tr>
+<tr><td>sub d.I.R / sub DAIR</td><td>subdirectory (String parent param)</td></tr>
+<tr><td>ease of file / E sub file</td><td>isFile()</td></tr>
+<tr><td>E&#x27;s a directory / ease a directorie</td><td>isDirectory()</td></tr>
+<tr><td>stringer list / erer list</td><td>String[] list()</td></tr>
+<tr><td>Durga 1 to 3 / vrg123</td><td>Durga123</td></tr>
+<tr><td>compound method / compultimate</td><td>compile error</td></tr>
+<tr><td>unique operating system</td><td>Unix operating system</td></tr>
+<tr><td>amani characters</td><td>how many characters</td></tr>
+<tr><td>C column Durga classes</td><td>C:\\DurgaClasses</td></tr>
+<tr><td>demodata txt / demo data takes</td><td>demodata.txt</td></tr>
+</table>
+</body></html>

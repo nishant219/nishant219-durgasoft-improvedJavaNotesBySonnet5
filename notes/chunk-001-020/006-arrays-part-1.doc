@@ -1,0 +1,324 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>006-arrays-part-1</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 006 — Arrays part 1</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-6 || Arrays Part-1</p>
+<h2>What this lecture covers</h2>
+<p>Arrays is a big topic. Durga budgets two or three sessions and starts with a nine-item agenda that spans this video and the next array videos.</p>
+<ol><li>Introduction (need, advantage, limitation, definition)</li></ol>
+<ol><li>Array declaration (1-D, 2-D, 3-D, plus two declaration conclusions)</li></ol>
+<ol><li>Array creation (every array is an object; language-level class names; 1-D creation loopholes)</li></ol>
+<ol><li>Array initialization (starts in video 007)</li></ol>
+<ol><li>Array declaration, creation and initialization in a single line (video 008)</li></ol>
+<ol><li>length versus length() (video 008)</li></ol>
+<ol><li>Anonymous arrays (video 008)</li></ol>
+<ol><li>Array element assignments (video 008)</li></ol>
+<ol><li>Array variable assignments (introduced at the end of video 008; taught in part 4)</li></ol>
+<p>This video finishes introduction, declaration, and one-dimensional creation (including the creation loopholes). Two-dimensional / three-dimensional creation continues in video 007.</p>
+<h2>Detailed notes</h2>
+<h3>Agenda ([00:06]–[02:31])</h3>
+<p>Nine subtopics. Write them on the board first; do not mix declaration with creation, or element assignment with variable assignment.</p>
+<h3>1. Introduction — why arrays exist ([02:44]–[12:39])</h3>
+<h4>The individual-variable problem</h4>
+<pre class='code'>int x = 10;</pre>
+<p>That represents one int value. Two values need two variables (x and y). Three values need three (x, y, z). Ten thousand values would need ten thousand variables — the worst kind of programming practice: ten thousand lines, unreadable, and you cannot remember which name holds which value.</p>
+<h4>Advantage — huge number of values, one variable</h4>
+<p>If you want to represent a huge number of values by using a single variable, go for arrays:</p>
+<pre class='code'>int[] x = new int[10000];</pre>
+<p>x now represents 10,000 int slots. You distinguish them by index: x[0] is the first, x[1] the second, x[2] the third, … up to x[9999].</p>
+<p>Advantage of an array: we can represent a huge number of values by using a single variable, so readability of the code will be improved.</p>
+<h4>Limitation 1 — fixed in size ([05:09]–[07:25])</h4>
+<p>For every advantage there is a disadvantage.</p>
+<p>If you create the array with size 10,000 and at runtime even one extra element arrives, the array cannot grow to hold it. Arrays are fixed in size. Once you create an array with some size, there is no chance of increasing or decreasing the size based on requirement.</p>
+<p>Classroom analogy Durga uses:</p>
+<ul><li>He expected the SCJP batch to be a “big hit,” so he arranged a hall of 10,000 chairs and multiple projectors. At runtime two students came. Two months of teaching two people on the front bench; 9,998 seats wasted.</li></ul>
+<ul><li>Next time he booked a small room with five chairs. At runtime 10,000 people came. The program is not in a position to provide support.</li></ul>
+<p>To use arrays you must know the size in advance. If you do not know the size in advance, you cannot use arrays.</p>
+<p>Biggest limitation, in his words: arrays are fixed in size.</p>
+<h4>Limitation 2 — homogeneous elements only ([07:27]–[07:57])</h4>
+<p>An array can hold only homogeneous (similar type) data-type elements. An int[] can store only int (and values that promote to int — that promotion rule is taught later). If you try to add a boolean or a String into an int[], you get a compile-time error.</p>
+<h4>Next level: collections ([07:58]–[08:20])</h4>
+<p>To overcome these problems, the next level is the collections concept: collections are not fixed in size, and they can accept both homogeneous and heterogeneous elements. That is a later module. For now we stay at the array level.</p>
+<p>The ladder he draws: individual variables → arrays → collections.</p>
+<h4>Definition to memorize ([08:20]–[09:35])</h4>
+<p>An array is an indexed collection of a fixed number of homogeneous data elements.</p>
+<p>Every word is load-bearing:</p>
+<h4>Board recap of introduction ([09:38]–[12:39])</h4>
+<ul><li>Main advantage: we can represent a huge number of values by using a single variable, so that readability of the code will be improved.</li></ul>
+<ul><li>Main disadvantage: fixed in size — once we create an array there is no chance of increasing or decreasing the size based on our requirement. Hence to use arrays we compulsory should know the size in advance, which may not be possible always.</li></ul>
+<p>That is the whole introduction.</p>
+<h3>2. Array declaration ([12:56]–[38:42])</h3>
+<h4>2.1 One-dimensional declaration ([13:10]–[21:18])</h4>
+<p>Three ways to declare a 1-D int array. All three are valid:</p>
+<p>int[] x;    // 1 — recommended
+int []x;    // 2
+int x[];    // 3  (C / C++ style; still legal in Java)</p>
+<p>Dimension symbols [] may sit:</p>
+<ul><li>after the type (int[] x)</li></ul>
+<ul><li>before the variable (int []x)</li></ul>
+<ul><li>after the variable (int x[])</li></ul>
+<p>Recommended: the first form, int[] x.</p>
+<p>Not because “first impression is the best impression” (he tells two personality-development stories here — a king who killed a minister for suggesting treachery, which created such a good impression that another king offered his daughter in marriage and was later betrayed; and the wooden-horse / gift-full-of-soldiers story). The Java reason is:</p>
+<ul><li>In int[] x, the name is clearly separated from the type. You read: x is a one-dimensional int array.</li></ul>
+<ul><li>In int x[] you read “one-dimensional array x is of int type” — type is mixed with the name.</li></ul>
+<ul><li>int []x has the same mixing problem.</li></ul>
+<p>So: all valid; first is recommended because the name is clearly separated from the type.</p>
+<h4>Declaration conclusion 1 — no size at declaration ([21:18]–[23:56])</h4>
+<p>Requirement: represent six int values, so someone writes:</p>
+<p>int[6] x;   // INVALID — compile-time error
+int[] x;    // VALID</p>
+<p>At the time of declaration we cannot specify the size. Size is required at the time of creation. If you specify size in the declaration, compile-time error.</p>
+<p>This is a very important exam conclusion.</p>
+<h4>2.2 Two-dimensional declaration ([24:02]–[26:31])</h4>
+<p>Six styles. All six are valid two-dimensional array declarations (first three valid, next three also valid — “don’t keep any doubt”):</p>
+<pre class='code'>int[][] a;
+int [][]a;
+int a[][];
+int[] []a;
+int[] a[];
+int []a[];</pre>
+<p>Wherever you place the two pairs of [] — both after the type, both after the name, or split between type and name — it is still a 2-D int array.</p>
+<h4>Declaration conclusion 2 — dimensions before the variable apply only to the first variable ([26:34]–[35:32])</h4>
+<p>This is the second declaration conclusion and a favourite OCJP trap. Several variables in one statement:</p>
+<p>Why the last one fails: if you want to specify a dimension before the variable, that facility is applicable only for the first variable in the declaration. The compiler treats [] attached to the type as part of the type for every name in the list, but [] written before a later name ([]b) is illegal.</p>
+<p>Same rule with three names:</p>
+<p>int[] a, b, c;     // valid — all 1-D
+int[] a, []b, c;   // INVALID — dimension before the second variable</p>
+<p>After the variable you may add [] on any name (b[], c[][], …) with no problem. The restriction is only dimension before the variable, and only the first name may use that.</p>
+<p>He also drills “which of the following are valid” on this family and says he will give notes for the last (invalid) form.</p>
+<h4>2.3 Three-dimensional declaration ([35:48]–[38:33])</h4>
+<p>He does not go to a fourth dimension — once you see 3-D you can generalise.</p>
+<p>All of these are valid 3-D declarations (every way of distributing three [] pairs between type and name):</p>
+<pre class='code'>int[][][] a;
+int [][][]a;
+int a[][][];
+int[] [][]a;
+int[][] []a;
+int[] a[][];
+int[][] a[];
+int [][]a[];
+int []a[][];
+int[] []a[];</pre>
+<p>Read them as “three-dimensional int array a” no matter where the brackets sit.</p>
+<h4>Declaration wrap-up ([38:34]–[38:51])</h4>
+<p>Only two declaration conclusions:</p>
+<ol><li>At the time of array declaration we cannot specify the size.</li></ol>
+<ol><li>If we want to specify a dimension before the variable, that facility is applicable only for the first variable; applying it to remaining variables is a compile-time error.</li></ol>
+<p>Then the lecture moves to creation.</p>
+<h3>3. Array creation ([38:52]–[1:15:10])</h3>
+<h4>Every array in Java is an object ([38:52]–[41:00])</h4>
+<pre class='code'>int[] a = new int[3];</pre>
+<p>Objects are created with the new operator. Arrays are also created with new. Therefore every array in Java is an object. a is a reference variable pointing at that array object.</p>
+<p>Feel it as an object; draw the diagram: heap object of length 3, reference a pointing to it.</p>
+<h4>Corresponding classes exist, but not at programmer level ([41:41]–[46:00])</h4>
+<p>Usually we create objects of classes. If every array is an object, a corresponding class must exist. Those classes are part of the Java language and are not available at the programmer level (you do not write class [I { … }). Naming conventions of those classes are internal; you are not expected to declare them.</p>
+<p>Proof — ask the runtime class name:</p>
+<pre class='code'>int[] x = new int[3];
+System.out.println(x.getClass().getName());</pre>
+<p>Compiles and runs. Output:</p>
+<p>[I</p>
+<p>Meaning: one [ = one dimension, I = int.</p>
+<p>For a two-dimensional int array (new int[3][2] or similar):</p>
+<p>[[I</p>
+<p>Two [ = two dimensions, then I.</p>
+<p>He compiles Test.java, runs java Test, shows [I, then changes to 2-D and shows [[I.</p>
+<h4>Table of array type → class name ([46:44]–[50:16])</h4>
+<p>He runs:</p>
+<p>byte[] x = new byte[3];
+System.out.println(x.getClass().getName());   // [B</p>
+<p>Then the same with boolean[] of size 3. Boolean’s encoding is [Z (students also guess [B, which is already used for byte). These names start with [ precisely so they do not look like programmer-level class names.</p>
+<p>A boolean[] stores true/false in each slot — that is the only extra remark he makes on the boolean diagram.</p>
+<p>Conclusion to copy: for every array type, corresponding classes are available, and these classes are part of the Java language and not available to the programmer level.</p>
+<h4>Creation loophole 1 — size is compulsory at creation ([50:18]–[53:04])</h4>
+<p>int[] x = new int[];     // INVALID — compile-time error
+int[] x = new int[6];    // VALID</p>
+<p>At declaration we cannot specify size. At creation we must specify size. The JVM reserves memory from the size. If you omit the size, the compiler reports it.</p>
+<p>Rule: at the time of array creation, compulsory we should specify the size; otherwise compile-time error.</p>
+<h4>Creation loophole 2 — size zero is legal ([53:06]–[55:52])</h4>
+<p>int[] x = new int[0];    // VALID</p>
+<p>It is legal to have an array with size zero in Java.</p>
+<p>Best example: main’s parameter is String[] args (command-line arguments). If you run the class 100 times you may pass arguments once or twice. If you pass no command-line arguments, args.length is 0. If you pass a b c d, args.length is 4.</p>
+<p>He prints args.length: no args → 0; four tokens → 4.</p>
+<h4>Creation loophole 3 — negative size: compiles, blows up at runtime ([56:00]–[1:00:10])</h4>
+<pre class='code'>int[] x = new int[-3];</pre>
+<p>Invalid at runtime, not at compile time.</p>
+<p>There is no compile-time error. The compiler only checks: did you specify some size, and is it an int value? Positive vs negative is not the compiler’s job.</p>
+<p>At runtime the JVM tries to reserve memory, sees a negative size, and throws a runtime exception:</p>
+<p>`NegativeArraySizeException`</p>
+<p>He compiles: fine. He runs: Exception in thread &quot;main&quot; java.lang.NegativeArraySizeException.</p>
+<p>Rule: if we try to specify array size with some negative int value, we get a runtime exception saying NegativeArraySizeException. No compile-time error.</p>
+<p>(It is size, not index — students say “negative index”; he corrects them.)</p>
+<h4>Creation loophole 4 — which types may be used as size ([1:00:52]–[1:06:38])</h4>
+<p>The size expression must be int (or a type that promotes to int).</p>
+<p>Promotion chart from the data-types lectures: byte → short → int ← char, then int → long → float → double.</p>
+<p>Allowed for array size: `byte`, `short`, `char`, `int`.</p>
+<p>int[] x = new int[&#x27;a&#x27;];   // VALID — char promotes to int; size is 97 (Unicode of &#x27;a&#x27;)
+
+byte b = 20;
+int[] x = new int[b];     // VALID
+
+short s = 30;
+int[] x = new int[s];     // VALID
+
+int[] x = new int[10L];   // INVALID — compile-time error
+                          // possible loss of precision
+                          // found   : long
+                          // required: int</p>
+<p>long is not allowed as size. Any other type (long, float, double, boolean, …) → compile-time error.</p>
+<p>Rule: to specify array size, the allowed data types are byte, short, char, int. If we specify any other type, compile-time error.</p>
+<h4>Creation loophole 5 — maximum allowed size ([1:06:44]–[1:15:10])</h4>
+<p>There must be an upper bound: the size type is int, and the maximum int value is 2147483647.</p>
+<p>So the maximum allowed array size in Java is 2147483647, which is the maximum value of the int data type.</p>
+<p>int[] x = new int[2147483647];   // compiles (size is a valid int)
+int[] x = new int[2147483648];   // CE: integer number too large</p>
+<p>2147483648 is outside the int range. Any integral literal that is not in the int range is a compile error integer number too large (from the literals lectures: an integral literal is int unless it ends with L). Adding L would make it long, which is then illegal as an array size for loophole 4.</p>
+<p>Even the first line can fail at runtime. 2,147,483,647 int values × 4 bytes each is a huge heap request. That much memory may not be available. Then you get:</p>
+<p>java.lang.OutOfMemoryError: Requested array size exceeds VM limit</p>
+<p>He compiles new int[2147483647]: fine. He runs: Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: Requested array size exceeds VM limit.</p>
+<p>That is not a program logic mistake; it is lack of system / heap resources. Provide enough heap and it can run. He still calls it a runtime problem you should be aware of: even in the first (compiling) case we may get a runtime failure if sufficient heap memory is not available.</p>
+<h4>One-dimensional creation — five conclusions he recites at the end ([1:14:20]–[1:15:10])</h4>
+<ol><li>At the time of array creation we must specify the size (else compile-time error).</li></ol>
+<ol><li>It is legal to have an array with size zero.</li></ol>
+<ol><li>Negative int size → runtime NegativeArraySizeException (no compile error).</li></ol>
+<ol><li>Allowed size types: byte, short, char, int (else compile-time error).</li></ol>
+<ol><li>Maximum allowed size is 2147483647 (int max). Bigger literal → integer number too large. Even max size may throw OutOfMemoryError if the heap cannot hold it.</li></ol>
+<p>The video ends here. Two-dimensional creation (array-of-arrays, not matrix) is the opening of part 2.</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // declaration styles (1-D) — all valid; first recommended
+        int[] a;
+        int []b;
+        int c[];
+
+        // int[6] d;          // CE: size at declaration
+
+        // 2-D — all valid
+        int[][] e;
+        int [][]f;
+        int g[][];
+        int[] []h;
+        int[] i[];
+        int []j[];
+
+        // comma declarations
+        int[] k, l;           // both 1-D
+        int[] m[], n;         // m is 2-D, n is 1-D
+        int[] o[], p[];       // both 2-D
+        int[][] q, r;         // both 2-D (space ignored)
+        int[][] s, t[];       // s is 2-D, t is 3-D
+        // int[] u, []v;      // CE: [] before a non-first variable
+
+        // creation
+        int[] x = new int[3];
+        System.out.println(x.getClass().getName()); // [I
+
+        int[][] y = new int[3][2];
+        System.out.println(y.getClass().getName()); // [[I
+
+        byte[] z = new byte[3];
+        System.out.println(z.getClass().getName()); // [B
+
+        // int[] bad = new int[];          // CE: size missing
+        int[] zero = new int[0];           // legal
+        // int[] neg = new int[-3];        // compiles; RE: NegativeArraySizeException
+
+        int[] fromChar = new int[&#x27;a&#x27;];     // size 97
+        byte bb = 20;
+        int[] fromByte = new int[bb];
+        short ss = 30;
+        int[] fromShort = new int[ss];
+        // int[] fromLong = new int[10L];  // CE: possible loss of precision
+
+        // int[] huge = new int[2147483647]; // compiles; may OOME at runtime
+        // int[] tooBig = new int[2147483648]; // CE: integer number too large
+
+        System.out.println(args.length);   // 0 if no command-line args
+    }
+}</pre>
+<h2>Rules to memorize</h2>
+<ol><li>Array = indexed collection of a fixed number of homogeneous data elements.</li></ol>
+<ol><li>Advantage: huge number of values, one variable → better readability.</li></ol>
+<ol><li>Disadvantage: fixed size; you must know the size in advance (not always possible). Also homogeneous only. Next level: collections.</li></ol>
+<ol><li>1-D: int[] x, int []x, int x[] all valid; `int[] x` recommended (name clearly separated from type).</li></ol>
+<ol><li>No size at declaration (int[6] x is CE). Size compulsory at creation (new int[] is CE).</li></ol>
+<ol><li>2-D: all six bracket placements valid. 3-D: all ten bracket placements valid.</li></ol>
+<ol><li>int[] a, b → both 1-D. int[][] a, b → both 2-D (brackets on the type apply to every name). int[] a[], b → a is 2-D, b is 1-D. int[][] a, b[] → a is 2-D, b is 3-D. int[] a, []b → CE.</li></ol>
+<ol><li>Dimension before a name: only the first variable in the declaration.</li></ol>
+<ol><li>Every array is an object (new). Corresponding classes exist at language level ([I, [[I, [D, [S, [B, [Z, …), not as types you declare.</li></ol>
+<ol><li>new int[0] is legal. main’s args has length 0 when no command-line arguments are passed.</li></ol>
+<ol><li>new int[-3] compiles; runtime `NegativeArraySizeException`.</li></ol>
+<ol><li>Size types: byte, short, char, int only. new int[10L] → CE possible loss of precision.</li></ol>
+<ol><li>Max size 2147483647. Literal 2147483648 → CE integer number too large. Max size may still throw `OutOfMemoryError: Requested array size exceeds VM limit`.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>int[] x vs int x[] — both compile; only the first is recommended.</li></ul>
+<ul><li>int[6] x looks like C; it is a compile error in Java.</li></ul>
+<ul><li>int[] a, []b looks symmetric; it is illegal. int[] a[], b is legal and b is only 1-D.</li></ul>
+<ul><li>int[][] a, b — both names are 2-D, not “a is 2-D and b is 1-D”.</li></ul>
+<ul><li>“Is an array an object?” — Yes. Proof: created with new; getClass().getName() works.</li></ul>
+<ul><li>Class name [I is not a programmer type; do not try to write new [I().</li></ul>
+<ul><li>Zero-length array is legal, not a trick invalid case.</li></ul>
+<ul><li>Negative size is not a compile error. Do not write “CE” for new int[-1].</li></ul>
+<ul><li>char as size is legal (&#x27;a&#x27; → 97). long as size is not.</li></ul>
+<ul><li>2147483647 compiles; “so it always runs” is false — heap may throw OutOfMemoryError. That is an Error, not a programming-bug exception, but the exam still expects you to know the message.</li></ul>
+<h2>Recap</h2>
+<p>Part 1 of arrays is definition, declaration syntax, and 1-D creation rules. The two declaration conclusions (no size at declare; [] before a name only on the first variable) and the five creation loopholes (must specify size, zero legal, negative → NegativeArraySizeException, size types byte/short/char/int, max Integer.MAX_VALUE) are the exam payload.</p>
+<p>Next lecture (video 007) starts two-dimensional creation: Java does not implement 2-D arrays as a C-style matrix. It uses an array of arrays, so inner rows can have different lengths.</p>
+<p>Next video: 007-arrays-part-2.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 6 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 6 of 16</td></tr>
+<tr><td>Topic</td><td>Arrays part 1</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 15m 24s (4524 seconds)</td></tr>
+<tr><td>Video ID</td><td>HSp0UX9Z8Zw</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=HSp0UX9Z8Zw</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Word</th><th>Meaning</th></tr>
+<tr><td>indexed</td><td>you reach an element by index (x[0], x[1], …)</td></tr>
+<tr><td>collection</td><td>many values under one name</td></tr>
+<tr><td>fixed number</td><td>size decided at creation; cannot grow/shrink</td></tr>
+<tr><td>homogeneous</td><td>one element type</td></tr>
+</table>
+<table>
+<tr><th>Declaration</th><th>a dimension</th><th>b dimension</th><th>Valid?</th></tr>
+<tr><td>int[] a, b;</td><td>1</td><td>1</td><td>yes</td></tr>
+<tr><td>int[] a[], b;</td><td>2</td><td>1</td><td>yes</td></tr>
+<tr><td>int[] a[], b[];</td><td>2</td><td>2</td><td>yes</td></tr>
+<tr><td>int[][] a, b;</td><td>2</td><td>2</td><td>yes — the space is ignored; [][] is part of the type, so both a and b are 2-D</td></tr>
+<tr><td>int[][] a, b[];</td><td>2</td><td>3</td><td>yes</td></tr>
+<tr><td>int[] a, []b;</td><td>—</td><td>—</td><td>no — compile-time error</td></tr>
+</table>
+<table>
+<tr><th>Array type</th><th>getClass().getName()</th></tr>
+<tr><td>int[]</td><td>[I</td></tr>
+<tr><td>int[][]</td><td>[[I</td></tr>
+<tr><td>int[][][]</td><td>[[[I</td></tr>
+<tr><td>double[]</td><td>[D</td></tr>
+<tr><td>short[]</td><td>[S</td></tr>
+<tr><td>byte[]</td><td>[B</td></tr>
+<tr><td>boolean[]</td><td>[Z</td></tr>
+</table>
+</body></html>

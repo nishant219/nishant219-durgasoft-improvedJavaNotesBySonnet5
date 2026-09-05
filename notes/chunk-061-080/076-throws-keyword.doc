@@ -1,0 +1,937 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>076-throws-keyword</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 076 — throws keyword</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Exception Handling Part-6 || throws keyword</p>
+<p>Source: real YouTube auto-captions (.transcripts/076-ogOy-dU8AmY.txt). ASR decoded in place: thros / ths / throw keyword (when the topic is this video) = throws; checkered / Checker = checked; unchecker = unchecked; color / cal / caller method = caller; wired / wide / vid / w main = void main; string array access / asks / a = String[] args; abc.xt / abcx = abc.txt; Java.Langa / Langin interrupted = java.lang.InterruptedException; throws I / internet explorer (joke) = throws InterruptedException; do stop / do stuff = doStuff; do more stop = doMoreStuff; JBM / RVM = JVM; legend = listen; keep subing = keep writing; compar / compeller / compile a method = compiler / compile-time error; SOP / s of / outprint ln = System.out.println; ibo / I go exception = IOException; 100% paka = 100% pakka (sure); poker / mah babu / Mahesh papa = Telugu film Pokiri / Mahesh Babu; musta be cut = must be caught; yet Test.main = at Test.main.</p>
+<p>He opens by promising the difference between `throw` and `throws` “at last.” He never delivers that comparison in these 99 minutes. This video is only `throws`: purpose, two ways to satisfy the compiler, a three-method delegation chain, three conclusions, then four cases (class/constructor/method; throwable types; throw new Exception vs throw new Error; five try-catch types and the fully-checked “never thrown” CE).</p>
+<h3>00:06 — Last session was `throw`; this session is `throws`</h3>
+<p>Observe: last session covered the `throw` keyword. This session is `throws` — he calls it the most valuable concept of this part.</p>
+<p>Classroom line: “Sir, can you tell what is the difference between throw and throws?” He says there is a big difference, there is a chance they will ask it in the entire interview room, but do not answer yet. He will summarize throw vs throws at last. First you must know the purpose of throws. This is easy if you already know checked vs unchecked — that terminology comes here.</p>
+<h3>00:36 — Do not start with `throw` vs `throws`</h3>
+<p>He repeats: last part was throw; this part is throws. Difference later. Purpose first.</p>
+<h3>01:18 — Example 1 on the board: `PrintWriter` writing hello to `abc.txt`</h3>
+<p>Class Test, public static void main(String[] args). Create a PrintWriter for file abc.txt and write &quot;hello&quot;. PrintWriter is in java.io — he adds the import so nobody thinks the only problem is a missing import.</p>
+<pre class='code'>import java.io.PrintWriter;
+
+class Test {
+    public static void main(String[] args) {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+        pw.println(&quot;hello&quot;);
+        // CE: unreported exception java.io.FileNotFoundException;
+        //     must be caught or declared to be thrown
+    }
+}</pre>
+<h3>02:10 — Ask the compiler: valid or invalid?</h3>
+<p>If you ask the compiler to compile this, the compiler says: I cannot. You are trying to write &quot;hello&quot; to abc.txt. At runtime that file may not be available. There may be a chance of `FileNotFoundException`, which is a checked exception. If that checked exception occurs, how are you handling it? Tell me, then only I can compile.</p>
+<p>It does not mean FileNotFoundException will occur. It means there is a possibility. In our program, if there is any chance of raising a checked exception, compulsory we should handle it — either by try-catch or by `throws`. If we are not handling, the code will not compile.</p>
+<p>Exact compiler message he writes (and later shows from javac):</p>
+<pre class='code'>import java.io.PrintWriter;
+
+class Test {
+    public static void main(String[] args) {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;); // CE here
+        pw.println(&quot;hello&quot;);
+    }
+}
+// javac Test.java
+// unreported exception java.io.FileNotFoundException
+// must be caught or declared to be thrown</pre>
+<h3>03:22 — “Must be caught or declared to be thrown”</h3>
+<p>“Must be caught” = try-catch. “Declared to be thrown” = throws. That phrase is the compile-time error. By default you get it for this code.</p>
+<p>He stresses: possibility to rise ≠ it occurs. Possibility is enough for the compiler.</p>
+<h3>04:39 — Live `javac Test.java` for example 1</h3>
+<p>He types the import, PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;), println(&quot;hello&quot;), then:</p>
+<p>javac Test.java</p>
+<p>You didn’t report about this exception. unreported exception java.io.FileNotFoundException must be caught or declared to be thrown. Compile-time error.</p>
+<p>Same rule again: if there is a possibility of raising a checked exception, compulsory we should handle it. How we handle, later. Otherwise the code will not compile. Clear for all.</p>
+<h3>05:37 — Board dictation: the checked-exception rule (keep writing)</h3>
+<p>He puts this under the `throws` keyword heading. Keep writing. He repeats the sentence many times so the room copies it.</p>
+<p>In our program, if there is a possibility of raising a checked exception, then compulsory we should handle that checked exception. Otherwise we will get compile-time error saying:</p>
+<p>unreported exception XXX must be caught or declared to be thrown</p>
+<pre class='code'>// Board rule (not a full program by itself):
+// possibility of checked exception
+//   → handle (try-catch  OR  throws)
+//   → else CE: unreported exception X must be caught or declared to be thrown</pre>
+<h3>07:16 — Example 1 labelled on the board</h3>
+<p>Two examples will be discussed. This is example one.</p>
+<p>Possibility of FileNotFoundException (checked). We did not handle. Code will not compile.</p>
+<pre class='code'>import java.io.PrintWriter;
+
+class Test {
+    public static void main(String[] args) {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+        pw.println(&quot;hello&quot;);
+        // CE: unreported exception java.io.FileNotFoundException
+        //     must be caught or declared to be thrown
+    }
+}</pre>
+<p>Any explanation required? Make sure you have clear clarity. Example one done.</p>
+<h3>08:53 — Example 2: `Thread.sleep(10000)`</h3>
+<p>Same type of problem. Class Test, main, the thread wants to sleep for 10 seconds → Thread.sleep(10000) milliseconds.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Thread.sleep(10000);
+        // CE: unreported exception java.lang.InterruptedException
+        //     must be caught or declared to be thrown
+    }
+}</pre>
+<h3>09:44 — Compiler: I cannot compile `sleep`</h3>
+<p>Whenever you call sleep, the main thread may enter sleeping state. If main is sleeping, other threads may interrupt the main thread. There may be a chance of `InterruptedException`, which is checked. You did not report anywhere about that exception. Then how can I compile?</p>
+<p>Import is not required (java.lang).</p>
+<h3>11:23 — Live compile of example 2</h3>
+<p>He replaces the PrintWriter code with Thread.sleep(10000). Same CE:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Thread.sleep(10000);
+    }
+}
+// javac Test.java
+// unreported exception java.lang.InterruptedException
+// must be caught or declared to be thrown</pre>
+<h3>11:59 — Example 2 on the board (keep writing)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Thread.sleep(10000);
+        // CE: unreported exception java.lang.InterruptedException
+        //     must be caught or declared to be thrown
+    }
+}</pre>
+<h3>13:08 — Compiler already gives two solutions</h3>
+<p>“Compiler only providing the solution — in how many ways we can handle?” Look at the message:</p>
+<ol><li>must be caught</li></ol>
+<ol><li>or declared to be thrown</li></ol>
+<p>So this compile-time error can be handled in two ways:</p>
+<ul><li>First way: try-catch (you already know this — handling the exception yourself)</li></ul>
+<ul><li>Second way: throws keyword (purpose explained next)</li></ul>
+<pre class='code'>// Two ways to handle the CE from Thread.sleep / PrintWriter:
+// 1. try-catch          → must be caught
+// 2. throws SomeException → declared to be thrown</pre>
+<h3>14:20 — First way: try-catch (compiler checks only that catch exists)</h3>
+<p>Because sleep is the problem, wrap it in try / catch (InterruptedException e). End of main, end of class.</p>
+<p>Responsibility of the compiler: check whether you wrote try-catch or not. Inside the catch block, what code you wrote, compiler never checks. Even if you did not write a single line in catch, no problem to the compiler. Compiler talks about syntax only: this person provided a catch block or not.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            // empty catch is enough for the compiler
+        }
+    }
+}</pre>
+<h3>15:30 — Live: without try-catch CE; with empty catch it compiles and runs</h3>
+<p>Without try-catch or throws: unreported exception, must be caught or declared to be thrown.</p>
+<p>He adds try { Thread.sleep(10000); } catch (InterruptedException e) { }.</p>
+<p>Happily the code compiles fine. Happily the code runs fine. It sleeps 10 seconds; after 10 seconds the control stops. First way = try-catch.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+        }
+    }
+}
+// compiles; runs; sleeps ~10 seconds; then ends</pre>
+<h3>16:30 — Board: first way by using try-catch</h3>
+<p>Keep writing. He copies the try-catch version onto the board (long pause while the room writes).</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+        }
+    }
+}</pre>
+<h3>17:24 — Second way: `throws` keyword</h3>
+<p>Better to spell it out. Keep writing: by using `throws` keyword.</p>
+<p>He still has not stated the purpose. Now he explains.</p>
+<h3>18:00 — Assignment analogy: do it yourself vs delegate to a friend</h3>
+<p>Small assignment: workout this program by tomorrow. In how many ways can you handle that work?</p>
+<ol><li>Do the assignment on your own.</li></ol>
+<ol><li>Delegate that work to your friend.</li></ol>
+<p>Same two ways for the exception:</p>
+<ul><li>Handle it on your own → try-catch</li></ul>
+<ul><li>“Boss, I don’t want to handle; my caller is going to take care; I will delegate that responsibility to the caller” → `throws`</li></ul>
+<pre class='code'>// try-catch  = I handle it myself
+// throws     = I delegate handling to my caller</pre>
+<h3>19:16 — Purpose: delegate responsibility of exception handling to the caller</h3>
+<p>throws can be used to delegate responsibility of exception handling to the caller. The caller may be JVM or another method.</p>
+<p>Compiler asks: main, you are calling sleep, there may be a chance of checked InterruptedException, how didn’t you report, how can I compile?</p>
+<p>Main answers: pass — my caller is going to take care. Ask my caller. So main keeps throws InterruptedException.</p>
+<p>Who is the caller of main? JVM. If JVM is going to take care, no problem for the compiler. Happily the code compiles.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}
+// compiles: main delegated InterruptedException to JVM</pre>
+<h3>20:25 — Live: without `throws` CE; with `main throws InterruptedException` it compiles</h3>
+<p>He removes try-catch. Thread.sleep alone: will not compile, unreported exception.</p>
+<p>Then: main throws InterruptedException. Observe: happily the code compiles fine. “Must be caught or declared to be thrown” — this is the “declared to be thrown” half, using throws.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Thread.sleep(10000);
+        // CE: unreported exception java.lang.InterruptedException
+        //     must be caught or declared to be thrown
+    }
+}
+class Test {
+    public static void main(String[] args) throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}
+// compiles</pre>
+<h3>21:07 — Purpose in a single word: delegate</h3>
+<p>Need of throws in a single word: to delegate responsibility of exception handling to the caller. Now who is responsible to handle? The caller. In this example the caller is JVM; in the next big example the caller may be another method. Caller = method or JVM. Clear?</p>
+<h3>21:38 — Board dictation: purpose of `throws` (keep writing)</h3>
+<p>We can use a throws keyword to delegate responsibility of exception handling to the caller (it may be another method or JVM). Then the caller method is responsible to handle that exception.</p>
+<pre class='code'>// throws = delegate exception-handling responsibility to the caller
+// caller = another method  OR  JVM
+// after throws, that caller is responsible to handle</pre>
+<h3>23:19 — Board example of `throws InterruptedException`</h3>
+<p>“Better to use full form; don’t spell out I — you may feel Internet Explorer or something.” Write throws InterruptedException.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}</pre>
+<p>This is the purpose / need of throws: delegate responsibility of exception handling to the caller. Caller may be JVM or another method — that big example in a few minutes. Terminology clear.</p>
+<h3>24:18 — Conclusions about `throws` (listen carefully)</h3>
+<p>Conclusion 1 — purpose: throws is to delegate responsibility of exception handling to the caller.</p>
+<p>Conclusion 2 — checked only: throws is required only for checked exceptions. Correct or not? If it is checked, the compiler raises CE; to handle that we use throws. Usage of throws for unchecked exceptions is meaningless / there is no use. If you want you can use, but there is no impact, because for unchecked the compiler never asks “unreported exception…”. That CE is possible only for checked. So: required only for checked; for unchecked, no impact.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 / 0);
+        // compiles: ArithmeticException is unchecked
+        // RE: Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+    }
+}
+class Test {
+    public static void main(String[] args) throws ArithmeticException {
+        System.out.println(10 / 0);
+        // still compiles — throws on unchecked has no impact
+        // still RE: ArithmeticException: / by zero
+    }
+}</pre>
+<h3>25:36 — Conclusion 3: only to convince the compiler</h3>
+<p>If you are not using throws (for a checked case): compile-time error.</p>
+<p>If you are using throws: no compile-time error.</p>
+<p>So throws is required only to convince the compiler.</p>
+<h3>26:07 — If `InterruptedException` really rises at runtime, who handles?</h3>
+<p>Assume at runtime InterruptedException really rises. Who is responsible? You used throws, so JVM is responsible. If JVM handles: is it normal termination or abnormal? Abnormal termination.</p>
+<p>Even though you used throws, termination is abnormal. Usage of `throws` keyword doesn’t prevent abnormal termination of the program.</p>
+<p>Every time throws throws throws — at last who handles? JVM. JVM “handle” here means abnormal termination.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws InterruptedException {
+        Thread.sleep(10000);
+        // compiles (compiler is convinced)
+        // if InterruptedException really occurs at runtime:
+        //   JVM default handler → abnormal termination
+    }
+}</pre>
+<h3>26:53 — Therefore: try-catch is recommended over `throws`</h3>
+<p>That’s why recommended to use try-catch instead of `throws`.</p>
+<ul><li>try-catch → if the exception occurs, normal termination (you handled it)</li></ul>
+<ul><li>throws → if the exception really occurs at runtime, abnormal termination</li></ul>
+<p>throws is only to convince the compiler. At runtime if that exception occurs, program termination is always abnormal. throws doesn’t prevent abnormal termination. There may be a chance of abnormal termination even though we used throws.</p>
+<p>Three or four conclusions covered.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            // handled here → if it occurs, still normal termination
+        }
+    }
+}</pre>
+<h3>27:38 — Board: the conclusions (keep writing)</h3>
+<p>Main purpose: delegate responsibility of exception handling to the caller. Then caller is responsible to handle.</p>
+<p>Next: throws required only for checked exceptions. Usage of throws for unchecked exceptions: no use or no impact.</p>
+<p>Next: throws required only to convince the compiler. And usage of throws doesn’t prevent abnormal termination of the program.</p>
+<pre class='code'>// Board conclusions (throws / throws clause):
+// 1. delegate handling to the caller (method or JVM)
+// 2. required only for checked; unchecked → no impact
+// 3. only to convince compiler; does NOT prevent abnormal termination</pre>
+<p>That’s all — various conclusions related to throws.</p>
+<h3>30:05 — Big picture: impact of `throws` with three methods</h3>
+<p>Listen carefully. Class Test. main calls doStuff. Inside doStuff, call doMoreStuff. Inside doMoreStuff, Thread.sleep(10000).</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+    public static void doStuff() {
+        doMoreStuff();
+    }
+    public static void doMoreStuff() {
+        Thread.sleep(10000);
+        // CE: unreported exception java.lang.InterruptedException
+        //     must be caught or declared to be thrown
+    }
+}</pre>
+<h3>31:41 — Will this compile? No — problem is at `doMoreStuff`</h3>
+<p>main calls doStuff, doStuff calls doMoreStuff, sleep is inside doMoreStuff. Ask the compiler: compile or not? No.</p>
+<p>Compiler asks: `doMoreStuff`, you are calling `sleep`. There may be a chance of `InterruptedException`. Where are you handling? Without handling how can I compile — it is a checked exception. Here the problem will come.</p>
+<p>Exact error: unreported exception java.lang.InterruptedException must be caught or declared to be thrown.</p>
+<h3>32:52 — `doMoreStuff` has two options</h3>
+<ol><li>Keep the method call / sleep inside try-catch</li></ol>
+<ol><li>Delegate that responsibility to the caller</li></ol>
+<p>What this person did: “My caller take care. Why I have to worry?” So doMoreStuff keeps throws InterruptedException.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+    public static void doStuff() {
+        doMoreStuff();
+        // CE: unreported exception java.lang.InterruptedException
+        //     must be caught or declared to be thrown
+    }
+    public static void doMoreStuff() throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}</pre>
+<h3>33:13 — After `doMoreStuff throws`, compile or not? Still no</h3>
+<p>Compiler identifies who is the caller of `doMoreStuff`? → doStuff.</p>
+<p>doStuff, you are calling doMoreStuff. doMoreStuff delegated InterruptedException. Where are you handling? Compile-time error moves to `doStuff`.</p>
+<h3>34:10 — `doStuff` also has two options</h3>
+<p>Keep this method call inside try-catch, or: “Someone raised the exception; why I have to handle? My caller is going to take care.” So doStuff also keeps throws InterruptedException.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+        // CE: unreported exception java.lang.InterruptedException
+        //     must be caught or declared to be thrown
+    }
+    public static void doStuff() throws InterruptedException {
+        doMoreStuff();
+    }
+    public static void doMoreStuff() throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}</pre>
+<p>Compile or not? No. Caller of doStuff is `main`. Compiler goes to main: you are calling doStuff, doStuff throws IE, where are you handling?</p>
+<h3>35:04 — `main` also throws; caller of `main` is JVM — now it compiles</h3>
+<p>“Someone raised the exception; what is the need of handling? My caller is going to take care.” main also keeps throws InterruptedException.</p>
+<p>Will it compile? Caller of main is JVM. JVM can handle because the default exception handler is already there. Happily the code compiles.</p>
+<p>Different levels of delegation: doMoreStuff delegated to doStuff → doStuff delegated to main → main delegated to JVM. That is the purpose of throws: delegate responsibility of exception handling to the caller. Now caller is responsible to handle.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws InterruptedException {
+        doStuff();
+    }
+    public static void doStuff() throws InterruptedException {
+        doMoreStuff();
+    }
+    public static void doMoreStuff() throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}
+// compiles: three-level delegation, last caller = JVM</pre>
+<p>If you are not taking throws at a level, CE at that level. Once you took throws there, no problem at that level.</p>
+<h3>36:01 — Live coding: CE at line 13, then it walks up</h3>
+<p>He types main → doStuff(); doStuff → doMoreStuff(); doMoreStuff → Thread.sleep. Compile or not? At which line?</p>
+<p>Line 13 — Thread.sleep. Unreported exception must be caught or declared to be thrown, at that line.</p>
+<pre class='code'>class Test {                                          // 1
+    public static void main(String[] args) {          // 2
+        doStuff();                                    // 5
+    }                                                 // 6
+    public static void doStuff() {                    // 7
+        doMoreStuff();                                // 9
+    }                                                 // 10
+    public static void doMoreStuff() {                // 11
+        Thread.sleep(10000);                          // 13  CE here first
+    }
+}</pre>
+<p>(He numbers the sleep line as 13 in his editor.)</p>
+<h3>37:10 — `doMoreStuff throws InterruptedException` → CE moves to line 9</h3>
+<p>He adds throws InterruptedException on doMoreStuff. Compile? No. Which line now? Line 9 — the call of doMoreStuff, because it delegated but the caller is not handling. Same unreported-exception CE at line 9.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+    public static void doStuff() {
+        doMoreStuff(); // CE at line 9
+    }
+    public static void doMoreStuff() throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}</pre>
+<h3>37:44 — `doStuff throws` → CE moves to line 5 (`main`’s call)</h3>
+<p>doStuff delegated to main. main is responsible. CE at line 5: unreported exception java.lang.InterruptedException must be caught or declared to be thrown.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff(); // CE at line 5
+    }
+    public static void doStuff() throws InterruptedException {
+        doMoreStuff();
+    }
+    public static void doMoreStuff() throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}</pre>
+<h3>38:18 — `main throws` too: compiles; sleeps 10 seconds; no real interrupt</h3>
+<p>For main also he keeps throws InterruptedException. Compile? Yes. Compile is fine. Run: there is a possibility, not a rule that the exception will be raised. Happily 10 seconds it sleeps, then the program terminates.</p>
+<p>In this program how many threads? Only main thread. Is another thread going to interrupt? No such possibility. But for syntax, to convince the compiler, throws is required. Big-picture need of throws. Take this example.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws InterruptedException {
+        doStuff();
+    }
+    public static void doStuff() throws InterruptedException {
+        doMoreStuff();
+    }
+    public static void doMoreStuff() throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}
+// compiles; runs; sleeps ~10s; ends normally
+// (IE does not actually occur — only one thread)</pre>
+<h3>39:07 — Board copy of the three-level example (long writing pause)</h3>
+<p>Keep writing. main throws InterruptedException calls doStuff. doStuff throws InterruptedException calls doMoreStuff. doMoreStuff throws InterruptedException does Thread.sleep(10000).</p>
+<p>He first writes doMoreStuff without throws and reminds: CE, unreported exception. Then the completed picture with all three throws.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws InterruptedException {
+        doStuff();
+    }
+    public static void doStuff() throws InterruptedException {
+        doMoreStuff();
+    }
+    public static void doMoreStuff() throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}</pre>
+<h3>41:20 — Recap: different levels of delegation</h3>
+<p>This example provides a clear picture.</p>
+<ul><li>doMoreStuff delegated responsibility to doStuff</li></ul>
+<ul><li>doStuff delegated responsibility to main</li></ul>
+<ul><li>main delegated responsibility to JVM</li></ul>
+<p>Different levels of delegation. Completed? Next one.</p>
+<h3>42:05 — Trap: strip `throws` from `doStuff` and `doMoreStuff`; leave it only on `main`</h3>
+<p>Small change. You have to decide the output. Same example. He removes throws from doMoreStuff and from doStuff. Only `main` has `throws`. Compile or not?</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws InterruptedException {
+        doStuff();
+    }
+    public static void doStuff() {
+        doMoreStuff();
+    }
+    public static void doMoreStuff() {
+        Thread.sleep(10000);
+        // CE: unreported exception java.lang.InterruptedException
+        //     must be caught or declared to be thrown
+    }
+}</pre>
+<p>How many people feeling yes? How many feeling no? Make sure.</p>
+<h3>43:19 — Compiler: I saw `main` can handle, but you did not **delegate** to `main`</h3>
+<p>He asks the compiler to compile. Compiler: I cannot. Inside doMoreStuff you are calling sleep; chance of InterruptedException; where are you handling?</p>
+<p>Student argument: “Ray compiler, my main method already throws — have you observed? Scratch-check once; main already throws; then compile.”</p>
+<p>Compiler: I saw already main can handle — but have you delegated to main? Without delegation, how is the main method responsible to handle this? First delegate, then I can compile.</p>
+<p>So: even though main has throws, if doMoreStuff and doStuff did not delegate, same CE: unreported exception must be caught or declared to be thrown.</p>
+<h3>44:47 — Live: only `main throws` → CE still at line 13</h3>
+<p>He removes throws from the two lower methods. Only main has throws. javac: same line 13, same problem.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws InterruptedException {
+        doStuff();
+    }
+    public static void doStuff() {
+        doMoreStuff();
+    }
+    public static void doMoreStuff() {
+        Thread.sleep(10000); // still CE at line 13
+    }
+}</pre>
+<h3>45:10 — Next: `doMoreStuff throws`, but `doStuff` still does not</h3>
+<p>“I will delegate to my caller.” doMoreStuff throws InterruptedException. Compile? Compiler to doStuff: you are calling doMoreStuff; it delegated; where are you handling? CE at the doStuff call line.</p>
+<p>doStuff says: my caller is already handling; main is already handling; why are you asking me?</p>
+<p>Compiler: main can handle — have you delegated to main? No. Without delegation how can I ask main? First delegate, then I can ask. CE here.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws InterruptedException {
+        doStuff();
+    }
+    public static void doStuff() {
+        doMoreStuff(); // CE: unreported exception InterruptedException
+    }
+    public static void doMoreStuff() throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}</pre>
+<h3>46:17 — `doStuff` also delegated → now main can handle → compiles</h3>
+<p>If doStuff also delegated: compile or not? Yes. Anyway main can handle; code compiles fine. Compulsory here also `throws` must be required (at every level of the chain).</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws InterruptedException {
+        doStuff();
+    }
+    public static void doStuff() throws InterruptedException {
+        doMoreStuff();
+    }
+    public static void doMoreStuff() throws InterruptedException {
+        Thread.sleep(10000);
+    }
+}
+// compiles</pre>
+<h3>46:36 — Board rule: remove **at least one** `throws` → code will not compile</h3>
+<p>Keep writing.</p>
+<p>In the above program, if we remove at least one `throws` statement, then the code won’t compile.</p>
+<pre class='code'>// above 3-method program:
+// remove throws from main          → CE
+// remove throws from doStuff       → CE
+// remove throws from doMoreStuff   → CE
+// all three throws present         → compiles</pre>
+<h3>47:30 — Doubt: “In my applications only `main` throws and it works — why not here?”</h3>
+<p>In a tiny program there is only one method: `main`. Then throws Exception on main is enough — no other method to walk through.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        Thread.sleep(10000);
+        // compiles: only one method, so one throws is enough
+    }
+}</pre>
+<p>Suppose main calls m1, m1 calls m2. Then “only main throws” won’t work. Compulsory this chain of throws at every level.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        m1();
+    }
+    public static void m1() {
+        m2(); // CE: unreported exception ... must be caught or declared to be thrown
+    }
+    public static void m2() {
+        Thread.sleep(10000); // CE here first if m2 has no throws
+    }
+}
+class Test {
+    public static void main(String[] args) throws Exception {
+        m1();
+    }
+    public static void m1() throws Exception {
+        m2();
+    }
+    public static void m2() throws Exception {
+        Thread.sleep(10000);
+    }
+}
+// compiles: every level delegated</pre>
+<p>If only main is there: no problem, happily compiles. Here multiple levels of methods: every level we have to keep `throws`. Clear?</p>
+<h3>48:31 — Recap of purpose + conclusions (before the board summary)</h3>
+<p>Purpose of throws? Delegate responsibility of exception handling to the caller. Then caller is responsible. Caller may be a method or JVM. Point one.</p>
+<p>Second: required only for checked. Usage for unchecked: no impact / no use.</p>
+<p>Next: required only to convince compiler. Usage does not prevent abnormal termination. That’s why try-catch vs `throws`: try-catch is recommended when compared with throws.</p>
+<p>Let me summarize all these points so you can be aware much clearly.</p>
+<h3>49:22 — Board summary: `throws` keyword **or** `throws` clause</h3>
+<p>Any word you can use: throws keyword or throws clause. Listen this point well.</p>
+<p>First point: we can use to delegate responsibility of exception handling to the caller (it may be a method or JVM).</p>
+<p>Second: it is required only for checked exceptions, and usage of throws for unchecked exceptions: there is no impact.</p>
+<p>Third: it is required only to convince the compiler, and usage of throws doesn’t prevent abnormal termination of the program.</p>
+<p>He spells convince: C-O-N-V-I-N-C-E. Cross-check spelling.</p>
+<pre class='code'>// throws keyword / throws clause — three conclusions on the board:
+// 1. delegate handling to the caller (method or JVM)
+// 2. required only for checked; unchecked → no impact
+// 3. only to convince compiler; does not prevent abnormal termination</pre>
+<p>That’s why try-catch vs throws: try-catch is recommended. Take these conclusions.</p>
+<h3>52:54 — Room copies the three conclusions (long dictation)</h3>
+<p>He repeats the three paragraphs so they can copy slowly: delegate to the caller (method or JVM); required only for checked, unchecked no impact; only to convince compiler, doesn’t prevent abnormal termination of the program. Music / writing pause. Completed? Hope clear.</p>
+<h3>55:34 — Extra note on the board: try-catch over `throws`</h3>
+<p>Note. Note. Note.</p>
+<p>It is recommended to use try-catch over `throws` keyword.</p>
+<pre class='code'>// recommended: try-catch
+// not recommended as the only strategy: throws (JVM → abnormal termination)</pre>
+<p>That’s all for the purpose of throws. But there are multiple conclusions / multiple cases. Almost four cases. One or two very easy; two cases a bit difficult — take special care.</p>
+<h3>56:40 — Case 1: `throws` on class vs constructor vs method</h3>
+<p>Keep writing. Case one. Class Test, it is a constructor, and it is a method. He writes throws Exception on all three and asks: among these, which are valid and which are invalid?</p>
+<pre class='code'>class Test throws Exception {          // CE: throws not allowed at class level
+    Test() throws Exception {          // valid: constructor may declare throws
+    }
+    public void m1() throws Exception { // valid: method may declare throws
+    }
+}</pre>
+<h3>57:38 — Why class-level `throws` is invalid</h3>
+<p>A method we can use throws — no problem. We can use throws for the constructor also — no problem (even in OOPS they covered this somewhere).</p>
+<p>We can call a method — then caller is responsible to handle. We can call a constructor — caller of the constructor is responsible. Can we call a class? No one is going to call a class. Class members we can call, but not the class. That’s why `throws` for the class is invalid.</p>
+<p>Where can we use throws? Method level, constructor level: valid. Class level: invalid.</p>
+<pre class='code'>class Test {
+    Test() throws Exception {
+    }
+    public static void main(String[] args) {
+        new Test();
+        // CE: unreported exception java.lang.Exception
+        //     must be caught or declared to be thrown
+        // (constructor declared throws; caller of new Test() must handle)
+    }
+}
+class Test {
+    public void m1() throws Exception {
+    }
+    public static void main(String[] args) {
+        new Test().m1();
+        // CE: unreported exception java.lang.Exception
+        //     must be caught or declared to be thrown
+    }
+}</pre>
+<h3>58:38 — Board: case 1 rule (keep writing)</h3>
+<p>We can use a throws keyword for methods and constructors, but not for classes.</p>
+<h3>59:12 — Case 1 example on the board</h3>
+<pre class='code'>class Test throws Exception {           // invalid (class level)
+    Test() throws Exception {           // valid
+    }
+    public void m1() throws Exception { // valid
+    }
+}</pre>
+<p>At method level, constructor level we can use throws; for class level we can’t use. Hope case one is clear.</p>
+<h3>59:55 — Case 2: `throws Test` where `Test` is a normal class</h3>
+<p>Case two. Carefully. Class Test. public void m1(). For the method, can I use throws? Yes. He writes `throws Test`. Valid or invalid?</p>
+<pre class='code'>class Test {
+    public void m1() throws Test {
+        // CE: incompatible types
+        //     found    : Test
+        //     required : java.lang.Throwable
+    }
+}</pre>
+<p>Invalid. Compile-time error. `throws` keyword applicable only for throwable types. Test is a normal Java class. For normal Java classes we can’t use. Immediately CE saying incompatible types, found Test, required `java.lang.Throwable`.</p>
+<h3>1:01:40 — Same method, but `Test extends RuntimeException`</h3>
+<p>Is this valid or not? You have to decide.</p>
+<pre class='code'>class Test extends RuntimeException {
+    public void m1() throws Test {
+        // valid: Test is a throwable type (unchecked, but still Throwable)
+    }
+}</pre>
+<p>100% valid, because Test extends RuntimeException — it is under Throwable. Whether checked or unchecked, forget that: it is under Throwable. Usage of throws for a throwable type: no problem at all. Perfectly valid.</p>
+<h3>1:02:36 — Live: `main throws Test`, then add `extends RuntimeException`</h3>
+<p>He tries public static void main(...) throws Test while Test is a plain class:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Test {
+        // CE: incompatible types
+        //     found    : Test
+        //     required : java.lang.Throwable
+    }
+}</pre>
+<p>javac Test.java — incompatible types, found Test, required java.lang.Throwable.</p>
+<p>Then: class Test extends RuntimeException. Valid or not? Yes. We can use throws only for throwable types, not for normal Java classes. If you try for normal Java classes, compile-time error.</p>
+<pre class='code'>class Test extends RuntimeException {
+    public static void main(String[] args) throws Test {
+        // valid
+    }
+}</pre>
+<h3>1:03:32 — Board: case 2 rule (keep writing)</h3>
+<p>We can use a throws keyword only for throwable types. If we are trying to use for normal Java classes, then we will get compile-time error saying incompatible types.</p>
+<h3>1:04:52 — Case 2 board examples</h3>
+<pre class='code'>class Test {
+    public void m1() throws Test {
+        // CE: incompatible types
+        //     found    : Test
+        //     required : java.lang.Throwable
+    }
+}
+class Test extends RuntimeException {
+    public void m1() throws Test {
+        // valid
+    }
+}</pre>
+<p>Incompatible types found Test, required Throwable. This is case two. Now case three.</p>
+<h3>1:06:11 — Case 3 intro: “most dangerous”; Pokiri joke then the two hard cases</h3>
+<p>Take special care about this terminology. Case three. Listen this point well.</p>
+<p>The most dangerous cases — extra two, very very important. In Telugu movies there is a famous bit: after releasing Pokiri, Mahesh Babu came to number one. Everyone had big expectations on the next movie. People went, came back, channels asked “how is the next movie?” After Pokiri, that next film did not match Pokiri. He uses that joke so you remember: the next two cases (3 and 4) are the ones where you cannot even expect the answer. Two conclusions. Take special care.</p>
+<h3>1:08:27 — Case 3 board: `throw new Exception` vs `throw new Error`</h3>
+<p>Class Test, main. In one program he writes throw new Exception. In the other, throw new Error.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new Exception();
+        // CE: unreported exception java.lang.Exception
+        //     must be caught or declared to be thrown
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        throw new Error();
+        // compiles (Error is unchecked)
+        // RE: Exception in thread &quot;main&quot; java.lang.Error
+        //     at Test.main(...)
+    }
+}</pre>
+<p>In one place throwing Exception, in another throwing Error. Difference with respect to compile time or runtime?</p>
+<h3>1:09:39 — Classroom quiz: which compiles? (he teases the room)</h3>
+<p>Don’t think too much. Either code is going to compile or not.</p>
+<p>Someone: first compiles, second…? We can use throw for any throwable type, maybe Error also — so second compiles or not? If second compiles, first compile or not? There should be a universal rule: if one compiles, the other should not? No.</p>
+<p>He gives a hint: in one case the code won’t compile; in another case the code compiles fine. In which case won’t it compile? First one — compile or not?</p>
+<p>He repeats the hint three times, including body language. Students still say the first compiles. He: I told three times. In the first case, compile-time error by default. In the second case, compile is fine, no problem at all.</p>
+<h3>1:12:07 — Reason: go back to the `throws` heading, first point</h3>
+<p>Scratch-check the throws heading, first point: in our program if there is a chance / possibility of raising a checked exception, compulsory we should handle, otherwise the code won’t compile.</p>
+<p>Exception is checked or unchecked? Checked. You are throwing a checked exception → there is a chance of raising a checked exception → compiler asks where you are handling → unreported exception `java.lang.Exception` must be caught or declared to be thrown.</p>
+<p>Error is checked or unchecked? Unchecked. Remember. Compiler always talks about only checked. Chance of raising unchecked → compiler never objects → no compile-time error.</p>
+<p>But at runtime we are throwing Error and there is no catch. Default exception handler terminates the program abnormally, printing:</p>
+<p>Exception in thread &quot;main&quot; java.lang.Error
+        at Test.main(...)</p>
+<p>First one = checked exception problem (CE). Second = unchecked, no CE, but at runtime the error comes.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new Exception();
+        // CE: unreported exception java.lang.Exception
+        //     must be caught or declared to be thrown
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        throw new Error();
+    }
+}
+// javac: OK
+// java Test:
+// Exception in thread &quot;main&quot; java.lang.Error
+//         at Test.main(Test.java:3)</pre>
+<p>If you do handle the checked Exception, both the compiler and the “must handle checked” rule are satisfied — he does not dwell on these two fixes, but they are the two ways from the start of the video:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws Exception {
+        throw new Exception();
+        // compiles; then JVM → abnormal termination if it actually throws
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        try {
+            throw new Exception();
+        } catch (Exception e) {
+        }
+        // compiles; handled → normal termination
+    }
+}</pre>
+<h3>1:14:38 — Live compile of case 3</h3>
+<p>throw new Exception() → unreported exception java.lang.Exception must be caught or declared to be thrown.</p>
+<p>Replace with throw new Error() → no compile-time error. Run: Exception in thread &quot;main&quot; java.lang.Error at Test.main. Clear. Take this example. Case three.</p>
+<h3>1:15:33 — Board copy of case 3 (long pause / music)</h3>
+<p>First case: CE, unreported exception java.lang.Exception must be caught or declared to be thrown.</p>
+<p>Second: runtime</p>
+<p>Exception in thread &quot;main&quot; java.lang.Error
+        at Test.main</p>
+<p>First one compile-time error. Second one runtime exception. Completed I hope.</p>
+<h3>1:17:52 — Case 4: “too dangerous” — five try-hello-catch programs</h3>
+<p>Listen very very carefully. Too dangerous case. Class Test, main.</p>
+<p>He writes five examples. Each is: try { System.out.println(&quot;hello&quot;); } catch (SomeType e) { }. Among these five, in how many cases the code compiles, in how many it won’t.</p>
+<p>Example 1 — `ArithmeticException` (unchecked):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (ArithmeticException e) {
+        }
+    }
+}
+// compiles; prints hello</pre>
+<p>Example 2 — `Exception` (partially checked):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (Exception e) {
+        }
+    }
+}
+// compiles; prints hello</pre>
+<p>Example 3 — `IOException` (fully checked). He adds import java.io.* because IOException is in java.io:</p>
+<pre class='code'>import java.io.IOException;
+
+class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (IOException e) {
+        }
+        // CE: exception java.io.IOException is never thrown
+        //     in body of corresponding try statement
+    }
+}</pre>
+<p>Example 4 — `InterruptedException` (fully checked):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (InterruptedException e) {
+        }
+        // CE: exception java.lang.InterruptedException is never thrown
+        //     in body of corresponding try statement
+    }
+}</pre>
+<p>Example 5 — `Error` (unchecked):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (Error e) {
+        }
+    }
+}
+// compiles; prints hello</pre>
+<p>Total five examples. Among these five: how many compile, how many won’t? Most dangerous concept.</p>
+<h3>1:22:52 — Quiz with fake hints (he is checking whether you know)</h3>
+<p>Students start: first compiles, second compiles, third… If all five compile, why write this much on the board?</p>
+<p>Hint 1: exactly two cases compile, three cases CE. Which three CE? Students guess 2, 3, 4 or 1, 3, 4. “Don’t throw stones — not recommended.” Don’t refer old pages; this point is not there.</p>
+<p>Then he changes the answer on purpose to see if they know: wait — two cases won’t compile, three compile. Fixed final answer: only two cases CE, three cases compile. Which two?</p>
+<h3>1:25:31 — 100% pakka: 1, 2, and 5 print `hello`; 3 and 4 are CE</h3>
+<ul><li>First: valid, output hello</li></ul>
+<ul><li>Second: valid, output hello</li></ul>
+<ul><li>Last (Error): valid, output hello</li></ul>
+<ul><li>Compile-time error in third and fourth (IOException and InterruptedException)</li></ul>
+<h3>1:26:14 — Why `catch (IOException)` is CE</h3>
+<p>Inside try you wrote catch IOException. When do we get IOException? If we are performing any IO operations. Inside the try block, am I performing any IO? No. Never. In try there is no chance of raising IOException. If there is no chance of raising an exception, then we can’t write a catch block for that. Unnecessary catch — we are wasting.</p>
+<p>Exact CE:</p>
+<p>exception java.io.IOException is never thrown in body of corresponding try statement</p>
+<pre class='code'>import java.io.IOException;
+
+class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (IOException e) {
+        }
+        // CE: exception java.io.IOException is never thrown
+        //     in body of corresponding try statement
+    }
+}</pre>
+<p>Repeat: within try, if there is no chance of raising an exception, then it’s never recommended to write catch for that. By mistake if you write catch, CE: exception … is never thrown in body of corresponding try statement.</p>
+<h3>1:27:59 — This rule is **only for fully checked** exceptions</h3>
+<p>Make sure: this rule is applicable only for fully checked exceptions.</p>
+<ul><li>IOException — fully checked or not? Fully checked</li></ul>
+<ul><li>InterruptedException — fully checked</li></ul>
+<ul><li>Error — unchecked</li></ul>
+<ul><li>ArithmeticException — unchecked</li></ul>
+<ul><li>Exception — partially checked</li></ul>
+<p>Clarity: inside try, if there is no chance of raising an exception, we can’t write catch for that exception, otherwise CE “never thrown in body of corresponding try statement” — but this rule is applicable only for fully checked exceptions.</p>
+<h3>1:29:05 — Same story for `InterruptedException`</h3>
+<p>Fully checked? Yes. When do we get it? If we are using `sleep` / `wait` / `join`. Am I using any such methods in this try? No. No chance of raising InterruptedException in the try. Then we cannot write catch for that. CE:</p>
+<p>exception java.lang.InterruptedException is never thrown in body of corresponding try statement</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (InterruptedException e) {
+        }
+        // CE: exception java.lang.InterruptedException is never thrown
+        //     in body of corresponding try statement
+    }
+}</pre>
+<p>If the try did call sleep, catch of InterruptedException is valid (that was the first way at 14:20):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+        }
+        // compiles: sleep can throw InterruptedException
+    }
+}</pre>
+<h3>1:30:00 — Board dictation of the case-4 rule (keep writing)</h3>
+<p>Within the try block, if there is no chance of raising an exception, then we can’t write catch block for that exception. Otherwise we will get compile-time error saying:</p>
+<p>exception XXX is never thrown in body of corresponding try statement</p>
+<p>But this rule is applicable only for fully checked exceptions.</p>
+<pre class='code'>// Case 4 board rule:
+// try has no chance of X
+//   AND X is fully checked
+//   → CE: exception X is never thrown in body of corresponding try statement
+// unchecked / partially checked → catch is allowed even if try cannot throw it</pre>
+<h3>1:32:31 — Live compile of all five (fully qualified name, no import)</h3>
+<p>First: try + println(&quot;hello&quot;) + catch (ArithmeticException e) — happily compiles, answer hello.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (ArithmeticException e) {
+        }
+    }
+}
+// prints hello</pre>
+<p>Second: catch (Exception e) — no problem, valid, answer hello.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (Exception e) {
+        }
+    }
+}
+// prints hello</pre>
+<p>Third: java.io.IOException — he does not write import; uses fully qualified name. Observe the CE: exception java.io.IOException is never thrown in body of corresponding try statement.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (java.io.IOException e) {
+        }
+        // CE: exception java.io.IOException is never thrown
+        //     in body of corresponding try statement
+    }
+}</pre>
+<p>Fourth: InterruptedException — same problem: exception java.lang.InterruptedException is never thrown in body of corresponding try statement.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (InterruptedException e) {
+        }
+        // CE: exception java.lang.InterruptedException is never thrown
+        //     in body of corresponding try statement
+    }
+}</pre>
+<p>Fifth: catch (Error e) — perfectly valid, no problem. Answer hello.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;hello&quot;);
+        } catch (Error e) {
+        }
+    }
+}
+// prints hello</pre>
+<p>Make sure you have clear clarity. Take all five. Focus first, then second, then third — total “snake” of five on the board.</p>
+<h3>1:34:21 — Board-copy time: “these are various loopholes related to `throws`”</h3>
+<p>Take all these five. That’s all — various loopholes related to throws keyword. Long music while the room copies (about 1:34–1:36).</p>
+<h3>1:36:26 — Recap while they copy: five examples, four buckets</h3>
+<p>All four cases; five examples to take. He repeats the two CE messages on the board:</p>
+<p>exception java.io.IOException is never thrown in body of corresponding try statement
+exception java.lang.InterruptedException is never thrown in body of corresponding try statement</p>
+<p>And the buckets he wants on the page: checked, partially checked, fully checked, and unchecked.</p>
+<p>More music. Catch InterruptedException — fully checked. Same CE for IOException again.</p>
+<h3>1:39:10 — Last line of the video</h3>
+<p>That’s all. Last example also — only compile-time error we are going to get in only two cases. Music out. Video ends (~1:39:17 of 1:39:31).</p>
+<p>He never returns to `throw` vs `throws` in this part; that comparison is left for a later session.</p>
+<h3>Board recap (his own summary, not a generic list)</h3>
+<ol><li>If a checked exception can rise: handle with try-catch or `throws`, else unreported exception X must be caught or declared to be thrown.</li></ol>
+<ol><li>throws delegates handling to the caller (next method or JVM).</li></ol>
+<ol><li>Required only for checked; unchecked throws has no impact.</li></ol>
+<ol><li>Exists only to convince the compiler; does not prevent abnormal termination → prefer try-catch.</li></ol>
+<ol><li>In a call chain, every level must throws (or catch); throws only on main is not enough if lower methods never delegate.</li></ol>
+<ol><li>throws on methods and constructors, not on classes.</li></ol>
+<ol><li>throws only for Throwable types (incompatible types otherwise).</li></ol>
+<ol><li>throw new Exception() → CE (checked). throw new Error() → compiles, then RE.</li></ol>
+<ol><li>Catch of a fully checked type is illegal if try cannot throw it: exception X is never thrown in body of corresponding try statement. Unchecked and partially checked (Exception) do not get that CE.</li></ol>
+<p>` ```java ` block count: 71</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 76 of 203</td></tr>
+<tr><td>Series</td><td>Exception Handling · Part 6</td></tr>
+<tr><td>Topic</td><td>throws keyword</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 39m 31s</td></tr>
+<tr><td>Video ID</td><td>ogOy-dU8AmY</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=ogOy-dU8AmY</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Catch type</th><th>Kind (as he classifies here)</th><th>try is only println(&quot;hello&quot;)</th></tr>
+<tr><td>ArithmeticException</td><td>unchecked</td><td>valid, prints hello</td></tr>
+<tr><td>Exception</td><td>partially checked</td><td>valid, prints hello</td></tr>
+<tr><td>IOException</td><td>fully checked</td><td>CE: never thrown in body of corresponding try</td></tr>
+<tr><td>InterruptedException</td><td>fully checked</td><td>CE: never thrown in body of corresponding try</td></tr>
+<tr><td>Error</td><td>unchecked</td><td>valid, prints hello</td></tr>
+</table>
+</body></html>

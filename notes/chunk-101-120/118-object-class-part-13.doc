@@ -1,0 +1,239 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>118-object-class-part-13</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 118</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: java.lang.package Part-13 || object class || clone()</p>
+<h3>00:07 — Transition from `equals()` to `clone()`</h3>
+<p>Previous session spent ~3 hours on equals() alone. This session: `clone()` method and cloning concepts.</p>
+<h3>00:48 — What is cloning? (real-world analogy)</h3>
+<ul><li>Cloning = process of creating an exact duplicate (Xerox copy) of an object/person.</li></ul>
+<ul><li>Real-world human cloning: scientists explored it in the late 1990s; advantages &lt; disadvantages → governments banned human cloning (severe punishment in lecture narrative).</li></ul>
+<ul><li>Cloning Java objects is legal — no need to worry.</li></ul>
+<p>Definition (board):</p>
+<p>The process of creating an exactly duplicate object is called cloning.</p>
+<h3>04:01 — Purpose of cloning (two main reasons)</h3>
+<ol><li>Maintain backup copy — like keeping a Xerox of SCJP notes or a color photocopy of driving license/PAN instead of carrying originals. Perform risky operations on the copy; if something goes wrong, recover from the original.</li></ol>
+<ol><li>Preserve state of an object at a particular instant — perform updates on a duplicate, then compare updated values with original values later. If you mutate the only original, initial values are lost.</li></ol>
+<p>Summary:</p>
+<p>Main purposes: backup copy + preserve original state for later comparison.</p>
+<h3>06:04 — Real-life backup examples (license, PAN, notes)</h3>
+<p>Durga Sir extends purpose with everyday examples:</p>
+<ul><li>SCJP notes: keep original safe; use Xerox copy daily — if duplicate lost, take another Xerox from original.</li></ul>
+<ul><li>Driving license / PAN / voter ID: never carry originals in pocket; use color Xerox — original stays secured.</li></ul>
+<ul><li>Same idea in code: clone before risky mutation so you can recover from pristine copy.</li></ul>
+<h3>09:58 — How to clone: `Object.clone()` prototype</h3>
+<p>clone() lives in `Object` class (continuing Object-class method series).</p>
+<p>Complete prototype (must know for exam):</p>
+<p>protected native Object clone() throws CloneNotSupportedException;</p>
+<h3>14:46 — First program skeleton: `class Test` — duplicate reference ≠ cloning</h3>
+<pre class='code'>class Test {
+    int i = 10;
+    int j = 20;
+
+    public static void main(String[] args) throws CloneNotSupportedException {
+        Test t1 = new Test();   // i=10, j=20
+
+        // WRONG — NOT cloning:
+        // Test t2 = t1;         // duplicate REFERENCE only; changes to t2 affect t1
+
+        Test t2 = (Test) t1.clone();  // exactly duplicate OBJECT
+
+        t2.i = 38;
+        t2.j = 39;
+
+        System.out.println(t1.i + &quot;...&quot; + t1.j);  // 10...20 — original unchanged
+    }
+}</pre>
+<p>Key distinction:</p>
+<p>Creating duplicate reference variable (t2 = t1) is NOT cloning.</p>
+<p>Creating duplicate object (clone()) IS cloning.</p>
+<h3>18:51 — Compile fixes required for `clone()` demo</h3>
+<p>Three issues when writing Test t2 = (Test) t1.clone():</p>
+<ol><li>Return type `Object` → need cast: (Test) t1.clone()</li></ol>
+<ul><li>Without cast: incompatible types: found java.lang.Object, required Test</li></ul>
+<ol><li>`CloneNotSupportedException` is checked → throws CloneNotSupportedException on main (or try/catch)</li></ol>
+<ol><li>`Cloneable` marker interface — see below (runtime, not compile)</li></ol>
+<h3>21:59 — `Cloneable` interface: compile succeeds without it; runtime fails</h3>
+<p>Surprise: Code compiles even if Test does not implement Cloneable.</p>
+<p>At runtime without Cloneable:</p>
+<p>Exception in thread &quot;main&quot; java.lang.CloneNotSupportedException: Test</p>
+<p>Rules:</p>
+<ul><li>Cloning allowed only for clonable objects.</li></ul>
+<ul><li>An object is clonable iff its class implements `Cloneable`.</li></ul>
+<ul><li>Cloneable is in `java.lang` package.</li></ul>
+<ul><li>Cloneable has zero methods → marker interface (like Serializable pattern, but Cloneable is in java.lang not java.io).</li></ul>
+<p>Do not confuse: Cloneable does NOT declare clone() — clone() is in `Object`, not in Cloneable. (Unlike Runnable which declares run().)</p>
+<p>Fix:</p>
+<pre class='code'>class Test implements Cloneable {
+    // ...
+}</pre>
+<p>After implements Cloneable: compiles and runs; output `10...20`.</p>
+<h3>31:24 — Board theory: cloning rules summary</h3>
+<ul><li>We can perform cloning only for clonable objects.</li></ul>
+<ul><li>Object is clonable if and only if class implements `Cloneable` (java.lang).</li></ul>
+<ul><li>Cloneable = marker interface (no methods).</li></ul>
+<ul><li>Cloning non-clonable object → runtime CloneNotSupportedException (not compile error).</li></ul>
+<p>While using `clone()` take care of:</p>
+<ol><li>Type casting (TargetType) obj.clone()</li></ol>
+<ol><li>throws CloneNotSupportedException or try/catch</li></ol>
+<ol><li>Class must implement Cloneable</li></ol>
+<h3>28:00 — Live compile-error walkthrough (step by step)</h3>
+<p>Durga Sir saves Test.java without Cloneable and demonstrates compiler messages in order:</p>
+<ol><li>Without cast: Test t2 = t1.clone();</li></ol>
+<p>→ incompatible types: found java.lang.Object, required Test</p>
+<ol><li>After cast, without throws:</li></ol>
+<p>→ unreported exception CloneNotSupportedException; must be caught or declared to be thrown</p>
+<ol><li>After `throws CloneNotSupportedException`, still no `Cloneable`:</li></ol>
+<p>→ compiles; `java Test` throws CloneNotSupportedException: Test</p>
+<ol><li>Add `implements Cloneable`:</li></ol>
+<p>→ runs; prints `10...20`</p>
+<p>Students asked “will it compile without Cloneable?” — answer: yes compile, no run.</p>
+<h3>34:58 — Shallow cloning vs deep cloning (advanced topic)</h3>
+<p>Most students do not know this — Durga Sir marks it as very important.</p>
+<p>Scenario: Dog object with:</p>
+<ul><li>primitive i = 10</li></ul>
+<ul><li>reference Cat c pointing to a Cat with j = 20</li></ul>
+<p>Dog d1;  // i=10, c → Cat(j=20)
+Dog d2 = (Dog) d1.clone();</p>
+<h4>Shallow cloning (`Object.clone()` default)</h4>
+<ul><li>New Dog object created.</li></ul>
+<ul><li>Primitive `i`: duplicate copy (10 in both).</li></ul>
+<ul><li>Reference `c`: duplicate reference variable pointing to same old `Cat` object — no duplicate Cat.</li></ul>
+<p>Also called bitwise copy of the original object.</p>
+<p>Problem: Change via clone affects original’s contained object:</p>
+<p>d2.i = 38;      // only d2&#x27;s primitive changes
+d2.c.j = 39;    // changes SHARED Cat → d1.c.j also becomes 39</p>
+<p>Object class `clone()` performs shallow cloning only.</p>
+<h4>Deep cloning (programmer responsibility)</h4>
+<ul><li>Duplicate Dog and duplicate contained `Cat` — full independent graph.</li></ul>
+<ul><li>Changes through clone do not affect original’s nested objects.</li></ul>
+<p>If you want deep cloning → override `clone()` and implement duplication manually.</p>
+<h3>49:12 — Shallow cloning live demo: `ShallowCloningDemo`</h3>
+<pre class='code'>class Cat {
+    int j;
+    Cat(int j) { this.j = j; }
+}
+
+class Dog implements Cloneable {
+    int i;
+    Cat c;
+    Dog(Cat c, int i) { this.c = c; this.i = i; }
+
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();   // Object.clone() → shallow
+    }
+}
+
+class ShallowCloningDemo {
+    public static void main(String[] a) throws CloneNotSupportedException {
+        Cat c = new Cat(20);
+        Dog d1 = new Dog(c, 10);
+        System.out.println(d1.i + &quot;...&quot; + d1.c.j);  // 10...20
+
+        Dog d2 = (Dog) d1.clone();
+        d2.i = 38;
+        d2.c.j = 39;
+
+        System.out.println(d1.i + &quot;...&quot; + d1.c.j);  // 10...39 — shared Cat mutated!
+    }
+}</pre>
+<p>Executed output: first line 10...20, second line `10...39` (not 10...20).</p>
+<p>Board conclusion for shallow cloning:</p>
+<p>By using cloned object reference, if we change the contained object, those changes reflect to the main object. Shallow cloning is not complete duplication when reference fields exist.</p>
+<h3>1:03:08 — Shallow cloning theory on board (formal wording)</h3>
+<p>Definition:</p>
+<p>The process of creating bitwise copy of an object is called shallow cloning.</p>
+<p>Rules:</p>
+<ul><li>Main object has primitive fields → duplicate primitives in clone.</li></ul>
+<ul><li>Main object has reference fields → duplicate reference only, pointing to old contained object (no new contained object).</li></ul>
+<p>Default:</p>
+<p>Object class clone() method is meant for shallow cloning only.</p>
+<p>To overcome shared-reference problem → deep cloning.</p>
+<h3>1:05:22 — Deep cloning: override `clone()` — manual object creation</h3>
+<p>Same Cat / Dog structure, but `clone()` builds new nested objects:</p>
+<pre class='code'>class Dog implements Cloneable {
+    int i;
+    Cat c;
+    Dog(Cat c, int i) { this.c = c; this.i = i; }
+
+    public Object clone() throws CloneNotSupportedException {
+        Cat c1 = new Cat(this.c.j);       // NEW Cat with same j
+        Dog d2 = new Dog(c1, this.i);       // NEW Dog
+        return d2;
+    }
+}</pre>
+<p>Demo driver (`DeepCloningDemo`):</p>
+<p>Cat c = new Cat(20);
+Dog d1 = new Dog(c, 10);
+System.out.println(d1.i + &quot;...&quot; + d1.c.j);  // 10...20
+
+Dog d2 = (Dog) d1.clone();
+d2.i = 38;
+d2.c.j = 39;
+
+System.out.println(d1.i + &quot;...&quot; + d1.c.j);  // 10...20 — original intact
+System.out.println(d2.i + &quot;...&quot; + d2.c.j);  // 38...39</p>
+<p>Executed output: 10...20 and 10...20 (both prints for original) — clone changes isolated.</p>
+<p>Deep cloning board definition:</p>
+<p>Process of creating exactly duplicate independent copy including contained objects.</p>
+<p>Responsibility:</p>
+<h3>1:24:59 — Which cloning is best? (thumb rule)</h3>
+<p>Not always deep cloning — deep cloning always is not good practice; that is why JDK provides shallow Object.clone().</p>
+<p>Choose based on situation/requirement — “depends” is the correct mindset.</p>
+<h3>1:29:14 — Session recap</h3>
+<p>Topics covered:</p>
+<ol><li>Definition and purposes of cloning</li></ol>
+<ol><li>`Object.clone()` signature (protected native, checked exception)</li></ol>
+<ol><li>`Cloneable` marker interface</li></ol>
+<ol><li>Duplicate reference vs duplicate object</li></ol>
+<ol><li>Shallow vs deep cloning with Dog/Cat programs and outputs</li></ol>
+<ol><li>When to prefer each type</li></ol>
+<p>Java block count: 8</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP (java.lang package series)</td></tr>
+<tr><td>Position</td><td>118 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP — java.lang package</td></tr>
+<tr><td>Topic</td><td>Object class — clone(), Cloneable, shallow vs deep cloning</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 29m 43s (from transcript)</td></tr>
+<tr><td>Video ID</td><td>L-p-RGTNrZg</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=L-p-RGTNrZg</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Part</th><th>Meaning</th></tr>
+<tr><td>protected</td><td>Callable from subclass / same package (child can invoke on parent’s clone)</td></tr>
+<tr><td>native</td><td>Not implemented in Java — JVM/platform native code</td></tr>
+<tr><td>Return type Object</td><td>Returns duplicate as Object reference</td></tr>
+<tr><td>throws CloneNotSupportedException</td><td>Checked exception — must catch or declare</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>Who implements</th></tr>
+<tr><td>Shallow</td><td>`Object.clone()` (via super.clone())</td></tr>
+<tr><td>Deep</td><td>Programmer — override clone(), create nested copies manually</td></tr>
+</table>
+<table>
+<tr><th>Object shape</th><th>Best choice</th></tr>
+<tr><td>Only primitive instance fields</td><td>Shallow cloning sufficient (Object.clone())</td></tr>
+<tr><td>Contains reference fields (contained objects)</td><td>Deep cloning recommended (custom clone())</td></tr>
+</table>
+</body></html>

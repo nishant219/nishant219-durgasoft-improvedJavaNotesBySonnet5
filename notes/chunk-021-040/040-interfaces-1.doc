@@ -1,0 +1,623 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>040-interfaces-1</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 040 — Interfaces part 1</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-11|| interfaces-1</p>
+<p>ASR decode (Whisper): intra-faces / interfaith / entrapage / hintrafiz / Centrafic / interrupt → interface(s); extents / Extence → extends; intra-year-room / intra-zero / interview-room → interview; YAHZ / YAS → as; Varayakil / varickel → Oracle; servo-tap-i / servuit → Servlet API; Be a people → BEA; Graphical Loser Entrafis / GTI → GUI; CGP → OCJP; Durga Saptan → Durga Soft; upstri / subtract → abstract; Kampal / compulsive → compulsory; Amani → many / any; Vichapta → Which of the following; X stands you y / X X times Y → X extends Y; post-romatum → detailed discussion (autopsy of the topic).</p>
+<p>What this lecture actually covers on the board (this video): agenda → introduction / definitions of interface → declaration + implementation (two classic mistakes) → `extends` vs `implements` (valid + invalid combinations + exam “X extends Y” style). Remaining agenda items (interface methods/variables, naming conflicts, marker interface, adapter classes, interface vs abstract vs concrete) are listed for the series and not finished in this Part-11 video.</p>
+<h2>Detailed notes</h2>
+<h3>00:02 — Agenda: Interfaces</h3>
+<p>Next topic after earlier Declarations / Access Modifiers material: interfaces.</p>
+<p>Board agenda (full series plan he writes):</p>
+<ol><li>Introduction — What is an interface?</li></ol>
+<ol><li>Interface declaration and implementation</li></ol>
+<ol><li>`extends` versus `implements`</li></ol>
+<ol><li>Interface methods (detailed discussion)</li></ol>
+<ol><li>Interface variables (purpose + which modifiers apply)</li></ol>
+<ol><li>Interface naming conflicts</li></ol>
+<ul><li>method naming conflicts</li></ul>
+<ul><li>variable naming conflicts</li></ul>
+<ol><li>Marker interface (very important for interview)</li></ol>
+<ol><li>Adapter classes</li></ol>
+<ol><li>When to go for interface vs abstract class vs concrete class</li></ol>
+<ol><li>Differences between interface and abstract class</li></ol>
+<ol><li>Important conclusions</li></ol>
+<p>He stresses: this is one of the most valuable interview topics — especially marker interface, need of marker interface, can we create our own marker interface, and differences between interface and abstract class.</p>
+<h3>05:17 — Introduction: “Can you define what is an interface?”</h3>
+<p>Interview trap: many people give one definition; the interviewer may be expecting another, and may not be satisfied.</p>
+<p>Common incomplete answers he hears:</p>
+<ul><li>“Collection of only abstract methods”</li></ul>
+<ul><li>“Which contains only abstract methods”</li></ul>
+<p>He says: easy definitions exist, but interviewers often want a fuller answer. He will cover all possible definitions, then give a summary definition so the expected idea is always in your answer.</p>
+<p>Other definitions people have heard / textbooks use:</p>
+<ul><li>Requirement specification</li></ul>
+<ul><li>Contract between client and service provider</li></ul>
+<ul><li>100% pure abstract class</li></ul>
+<p>All of these are valid from different perspectives.</p>
+<h3>07:25 — Definition 1: Service requirement specification (SRS)</h3>
+<p>Definition 1: Any service requirement specification (SRS) is by default considered as an interface.</p>
+<p>He asks for examples so the point sticks.</p>
+<h4>Example 1 — JDBC API</h4>
+<p>As per JDBC learning:</p>
+<ul><li>JDBC API acts as a requirement specification to develop a database driver.</li></ul>
+<ul><li>Who implements it? The database vendor.</li></ul>
+<pre class='code'>// Conceptual: JDBC API = requirement specification (interfaces)
+// Vendor classes implement that API → “driver”
+
+interface Connection {
+    // methods required by JDBC specification (simplified)
+    void close();
+}
+
+// Oracle people implement JDBC API → Oracle driver
+class OracleConnection implements Connection {
+    public void close() { /* Oracle-specific */ }
+}
+
+// MySQL people implement JDBC API → MySQL driver
+class MysqlConnection implements Connection {
+    public void close() { /* MySQL-specific */ }
+}
+
+// IBM / DB2 people implement JDBC API → DB2 driver
+class Db2Connection implements Connection {
+    public void close() { /* DB2-specific */ }
+}</pre>
+<p>Board points:</p>
+<ul><li>Some people (Sun / Java community) define the JDBC API (interfaces).</li></ul>
+<ul><li>Database vendors are responsible to implement and develop their own driver classes.</li></ul>
+<ul><li>“API” → Application Programming Interface.</li></ul>
+<ul><li>Any requirement specification by default considered as an interface.</li></ul>
+<pre class='code'>// Board idea in one line (not real JDBC types — teaching sketch)
+interface JdbcApi {
+    // SRS to develop database drivers
+}</pre>
+<h3>13:25 — Example 2 — Servlet API</h3>
+<p>Same pattern for web servers:</p>
+<ul><li>Servlet API = requirement specification to develop a web server.</li></ul>
+<ul><li>Who implements? Web server vendor.</li></ul>
+<pre class='code'>// Conceptual Servlet API as SRS for web servers
+interface Servlet {
+    void service();
+}
+
+// Apache implements → Tomcat server
+class TomcatServletContainer implements Servlet {
+    public void service() { /* Tomcat */ }
+}
+
+// BEA (later Oracle) implements → WebLogic
+// (application server contains an inbuilt web server that implements Servlet API)
+class WeblogicServletContainer implements Servlet {
+    public void service() { /* WebLogic web container */ }
+}
+
+// IBM implements → WebSphere
+class WebsphereServletContainer implements Servlet {
+    public void service() { /* WebSphere */ }
+}</pre>
+<p>Portability story he tells:</p>
+<ul><li>Deploy web app on Tomcat → works.</li></ul>
+<ul><li>Redeploy same app on WebLogic → works.</li></ul>
+<ul><li>Redeploy on WebSphere → works.</li></ul>
+<p>Why? All vendors implement the same common requirement specification (Servlet API).</p>
+<pre class='code'>// Client app depends on the interface (SRS), not one vendor
+class MyWebApp {
+    void handle(Servlet container) {
+        container.service();
+    }
+}</pre>
+<p>Definition 1 restated: Any requirement specification by default is considered as an interface.</p>
+<h3>18:33 — Definition 2: Contract between client and service provider</h3>
+<p>Story on board:</p>
+<ul><li>A client (college) wants a college automation system.</li></ul>
+<ul><li>Services expected: getAttendance, getMarks, updateMarks, … (say ~100 services).</li></ul>
+<ul><li>That set of expected services = requirement specification = interface from the client’s point of view.</li></ul>
+<ul><li>A service provider says “I will implement all your requirements,” signs the contract, implements.</li></ul>
+<pre class='code'>// From client POV: interface = set of services expected
+interface CollegeAutomation {
+    void getAttendance();
+    void getMarks();
+    void updateMarks();
+    // ... more services from SRS
+}
+
+// From service provider POV: interface = set of services offering
+class CollegeAutomationImpl implements CollegeAutomation {
+    public void getAttendance() { /* ... */ }
+    public void getMarks() { /* ... */ }
+    public void updateMarks() { /* ... */ }
+}</pre>
+<p>Two perspectives:</p>
+<p>Definition 2: Any contract between client and service provider is by default considered as an interface.</p>
+<p>Classroom analogy:</p>
+<ul><li>You pay fee for OCJP course (~20 topics).</li></ul>
+<ul><li>Contract: institute must cover those topics.</li></ul>
+<ul><li>If only 10 topics taught → contract not followed → you may not accept.</li></ul>
+<pre class='code'>// Teaching analogy as code shape
+interface OcjpCourse {
+    void topic1();
+    void topic2();
+    // ... about 20 topics in the contract
+}
+
+class DurgaSoftBatch implements OcjpCourse {
+    public void topic1() { /* must provide */ }
+    public void topic2() { /* must provide */ }
+    // leaving topics unimplemented breaks the &quot;contract&quot;
+}</pre>
+<h3>24:15 — ATM GUI screen analogy (same Definition 2)</h3>
+<p>Bank ATM GUI (Graphical User Interface) screen shows:</p>
+<ul><li>Withdraw</li></ul>
+<ul><li>Mini statement</li></ul>
+<ul><li>Balance enquiry</li></ul>
+<ul><li>…</li></ul>
+<p>That GUI screen:</p>
+<ul><li>Represents services the customer expects</li></ul>
+<ul><li>At the same time represents services the bank is offering</li></ul>
+<ul><li>Hence it is the contract between customer and bank → interface idea</li></ul>
+<pre class='code'>// ATM GUI as contract (conceptual)
+interface AtmServices {
+    void withdraw();
+    void miniStatement();
+    void balanceEnquiry();
+}
+
+class BankAtm implements AtmServices {
+    public void withdraw() { /* counting, debit, cash */ }
+    public void miniStatement() { /* ... */ }
+    public void balanceEnquiry() { /* ... */ }
+}</pre>
+<p>Story 1 — withdraw fails mid-request but account debited:</p>
+<ul><li>Customer complains; bank is responsible because withdraw is a service they offer.</li></ul>
+<ul><li>Typical response: money credited back within 24 hours / contact home branch.</li></ul>
+<p>Story 2 — customer leaves cash cover on ATM machine for “deposit”:</p>
+<ul><li>If ATM does not offer deposit, bank is not responsible for that assumed service.</li></ul>
+<ul><li>Only offered services are in the contract; problems in those services → bank must fix.</li></ul>
+<pre class='code'>// Deposit is NOT in the contract → not part of interface
+interface AtmServicesNoDeposit {
+    void withdraw();
+    void miniStatement();
+    void balanceEnquiry();
+    // no deposit() — customer cannot claim that service
+}</pre>
+<p>Board conclusion: Through ATM GUI, bank highlights services offered; same screen shows what customer expects → contract → interface.</p>
+<h3>32:03 — Definition 3: 100% pure abstract class</h3>
+<p>Inside an interface, every method is always abstract (whether we declare abstract or not — in classic / pre-Java-8 board terms he teaches here).</p>
+<p>Hence:</p>
+<ul><li>Interface is also considered a 100% pure abstract class.</li></ul>
+<ul><li>Textbooks sometimes write: “100% pure abstract class is nothing but interface.”</li></ul>
+<pre class='code'>// Every method abstract (classic interface model on this board)
+interface Interf {
+    void m1(); // implicitly public abstract
+    void m2(); // implicitly public abstract
+}
+
+// Same idea as a 100% abstract class (illustration only)
+abstract class PureAbstract {
+    public abstract void m1();
+    public abstract void m2();
+}</pre>
+<h3>33:54 — Why a summary definition? (interview mismatch)</h3>
+<p>If you answer only Definition 1 and interviewer expects Definition 3 → may not be convinced (and vice versa).</p>
+<p>Summary definition to always use:</p>
+<p>Any service requirement specification,</p>
+<p>or any contract between client and service provider,</p>
+<p>or 100% pure abstract class</p>
+<p>is nothing but an interface.</p>
+<pre class='code'>/*
+ * Interview summary (say this):
+ * Interface =
+ *   SRS (service requirement specification)
+ *   OR contract between client &amp; service provider
+ *   OR 100% pure abstract class
+ */
+interface SummaryMeaning {
+    void service();
+}</pre>
+<h3>36:53 — Interface declaration and implementation</h3>
+<p>How to declare an interface and how to implement it.</p>
+<pre class='code'>interface Interf {
+    void m1();
+    void m2();
+}</pre>
+<p>Client has two required services (m1, m2). A service provider class tries to implement:</p>
+<pre class='code'>// FIRST WRONG ATTEMPT on board
+class ServiceProvider implements Interf {
+    void m1() {
+        // only m1 — incomplete / wrong modifiers
+    }
+}</pre>
+<p>Is this a valid way of implementing? No.</p>
+<p>He asks: How many mistakes? Every mistake is an important conclusion.</p>
+<p>Answer: two mistakes → two compile-time errors.</p>
+<h3>39:35 — Mistake 1: must implement every method (or declare class abstract)</h3>
+<p>If a class implements an interface, for each and every method of that interface the class must provide implementation.</p>
+<p>Otherwise:</p>
+<ul><li>Declare the class as `abstract`, and</li></ul>
+<ul><li>Next-level child classes must provide remaining implementations.</li></ul>
+<pre class='code'>interface Interf {
+    void m1();
+    void m2();
+}
+
+// CE: ServiceProvider is not abstract and does not override abstract method m2 in Interf
+class ServiceProvider implements Interf {
+    public void m1() {
+    }
+    // missing m2()
+}</pre>
+<p>Correct approach when only some methods are implemented now:</p>
+<pre class='code'>interface Interf {
+    void m1();
+    void m2();
+}
+
+abstract class ServiceProvider implements Interf {
+    public void m1() {
+    }
+    // m2 still abstract — child must implement
+}</pre>
+<h3>40:45 — Mistake 2: implementing method must be `public`</h3>
+<p>Every method present inside an interface is always `public` and `abstract`, whether we declare those keywords or not.</p>
+<p>Implementing an interface method is overriding.</p>
+<p>Overriding rule: cannot reduce the scope of the access modifier.</p>
+<ul><li>Parent (interface) method is public</li></ul>
+<ul><li>Child method must also be public</li></ul>
+<pre class='code'>interface Interf {
+    void m1(); // public abstract by default
+}
+
+// CE: attempting to assign weaker access privileges; was public
+class ServiceProvider implements Interf {
+    void m1() { // default access — weaker than public
+    }
+}</pre>
+<p>Must declare:</p>
+<pre class='code'>interface Interf {
+    void m1();
+}
+
+class ServiceProvider implements Interf {
+    public void m1() { // compulsory public
+    }
+}</pre>
+<h3>42:03 — Live compile demo of the two errors</h3>
+<p>Board file idea: ServiceProvider.java</p>
+<pre class='code'>interface Interf {
+    void m1();
+    void m2();
+}
+
+class ServiceProvider implements Interf {
+    void m1() {
+    }
+}</pre>
+<p>Compile → two CEs:</p>
+<ol><li>ServiceProvider is not abstract and does not override abstract method m2 in Interf</li></ol>
+<ol><li>m1() in ServiceProvider cannot implement m1() in Interf; attempting to assign weaker access privileges; was public</li></ol>
+<p>After declaring class abstract:</p>
+<pre class='code'>interface Interf {
+    void m1();
+    void m2();
+}
+
+abstract class ServiceProvider implements Interf {
+    void m1() {
+    }
+}</pre>
+<p>Now one remaining CE: weaker access on m1 — fix by public:</p>
+<pre class='code'>interface Interf {
+    void m1();
+    void m2();
+}
+
+abstract class ServiceProvider implements Interf {
+    public void m1() {
+    }
+}</pre>
+<p>Compiles. Who implements m2? Next child class.</p>
+<h3>44:01 — Child class must implement remaining abstract methods</h3>
+<pre class='code'>interface Interf {
+    void m1();
+    void m2();
+}
+
+abstract class ServiceProvider implements Interf {
+    public void m1() {
+    }
+}
+
+// CE: SubServiceProvider is not abstract and does not override abstract method m2 in Interf
+class SubServiceProvider extends ServiceProvider {
+}</pre>
+<p>Fix:</p>
+<pre class='code'>interface Interf {
+    void m1();
+    void m2();
+}
+
+abstract class ServiceProvider implements Interf {
+    public void m1() {
+    }
+}
+
+class SubServiceProvider extends ServiceProvider {
+    public void m2() {
+    }
+}</pre>
+<p>Valid — no problem.</p>
+<h3>45:26 — Two rules to remember (repeat)</h3>
+<p>Rule 1: Whenever implementing an interface, for each and every method provide implementation; otherwise declare the class abstract and let the next-level child provide remaining methods.</p>
+<p>Rule 2: Every interface method is always public and abstract (whether declared or not). Whenever implementing an interface method, compulsory declare it public; otherwise compile-time error.</p>
+<pre class='code'>// Final board example (highlighted abstract + public)
+interface Interf {
+    void m1();
+    void m2();
+}
+
+abstract class ServiceProvider implements Interf {
+    public void m1() {
+    }
+}
+
+class SubServiceProvider extends ServiceProvider {
+    public void m2() {
+    }
+}
+// Same hierarchy — empty bodies as on board
+interface Interf {
+    void m1();
+    void m2();
+}
+
+abstract class ServiceProvider implements Interf {
+    public void m1() { }
+}
+
+class SubServiceProvider extends ServiceProvider {
+    public void m2() { }
+}</pre>
+<h3>51:42 — `extends` versus `implements`</h3>
+<p>Seems simple; many people still get confused — take special care.</p>
+<p>Valid combinations he builds one by one:</p>
+<h4>1) A class can extend only one class at a time</h4>
+<pre class='code'>class A { }
+class B { }
+
+// valid: one superclass
+class C extends A { }
+
+// CE: class cannot extend multiple classes
+// class D extends A, B { }</pre>
+<h4>2) An interface can extend any number of interfaces simultaneously</h4>
+<p>Java supports multiple inheritance for interfaces because of this.</p>
+<p>interface A { }
+interface B { }
+
+// perfectly valid
+interface C extends A, B { }</p>
+<p>interface A { }
+interface B { }
+interface D { }
+
+interface C extends A, B, D { }</p>
+<h4>3) A class can implement any number of interfaces simultaneously</h4>
+<p>interface A { }
+interface B { }
+interface C { }
+
+class Test implements A, B, C {
+}</p>
+<h4>4) A class can extend another class **and** implement interfaces at the same time</h4>
+<pre class='code'>class B { }
+interface C { }
+interface D { }
+interface E { }
+
+// valid: extends first, then implements
+class A extends B implements C, D, E {
+}
+class Parent { }
+interface I1 { }
+interface I2 { }
+
+class Child extends Parent implements I1, I2 {
+}</pre>
+<h3>54:29 — Board summary of four valid points</h3>
+<ol><li>A class can extend only one class at a time.</li></ol>
+<ol><li>An interface can extend any number of interfaces simultaneously.</li></ol>
+<ol><li>A class can implement any number of interfaces simultaneously.</li></ol>
+<ol><li>A class can extend another class and implement any number of interfaces simultaneously.</li></ol>
+<pre class='code'>// Point 2 demo again with tick mark on board
+interface A { }
+interface B { }
+interface C extends A, B { } // valid
+// Point 4 demo
+class B { }
+interface C { }
+interface D { }
+interface E { }
+class A extends B implements C, D, E { } // valid</pre>
+<h3>58:03 — BIT / MCQ: invalid combinations (“Which of the following is valid?”)</h3>
+<p>He flips to invalid statements (exam BIT style). All of these are false / invalid:</p>
+<p>1. A class can extend any number of classes at a time → Invalid</p>
+<pre class='code'>class A { }
+class B { }
+// CE: cannot extend two classes
+// class C extends A, B { }</pre>
+<p>2. A class can implement only one interface at a time → Invalid</p>
+<p>(because a class can implement any number)</p>
+<p>interface I1 { }
+interface I2 { }
+class Test implements I1, I2 { } // valid — counters the false claim</p>
+<p>3. An interface can extend only one interface at a time → Invalid</p>
+<p>(because an interface can extend any number)</p>
+<p>interface A { }
+interface B { }
+interface C extends A, B { } // valid — counters the false claim</p>
+<p>4. An interface can implement … → Invalid</p>
+<p>(Interfaces extend other interfaces; they do not implement)</p>
+<p>interface A { }
+// CE: interface cannot implement
+// interface B implements A { }
+interface B extends A { } // correct form</p>
+<p>5. A class can extend another class or implement an interface but not both simultaneously → Invalid</p>
+<p>(because both together are allowed)</p>
+<pre class='code'>class B { }
+interface C { }
+class A extends B implements C { } // valid — counters the false claim</pre>
+<p>6. None of the above → this is the correct choice for “which is true,” because all listed “valid” claims above were actually invalid, and he already covered the real valid combinations separately.</p>
+<h3>1:01:42 — Exam pattern: `X extends Y`</h3>
+<p>Expression:</p>
+<pre class='code'>// Consider: X extends Y</pre>
+<p>For which possibilities of X and Y is the expression valid?</p>
+<p>Reasoning:</p>
+<pre class='code'>// both classes — valid
+class Y { }
+class X extends Y { }
+// both interfaces — valid
+interface Y { }
+interface X extends Y { }
+// mixed — NOT valid for extends
+class Y { }
+// CE: interface cannot extend a class
+// interface X extends Y { }
+
+interface Y2 { }
+// CE: class cannot extend an interface (use implements)
+// class X2 extends Y2 { }</pre>
+<p>So: both X and Y can be either classes or interfaces (same kind).</p>
+<h3>1:06:30 — More `extends` / `implements` possibility questions</h3>
+<p>He writes several expressions and asks what X, Y, Z must be.</p>
+<h4>Possibility: `X extends Y, Z`</h4>
+<pre class='code'>// Valid only when X, Y, Z are interfaces
+interface Y { }
+interface Z { }
+interface X extends Y, Z { }
+// CE if X is a class — class cannot extend multiple types
+class Yc { }
+class Zc { }
+// class Xc extends Yc, Zc { }</pre>
+<p>Answer: X, Y, Z should be interfaces.</p>
+<h4>Possibility: `X implements Y, Z`</h4>
+<p>interface Y { }
+interface Z { }
+
+class X implements Y, Z {
+}</p>
+<p>Answer: X should be a class; Y and Z should be interfaces.</p>
+<pre class='code'>// CE: interface cannot implement
+// interface X implements Y, Z { }</pre>
+<h4>Possibility: `X extends Y implements Z`</h4>
+<pre class='code'>class Y { }
+interface Z { }
+
+class X extends Y implements Z {
+}</pre>
+<p>Answer: X and Y should be classes; Z should be an interface.</p>
+<pre class='code'>class Parent { }
+interface I { }
+class Child extends Parent implements I { }</pre>
+<h4>Possibility: `X implements Y extends Z` — always CE</h4>
+<p>interface Y { }
+class Z { }
+
+// CE: extends must come before implements
+// class X implements Y extends Z { }</p>
+<p>Rule: If you use both extends and implements, compulsory order is:</p>
+<ol><li>`extends` first</li></ol>
+<ol><li>then `implements`</li></ol>
+<pre class='code'>class Z { }
+interface Y { }
+
+// correct order
+class X extends Z implements Y {
+}
+
+// wrong order — CE
+// class X implements Y extends Z { }</pre>
+<h3>1:09:36 — Recap of all possibilities (end of video)</h3>
+<p>He asks to revise clearly:</p>
+<pre class='code'>// Recap pack — all valid forms together
+interface I1 { }
+interface I2 { }
+interface I3 extends I1, I2 { }
+
+class C1 { }
+class C2 extends C1 { }
+
+class C3 extends C1 implements I1, I2 { }
+// Invalid forms to recognize in exam
+// class Bad1 extends C1, C2 { }
+// interface Bad2 implements I1 { }
+// class Bad3 implements I1 extends C1 { }</pre>
+<h3>1:10:18 — Closing</h3>
+<p>This video completes:</p>
+<ol><li>What is an interface (3 definitions + summary)</li></ol>
+<ol><li>Declaration and implementation (two rules / two mistakes)</li></ol>
+<ol><li>extends versus implements (valid, invalid, exam expressions)</li></ol>
+<p>Remaining agenda items (interface methods in depth, variables, naming conflicts, marker interface, adapter classes, vs abstract/concrete) continue in later Parts.</p>
+<h2>Quick revision sheet</h2>
+<p>Summary definition: SRS or client–service-provider contract or 100% pure abstract class → interface.</p>
+<p>Implement rules:</p>
+<ol><li>Implement all methods, or declare class abstract.</li></ol>
+<ol><li>Implemented methods must be `public`.</li></ol>
+<p>extends / implements:</p>
+<ul><li>class extends one class</li></ul>
+<ul><li>interface extends many interfaces</li></ul>
+<ul><li>class implements many interfaces</li></ul>
+<ul><li>class may extends + implements together (extends first)</li></ul>
+<p>```java block count: 51</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 40 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 11</td></tr>
+<tr><td>Topic</td><td>interfaces-1</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 11m 33s</td></tr>
+<tr><td>Video ID</td><td>sEH6BDCS3do</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=sEH6BDCS3do</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Perspective</th><th>Interface means</th></tr>
+<tr><td>Client</td><td>Set of services expected</td></tr>
+<tr><td>Service provider</td><td>Set of services offering</td></tr>
+</table>
+<table>
+<tr><th>Option</th><th>Claim</th><th>Verdict</th></tr>
+<tr><td>1</td><td>Both X and Y should be classes</td><td>Incomplete / wrong as “the” answer — interfaces also work</td></tr>
+<tr><td>2</td><td>Both X and Y should be interfaces</td><td>Incomplete — classes also work</td></tr>
+<tr><td>3</td><td>Both X and Y can be either classes or interfaces</td><td>Correct</td></tr>
+<tr><td>4</td><td>No restrictions</td><td>Wrong</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>What X / Y / Z must be</th></tr>
+<tr><td>X extends Y</td><td>Both classes, or both interfaces</td></tr>
+<tr><td>X extends Y, Z</td><td>All interfaces</td></tr>
+<tr><td>X implements Y, Z</td><td>X class; Y, Z interfaces</td></tr>
+<tr><td>X extends Y implements Z</td><td>X, Y classes; Z interface</td></tr>
+<tr><td>X implements Y extends Z</td><td>Always CE — wrong keyword order</td></tr>
+</table>
+</body></html>

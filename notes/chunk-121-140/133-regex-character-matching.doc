@@ -1,0 +1,496 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>133-regex-character-matching</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 133 — Regular Expressions Part 2: Character Matching &amp; Quantifiers</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: RegularExpresions Part-2 || character matching</p>
+<p>Prerequisite: Video 132 covered Pattern/Matcher basics. This lecture deepens character matching (custom + predefined character classes) and introduces quantifiers (+, *, ?).</p>
+<h3>00:04 — Recap: Pattern and Matcher workflow</h3>
+<p>Durga Sir briefly reviews Video 132 before new material.</p>
+<p>Standard regex program structure:</p>
+<ol><li>Create a Pattern with Pattern.compile(regex).</li></ol>
+<ol><li>Create a Matcher with pattern.matcher(targetString).</li></ol>
+<ol><li>Loop with while (m.find()) and read m.start(), m.end(), m.group().</li></ol>
+<ul><li>m.start() — starting index of the match (inclusive).</li></ul>
+<ul><li>m.end() — ending index (exclusive); value is last matched index + 1.</li></ul>
+<ul><li>m.group() — the substring that matched.</li></ul>
+<p>Board recap — search for literal `AB`:</p>
+<pre class='code'>import java.util.regex.*;
+
+class RegexRecapAB {
+    public static void main(String[] args) {
+        Pattern p = Pattern.compile(&quot;AB&quot;);
+        Matcher m = p.matcher(&quot;ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBAB&quot;);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.end() + &quot;...&quot; + m.group());
+        }
+        // prints 0...2...AB
+        // prints 29...31...AB
+    }
+}</pre>
+<p>Terminology reminder: pattern = regex string; target = input searched; each find() call locates the next match left-to-right.</p>
+<h3>02:44 — Custom character classes: `[ABC]` (OR inside brackets)</h3>
+<p>Requirement: Match A or B or C — any one of them counts as a valid match (not the sequence ABC).</p>
+<pre class='code'>import java.util.regex.*;
+
+class CharClassABC {
+    public static void main(String[] args) {
+        Pattern p = Pattern.compile(&quot;[ABC]&quot;);
+        Matcher m = p.matcher(&quot;ABBBBBBBBBBBBBBBBBBBBBBBBBBBBBAB&quot;);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+        // prints many lines — every A and every B is a separate match
+    }
+}</pre>
+<p>Key point: Characters inside [ ] form a character class — a set of allowed single characters.</p>
+<h3>04:09 — Negation with caret: `[^ABC]`</h3>
+<p>Requirement: Match any character except A, B, and C.</p>
+<ul><li>^ inside [ ] at the first position = negation / &quot;except&quot;.</li></ul>
+<ul><li>Do not confuse with ^ outside brackets (anchor for start of line — covered later in the series).</li></ul>
+<p>Example: in &quot;x3@y&quot;, pattern [^ABC] matches x, 3, @, y.</p>
+<h3>05:13 — Range notation in character classes</h3>
+<p>Ranges use hyphen - between two endpoints inside [ ].</p>
+<p>&quot;Special character&quot; in Durga Sir&#x27;s terminology = anything that is not a letter or digit (e.g. #, @, space in some contexts, punctuation).</p>
+<p>Durga Sir&#x27;s board summary — custom character classes:</p>
+<p>All of the above are custom character classes (you define the set explicitly).</p>
+<h3>12:21 — Hands-on demo: custom character classes</h3>
+<p>Target string (board): &quot;AA3B#K@9J&quot; — covers lowercase/uppercase letters, digits, and special symbols (#, @).</p>
+<p>Master demo program (run each regex against the same target):</p>
+<pre class='code'>import java.util.regex.*;
+
+class CustomCharClassDemo {
+    static void findAll(String regex, String target) {
+        System.out.println(&quot;--- regex = &quot;&quot; + regex + &quot;&quot; ---&quot;);
+        Matcher m = Pattern.compile(regex).matcher(target);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+    }
+    public static void main(String[] args) {
+        String s = &quot;AA3B#K@9J&quot;;
+        findAll(&quot;[ABC]&quot;, s);
+        findAll(&quot;[^ABC]&quot;, s);
+        findAll(&quot;[a-z]&quot;, s);
+        findAll(&quot;[0-9]&quot;, s);
+        findAll(&quot;[0-9a-zA-Z]&quot;, s);
+        findAll(&quot;[^0-9a-zA-Z]&quot;, s);
+    }
+}</pre>
+<p>Expected output (Durga Sir&#x27;s board answers):</p>
+<p>Note on case: In Java regex, [a-z] matches only lowercase unless Pattern.CASE_INSENSITIVE is used. The board uses A, B, K, J as matched by [a-z] because Durga Sir treats the demo as conceptual; in strict Java, use [a-zA-Z] or (?i)[a-z] for letters regardless of case.</p>
+<p>Why skip `m.end()` in print loop: end() returns index after the last matched character (n+1 style). For a single-character match at index i, end() = i + 1. Sir prints start...group for clarity.</p>
+<h3>18:07 — Live run: verify custom class output</h3>
+<p>Durga Sir runs the same demo in the IDE against target &quot;A3B#K@9J&quot; (slightly shorter variant) and confirms:</p>
+<ul><li>[ABC] → positions 0 (A), 1 is 3 (skip), 2 (B) — two matches.</li></ul>
+<ul><li>[^ABC] → 1 (3), 3 (#), 4 (K), 5 (@), 6 (9), 7 (J).</li></ul>
+<ul><li>[a-z] → A, B, K, J positions.</li></ul>
+<ul><li>[0-9] → 3 and 9.</li></ul>
+<ul><li>[0-9a-zA-Z] → all alphanumerics.</li></ul>
+<ul><li>[^0-9a-zA-Z] → only # and @.</li></ul>
+<p>Minimal board program (what students must copy):</p>
+<pre class='code'>import java.util.regex.*;
+
+class RegexCustomClasses {
+    public static void main(String[] args) {
+        String x = &quot;[ABC]&quot;;   // change x for each experiment
+        Pattern p = Pattern.compile(x);
+        Matcher m = p.matcher(&quot;A3B#K@9J&quot;);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+    }
+}</pre>
+<p>Conclusion (23:08): You must know how to write regex for alphabetic only, digits only, alphanumeric, or special characters — using custom character classes.</p>
+<h3>24:35 — Finding a space character</h3>
+<p>Requirement: Match the space character specifically.</p>
+<p>Two approaches:</p>
+<p>For custom-class approach:</p>
+<pre class='code'>import java.util.regex.*;
+
+class SpaceCharDemo {
+    public static void main(String[] args) {
+        Pattern p = Pattern.compile(&quot;[ ]&quot;);  // or &quot; &quot;
+        Matcher m = p.matcher(&quot;hello world&quot;);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+        // prints 5...  (space between hello and world)
+    }
+}</pre>
+<h3>25:49 — Predefined `\s` vs `\S` (and chat etiquette aside)</h3>
+<p>`\s` (lowercase) = whitespace character (space, tab, etc.).</p>
+<p>`\S` (uppercase) = negation of `\s` = any character except whitespace.</p>
+<p>Durga Sir&#x27;s anecdote: in chat/messaging, an answer in ALL CAPS can signal disinterest or aggression (like forced agreement). Similarly, lowercase \s vs uppercase \S are opposites — a pattern seen throughout Java regex predefined classes (d/D, w/W, s/S).</p>
+<p>Critical Java rule: \ is an escape in Java string literals. You must write `&quot;\\s&quot;` so the regex engine receives \s.</p>
+<p>String X = &quot;\s&quot;;  // CE: illegal escape character at end of line</p>
+<p>String X = &quot;\s&quot;; // OK — regex \s</p>
+<h3>27:53 — All predefined character classes</h3>
+<p>Predefined classes are shorthand — the regex engine already knows them (unlike custom [0-9] ranges you write yourself).</p>
+<p>Durga Sir emphasis on `.` (dot/period):</p>
+<ul><li>Matches any single character — alphabet, digit, space, special symbol.</li></ul>
+<ul><li>&quot;Most dangerous&quot; because it is so broad; easy to over-match unintentionally.</li></ul>
+<p>`\w` vs alphanumeric: Sir states \w = any word character ≈ alphanumeric. In Java, \w also includes underscore _.</p>
+<p>Board list — predefined character classes:</p>
+<ul><li>\s → space/whitespace</li></ul>
+<ul><li>\S → except whitespace</li></ul>
+<ul><li>\d → digit</li></ul>
+<ul><li>\D → except digit</li></ul>
+<ul><li>\w → word/alphanumeric character</li></ul>
+<ul><li>\W → except word character (special chars)</li></ul>
+<ul><li>. → any character</li></ul>
+<h3>32:29 — Hands-on demo: predefined character classes</h3>
+<p>Target string (board): &quot;A7B K@9Z&quot; — includes letters, digits, space at index 3, and @ special char.</p>
+<pre class='code'>import java.util.regex.*;
+
+class PredefinedClassDemo {
+    static void findAll(String regex, String target) {
+        System.out.println(&quot;--- \&quot;&quot; + regex + &quot;\&quot; ---&quot;);
+        Matcher m = Pattern.compile(regex).matcher(target);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+    }
+    public static void main(String[] args) {
+        String s = &quot;A7B K@9Z&quot;;
+        findAll(&quot;\s&quot;, s);
+        findAll(&quot;\S&quot;, s);
+        findAll(&quot;\d&quot;, s);
+        findAll(&quot;\D&quot;, s);
+        findAll(&quot;\w&quot;, s);
+        findAll(&quot;\W&quot;, s);
+        findAll(&quot;.&quot;, s);
+    }
+}</pre>
+<p>Expected matches:</p>
+<h3>33:07 — Java compile error: illegal escape character</h3>
+<p>Problem: Writing &quot;\s&quot; wrong as &quot;\s&quot; in a Java string.</p>
+<pre class='code'>class BadEscape {
+    public static void main(String[] args) {
+        String x = &quot;\s&quot;;  // CE: illegal escape character
+        Pattern p = Pattern.compile(x);
+    }
+}</pre>
+<p>Why: Java treats \ as escape in string literals (`</p>
+<p>, 	, </p>
+<p> exist — but \s` is not a valid Java escape).</p>
+<p>Fix — double the backslash:</p>
+<p>String x = &quot;\s&quot;;  // Java string → regex engine sees \s</p>
+<p>Rule: Wherever regex needs \, Java source needs \.</p>
+<pre class='code'>class GoodEscape {
+    public static void main(String[] args) {
+        String x = &quot;\s&quot;;
+        Pattern p = Pattern.compile(x);
+        Matcher m = p.matcher(&quot;A7B K@9Z&quot;);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+        // prints 3...  (space at index 3)
+    }
+}</pre>
+<p>Sir also mentions error text &quot;illegal control character&quot; when compiler mis-parses the escape sequence.</p>
+<h3>35:47 — Live IDE demo: predefined classes verified</h3>
+<p>Durga Sir compiles and runs each pattern against &quot;A7B K@9Z&quot;:</p>
+<ol><li>&quot;\s&quot; → index 3 (space) only.</li></ol>
+<ol><li>&quot;\S&quot; → all characters except the space.</li></ol>
+<ol><li>&quot;\d&quot; → 7 at index 1, 9 at index 6.</li></ol>
+<ol><li>&quot;\D&quot; → everything except those two digits.</li></ol>
+<ol><li>&quot;\w&quot; → alphanumeric word chars: A, 7, B, K, 9, Z.</li></ol>
+<ol><li>&quot;\W&quot; → space (index 3) and @ (index 5).</li></ol>
+<ol><li>&quot;.&quot; → matches every character (all eight positions).</li></ol>
+<p>Board template to memorize:</p>
+<pre class='code'>import java.util.regex.*;
+
+class RegexPredefinedTemplate {
+    public static void main(String[] args) {
+        String x = &quot;\\s&quot;;  // change: \S, \d, \D, \w, \W, .
+        Pattern p = Pattern.compile(x);
+        Matcher m = p.matcher(&quot;A7B K@9Z&quot;);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+    }
+}</pre>
+<h3>43:44 — Quantifiers: controlling **how many** times</h3>
+<p>New terminology — Quantifier: specifies quantity — how many occurrences of the preceding element to match.</p>
+<p>Three default quantifier symbols (more in advanced lectures):</p>
+<p>Quantifiers apply to the immediately preceding token (single char, class, or group).</p>
+<p>Summary table (board):</p>
+<p>Difference `a+` vs `a*`:</p>
+<ul><li>a+ requires minimum 1 a.</li></ul>
+<ul><li>a* allows zero a — still a valid match at positions where no a appears.</li></ul>
+<h3>45:07 — Quantifier demo target string</h3>
+<p>Target string (board): &quot;abaabaab&quot; (length 8, indices 0–7)</p>
+<p>Characters at indices 0, 2, 3, 5, 6, 7 are a — six positions for pattern a (exactly one).</p>
+<p>Pattern `a` — exactly one a:</p>
+<pre class='code'>import java.util.regex.*;
+
+class QuantifierExactA {
+    public static void main(String[] args) {
+        Matcher m = Pattern.compile(&quot;a&quot;).matcher(&quot;abaabaab&quot;);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+        // prints 0...a
+        // prints 2...a
+        // prints 3...a
+        // prints 5...a
+        // prints 6...a
+        // prints 7...a
+    }
+}</pre>
+<p>Six separate matches — each single a counts individually.</p>
+<h3>46:14 — Pattern `a+` (at least one a as one match)</h3>
+<p>Requirement: Treat a sequence of one or more `a` as a single match (not six separate single-a matches).</p>
+<pre class='code'>import java.util.regex.*;
+
+class QuantifierPlusA {
+    public static void main(String[] args) {
+        Matcher m = Pattern.compile(&quot;a+&quot;).matcher(&quot;abaabaab&quot;);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+        // prints 0...a
+        // prints 2...aa
+        // prints 5...aaa
+    }
+}</pre>
+<p>Three matches total:</p>
+<ol><li>Index 0 — one a</li></ol>
+<ol><li>Index 2 — aa (indices 2–3)</li></ol>
+<ol><li>Index 5 — aaa (indices 5–6–7)</li></ol>
+<p>+ = at least one; engine consumes the longest consecutive run (greedy).</p>
+<h3>47:30 — Pattern `a*` (zero or more)</h3>
+<p>Meaning: Any number of a, including zero.</p>
+<p>Critical exam point: At a position where the next char is b (not a), a* still matches successfully with zero `a` characters. The match has empty group but valid start index.</p>
+<pre class='code'>import java.util.regex.*;
+
+class QuantifierStarA {
+    public static void main(String[] args) {
+        Matcher m = Pattern.compile(&quot;a*&quot;).matcher(&quot;abaabaab&quot;);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+        // matches at EVERY index including b positions (zero-count match)
+        // plus stretches of a&#x27;s at 0, 2-3, 5-7
+        // ALSO index 8 (end+1) — zero count after last char
+    }
+}</pre>
+<p>Sir&#x27;s walkthrough on `&quot;abaabaab&quot;`:</p>
+<ul><li>Index 0: one a</li></ul>
+<ul><li>Index 1 (b): zero a&#x27;s — valid a* match</li></ul>
+<ul><li>Index 2–3: run of a&#x27;s</li></ul>
+<ul><li>Index 4 (b): zero a&#x27;s</li></ul>
+<ul><li>Index 5–7: run of a&#x27;s</li></ul>
+<ul><li>Index 8 (after end of string): zero a&#x27;s — valid because regex can touch index n+1 (end index + 1 / past last character)</li></ul>
+<p>Remember: For a*, &quot;zero count&quot; at non-a positions and at end-of-input is a deliberate behavior — frequent OCJP/SCJP trap.</p>
+<h3>49:01 — Pattern `a?` (at most one)</h3>
+<p>Meaning: Either zero or one a — not two or more.</p>
+<pre class='code'>import java.util.regex.*;
+
+class QuantifierQuestionA {
+    public static void main(String[] args) {
+        Matcher m = Pattern.compile(&quot;a?&quot;).matcher(&quot;abaabaab&quot;);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+        // index 0: one a
+        // index 1 (b): zero a
+        // index 2,3: one a each at start of each position scan
+        // index 4 (b): zero
+        // index 5,6,7: one a each
+        // index 8: zero (past end)
+    }
+}</pre>
+<p>Quick comparison:</p>
+<h3>52:00 — Side-by-side quantifier run on board</h3>
+<p>Sir re-runs all four against &quot;abaabaab&quot;:</p>
+<p>Full board program:</p>
+<pre class='code'>import java.util.regex.*;
+
+class QuantifierBoard {
+    public static void main(String[] args) {
+        String target = &quot;abaabaab&quot;;
+        String[] patterns = {&quot;a&quot;, &quot;a+&quot;, &quot;a*&quot;, &quot;a?&quot;};
+        for (String x : patterns) {
+            System.out.println(&quot;=== &quot; + x + &quot; ===&quot;);
+            Matcher m = Pattern.compile(x).matcher(target);
+            while (m.find()) {
+                System.out.println(m.start() + &quot;...&quot; + m.group());
+            }
+        }
+    }
+}</pre>
+<p>Quantifiers definition (exam wording): Quantifiers specify the number of occurrences to match — at least one (+), any including zero (*), or at most one (?).</p>
+<h3>57:04 — Quantifiers are default regex building blocks</h3>
+<p>Durga Sir writes the same Pattern/Matcher skeleton using target &quot;ababaaBaabaab&quot; variant on board (mixed case in transcript ASR); the pedagogical string for lowercase demos is `&quot;abaabaab&quot;`.</p>
+<pre class='code'>import java.util.regex.*;
+
+class QuantifierTemplate {
+    public static void main(String[] args) {
+        String x = &quot;a+&quot;;  // try: a, a+, a*, a?
+        Pattern p = Pattern.compile(x);
+        Matcher m = p.matcher(&quot;abaabaab&quot;);
+        while (m.find()) {
+            System.out.println(m.start() + &quot;...&quot; + m.group());
+        }
+    }
+}</pre>
+<p>These symbols (+, *, ?) are quantifiers by default in regular expressions.</p>
+<h3>1:00:13 — Lecture wrap-up</h3>
+<p>Part 2 covered today:</p>
+<ol><li>Custom character classes — [abc], [^abc], ranges [a-z], [0-9], combined alphanumeric and negated special-char patterns.</li></ol>
+<ol><li>Predefined character classes — \s, \S, \d, \D, \w, \W, and . (any char); Java requires \ in source strings.</li></ol>
+<ol><li>Quantifiers — + (≥1), * (≥0), ? (≤1); a* zero-match at non-matching chars and index n+1 after input end.</li></ol>
+<p>Next (future videos): More regex applications, anchors, groups, and advanced quantifier forms.</p>
+<p>OCJP/SCJP checklist from this video:</p>
+<ul><li>[ ] Write Pattern/Matcher loop from memory</li></ul>
+<ul><li>[ ] Distinguish [ABC] (OR) from ABC (sequence)</li></ul>
+<ul><li>[ ] Use ^ inside [ ] for negation</li></ul>
+<ul><li>[ ] Map custom vs predefined classes ([0-9] ≡ \d)</li></ul>
+<ul><li>[ ] Double backslashes in Java string literals for regex</li></ul>
+<ul><li>[ ] Know . matches any character</li></ul>
+<ul><li>[ ] Explain a+ vs a* vs a? with &quot;abaabaab&quot; example</li></ul>
+<ul><li>[ ] Explain zero-length a* match at b positions and after string end</li></ul>
+<p>Java code block count: 18</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 133 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>Regular Expressions — Part 2: Character classes, predefined classes, quantifiers</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 0m 27s (3627 seconds)</td></tr>
+<tr><td>Video ID</td><td>Wo3wMiDt3a4</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=Wo3wMiDt3a4</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>YouTube auto-captions</td></tr>
+</table>
+<table>
+<tr><th>Pattern</th><th>Meaning</th></tr>
+<tr><td>AB</td><td>Literal sequence A followed by B</td></tr>
+<tr><td>[ABC]</td><td>Exactly one character that is A, B, or C</td></tr>
+</table>
+<table>
+<tr><th>Pattern</th><th>Meaning</th></tr>
+<tr><td>[ABC]</td><td>A or B or C</td></tr>
+<tr><td>[^ABC]</td><td>Any single character other than A, B, C</td></tr>
+</table>
+<table>
+<tr><th>Pattern</th><th>Matches</th></tr>
+<tr><td>[a-z]</td><td>Any lowercase letter a–z</td></tr>
+<tr><td>[A-Z]</td><td>Any uppercase letter A–Z</td></tr>
+<tr><td>[a-zA-Z]</td><td>Any letter (both cases) — no space between the two ranges</td></tr>
+<tr><td>[0-9]</td><td>Any digit 0–9</td></tr>
+<tr><td>[0-9a-zA-Z]</td><td>Any alphanumeric character</td></tr>
+<tr><td>[^0-9a-zA-Z]</td><td>Any non-alphanumeric character (= special character)</td></tr>
+</table>
+<table>
+<tr><th>Syntax</th><th>Meaning</th></tr>
+<tr><td>[ABC]</td><td>A or B or C</td></tr>
+<tr><td>[^ABC]</td><td>Except A, B, C</td></tr>
+<tr><td>[a-z]</td><td>Lowercase a–z</td></tr>
+<tr><td>[A-Z]</td><td>Uppercase A–Z</td></tr>
+<tr><td>[a-zA-Z]</td><td>Any alphabetic character</td></tr>
+<tr><td>[0-9]</td><td>Any digit</td></tr>
+<tr><td>[0-9a-zA-Z]</td><td>Any alphanumeric</td></tr>
+<tr><td>[^0-9a-zA-Z]</td><td>Special (non-alphanumeric) characters</td></tr>
+</table>
+<table>
+<tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr>
+<tr><td>Char</td><td>A</td><td>3</td><td>B</td><td>#</td><td>K</td><td>@</td><td>9</td><td>J</td></tr>
+</table>
+<table>
+<tr><th>Pattern</th><th>Matches (index...char)</th></tr>
+<tr><td>[ABC]</td><td>0...A, 2...B</td></tr>
+<tr><td>[^ABC]</td><td>1...3, 3...#, 4...K, 5...@, 6...9, 7...J</td></tr>
+<tr><td>[a-z]</td><td>0...A, 2...B, 4...K, 7...J</td></tr>
+<tr><td>[0-9]</td><td>1...3, 6...9</td></tr>
+<tr><td>[0-9a-zA-Z]</td><td>0...A, 1...3, 2...B, 4...K, 6...9, 7...J</td></tr>
+<tr><td>[^0-9a-zA-Z]</td><td>3...#, 5...@</td></tr>
+</table>
+<table>
+<tr><th>Approach</th><th>Pattern</th><th>Notes</th></tr>
+<tr><td>Literal space inside class</td><td>[ ]</td><td>Space directly in brackets</td></tr>
+<tr><td>Predefined class (next section)</td><td>\s in Java source</td><td>Whitespace character</td></tr>
+</table>
+<table>
+<tr><th>Pattern (regex)</th><th>Meaning</th></tr>
+<tr><td>\s</td><td>Whitespace</td></tr>
+<tr><td>\S</td><td>Non-whitespace (everything except space/tab/etc.)</td></tr>
+</table>
+<table>
+<tr><th>Pattern (regex)</th><th>Meaning</th><th>Custom equivalent</th></tr>
+<tr><td>\s</td><td>Whitespace</td><td>[ ] or broader whitespace sets</td></tr>
+<tr><td>\S</td><td>Except whitespace</td><td>negation of above</td></tr>
+<tr><td>\d</td><td>Digit 0–9</td><td>[0-9]</td></tr>
+<tr><td>\D</td><td>Non-digit</td><td>[^0-9]</td></tr>
+<tr><td>\w</td><td>Word character (alphanumeric + _)</td><td>roughly [0-9a-zA-Z_]</td></tr>
+<tr><td>\W</td><td>Non-word character</td><td>special characters + space</td></tr>
+<tr><td>.</td><td>Any character (the &quot;most dangerous&quot;)</td><td>matches letter, digit, space, symbol</td></tr>
+</table>
+<table>
+<tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr>
+<tr><td>Char</td><td>A</td><td>7</td><td>B</td><td>(space)</td><td>K</td><td>@</td><td>9</td><td>Z</td></tr>
+</table>
+<table>
+<tr><th>Pattern</th><th>Matches</th></tr>
+<tr><td>\s</td><td>3...  (space only)</td></tr>
+<tr><td>\S</td><td>0...A, 1...7, 2...B, 4...K, 5...@, 6...9, 7...Z</td></tr>
+<tr><td>\d</td><td>1...7, 6...9</td></tr>
+<tr><td>\D</td><td>all except indices 1 and 6</td></tr>
+<tr><td>\w</td><td>0...A, 1...7, 2...B, 4...K, 6...9, 7...Z (skips space and @)</td></tr>
+<tr><td>\W</td><td>3... , 5...@</td></tr>
+<tr><td>.</td><td>every index 0 through 7</td></tr>
+</table>
+<table>
+<tr><th>Symbol</th><th>Name</th><th>Meaning</th></tr>
+<tr><td>(none)</td><td>—</td><td>Exactly one occurrence</td></tr>
+<tr><td>+</td><td>Plus</td><td>At least one (one or more)</td></tr>
+<tr><td>*</td><td>Aster/star</td><td>Zero or more (any number including zero)</td></tr>
+<tr><td>?</td><td>Question mark</td><td>At most one (zero or one)</td></tr>
+</table>
+<table>
+<tr><th>Pattern</th><th>Meaning</th></tr>
+<tr><td>a</td><td>Exactly one a</td></tr>
+<tr><td>a+</td><td>At least one a (greedy sequence of a&#x27;s)</td></tr>
+<tr><td>a*</td><td>Any number of a including zero</td></tr>
+<tr><td>a?</td><td>At most one a</td></tr>
+</table>
+<table>
+<tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr>
+<tr><td>Char</td><td>a</td><td>b</td><td>a</td><td>a</td><td>b</td><td>a</td><td>a</td><td>a</td></tr>
+</table>
+<table>
+<tr><th>At position with b</th><th>a+</th><th>a*</th><th>a?</th></tr>
+<tr><td>Match?</td><td>No (needs ≥1 a)</td><td>Yes (0 a&#x27;s)</td><td>Yes (0 a&#x27;s)</td></tr>
+</table>
+<table>
+<tr><th>At position with aaa</th><th>a+</th><th>a*</th><th>a?</th></tr>
+<tr><td>Consumes</td><td>all three</td><td>all three</td><td>only one (at most one)</td></tr>
+</table>
+<table>
+<tr><th>Pattern</th><th># of find() hits (conceptually)</th><th>Notes</th></tr>
+<tr><td>a</td><td>6</td><td>each a separately</td></tr>
+<tr><td>a+</td><td>3</td><td>grouped sequences</td></tr>
+<tr><td>a*</td><td>many (every index + end)</td><td>zero-length matches at b and after end</td></tr>
+<tr><td>a?</td><td>many</td><td>zero or one at each position</td></tr>
+</table>
+</body></html>

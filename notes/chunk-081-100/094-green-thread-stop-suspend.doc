@@ -1,0 +1,235 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>094-green-thread-stop-suspend</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 094 — Green Thread, stop(), suspend(), resume()</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-14 || Green Thread,stop(),suspend(),resume()</p>
+<p>Source: real YouTube auto-captions (.transcripts/094-21KT--VtawI.txt). ASR decoded in place: green thread = Green Thread; native o / native W / native Ys / underlying Bo / underlying voice = native OS / underlying OS; JM / jbm = JVM; Sun Solaris = Sun Solaris; stop / suppress = stop() (deprecated); suspend / resume = setSuspend/resume → suspend() / resume(); weight = wait; Ria / runable = Runnable/ready; dat / de / that state = dead state; ENT / interent = interview; keep subing / keep supping / keep keeping = keep writing.</p>
+<p>This short Part-14 covers Green Thread model vs Native OS model, why stop() / suspend() / resume() are deprecated, a small stop() demo with deprecation warning, then the full thread life-cycle diagram tying yield, join, sleep, wait/notify, suspend/resume, and stop together for interviews.</p>
+<h3>00:07 — Topic: Green Thread (interview)</h3>
+<p>Joke: do not expect “Red Thread / Yellow Thread” next — only one concept named Green Thread.</p>
+<p>Do not say in interview: “thread which is in green color.”</p>
+<h3>00:55 — Two models of Java multi-threading</h3>
+<p>Java multi-threading is implemented using two models:</p>
+<ol><li>Green Thread model</li></ol>
+<ol><li>Native OS model</li></ol>
+<h3>01:29 — Green Thread model (definition)</h3>
+<p>Green thread: thread managed completely by the JVM without taking underlying OS support.</p>
+<p>That model = Green Thread model.</p>
+<p>Drawback: without OS/processor-level support, some features may not work properly. OS support is often required.</p>
+<p>Support: Most operating systems won’t provide support for green thread model. Very few OSes like Sun Solaris provided support.</p>
+<p>Status: Green thread model is deprecated and not recommended to use. We are not using it currently.</p>
+<h3>02:56 — Native OS model</h3>
+<p>Native OS model: thread life cycle managed by the JVM with the help of underlying OS.</p>
+<p>All Windows-based operating systems provide support for Native OS model only.</p>
+<p>Interview answer:</p>
+<ul><li>Green thread = completely managed by JVM without underlying OS support.</li></ul>
+<ul><li>With underlying OS support → native OS model / native threads.</li></ul>
+<pre class='code'> // Board:
+ // Java multi-threading concept is implemented by using
+ // the following two models:
+ // 1. Green Thread model
+ // 2. Native OS model</pre>
+<h3>04:43 — Green Thread model (board dictation)</h3>
+<pre class='code'> // Green Thread model:
+ // The thread which is managed completely by JVM
+ // without taking underlying OS support
+ // is called Green Thread
+ //
+ // Very few operating systems like Sun Solaris
+ // provide support for Green Thread model
+ //
+ // Anyway Green Thread model is deprecated
+ // and not recommended to use</pre>
+<h3>06:49 — Native OS model (board dictation)</h3>
+<pre class='code'> // Native OS model:
+ // The thread which is managed by the JVM
+ // with the help of underlying OS
+ // is called Native OS model
+ //
+ // All Windows based operating systems
+ // provide support for Native OS model</pre>
+<p>Usually we use Native OS model, not Green Thread model.</p>
+<h3>08:45 — How to stop a thread</h3>
+<p>How to start a thread? t.start().</p>
+<p>How to stop a thread? t.stop() — equally simple.</p>
+<p>If you call stop(): thread immediately enters dead state — killing the thread in the middle of execution (“murder”).</p>
+<p>Is killing a person / thread in the middle recommended? Not recommended.</p>
+<p>Hence `stop()` is a deprecated method — not recommended to use.</p>
+<h3>10:19 — Why stop is dangerous (DB connection example)</h3>
+<p>run() job example:</p>
+<ol><li>Open DB connection</li></ol>
+<ol><li>Read data</li></ol>
+<ol><li>Close DB connection</li></ol>
+<pre class='code'>public void run() {
+    // open DB connection
+    // read data
+    // close DB connection
+}</pre>
+<p>If someone calls t.stop() while the thread is reading:</p>
+<ul><li>Thread enters dead state immediately.</li></ul>
+<ul><li>Who closes the DB connection? No one.</li></ul>
+<ul><li>Connection resource is wasted / may not be closed.</li></ul>
+<p>Killing a thread mid-execution causes resource problems → method deprecated (outdated / suppressed / harmful). Being a programmer you should not use it.</p>
+<h3>12:12 — Demo without stop (child continues)</h3>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Child Thread&quot;);
+        }
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+        System.out.println(&quot;End of main thread&quot;);
+        // t.stop();  // commented → child continues ~10 times
+    }
+}
+// prints (order may interleave):
+End of main thread
+Child Thread
+Child Thread
+... (happily continues ~10 times)</pre>
+<p>Main did not kill/stop child → child completes.</p>
+<p>Cinema joke: without hero on earth, how can heroine stay — villain kills heroine in last minute (movie reference).</p>
+<h3>14:01 — Same program WITH `t.stop()` after start</h3>
+<p>Main completes then calls t.stop() to kill child — “why should child execute without main?”</p>
+<p>Compile shows deprecation:</p>
+<p>Note: Test.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.</p>
+<p>With -Xlint:deprecation:</p>
+<p>warning: [deprecation] stop() in java.lang.Thread has been deprecated</p>
+<p>t.start();
+System.out.println(&quot;End of main thread&quot;);
+t.stop(); // deprecated — kills child → dead state</p>
+<pre class='code'>// Child does NOT print 10 times — main stopped/killed child
+End of main thread
+// maybe few Child Thread lines or none depending on timing</pre>
+<p>Calling stop() → thread enters dead state. Recommended? No — already deprecated.</p>
+<h3>15:37 — Board summary for stop()</h3>
+<pre class='code'> // We can stop a thread execution by using stop() method of Thread class
+public void stop();
+
+ // If we call stop() method then immediately
+ // the thread will enter into dead state
+ //
+ // Anyway stop() method is deprecated
+ // and not recommended to use</pre>
+<h3>17:25 — How to suspend and resume a thread</h3>
+<p>Government-office analogy:</p>
+<ul><li>Employee involved in illegal activity → first suspend services (temporary pause).</li></ul>
+<ul><li>Committee analyzes.</li></ul>
+<ul><li>If guilty → terminate / jail.</li></ul>
+<ul><li>If not guilty → resume services (continue again).</li></ul>
+<p>API:</p>
+<ul><li>A thread can suspend another thread: suspend()</li></ul>
+<ul><li>Resume a suspended thread: resume()</li></ul>
+<pre class='code'>public void suspend();
+public void resume();</pre>
+<p>t.suspend() → thread enters suspended state.</p>
+<p>t.resume() → suspended thread can continue execution.</p>
+<p>Main may suspend child then later resume child.</p>
+<p>This style is not recommended → methods are deprecated. Rare even in interview; do not use in coding.</p>
+<h3>20:24 — Board: suspend / resume</h3>
+<pre class='code'> // We can suspend a thread by using suspend() method of Thread class
+public void suspend();
+ // Immediately the thread will enter into suspended state
+
+ // We can resume a suspended thread by using resume() method of Thread class
+public void resume();
+ // Then suspended thread can continue its execution
+
+ // Anyway these methods are deprecated
+ // and not recommended to use</pre>
+<h3>23:22 — Full thread life-cycle diagram (interview diagram)</h3>
+<p>He draws / revises the complete life cycle — says if you draw this, interviewers often won’t ask further multi-threading questions because everything appears on the diagram.</p>
+<p>Basic path:</p>
+<ol><li>MyThread t = new MyThread(); → New / Born state</li></ol>
+<ol><li>t.start() → Ready / Runnable</li></ol>
+<ol><li>Thread scheduler allocates processor → Running</li></ol>
+<ol><li>run() completes → Dead</li></ol>
+<h3>25:09 — Running → yield → Ready/Runnable</h3>
+<p>If running thread calls Thread.yield() → goes from Running to Ready/Runnable (to give chance to waiting threads of same/similar priority).</p>
+<h3>25:49 — Running → join → Waiting (blocked for joining)</h3>
+<p>If running thread calls join (e.g. t2.join(), t2.join(1000), t2.join(1000, 100)):</p>
+<p>→ Waiting state / blocked for joining.</p>
+<p>Come out of waiting when:</p>
+<ol><li>t2 completes, or</li></ol>
+<ol><li>time expires (timed join), or</li></ol>
+<ol><li>waiting thread got interrupted</li></ol>
+<p>Then → Ready/Runnable (then Running when processor allocated).</p>
+<h3>28:00 — Running → sleep → Sleeping</h3>
+<p>If running thread calls Thread.sleep(1000) or sleep(1000, 100):</p>
+<p>→ Sleeping state.</p>
+<p>Come out when:</p>
+<ol><li>time expires, or</li></ol>
+<ol><li>sleeping thread got interrupted</li></ol>
+<p>Then → Ready/Runnable.</p>
+<h3>29:34 — Running → wait → Waiting (for notification / lock)</h3>
+<p>Inter-thread communication: wait / notify / notifyAll.</p>
+<p>If running thread calls obj.wait(), obj.wait(1000), or obj.wait(1000, 100):</p>
+<p>→ Waiting state (waiting for notification).</p>
+<p>Then typically moves to another waiting state: waiting to get the lock.</p>
+<p>Come out of wait-for-notification when:</p>
+<ol><li>waiting thread got notification, or</li></ol>
+<ol><li>time expires, or</li></ol>
+<ol><li>waiting thread got interrupted</li></ol>
+<p>Then wait to get lock; when waiting thread got the lock → Ready/Runnable.</p>
+<h3>31:50 — Running → suspend → Suspended; resume → Ready</h3>
+<p>t.suspend() on running thread → Suspended state.</p>
+<p>t.resume() → Ready/Runnable (continue services).</p>
+<h3>32:32 — Running → stop → Dead</h3>
+<p>t.stop() on running thread → immediately Dead state.</p>
+<h3>32:51 — Life-cycle recap (spoken full tour)</h3>
+<p>He retells the whole diagram once more:</p>
+<ul><li>start → Ready/Runnable → processor → Running → run completes → Dead</li></ul>
+<ul><li>yield → Ready/Runnable</li></ul>
+<ul><li>join → Waiting (blocked for joining); leave on complete / timeout / interrupt</li></ul>
+<ul><li>sleep → Sleeping; leave on timeout / interrupt</li></ul>
+<ul><li>wait → Waiting; then waiting for lock; leave on notify / timeout / interrupt then got lock → Ready</li></ul>
+<ul><li>suspend → Suspended; resume → Ready</li></ul>
+<ul><li>stop → Dead</li></ul>
+<pre class='code'> // Interview life-cycle sketch (states he names):
+ // New/Born --start()--&gt; Ready/Runnable --processor--&gt; Running --run ends--&gt; Dead
+ // Running --yield()--&gt; Ready/Runnable
+ // Running --join()--&gt; Waiting (blocked for joining) --&gt; Ready/Runnable
+ // Running --sleep()--&gt; Sleeping --&gt; Ready/Runnable
+ // Running --wait()--&gt; Waiting (notify) --&gt; Waiting (for lock) --&gt; Ready/Runnable
+ // Running --suspend()--&gt; Suspended --resume()--&gt; Ready/Runnable
+ // Running --stop()--&gt; Dead</pre>
+<h3>34:28 — Close</h3>
+<p>This is the simple life cycle of a thread. Draw this diagram in interview. End of Part-14 (remaining board writing time ~35:25).</p>
+<p>` ```java ` block count: 10</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 94 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 14</td></tr>
+<tr><td>Topic</td><td>Green Thread, stop(), suspend(), resume()</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>35m 56s</td></tr>
+<tr><td>Video ID</td><td>21KT--VtawI</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=21KT--VtawI</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

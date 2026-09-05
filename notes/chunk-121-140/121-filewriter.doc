@@ -1,0 +1,198 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>121-filewriter</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 121</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: File I/O Part-2 || FileWriter || important methods</p>
+<p>ASR decode key: file letter → File; file WR / wrer → FileWriter; upend → append; happing → appending; backs sln / back sln → \n; Bufford → Buffered; CE → checked exception (IOException); wi → void.</p>
+<h3>00:07 — Bridge from File/Directory API to read/write</h3>
+<p>After Part-1 (creating files, directories, navigation methods), the next mandatory step is writing and reading data. A file with no I/O is useless.</p>
+<p>Agenda for writers (3 total in this File I/O block):</p>
+<ol><li>FileWriter ← this video</li></ol>
+<ol><li>BufferedWriter</li></ol>
+<ol><li>PrintWriter</li></ol>
+<h3>00:43 — FileWriter: purpose</h3>
+<p>Class name: FileWriter — one word, no space (not “file writer” as two words on the exam).</p>
+<p>Purpose: Write character / text data to a file.</p>
+<pre class='code'>// Conceptual usage (not a full program)
+FileWriter fw = new FileWriter(&quot;abc.txt&quot;);
+// use fw to write character/text data to the file</pre>
+<p>Any textual content (letters, digits as text, \n, etc.) goes through FileWriter.</p>
+<h3>02:07 — Constructors: four total (override vs append)</h3>
+<p>Rule: Create a FileWriter object — that is the entry point for writing.</p>
+<h4>Override constructors (default — **overwrite** existing file content)</h4>
+<p>Constructor 1 — file name as `String`:</p>
+<pre class='code'>FileWriter fw = new FileWriter(&quot;abc.txt&quot;);
+// or
+FileWriter fw = new FileWriter(&quot;demo.txt&quot;);</pre>
+<p>Constructor 2 — existing `File` reference:</p>
+<pre class='code'>File f = new File(&quot;abc.txt&quot;);
+FileWriter fw = new FileWriter(f);</pre>
+<p>Override behavior: If abc.txt already contains data and you open FileWriter with constructors 1 or 2, new writes replace (override) old content — old data is gone by default. Override is not recommended in most real scenarios unless you explicitly want to replace the whole file.</p>
+<h4>Append constructors (preserve + add at end)</h4>
+<p>Constructor 3 — `String` file name + `boolean append`:</p>
+<p>FileWriter fw = new FileWriter(&quot;abc.txt&quot;, true);   // append
+FileWriter fw = new FileWriter(&quot;abc.txt&quot;, false);  // override (same as ctor 1)</p>
+<p>Constructor 4 — `File` + `boolean append`:</p>
+<p>File f = new File(&quot;abc.txt&quot;);
+FileWriter fw = new FileWriter(f, true);   // append
+FileWriter fw = new FileWriter(f, false);  // override</p>
+<p>Summary: 4 constructors total — first two = override; next two = append when true.</p>
+<h3>10:18 — Common point for ALL four constructors: auto-create file</h3>
+<p>Exam / interview loophole: If the named file does not exist, do you get FileNotFoundException?</p>
+<p>Answer: NO — all four FileWriter constructors create the file if missing, then write.</p>
+<p>Analogy (Durga Sir):</p>
+<ul><li>Student 1: Notice board exists but white paper is missing → comes back saying “I can’t write.” (FileNotFoundException mindset — wrong for FileWriter.)</li></ul>
+<ul><li>Student 2: Pastes white paper on board, writes the message → job done. (FileWriter behavior.)</li></ul>
+<p>Note for notes:</p>
+<p>If the specified file is not already available, all four constructors will create that file. You do not need to check file.exists() before constructing FileWriter.</p>
+<h3>15:54 — Methods in FileWriter (5 methods)</h3>
+<p>Writers are like a pipe from program → file (abc.txt).</p>
+<h4>Three `write` overloads</h4>
+<p>1. `write(int ch)` — single character</p>
+<p>fw.write(&#x27;a&#x27;);
+fw.write(97);   // also writes &#x27;a&#x27; (Unicode code point)</p>
+<ul><li>Parameter is int (Unicode value), not char in signature — but you pass &#x27;a&#x27; or 97.</li></ul>
+<ul><li>97 → &#x27;a&#x27;, 98 → &#x27;b&#x27;, 99 → &#x27;c&#x27;, `100` → `&#x27;d&#x27;`.</li></ul>
+<p>2. `write(char[] c)` — array of characters</p>
+<p>char[] arr = {&#x27;H&#x27;, &#x27;i&#x27;};
+fw.write(arr);</p>
+<p>3. `write(String s)` — string</p>
+<p>fw.write(&quot;Durga&quot;);
+fw.write(&quot;\n&quot;);           // manual newline — see problems later
+fw.write(&quot;Software Solutions&quot;);</p>
+<p>Same 3 write methods exist in FileWriter, BufferedWriter, and PrintWriter — memorize once, applies to all writers.</p>
+<h4>4. `flush()`</h4>
+<p>Pipe analogy: Like transferring rice from a heavy bag to a drum in small scoops — some rice may remain stuck in the pipe until you force it through.</p>
+<p>fw.flush();</p>
+<p>Purpose: Guarantee all buffered data, including the last character, is pushed to the file.</p>
+<p>Scope: flush() applies to writers only, not readers.</p>
+<h4>5. `close()`</h4>
+<p>fw.close();</p>
+<p>Highly recommended after read/write work — releases resources.</p>
+<p>Total FileWriter methods covered: 3 × write + flush + close = 5.</p>
+<h3>26:47 — Demo: FileWriterDemo2.java</h3>
+<p>Board program:</p>
+<pre class='code'>import java.io.*;
+
+class FileWriterDemo2 {
+    public static void main(String[] args) throws Exception {  // CE: IOException (checked)
+        FileWriter fw = new FileWriter(&quot;abc.txt&quot;);
+        // No need to check if abc.txt exists — constructor creates if missing
+
+        fw.write(100);                        // writes &#x27;d&#x27;  (Unicode 100)
+        fw.write(&quot;Urga&quot;);                     // ASR: &quot;Ur G&quot; → Durga (Sir writes &quot;Durga&quot; on board)
+        fw.write(&quot;\n&quot;);                       // newline
+        fw.write(&quot;Software Solutions&quot;);
+        fw.write(&quot;\n&quot;);
+        fw.write(&quot;ABC&quot;);
+
+        fw.flush();   // recommended
+        fw.close();   // recommended
+    }
+}</pre>
+<p>Compile &amp; run (board):</p>
+<p>&gt; javac FileWriterDemo2.java    // compiles fine
+&gt; java FileWriterDemo2          // no console output — data goes to file</p>
+<p>Expected `abc.txt` content after first run:</p>
+<p>dUrga
+Software Solutions
+ABC</p>
+<p>*(ASR heard &quot;Ur G&quot; / &quot;DGA&quot; — on screen the demo shows D from write(100) plus Urga or full Durga line; executed file showed DGA Software Solutions followed by ABC.)*</p>
+<p>Console output: none (unless you print separately).</p>
+<h3>30:29 — IO exception handling note</h3>
+<p>Whenever performing I/O read/write, `IOException` is possible → it is a checked exception → must handle (try-catch) or declare (throws).</p>
+<p>Writers/readers = text files. For binary data (images, video, audio) → use Streams (separate topic).</p>
+<h3>33:52 — Override demo: run program multiple times</h3>
+<p>Using constructor 1 (no append flag):</p>
+<p>FileWriter fw = new FileWriter(&quot;abc.txt&quot;);  // override mode</p>
+<ul><li>Run once → one copy of content in file.</li></ul>
+<ul><li>Run 1000 times → still one copy — each run overwrites previous content.</li></ul>
+<h3>34:55 — Append demo: `true` flag</h3>
+<p>FileWriter fw = new FileWriter(&quot;abc.txt&quot;, true);  // append mode</p>
+<ul><li>File already had 1 block → run once → 2 blocks.</li></ul>
+<ul><li>Run 10 times → content repeated 10 times (Sir ran many times → 57 lines in abc.txt on screen).</li></ul>
+<p>Board note:</p>
+<p>In the above program, FileWriter performs overriding of existing data (constructors 1–2).</p>
+<p>For append, use: new FileWriter(&quot;abc.txt&quot;, true).</p>
+<h3>38:35 — Why BufferedWriter &amp; PrintWriter exist (FileWriter limitations)</h3>
+<p>Student question: Simple FileWriter exists — why next-level writers?</p>
+<h4>Problem 1: Manual line separator</h4>
+<p>Programmers care about data, not \n syntax. Manually inserting \n is a burden.</p>
+<h4>Problem 2: `\n` is NOT portable (real classroom bug)</h4>
+<p>A student reported: program compiles and runs, but opening abc.txt shows literal text:</p>
+<p>d\nSoftware Solutions\nABC</p>
+<p>…instead of line breaks.</p>
+<p>Durga Sir’s debugging session:</p>
+<ul><li>Verified backslash \ not forward /</li></ul>
+<ul><li>Verified not double backslash</li></ul>
+<ul><li>Ran on student laptop — same issue</li></ul>
+<ul><li>Changed file name — same</li></ul>
+<ul><li>Changed content — same</li></ul>
+<ul><li>Google: “backslash n problem with file writer”</li></ul>
+<ul><li>Root cause: On some OS / systems, \n in a String passed to `write()` is not treated as newline — it is normal text. The actual line separator symbol varies system to system.</li></ul>
+<p>Main problem with FileWriter (board note):</p>
+<p>We must insert line separator manually — e.g. &quot;\n&quot; — which varies from system to system → difficulty for the programmer.</p>
+<p>Solution (next videos): BufferedWriter and PrintWriter — they handle platform line separators (especially via newLine() in BufferedWriter).</p>
+<h3>45:52 — Session wrap-up</h3>
+<p>Covered today:</p>
+<ul><li>What FileWriter is</li></ul>
+<ul><li>4 constructors (override vs append; auto-create file)</li></ul>
+<ul><li>5 methods (3 writes + flush + close)</li></ul>
+<ul><li>Live demo with override vs append</li></ul>
+<ul><li>Limitation: manual \n → use BufferedWriter / PrintWriter next</li></ul>
+<h2>Quick reference tables</h2>
+<h3>FileWriter constructors</h3>
+<h3>FileWriter methods</h3>
+<p>Java code block count: 13</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Java tutorial by Durga Sir</td></tr>
+<tr><td>Position</td><td>121 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>File I/O — FileWriter (character/text writing)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>46m 10s (from transcript)</td></tr>
+<tr><td>Video ID</td><td>QT8DCW5ZFxI</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=QT8DCW5ZFxI</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Constructors</th><th>append arg</th><th>Behavior</th></tr>
+<tr><td>1, 2</td><td>(none)</td><td>Override only</td></tr>
+<tr><td>3, 4</td><td>true</td><td>Append</td></tr>
+<tr><td>3, 4</td><td>false</td><td>Override (redundant with 1/2)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Signature</th><th>Mode</th></tr>
+<tr><td>1</td><td>FileWriter(String fileName)</td><td>Override</td></tr>
+<tr><td>2</td><td>FileWriter(File file)</td><td>Override</td></tr>
+<tr><td>3</td><td>FileWriter(String fileName, boolean append)</td><td>append flag</td></tr>
+<tr><td>4</td><td>FileWriter(File file, boolean append)</td><td>append flag</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Purpose</th></tr>
+<tr><td>write(int ch)</td><td>Single character (Unicode int)</td></tr>
+<tr><td>write(char[] c)</td><td>Char array</td></tr>
+<tr><td>write(String s)</td><td>String</td></tr>
+<tr><td>flush()</td><td>Force all buffered chars to file</td></tr>
+<tr><td>close()</td><td>Close writer</td></tr>
+</table>
+</body></html>

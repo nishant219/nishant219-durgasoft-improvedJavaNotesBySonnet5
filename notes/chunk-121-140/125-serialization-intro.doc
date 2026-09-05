@@ -1,0 +1,368 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>125-serialization-intro</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 125</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Serialization Part- 1 || Introduction</p>
+<h3>00:06 — Serialization syllabus for this playlist block</h3>
+<p>Topics to cover (in order):</p>
+<ol><li>Introduction ← this video</li></ol>
+<ol><li>Object graphs in serialization</li></ol>
+<ol><li>Customized serialization</li></ol>
+<ol><li>Serialization with respect to inheritance</li></ol>
+<ol><li>Externalization</li></ol>
+<ol><li>serialVersionUID</li></ol>
+<p>Exam vs industry split:</p>
+<ul><li>Classroom/industry often stops at introduction</li></ul>
+<ul><li>SCJP/OCJP: must know all serialization topics through inheritance + externalization + serialVersionUID</li></ul>
+<ul><li>Last two topics (externalization, serialVersionUID) are interview-oriented — not on SCJP exam per Sir, but compulsory to know the terminology and differences</li></ul>
+<h3>03:23 — What is serialization? (common definitions first)</h3>
+<p>Students give typical answers (all acceptable in interviews, but not the strict definition):</p>
+<p>Deserialization / de-serialization: reverse — read object from file or network.</p>
+<p>Sir: these work at a general/top level, but strictly speaking there is a finer meaning.</p>
+<h3>05:05 — Balloon analogy (strict definition build-up)</h3>
+<p>Story setup: Kid studying in Bangalore calls father: &quot;Send a big balloon — bigger than friend Ravi&#x27;s balloon.&quot;</p>
+<p>Father goes to shopping mall → asks for biggest balloon regardless of price → gets huge balloon (~₹1,500).</p>
+<p>Problem: Cannot carry/send inflated balloon to Bangalore — not transport-supported form.</p>
+<p>DTDC courier rejection:</p>
+<ul><li>Cannot send money, gold, illegal items (courier rules)</li></ul>
+<ul><li>Balloon occupies huge space in flight cargo</li></ul>
+<ul><li>Needle/pressure can burst balloon in transit</li></ul>
+<ul><li>Verdict: &quot;Not in transport-supported form&quot;</li></ul>
+<p>Courier solution:</p>
+<ol><li>Deflate balloon (remove air) → becomes small foldable piece</li></ol>
+<ol><li>Put in cover, write to/from address → ship for ~₹25–30</li></ol>
+<ol><li>Next day reaches Bangalore</li></ol>
+<ol><li>Kid must re-inflate at destination to use</li></ol>
+<p>Mapping to Java:</p>
+<h3>15:37 — Strict definitions (board)</h3>
+<p>Serialization (strict):</p>
+<p>Process of converting an object from Java-supported form into either file-supported form OR network-supported form.</p>
+<p>Deserialization (strict):</p>
+<p>Process of converting an object from file or network supported form back into Java-supported form.</p>
+<p>Loose vs strict:</p>
+<ul><li>Loose: &quot;writing object to file&quot; / &quot;sending across network&quot;</li></ul>
+<ul><li>Strict: emphasizes form conversion — original Java object representation ≠ on-wire/on-disk representation</li></ul>
+<h3>19:05 — Notes written under &quot;Introduction → Serialization&quot;</h3>
+<p>General definition (exam/interview short answer):</p>
+<p>The process of writing state of an object to a file is called serialization.</p>
+<p>But strictly speaking:</p>
+<p>It is the process of converting an object from Java-supported form into either file-supported form or network-supported form.</p>
+<p>Deserialization — general:</p>
+<p>The process of reading state of an object from a file is called deserialization.</p>
+<p>Deserialization — strict:</p>
+<p>Converting from file/network supported form → Java-supported form.</p>
+<h3>21:14 — Which streams? Saving object to file `abc.ser`</h3>
+<p>Setup: File `abc.ser` (convention — not mandatory; abc.txt also valid; Java extensions don&#x27;t matter like Unix).</p>
+<p>Object = binary data → cannot use Reader/Writer (text). Need Streams.</p>
+<p>Step 1 — binary bytes to file:</p>
+<pre class='code'>FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);</pre>
+<p>Step 2 — write object (not just raw bytes):</p>
+<p>ObjectOutputStream oos = new ObjectOutputStream(fos);
+oos.writeObject(d1);   // Dog object d1</p>
+<p>Board diagram flow:</p>
+<p>Dog object (d1)  --serialization--&gt;  abc.ser (file)
+     i=10, j=20                        (binary state)</p>
+<p>Summary line (board):</p>
+<p>By using FileOutputStream and ObjectOutputStream classes we can implement serialization.</p>
+<h3>26:03 — Deserialization streams (reverse)</h3>
+<p>General definition:</p>
+<p>The process of reading state of an object from the file is called deserialization.</p>
+<p>Strict:</p>
+<p>Converting from file/network supported form → Java-supported form.</p>
+<pre class='code'>FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+ObjectInputStream ois = new ObjectInputStream(fis);
+Dog d2 = (Dog) ois.readObject();</pre>
+<p>Board summary:</p>
+<p>By using FileInputStream and ObjectInputStream classes we can implement deserialization.</p>
+<p>Stream roles clarified:</p>
+<h3>30:43 — Convert theory to executable program: `SerializeDemo`</h3>
+<p>Sir asks students to turn full discussion into runnable code.</p>
+<h3>31:13 — `Dog` class and `SerializeDemo` skeleton</h3>
+<pre class='code'>class Dog {
+    int i = 10;
+    int j = 20;
+}
+class SerializeDemo {
+    public static void main(String[] args) throws Exception {
+        Dog d1 = new Dog();          // i=10, j=20
+
+        // --- SERIALIZATION (3 lines) ---
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(d1);
+
+        // --- DESERIALIZATION (3 lines) ---
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Dog d2 = (Dog) ois.readObject();
+
+        System.out.println(d2.i + &quot;..&quot; + d2.j);
+    }
+}</pre>
+<p>Expected output (after fixes): 10..20 (Sir uses .. as separator on board)</p>
+<h3>35:36 — Why cast `(Dog)` on `readObject()`?</h3>
+<p>readObject() return type is `Object` — generic API (could be Dog, Cat, Account, anything).</p>
+<p>Must cast to concrete type:</p>
+<p>Dog d2 = (Dog) ois.readObject();</p>
+<h3>37:33 — Required additions before compile/run</h3>
+<p>1. Import:</p>
+<pre class='code'>import java.io.*;</pre>
+<p>2. Checked exception:</p>
+<pre class='code'>public static void main(String[] args) throws Exception {</pre>
+<p>writeObject / readObject may throw `IOException`.</p>
+<h3>38:42 — Quiz: will this compile?</h3>
+<p>Sir asks class — students split yes/no.</p>
+<p>Answer: YES, it compiles.</p>
+<p>But at runtime → `NotSerializableException` because:</p>
+<p>An object is said to be serializable if and only if the corresponding class implements `Serializable` interface.</p>
+<p>Dog does not implement Serializable → runtime failure when writeObject(d1) executes.</p>
+<h3>40:44 — Fix: `implements Serializable`</h3>
+<pre class='code'>class Dog implements Serializable {
+    int i = 10;
+    int j = 20;
+}</pre>
+<p>`Serializable` facts (board conclusions):</p>
+<ul><li>Interface in `java.io` package</li></ul>
+<ul><li>No methods → marker interface</li></ul>
+<ul><li>We can serialize only serializable objects</li></ul>
+<ul><li>Non-serializable object → runtime exception: java.io.NotSerializableException</li></ul>
+<p>Rule (board):</p>
+<p>If we are trying to serialize a non-serializable object → runtime exception saying `NotSerializableException`.</p>
+<h3>41:14 — Live demo: exception then fix</h3>
+<p>Without `implements Serializable`:</p>
+<pre class='code'>// Runtime (not compile error):
+Exception in thread &quot;main&quot; java.io.NotSerializableException: Dog</pre>
+<p>With `implements Serializable`:</p>
+<pre class='code'>// Compile &amp; run SerializeDemo.java
+// Output:
+10..20</pre>
+<p>Sir deliberately omits implements Serializable first to show runtime exception, then adds it.</p>
+<h3>49:09 — Conclusions block (board notes)</h3>
+<ol><li>We can serialize only serializable objects</li></ol>
+<ol><li>Object is serializable iff class implements Serializable</li></ol>
+<ol><li>Serializable in `java.io`, no methods, marker interface</li></ol>
+<ol><li>Serializing non-serializable object → `NotSerializableException` at runtime (compile succeeds)</li></ol>
+<h3>53:01 — Next keyword: `transient`</h3>
+<p>In serialization context, `transient` plays a very important role for security.</p>
+<p>Applicable only to variables — NOT methods, NOT classes.</p>
+<h3>54:01 — Why transient? Permanent storage security</h3>
+<p>Serialization saves object state to file on hard disk = permanent storage (survives shutdown).</p>
+<p>Risk: Sensitive fields (password, PIN) must not be saved permanently.</p>
+<p>Analogies Sir uses:</p>
+<ul><li>ATM card: OK to carry card; never write PIN on back (friend lost ₹25k–30k this way)</li></ul>
+<ul><li>Email password: username shareable; password never share/write</li></ul>
+<ul><li>Marriage/password news article humor — password secrecy as security practice</li></ul>
+<p>Rule:</p>
+<p>At serialization time, if you don&#x27;t want to save a variable&#x27;s value for security, declare it `transient`.</p>
+<p>Example mapping in Dog:</p>
+<p>int i = 10;              // username — OK to serialize
+transient int j = 20;    // password — do NOT serialize original value</p>
+<h3>06:00 — Behavior of transient at serialization</h3>
+<p>When JVM serializes:</p>
+<ol><li>Checks each variable — is it transient?</li></ol>
+<ol><li>If yes → ignore original value, save default value to file</li></ol>
+<ol><li>For int j → default 0 (not 20)</li></ol>
+<p>After deserialize + print:</p>
+<p>System.out.println(d2.i + &quot;..&quot; + d2.j);
+// Output: 10..0   (when j is transient)
+// Output: 10..20 (when j is NOT transient)</p>
+<p>Mnemonic (board):</p>
+<p>Hence transient means: not to serialize (that variable&#x27;s original value).</p>
+<h3>07:08 — Demo: transient on `j`</h3>
+<p>Sir runs with transient int j → output `10..0`.</p>
+<p>If both secured:</p>
+<p>transient int i = 10;
+transient int j = 20;
+// Output after deserialize: 0..0</p>
+<h3>08:11 — Board notes: transient rules</h3>
+<p>When to use:</p>
+<p>At the time of serialization, if we don&#x27;t want to save the value of a particular variable to meet security constraint → declare that variable as `transient`.</p>
+<p>JVM behavior:</p>
+<p>While performing serialization, JVM ignores original value of transient variable and saves default value to the file.</p>
+<h3>71:11 — `transient` vs `static`</h3>
+<pre class='code'>class Dog implements Serializable {
+    int i = 10;
+    static int j = 20;
+}</pre>
+<p>Facts:</p>
+<ul><li>Static variable = class-level data → NOT part of object state</li></ul>
+<ul><li>Serialization applies to object state only</li></ul>
+<ul><li>Static variables do not participate in serialization</li></ul>
+<ul><li>j value 20 comes from method area / class data after deserialize, not from file</li></ul>
+<p>Print after deserialize:</p>
+<p>System.out.println(d2.i + &quot;..&quot; + d2.j);
+// Output: 10..20
+// i from file; j from class static memory</p>
+<p>Declaring `static transient int j` → NO USE / NO IMPACT</p>
+<p>Reason: static already excluded from serialization; transient only affects serialized fields.</p>
+<p>Board conclusion:</p>
+<p>Static variable is not part of object state → won&#x27;t participate in serialization → declaring static variable as transient → there is no use.</p>
+<p>Demo confirms: static transient still prints `10..20`.</p>
+<p>Instance transient demo:</p>
+<p>transient int i = 10;
+static int j = 20;
+// Output: 0..20</p>
+<h3>71:49 — `transient` vs `final`</h3>
+<p>Final variable compile-time behavior (Operators class recap):</p>
+<p>final int x = 10;
+int y = 20;
+System.out.println(x);  // after compile → replaced with literal 10
+System.out.println(y);  // y read at runtime</p>
+<p>Every final variable replaced by its value at compile time — not kept as variable at runtime.</p>
+<p>In serialization:</p>
+<pre class='code'>class Dog implements Serializable {
+    int i = 10;
+    final int j = 20;
+}</pre>
+<ul><li>Final j participates as value 20 directly (not as &quot;variable j&quot;)</li></ul>
+<ul><li>JVM cannot check &quot;is this final field transient?&quot; at runtime — it&#x27;s already a constant value</li></ul>
+<ul><li>`transient final int j = 20` → no impact; output still `10..20`</li></ul>
+<p>Board conclusion:</p>
+<p>Final variables participate in serialization directly by the value → declaring final variable as transient → there is no impact.</p>
+<p>Demo trace:</p>
+<h3>74:16 — Summary diagram: declaration vs output</h3>
+<p>Sir builds a declaration → corresponding output table (after serialize + deserialize + print d2.i and d2.j):</p>
+<pre class='code'>// Case 1: Normal
+int i = 10;
+int j = 20;
+// Output: 10..20
+
+// Case 2: transient instance i
+transient int i = 10;
+int j = 20;
+// Output: 0..20
+
+// Case 3: transient static (no effect on static j behavior)
+transient static int i = 10;   // ASR/board: instance transient i
+int j = 20;
+// Output: 0..20  (i transient; j normal)
+
+// Case 4: transient static j — NO USE
+int i = 10;
+transient static int j = 20;
+// Output: 10..20  (unchanged)
+
+// Case 5: transient final j — NO USE
+int i = 10;
+transient final int j = 20;
+// Output: 0..20 if i transient; j still 20 from final value</pre>
+<p>Final summary board (Sir&#x27;s closing table):</p>
+<h3>48:29 — Complete reference program (SerializeDemo final form)</h3>
+<pre class='code'>import java.io.*;
+
+class Dog implements Serializable {
+    int i = 10;
+    int j = 20;
+    // variations: transient int j; static int j; final int j; etc.
+}
+
+class SerializeDemo {
+    public static void main(String[] args) throws Exception {
+        Dog d1 = new Dog();
+
+        // SERIALIZATION — 3 lines
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(d1);
+
+        // DESERIALIZATION — 3 lines
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Dog d2 = (Dog) ois.readObject();
+
+        System.out.println(d2.i + &quot;..&quot; + d2.j);
+    }
+}</pre>
+<p>CE notes:</p>
+<ul><li>Compiles even without Serializable → fails at `writeObject`</li></ul>
+<ul><li>readObject() needs cast</li></ul>
+<ul><li>File name `abc.ser` is convention only</li></ul>
+<h3>1:29:06 — Session end</h3>
+<p>Video covers Introduction portion of serialization:</p>
+<ul><li>Definitions (loose + strict)</li></ul>
+<ul><li>Balloon analogy</li></ul>
+<ul><li>FileOutputStream + ObjectOutputStream / FileInputStream + ObjectInputStream</li></ul>
+<ul><li>`Serializable` marker interface</li></ul>
+<ul><li>`NotSerializableException`</li></ul>
+<ul><li>`transient` for security (default value saved)</li></ul>
+<ul><li>`transient` vs `static` vs `final`</li></ul>
+<p>Next videos: object graphs, customized serialization, inheritance, externalization, serialVersionUID.</p>
+<h2>Quick reference card</h2>
+<p>Java code block count: 20</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Position</td><td>125 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>Serialization — Part 1 (Introduction, Serializable, Transient)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 29m 26s</td></tr>
+<tr><td>Video ID</td><td>JTdqJ1RC65M</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=JTdqJ1RC65M</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Loose definition</th><th>Direction</th></tr>
+<tr><td>Process of sending an object across a network</td><td>Java → network</td></tr>
+<tr><td>Process of writing an object to a file</td><td>Java → file</td></tr>
+<tr><td>Process of saving state of an object to a file</td><td>Java → file</td></tr>
+</table>
+<table>
+<tr><th>Real world</th><th>Java concept</th></tr>
+<tr><td>Inflated balloon (usable, not shippable)</td><td>Java-supported form (live object in JVM heap)</td></tr>
+<tr><td>Deflated balloon (shippable, not playable)</td><td>Network/file supported form (serialized bytes)</td></tr>
+<tr><td>Deflate before shipping</td><td>Serialization</td></tr>
+<tr><td>Inflate after receiving</td><td>Deserialization</td></tr>
+</table>
+<table>
+<tr><th>Task</th><th>Stream</th></tr>
+<tr><td>Write binary data</td><td>FileOutputStream</td></tr>
+<tr><td>Write object</td><td>ObjectOutputStream</td></tr>
+<tr><td>Read binary data</td><td>FileInputStream</td></tr>
+<tr><td>Read object</td><td>ObjectInputStream</td></tr>
+</table>
+<table>
+<tr><th>Declaration</th><th>Output d2.i .. d2.j</th></tr>
+<tr><td>Normal i, j</td><td>10..20</td></tr>
+<tr><td>final int j = 20</td><td>10..20</td></tr>
+<tr><td>transient final int j = 20</td><td>10..20</td></tr>
+<tr><td>transient int i = 10, normal j</td><td>0..20</td></tr>
+</table>
+<table>
+<tr><th>Fields in Dog</th><th>After deserialize print</th></tr>
+<tr><td>i=10, j=20</td><td>10, 20</td></tr>
+<tr><td>transient i=10, j=20</td><td>0, 20</td></tr>
+<tr><td>transient static on static field</td><td>no change vs non-transient static</td></tr>
+<tr><td>transient final j=20</td><td>j still 20</td></tr>
+</table>
+<table>
+<tr><th>Concept</th><th>Key point</th></tr>
+<tr><td>Serialization</td><td>Java form → file/network form</td></tr>
+<tr><td>Deserialization</td><td>file/network form → Java form</td></tr>
+<tr><td>Serialize API</td><td>ObjectOutputStream.writeObject(obj)</td></tr>
+<tr><td>Deserialize API</td><td>(Type) ObjectInputStream.readObject()</td></tr>
+<tr><td>Serializable</td><td>class must implements Serializable (java.io, marker)</td></tr>
+<tr><td>Failure mode</td><td>NotSerializableException at runtime</td></tr>
+<tr><td>transient</td><td>skip original value; save default</td></tr>
+<tr><td>transient + static</td><td>useless (static not serialized anyway)</td></tr>
+<tr><td>transient + final</td><td>useless (final inlined as constant)</td></tr>
+</table>
+</body></html>

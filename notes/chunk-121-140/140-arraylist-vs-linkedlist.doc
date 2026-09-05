@@ -1,0 +1,599 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>140-arraylist-vs-linkedlist</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 140 — ArrayList vs LinkedList, Vector, Stack &amp; Enumeration (Cursors Part 1)</h1>
+<h2>Video info</h2>
+<h2>Lecture roadmap (full session)</h2>
+<ol><li>ArrayList vs LinkedList — similarities, performance-based differences, internal memory structure</li></ol>
+<ol><li>Vector — properties, constructors, growth formula, legacy method names, capacity demo</li></ol>
+<ol><li>Stack — child of Vector, LIFO, stack-specific methods, index vs offset, demo</li></ol>
+<ol><li>Three Cursors of Java (intro) — purpose of cursors; Enumeration in depth with demo</li></ol>
+<ol><li>(Iterator and ListIterator deferred to next session)</li></ol>
+<h2>00:04 — Session context &amp; prior knowledge recap</h2>
+<p>Durga Sir opens by recalling that in earlier sessions the two main implementation classes of `List` were covered:</p>
+<ul><li>`ArrayList` — first implementation class</li></ul>
+<ul><li>`LinkedList` — second implementation class</li></ul>
+<p>Before diving into ArrayList vs LinkedList, he briefly revisits related interview topics already covered:</p>
+<p>Exam trap: If asked &quot;What is the difference between ArrayList and LinkedList?&quot;, do not answer with similarities like &quot;both allow duplicates&quot; or &quot;both preserve insertion order&quot; — those are similarities, not differences.</p>
+<h2>01:03 — ArrayList vs LinkedList: similarities first</h2>
+<p>Both belong to the same category — both are under `List`.</p>
+<h3>Shared properties (similarities)</h3>
+<p>Because so many properties match, the real differentiator is usage / performance behavior, not basic List contract rules.</p>
+<h2>02:25 — Performance-based differences (the board table)</h2>
+<h3>Point 1 — Best choice</h3>
+<h3>Point 2 — Worst choice</h3>
+<h3>Decision rule (interview answer)</h3>
+<p>Based on your requirement, choose ArrayList or LinkedList according to your most frequently performed operation:</p>
+<p>- Retrieval-heavy → ArrayList (highly recommended)</p>
+<p>- Update-heavy (insert/delete in the middle) → LinkedList (highly recommended)</p>
+<h2>07:22 — Internal memory structure (root cause of performance difference)</h2>
+<h3>Third comparison point — memory layout</h3>
+<p>Why the differences exist: entirely because of internal data structure.</p>
+<ul><li>ArrayList → array-based → consecutive memory → fast random access, costly middle insert/delete</li></ul>
+<ul><li>LinkedList → double linked list → non-consecutive nodes → fast middle insert/delete, slow random access</li></ul>
+<h2>ArrayList vs LinkedList — master comparison table</h2>
+<h2>10:24 — Transition: next List implementation — Vector</h2>
+<p>After ArrayList vs LinkedList, the next `List` implementation class is `Vector`.</p>
+<h2>10:42 — Vector: properties (point-by-point board notes)</h2>
+<h3>1. Underlying data structure</h3>
+<ul><li>Resizable array or growable array (same family as ArrayList)</li></ul>
+<h3>2. Insertion order</h3>
+<ul><li>Preserved</li></ul>
+<h3>3. Duplicate objects</h3>
+<ul><li>Allowed (because it is under List)</li></ul>
+<h3>4. Heterogeneous objects</h3>
+<ul><li>Allowed</li></ul>
+<h3>5. Null insertion</h3>
+<ul><li>Possible — can happily insert null; no problem</li></ul>
+<h3>6. Implemented interfaces</h3>
+<p>Vector implements:</p>
+<ul><li>`Serializable`</li></ul>
+<ul><li>`Cloneable`</li></ul>
+<ul><li>`RandomAccess`</li></ul>
+<h3>7. Synchronization / thread safety (THE key difference from ArrayList)</h3>
+<ul><li>Every method present in Vector is `synchronized`</li></ul>
+<ul><li>Therefore the Vector object is thread-safe</li></ul>
+<p>Summary: Except the synchronization point, almost all remaining properties are exactly the same as ArrayList.</p>
+<h2>14:59 — Vector constructors (4 constructors)</h2>
+<p>ArrayList has 3 constructors; LinkedList has 2 constructors (no capacity concept). Vector has 4 constructors because capacity terminology applies (array-based, consecutive memory).</p>
+<h3>Constructor 1 — no-arg (default capacity 10)</h3>
+<pre class='code'>import java.util.Vector;
+
+class VectorConstructorDemo1 {
+    public static void main(String[] args) {
+        Vector v = new Vector();
+        // Creates empty Vector with default initial capacity = 10
+        System.out.println(&quot;Default initial capacity: &quot; + v.capacity()); // 10
+    }
+}</pre>
+<p>Behavior when full: After inserting 10 elements, inserting the 11th element triggers:</p>
+<ol><li>Vector reaches max capacity</li></ol>
+<ol><li>A new (bigger) Vector internal array is created</li></ol>
+<ol><li>All existing elements are copied</li></ol>
+<ol><li>11th element is inserted</li></ol>
+<p>Growth formula (Vector):</p>
+<p>newCapacity = currentCapacity * 2</p>
+<p>Examples: 10 → 20 → 40 → 80 → …</p>
+<p>Important: ArrayList uses newCapacity = currentCapacity * 3/2 + 1. Do not assume the same formula everywhere — data structure implementation may differ. Vector simply doubles capacity.</p>
+<h3>Constructor 2 — specified initial capacity</h3>
+<pre class='code'>import java.util.Vector;
+
+class VectorConstructorDemo2 {
+    public static void main(String[] args) {
+        // If you know you need ~1000 objects upfront, avoid repeated resize:
+        // 10 → 20 → 40 → 80 → 160 → ... is wasteful
+        Vector v = new Vector(1000);
+        // Creates empty Vector with specified initial capacity = 1000
+        System.out.println(&quot;Initial capacity: &quot; + v.capacity()); // 1000
+    }
+}</pre>
+<p>Use case: When you know approximate final size at the beginning, create one large Vector upfront instead of many incremental resizes.</p>
+<h3>Constructor 3 — initial capacity + incremental capacity (Vector-only flexibility)</h3>
+<pre class='code'>import java.util.Vector;
+
+class VectorConstructorDemo3 {
+    public static void main(String[] args) {
+        // initialCapacity=1000, incrementalCapacity=5
+        // When full, grow by 5 each time instead of doubling to 2000
+        Vector v = new Vector(1000, 5);
+        System.out.println(&quot;Start: &quot; + v.capacity()); // 1000
+
+        for (int i = 1; i &lt;= 1000; i++) {
+            v.addElement(i);
+        }
+        System.out.println(&quot;After 1000 elements: &quot; + v.capacity()); // still 1000
+
+        v.addElement(1001); // 11th beyond 1000 → capacity becomes 1005
+        System.out.println(&quot;After 1001st element: &quot; + v.capacity()); // 1005
+
+        for (int i = 1002; i &lt;= 1005; i++) {
+            v.addElement(i);
+        }
+        System.out.println(&quot;After 1005 elements: &quot; + v.capacity()); // 1005
+
+        v.addElement(1006);
+        System.out.println(&quot;After 1006th element: &quot; + v.capacity()); // 1010
+    }
+}</pre>
+<p>Why this exists: If you create Vector(1000) and add 1001 elements, default doubling gives capacity 2000 — but you may only need 3–4 more slots. Incremental capacity lets you specify how much to grow (e.g. +5 each time).</p>
+<p>ArrayList has NO such constructor. ArrayList always follows newCapacity = currentCapacity * 3/2 + 1 with no way to specify incremental growth.</p>
+<h3>Constructor 4 — from Collection (inter-conversion)</h3>
+<pre class='code'>import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Vector;
+
+class VectorConstructorDemo4 {
+    public static void main(String[] args) {
+        Collection c = new ArrayList();
+        c.add(&quot;A&quot;);
+        c.add(&quot;B&quot;);
+
+        Vector v = new Vector(c);
+        // Creates equivalent Vector for the given Collection
+        System.out.println(v); // [A, B]
+    }
+}</pre>
+<p>Purpose: Inter-conversion between collection objects — create a Vector equivalent of any given Collection.</p>
+<h2>Vector constructors summary table</h2>
+<h2>26:12 — Vector-specific (legacy) methods</h2>
+<p>Vector came in Java 1.0 (1995) — legacy / old generation. Collection framework (List, ArrayList, etc.) came in Java 1.2 (~2000).</p>
+<p>Analogy Durga Sir uses: Old generation people had lengthy names; newer generation prefers short names (add vs addElement).</p>
+<h3>Method name mapping: Collection/List vs Vector</h3>
+<p>Notation used on board:</p>
+<ul><li>C = Collection method</li></ul>
+<ul><li>L = List method</li></ul>
+<ul><li>V = Vector-specific (legacy) method</li></ul>
+<h4>Category 1 — To add objects</h4>
+<h4>Category 2 — To remove objects</h4>
+<h4>Category 3 — To get objects</h4>
+<h4>Category 4 — Other miscellaneous Vector methods</h4>
+<p>Size vs Capacity:</p>
+<ul><li>`size()` → how many elements are actually present</li></ul>
+<ul><li>`capacity()` → maximum objects the internal array can hold before next resize</li></ul>
+<h2>38:23 — Why `capacity()` exists in Vector but not ArrayList</h2>
+<p>Question: Capacity method is in Vector — why not in ArrayList?</p>
+<p>Answer:</p>
+<ul><li>Java is a high-level language; as Java programmers we generally do not worry about memory-level details — resizing happens automatically.</li></ul>
+<ul><li>If you want memory-level control, use C, not Java.</li></ul>
+<ul><li>Vector is old generation (1.0) — some low-level facilities like capacity() were kept.</li></ul>
+<ul><li>Modern Collection framework (1.2+) deliberately did not expose capacity to Java programmers — not required for typical application code.</li></ul>
+<h2>40:06 — Vector capacity demo programs (board + IDE output)</h2>
+<h3>Demo A — Default capacity: 10 → stays 10 → becomes 20 after 11th add</h3>
+<pre class='code'>import java.util.Vector;
+
+class VectorDemo1 {
+    public static void main(String[] args) {
+        Vector v = new Vector();
+
+        System.out.println(&quot;Initial capacity: &quot; + v.capacity()); // 10
+
+        for (int i = 1; i &lt;= 10; i++) {
+            v.addElement(i); // legacy method; autoboxing: int → Integer
+        }
+        System.out.println(&quot;After 10 elements, capacity: &quot; + v.capacity()); // 10
+
+        v.addElement(11); // triggers resize: newCapacity = 10 * 2 = 20
+        System.out.println(&quot;After 11th element, capacity: &quot; + v.capacity()); // 20
+
+        System.out.println(&quot;Elements: &quot; + v);
+        // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    }
+}</pre>
+<p>Expected output:</p>
+<p>Initial capacity: 10
+After 10 elements, capacity: 10
+After 11th element, capacity: 20
+Elements: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]</p>
+<p>Autoboxing note: addElement(i) where i is int — primitive is auto-boxed to Integer object internally.</p>
+<h3>Demo B — Custom initial capacity 24 (no resize until full)</h3>
+<pre class='code'>import java.util.Vector;
+
+class VectorDemo2 {
+    public static void main(String[] args) {
+        Vector v = new Vector(24);
+        System.out.println(&quot;Initial capacity: &quot; + v.capacity()); // 24
+
+        for (int i = 1; i &lt;= 10; i++) {
+            v.addElement(i);
+        }
+        System.out.println(&quot;After 10 elements: &quot; + v.capacity()); // 24
+
+        v.addElement(11);
+        System.out.println(&quot;After 11 elements: &quot; + v.capacity()); // 24 (still space)
+
+        for (int i = 12; i &lt;= 24; i++) {
+            v.addElement(i);
+        }
+        System.out.println(&quot;After 24 elements: &quot; + v.capacity()); // 24
+
+        v.addElement(25);
+        System.out.println(&quot;After 25th element: &quot; + v.capacity()); // 48 (doubled)
+    }
+}</pre>
+<h3>Demo C — Initial capacity 10, incremental capacity 5</h3>
+<pre class='code'>import java.util.Vector;
+
+class VectorDemo3 {
+    public static void main(String[] args) {
+        Vector v = new Vector(10, 5);
+        System.out.println(&quot;Initial: &quot; + v.capacity()); // 10
+
+        for (int i = 1; i &lt;= 10; i++) {
+            v.addElement(i);
+        }
+        System.out.println(&quot;After 10 elements: &quot; + v.capacity()); // 10
+
+        v.addElement(11);
+        System.out.println(&quot;After 11th element: &quot; + v.capacity()); // 15 (not 20!)
+
+        for (int i = 12; i &lt;= 15; i++) {
+            v.addElement(i);
+        }
+        System.out.println(&quot;After 15 elements: &quot; + v.capacity()); // 15
+
+        v.addElement(16);
+        System.out.println(&quot;After 16th element: &quot; + v.capacity()); // 20
+    }
+}</pre>
+<h2>Growth formula comparison: ArrayList vs Vector</h2>
+<h2>46:36 — Stack: child class of Vector</h2>
+<p>Next implementation: `Stack`.</p>
+<h3>Stack properties</h3>
+<pre class='code'>import java.util.Stack;
+
+class StackConstructorDemo {
+    public static void main(String[] args) {
+        Stack s = new Stack(); // only constructor
+    }
+}</pre>
+<p>Default capacity: Mostly 10 (inherited from Vector) — verify with s.capacity().</p>
+<h2>48:21 — Stack-specific methods (5 methods)</h2>
+<p>Whenever we say &quot;stack&quot;, two methods immediately come to mind: push and pop. Stack has 5 dedicated methods:</p>
+<h2>50:50 — Index vs Offset (critical Stack concept)</h2>
+<p>Assume stack with elements pushed in order: A, B, C (bottom → top).</p>
+<p>        TOP
+         C   ← last pushed
+         B
+         A   ← first pushed
+        BOTTOM</p>
+<h3>Index (Vector/List style — bottom-up, zero-based)</h3>
+<h3>Offset (Stack search style — top-down, 1-based distance from top)</h3>
+<p>`search(Object o)` returns offset, NOT index.</p>
+<ul><li>s.search(&quot;A&quot;) → 3 (A is 3rd element from top)</li></ul>
+<ul><li>s.search(&quot;Z&quot;) → -1 (not found)</li></ul>
+<h2>55:14 — Stack demo program (board + compile/run output)</h2>
+<pre class='code'>import java.util.Stack;
+
+class StackDemo {
+    public static void main(String[] args) {
+        Stack s = new Stack();
+
+        s.push(&quot;A&quot;);
+        s.push(&quot;B&quot;);
+        s.push(&quot;C&quot;);
+
+        // Printing Stack directly → insertion order preserved in toString
+        System.out.println(s);           // [A, B, C]
+
+        // search() returns OFFSET from top, not index
+        System.out.println(s.search(&quot;A&quot;)); // 3
+        System.out.println(s.search(&quot;Z&quot;)); // -1
+
+        // If we POP elements → LIFO removal order: C, B, A
+        System.out.println(&quot;Pop: &quot; + s.pop()); // C
+        System.out.println(&quot;Pop: &quot; + s.pop()); // B
+        System.out.println(&quot;Pop: &quot; + s.pop()); // A
+    }
+}</pre>
+<p>Key clarification from class:</p>
+<ul><li>`System.out.println(s)` prints insertion order [A, B, C] because Stack extends Vector/List — insertion order is preserved in display.</li></ul>
+<ul><li>Removal order (via pop()) follows LIFO: C → B → A.</li></ul>
+<ul><li>`search(&quot;A&quot;)` → 3 (offset from top)</li></ul>
+<ul><li>`search(&quot;Z&quot;)` → -1 (not present)</li></ul>
+<p>Compile &amp; run (as shown in video):</p>
+<p>javac StackDemo.java
+java StackDemo</p>
+<p>Output:</p>
+<p>[A, B, C]
+3
+-1
+Pop: C
+Pop: B
+Pop: A</p>
+<h2>Stack index vs offset diagram (board)</h2>
+<p>Stack (bottom → top):  A, B, C
+
+Index (0-based from bottom):     A=0,  B=1,  C=2
+Offset (1-based from top):       C=1,  B=2,  A=3</p>
+<h2>61:08 — End of Vector &amp; Stack; intro to Three Cursors</h2>
+<p>Topics covered: Vector and Stack terminology complete.</p>
+<p>Next subtopic: The Three Cursors of Java</p>
+<h2>61:58 — What is a Cursor? (mango box analogy)</h2>
+<p>Analogy: Someone gives you a box of mangoes. You don&#x27;t eat all mangoes simultaneously by opening the box and putting your head in. Humans eat one by one — first mango, then second, then third…</p>
+<ul><li>Box = Collection</li></ul>
+<ul><li>Mangoes inside = Objects</li></ul>
+<ul><li>To get objects one by one from the collection → use Cursor concept</li></ul>
+<h3>Cursor definition (board)</h3>
+<p>If you want to get objects one by one from the collection, then we should go for Cursor concept.</p>
+<h3>Three types of cursors in Java</h3>
+<p>(This video covers Enumeration in detail; Iterator &amp; ListIterator come next.)</p>
+<h2>66:12 — Enumeration: need demonstrated with example</h2>
+<h3>Problem without cursor</h3>
+<pre class='code'>import java.util.Vector;
+
+class WithoutCursorDemo {
+    public static void main(String[] args) {
+        Vector v = new Vector();
+        for (int i = 0; i &lt;= 10; i++) {
+            v.addElement(i);
+        }
+        System.out.println(v);
+        // Prints ALL: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    }
+}</pre>
+<p>Requirement: Print only even numbers — must examine each object one-by-one, check if even, print if yes, skip if odd. Cannot achieve selective processing by just printing the whole Vector.</p>
+<h2>68:20 — Enumeration: creating and using</h2>
+<h3>Get Enumeration from Vector</h3>
+<p>Enumeration e = v.elements(); // Vector-specific method</p>
+<h3>Traversal loop</h3>
+<pre class='code'>while (e.hasMoreElements()) {
+    Integer i = (Integer) e.nextElement(); // return type is Object → cast needed
+    if (i % 2 == 0) {
+        System.out.println(i);
+    }
+}</pre>
+<p>Logic walkthrough:</p>
+<h2>71:34 — Enumeration properties (board)</h2>
+<h3>Where to use Enumeration</h3>
+<p>We can use Enumeration to get objects one by one from legacy collection objects.</p>
+<p>Legacy collections = old generation classes like Vector, Hashtable, etc. (Java 1.0 era).</p>
+<h3>How to create Enumeration object</h3>
+<p>We can create Enumeration object by using `elements()` method of Vector class.</p>
+<pre class='code'>public Enumeration elements();  // defined in Vector class</pre>
+<p>Example:</p>
+<p>Enumeration e = v.elements();</p>
+<h2>74:10 — Enumeration interface methods (only 2 methods)</h2>
+<p>Enumeration is a limited cursor — contains only two methods:</p>
+<pre class='code'>public boolean hasMoreElements();
+public Object nextElement();</pre>
+<p>Usage pattern:</p>
+<ol><li>Check hasMoreElements() → more elements available?</li></ol>
+<ol><li>If yes → call nextElement() to retrieve next object</li></ol>
+<ol><li>Repeat until no more elements</li></ol>
+<h2>75:21 — Complete Enumeration demo program</h2>
+<pre class='code'>import java.util.Enumeration;
+import java.util.Vector;
+
+class VectorEnumerationDemo {
+    public static void main(String[] args) {
+        Vector v = new Vector();
+
+        // Add 0 through 10 → 11 objects
+        for (int i = 0; i &lt;= 10; i++) {
+            v.addElement(i);
+        }
+
+        // Print entire vector (all elements)
+        System.out.println(&quot;Full Vector: &quot; + v);
+        // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+        // Create Enumeration cursor
+        Enumeration e = v.elements();
+
+        System.out.print(&quot;Even numbers only: &quot;);
+        while (e.hasMoreElements()) {
+            Integer num = (Integer) e.nextElement(); // Object → Integer cast
+            if (num % 2 == 0) {
+                System.out.print(num + &quot; &quot;);
+            }
+        }
+        System.out.println();
+        // Even numbers only: 0 2 4 6 8 10
+    }
+}</pre>
+<p>Compile &amp; run:</p>
+<p>javac VectorEnumerationDemo.java
+java VectorEnumerationDemo</p>
+<p>Expected output:</p>
+<p>Full Vector: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+Even numbers only: 0 2 4 6 8 10</p>
+<p>Important distinction:</p>
+<ul><li>System.out.println(v) → all values at once</li></ul>
+<ul><li>Enumeration loop → one-by-one processing with custom logic (filter evens)</li></ul>
+<h2>OCJP / SCJP exam checklist — Video 140</h2>
+<h3>Must know differences</h3>
+<ul><li>[ ] ArrayList vs LinkedList — performance (not duplicates/order)</li></ul>
+<ul><li>[ ] ArrayList implements RandomAccess; underlying resizable array</li></ul>
+<ul><li>[ ] LinkedList — doubly linked list; best for middle insert/delete</li></ul>
+<ul><li>[ ] Vector vs ArrayList — synchronized / thread-safe is the key difference</li></ul>
+<ul><li>[ ] Vector growth: double capacity; ArrayList: 3/2 + 1</li></ul>
+<ul><li>[ ] Vector has incremental capacity constructor; ArrayList does not</li></ul>
+<ul><li>[ ] Vector legacy methods: addElement, removeElement, elementAt, etc.</li></ul>
+<ul><li>[ ] Stack extends Vector; LIFO; methods: push, pop, peek, empty, search</li></ul>
+<ul><li>[ ] Stack search() returns offset from top (1-based), not index; -1 if absent</li></ul>
+<ul><li>[ ] Three cursors: Enumeration, Iterator, ListIterator</li></ul>
+<ul><li>[ ] Enumeration: legacy only; 2 methods; created via Vector.elements()</li></ul>
+<h3>Constructor counts (List implementations)</h3>
+<h2>Quick reference — method equivalence table</h2>
+<h2>Session ends at 1:17:22</h2>
+<p>Enumeration example completed and verified in IDE. Iterator and ListIterator differences will be covered in the next session (Video 141+).</p>
+<p>End of Video 140 study notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td><td></td></tr>
+<tr><td>Position</td><td>140 of 203</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Collections Part-5 \</td><td>\</td><td>Difference between Array list &amp; linked list</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 18m 37s</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>VmZrSCMkYoY</td><td></td><td></td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=VmZrSCMkYoY</td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>YouTube auto-captions</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Comparison</th><th>Key difference</th></tr>
+<tr><td>List vs Set</td><td>List allows duplicates &amp; preserves insertion order; Set does not allow duplicates &amp; does not preserve insertion order</td></tr>
+<tr><td>ArrayList vs Vector</td><td>Vector is synchronized (thread-safe); ArrayList is not synchronized (not thread-safe). Vector has relatively lower performance; ArrayList has higher performance</td></tr>
+<tr><td>Collection vs Collections</td><td>Already covered in prior sessions</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>ArrayList</th><th>LinkedList</th></tr>
+<tr><td>Duplicates allowed</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Insertion order preserved</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Heterogeneous objects allowed</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Null insertion possible</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Parent interface</td><td>List</td><td>List</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Best choice when…</th><th>Reason</th></tr>
+<tr><td>ArrayList</td><td>Frequent operation is retrieval (random access / get)</td><td>Implements `RandomAccess` marker interface → direct index-based access is fast</td></tr>
+<tr><td>LinkedList</td><td>Frequent operation is insertion or deletion in the middle</td><td>No shifting of all trailing elements; only pointer rewiring in the doubly-linked structure</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Worst choice when…</th><th>Reason</th></tr>
+<tr><td>ArrayList</td><td>Frequent insertion/deletion in the middle</td><td>Internally several shift operations are performed — elements after the insertion/deletion point must move</td></tr>
+<tr><td>LinkedList</td><td>Frequent retrieval operation</td><td>Must traverse from head (or known node); no random access to arbitrary index in O(1)</td></tr>
+</table>
+<table>
+<tr><th></th><th>ArrayList</th><th>LinkedList</th></tr>
+<tr><td>Internal implementation</td><td>Resizable / growable array</td><td>Doubly linked list</td></tr>
+<tr><td>Memory layout</td><td>Elements stored in consecutive memory locations</td><td>Elements NOT stored in consecutive memory locations</td></tr>
+<tr><td>Retrieval</td><td>Easy — e.g. 10th element: go directly to index 9</td><td>Difficult — must traverse node by node</td></tr>
+<tr><td>Insert/delete in middle</td><td>Costly — shift operations</td><td>Cheaper — pointer updates only</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Aspect</th><th>ArrayList</th><th>LinkedList</th></tr>
+<tr><td>1</td><td>Best choice</td><td>Retrieval operation</td><td>Insertion/deletion in the middle</td></tr>
+<tr><td>2</td><td>Worst choice</td><td>Insertion/deletion in the middle (shift ops)</td><td>Retrieval operation</td></tr>
+<tr><td>3</td><td>Underlying DS</td><td>Resizable / growable array</td><td>Doubly linked list</td></tr>
+<tr><td>4</td><td>Memory</td><td>Consecutive memory locations</td><td>Non-consecutive (linked nodes)</td></tr>
+<tr><td>5</td><td>Retrieval speed</td><td>Easy / fast</td><td>Difficult / slow</td></tr>
+<tr><td>6</td><td>Middle insert/delete</td><td>Slow (shifts)</td><td>Relatively fast</td></tr>
+<tr><td>7</td><td>RandomAccess interface</td><td>Yes</td><td>No</td></tr>
+<tr><td>8</td><td>Duplicates</td><td>Allowed</td><td>Allowed</td></tr>
+<tr><td>9</td><td>Insertion order</td><td>Preserved</td><td>Preserved</td></tr>
+<tr><td>10</td><td>Null elements</td><td>Allowed</td><td>Allowed</td></tr>
+<tr><td>11</td><td>Heterogeneous objects</td><td>Allowed</td><td>Allowed</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Syntax</th><th>Creates</th></tr>
+<tr><td>1</td><td>new Vector()</td><td>Empty Vector, default initial capacity 10</td></tr>
+<tr><td>2</td><td>new Vector(int initialCapacity)</td><td>Empty Vector with specified initial capacity</td></tr>
+<tr><td>3</td><td>new Vector(int initialCapacity, int incrementalCapacity)</td><td>Empty Vector; grows by incrementalCapacity instead of doubling</td></tr>
+<tr><td>4</td><td>new Vector(Collection c)</td><td>Equivalent Vector copy of given Collection</td></tr>
+</table>
+<table>
+<tr><th>Collection / List</th><th>Vector equivalent</th></tr>
+<tr><td>add(Object o) (C/L)</td><td>addElement(Object o) (V)</td></tr>
+<tr><td>add(int index, Object o) (L)</td><td>insertElementAt(Object o, int index) (V)</td></tr>
+<tr><td>addAll(Collection c) (C)</td><td>addAll(Collection c)</td></tr>
+<tr><td>addAll(int index, Collection c) (L)</td><td>addAll(int index, Collection c)</td></tr>
+</table>
+<table>
+<tr><th>Collection / List</th><th>Vector equivalent</th></tr>
+<tr><td>remove(Object o) (C)</td><td>removeElement(Object o) (V)</td></tr>
+<tr><td>remove(int index) (L)</td><td>removeElementAt(int index) (V)</td></tr>
+<tr><td>clear() (C/L)</td><td>removeAllElements() (V)</td></tr>
+</table>
+<table>
+<tr><th>List</th><th>Vector equivalent</th></tr>
+<tr><td>get(int index) (L)</td><td>elementAt(int index) (V)</td></tr>
+<tr><td>—</td><td>firstElement() (V)</td></tr>
+<tr><td>—</td><td>lastElement() (V)</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Purpose</th></tr>
+<tr><td>size()</td><td>Number of elements currently stored</td></tr>
+<tr><td>capacity()</td><td>Total slots the internal array can hold (may be &gt; size)</td></tr>
+<tr><td>elements()</td><td>Returns `Enumeration` object to traverse elements one-by-one</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>When full</th><th>New capacity formula</th></tr>
+<tr><td>ArrayList</td><td>Resizes automatically</td><td>currentCapacity * 3/2 + 1</td></tr>
+<tr><td>Vector (default)</td><td>Resizes automatically</td><td>currentCapacity * 2</td></tr>
+<tr><td>Vector (custom incremental)</td><td>Resizes by increment</td><td>currentCapacity + incrementalCapacity</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>Detail</th></tr>
+<tr><td>Inheritance</td><td>Child class of `Vector`</td></tr>
+<tr><td>All Vector properties</td><td>Inherited (resizable array, synchronized methods, etc.)</td></tr>
+<tr><td>Special purpose</td><td>Specially designed class for LIFO — Last In First Out order</td></tr>
+<tr><td>Constructors</td><td>Only one — default no-arg constructor</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Signature</th><th>Purpose</th></tr>
+<tr><td>push</td><td>Object push(Object o)</td><td>Insert (push) object onto top of stack</td></tr>
+<tr><td>pop</td><td>Object pop()</td><td>Remove and return top of stack</td></tr>
+<tr><td>peek</td><td>Object peek()</td><td>Return top of stack without removal</td></tr>
+<tr><td>empty</td><td>boolean empty()</td><td>Returns true if stack is empty</td></tr>
+<tr><td>search</td><td>int search(Object o)</td><td>Returns offset from top if element found; otherwise -1</td></tr>
+</table>
+<table>
+<tr><th>Element</th><th>Index</th></tr>
+<tr><td>A</td><td>0</td></tr>
+<tr><td>B</td><td>1</td></tr>
+<tr><td>C</td><td>2</td></tr>
+</table>
+<table>
+<tr><th>Element</th><th>Offset</th></tr>
+<tr><td>C (top)</td><td>1</td></tr>
+<tr><td>B</td><td>2</td></tr>
+<tr><td>A</td><td>3</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Cursor</th></tr>
+<tr><td>1</td><td>Enumeration</td></tr>
+<tr><td>2</td><td>Iterator</td></tr>
+<tr><td>3</td><td>ListIterator</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>nextElement</th><th>Even?</th><th>Action</th></tr>
+<tr><td>1</td><td>0</td><td>Yes</td><td>Print 0</td></tr>
+<tr><td>2</td><td>1</td><td>No</td><td>Skip</td></tr>
+<tr><td>3</td><td>2</td><td>Yes</td><td>Print 2</td></tr>
+<tr><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+<tr><td>Final output</td><td></td><td></td><td>0 2 4 6 8 10</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Return type</th><th>Purpose</th></tr>
+<tr><td>hasMoreElements()</td><td>boolean</td><td>Returns whether more elements exist</td></tr>
+<tr><td>nextElement()</td><td>Object</td><td>Returns the next element</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th># Constructors</th><th>Capacity support</th></tr>
+<tr><td>ArrayList</td><td>3</td><td>Yes (no incremental)</td></tr>
+<tr><td>LinkedList</td><td>2</td><td>No</td></tr>
+<tr><td>Vector</td><td>4</td><td>Yes (+ incremental)</td></tr>
+<tr><td>Stack</td><td>1</td><td>Inherited from Vector</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>ArrayList / List</th><th>Vector (legacy)</th></tr>
+<tr><td>Add</td><td>add(o)</td><td>addElement(o)</td></tr>
+<tr><td>Add at index</td><td>add(index, o)</td><td>insertElementAt(o, index)</td></tr>
+<tr><td>Remove by object</td><td>remove(o)</td><td>removeElement(o)</td></tr>
+<tr><td>Remove by index</td><td>remove(index)</td><td>removeElementAt(index)</td></tr>
+<tr><td>Clear all</td><td>clear()</td><td>removeAllElements()</td></tr>
+<tr><td>Get by index</td><td>get(index)</td><td>elementAt(index)</td></tr>
+<tr><td>First element</td><td>—</td><td>firstElement()</td></tr>
+<tr><td>Last element</td><td>—</td><td>lastElement()</td></tr>
+<tr><td>Size</td><td>size()</td><td>size()</td></tr>
+<tr><td>Capacity</td><td>N/A</td><td>capacity()</td></tr>
+<tr><td>Cursor</td><td>Iterator</td><td>elements() → Enumeration</td></tr>
+</table>
+</body></html>

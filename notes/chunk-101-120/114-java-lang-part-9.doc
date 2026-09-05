@@ -1,0 +1,662 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>114-java-lang-part-9</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 114 — `java.lang` Part 9: Wrapper Utility Methods (`parseXXX`, `toString`), Partial Hierarchy, `Void`</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This is Part 9 of the java.lang wrapper-class series. Video 113 ended after valueOf() and xxxValue(). This session completes the four main wrapper utility method families:</p>
+<ol><li>`valueOf()` — recap (primitive or String → wrapper object)</li></ol>
+<ol><li>`xxxValue()` — recap (wrapper object → primitive)</li></ol>
+<ol><li>`parseXXX()` — String → primitive (new in this video)</li></ol>
+<ol><li>`toString()` — wrapper object or primitive → String (new in this video)</li></ol>
+<p>Second half of the session covers:</p>
+<ul><li>A conversion cheat sheet (String ↔ wrapper object ↔ primitive) — interview drill</li></ul>
+<ul><li>Partial hierarchy of java.lang package</li></ul>
+<ul><li>Key conclusions about wrapper classes (final, immutable, inheritance)</li></ul>
+<ul><li>Brief introduction to `Void` class (reflection use case)</li></ul>
+<h2>00:05 — Recap: utility methods covered so far</h2>
+<p>Durga Sir opens by recalling the first two utility methods from the previous session:</p>
+<p>Interview one-liners:</p>
+<ul><li>`valueOf()` → primitive or String to wrapper object</li></ul>
+<ul><li>`xxxValue()` → wrapper object to primitive</li></ul>
+<h2>01:02 — Utility method 3: `parseXXX()`</h2>
+<h3>Purpose (single word answer)</h3>
+<p>String → primitive</p>
+<p>If you already have a String and want a primitive, use `parseXXX()` — not valueOf().</p>
+<h3>Form 1 — `parseXXX(String s)` (decimal string)</h3>
+<p>Every wrapper class EXCEPT `Character` contains:</p>
+<pre class='code'>public static primitive parseXXX(String s)</pre>
+<ul><li>Return type = corresponding primitive (int, double, boolean, …)</li></ul>
+<ul><li>Method name = parse + wrapper name (parseInt, parseDouble, parseBoolean, …)</li></ul>
+<ul><li>Argument = String representing a number/value in decimal (default base 10)</li></ul>
+<p>Board demo — Form 1 examples:</p>
+<pre class='code'>class ParseForm1Demo {
+    public static void main(String[] args) {
+        int i = Integer.parseInt(&quot;10&quot;);
+        double d = Double.parseDouble(&quot;10.5&quot;);
+        boolean b = Boolean.parseBoolean(&quot;true&quot;);
+
+        System.out.println(i);  // 10
+        System.out.println(d);  // 10.5
+        System.out.println(b);  // true
+    }
+}</pre>
+<p>Why no `Character.parseChar()`?</p>
+<p>Whenever a String argument is involved, `Character` does not participate in the same static-parse pattern. Character wrapper is special (only one constructor taking char; no String-based parse in this family).</p>
+<p>Classes with Form 1 `parseXXX(String)`:</p>
+<p>Invalid string → runtime exception:</p>
+<p>int bad = Integer.parseInt(&quot;ten&quot;);  // compiles; Runtime: NumberFormatException</p>
+<h3>Form 2 — `parseXXX(String s, int radix)` (specified base)</h3>
+<p>Every integral-type wrapper class contains a second overload:</p>
+<pre class='code'>public static primitive parseXXX(String s, int radix)</pre>
+<p>Integral wrappers only: Byte, Short, Integer, Long</p>
+<ul><li>NOT available for Float / Double (floating-point bases don&#x27;t apply)</li></ul>
+<ul><li>NOT available for Boolean / Character</li></ul>
+<p>Allowed radix range: 2 to 36</p>
+<ul><li>Digits 0–9 for bases ≤ 10</li></ul>
+<ul><li>For bases 11–36, letters A–Z (case-insensitive) represent digit values 10–35</li></ul>
+<ul><li>Radix 37 → NumberFormatException</li></ul>
+<p>Why max 36? Need 36 distinct symbols: 0–9 + A–Z.</p>
+<p>Board demo — binary string to int:</p>
+<pre class='code'>class ParseForm2Demo {
+    public static void main(String[] args) {
+        // &quot;1111&quot; in base 2 (binary) = 1+2+4+8 = 15 decimal
+        int i = Integer.parseInt(&quot;1111&quot;, 2);
+        System.out.println(i);  // 15
+    }
+}</pre>
+<p>Another board example (Durga Sir writes on screen):</p>
+<pre class='code'>class ParseRadixDemo {
+    public static void main(String[] args) {
+        int i = Integer.parseInt(&quot;1111&quot;, 2);
+        System.out.println(i);  // 15
+
+        // Any base 2..36 works:
+        int base7 = Integer.parseInt(&quot;20&quot;, 7);   // 2*7 + 0 = 14
+        int base16 = Integer.parseInt(&quot;FF&quot;, 16); // 255
+        System.out.println(base7);   // 14
+        System.out.println(base16);  // 255
+    }
+}</pre>
+<p>Summary — two forms of `parseXXX`:</p>
+<p>One-word purpose: parseXXX = String to primitive</p>
+<h2>12:29 — Utility method 4: `toString()`</h2>
+<h3>Overall purpose</h3>
+<p>Object (wrapper) or primitive → String</p>
+<p>Two directions, four forms total:</p>
+<h3>Form 1 — instance `toString()`: wrapper object → String</h3>
+<p>Every wrapper class, including `Character`, contains:</p>
+<pre class='code'>public String toString()</pre>
+<ul><li>Instance method (called on wrapper object reference)</li></ul>
+<ul><li>Overrides Object.toString() — in all wrapper classes, overridden to return content directly (not Integer@hashCode)</li></ul>
+<p>Board demo — wrapper object to String:</p>
+<pre class='code'>class ToStringForm1Demo {
+    public static void main(String[] args) {
+        Integer i = new Integer(10);
+        String s = i.toString();
+
+        System.out.println(s);  // 10
+        System.out.println(i);  // 10 — println calls i.toString() internally
+    }
+}</pre>
+<p>Key rule — printing wrapper references:</p>
+<p>Whenever you print a wrapper object reference (System.out.println(i)), internally `toString()` is called.</p>
+<pre class='code'>class PrintWrapperDemo {
+    public static void main(String[] args) {
+        Integer i = new Integer(10);
+        String s = i.toString();
+
+        System.out.println(s);  // 10
+        System.out.println(i);  // 10 — same as i.toString()
+    }
+}</pre>
+<p>Why output is `10` not `Integer@1a2b3c`:</p>
+<p>All wrapper classes override toString() to return the stored value as a String, not the default ClassName@hexHashCode from Object.</p>
+<p>Relation to `Object` class:</p>
+<ul><li>Object defines public String toString()</li></ul>
+<ul><li>Every wrapper class overrides it</li></ul>
+<ul><li>This is the overriding version of Object&#x27;s toString()</li></ul>
+<h3>Form 2 — static `toString(primitive)`: primitive → String</h3>
+<p>Every wrapper class, including `Character`, contains:</p>
+<pre class='code'>public static String toString(primitive p)</pre>
+<ul><li>Static method — call via class name</li></ul>
+<ul><li>Converts primitive to String (decimal representation by default)</li></ul>
+<p>Board demo — primitive to String:</p>
+<pre class='code'>class ToStringForm2Demo {
+    public static void main(String[] args) {
+        String s1 = Integer.toString(10);
+        String s2 = Boolean.toString(true);
+        String s3 = Character.toString(&#x27;a&#x27;);
+
+        System.out.println(s1);  // 10
+        System.out.println(s2);  // true
+        System.out.println(s3);  // a
+    }
+}</pre>
+<p>Contrast Form 1 vs Form 2:</p>
+<p>| | Form 1 (instance) | Form 2 (static) |</p>
+<p>|--|-------------------|-----------------|</p>
+<p>| Input | wrapper object | primitive |</p>
+<p>| Call style | obj.toString() | Integer.toString(10) |</p>
+<p>| Available in | all wrappers incl. Character | all wrappers incl. Character |</p>
+<h3>Form 3 — static `toString(primitive, int radix)`: primitive → radix String</h3>
+<p>Only two classes: Integer and Long</p>
+<pre class='code'>public static String toString(primitive p, int radix)</pre>
+<ul><li>Converts primitive to String in the specified base</li></ul>
+<ul><li>Radix range: 2 to 36</li></ul>
+<p>Board demo — decimal 15 to binary string:</p>
+<pre class='code'>class ToStringForm3Demo {
+    public static void main(String[] args) {
+        String s = Integer.toString(15, 2);  // 15 → binary
+        System.out.println(s);  // 1111
+    }
+}</pre>
+<p>More radix examples:</p>
+<pre class='code'>class ToStringRadixDemo {
+    public static void main(String[] args) {
+        System.out.println(Integer.toString(15, 2));   // 1111  (binary)
+        System.out.println(Integer.toString(15, 7));   // 21    (base 7)
+        System.out.println(Integer.toString(255, 16)); // ff    (hex)
+    }
+}</pre>
+<p>NOT available in: Byte, Short, Float, Double, Boolean, Character</p>
+<h3>Form 4 — static `toBinaryString` / `toOctalString` / `toHexString`</h3>
+<p>Only two classes: Integer and Long</p>
+<p>Shortcut methods for the three most common bases — no need to pass radix constant:</p>
+<pre class='code'>public static String toBinaryString(primitive p)   // base 2
+public static String toOctalString(primitive p)    // base 8
+public static String toHexString(primitive p)       // base 16</pre>
+<p>Board demo — all three bases for decimal 10:</p>
+<pre class='code'>class ToStringForm4Demo {
+    public static void main(String[] args) {
+        System.out.println(Integer.toBinaryString(10));  // 1010
+        System.out.println(Integer.toOctalString(10));   // 12
+        System.out.println(Integer.toHexString(10));     // a
+    }
+}</pre>
+<p>Board demo — binary string for 15 (shortcut vs Form 3):</p>
+<pre class='code'>class BinaryStringDemo {
+    public static void main(String[] args) {
+        // Form 3 — general radix:
+        String s1 = Integer.toString(15, 2);
+        System.out.println(s1);  // 1111
+
+        // Form 4 — shortcut:
+        String s2 = Integer.toBinaryString(15);
+        System.out.println(s2);  // 1111
+    }
+}</pre>
+<p>Octal and hex for 15:</p>
+<pre class='code'>class OctalHexDemo {
+    public static void main(String[] args) {
+        System.out.println(Integer.toOctalString(15));  // 17
+        System.out.println(Integer.toHexString(15));    // f
+    }
+}</pre>
+<p>Form 4 availability:</p>
+<p>Only three bases have dedicated shortcut methods — not arbitrary radix like Form 3.</p>
+<h3>Summary — four forms of `toString`</h3>
+<p>Total purpose in one line: wrapper object or primitive → String</p>
+<h2>34:28 — All four utility methods complete</h2>
+<p>Durga Sir confirms all four wrapper utility method families are now covered:</p>
+<h2>35:39 — Rapid-fire conversion drill (≤1 second answers)</h2>
+<p>Durga Sir runs a classroom speed drill. Compulsory clarity for interviews:</p>
+<h3>Q&amp;A flash cards</h3>
+<h3>Conversion diagram (three types dancing)</h3>
+<p>        ┌──────────┐
+        │  String  │
+        └────┬─────┘
+             │ parseXXX()          valueOf(String)
+             ▼                     ▲
+        ┌──────────┐         ┌──────────┐
+        │ Primitive│◄───────►│  Wrapper │
+        └────┬─────┘ xxxValue│  Object  │
+             │    valueOf()  └────┬─────┘
+             │ toString(static)   │ toString(instance)
+             ▼                     ▼
+        ┌──────────┐         ┌──────────┐
+        │  String  │         │  String  │
+        └──────────┘         └──────────┘</p>
+<h3>Complete conversion table</h3>
+<p>Interview rule: Given any conversion among String, wrapper object, and primitive — answer immediately without hesitation.</p>
+<h2>42:27 — Partial hierarchy of `java.lang` package</h2>
+<p>Durga Sir draws the partial hierarchy — not every class in java.lang, only what has been covered plus key wrapper structure.</p>
+<h3>Hierarchy diagram</h3>
+<p>java.lang.Object                    ← root of all Java classes
+├── String                          ← final
+├── StringBuffer                    ← final
+├── StringBuilder                   ← final
+├── Number                          ← abstract
+│   ├── Byte                        ← final wrapper
+│   ├── Short                       ← final wrapper
+│   ├── Integer                     ← final wrapper
+│   ├── Long                        ← final wrapper
+│   ├── Float                       ← final wrapper
+│   └── Double                      ← final wrapper
+├── Boolean                         ← final wrapper (NOT under Number)
+├── Character                       ← final wrapper (NOT under Number)
+└── Void                            ← final (sometimes treated as wrapper)</p>
+<p>Also in `java.lang` but not shown in partial diagram:</p>
+<ul><li>System, Runtime, Exception hierarchy, Thread, etc.</li></ul>
+<ul><li>Diagram is partial — only classes covered in the series so far</li></ul>
+<h3>Parent-child clarity table</h3>
+<h2>46:44 — Conclusions from partial hierarchy</h2>
+<h3>Conclusion 1 — Wrappers NOT child of `Number`</h3>
+<p>Wrapper classes which are NOT child class of `Number`:</p>
+<ul><li>Boolean</li></ul>
+<ul><li>Character</li></ul>
+<p>All numeric wrappers (Byte, Short, Integer, Long, Float, Double) extend Number.</p>
+<h3>Conclusion 2 — Wrappers NOT direct child of `Object`</h3>
+<p>Wrapper classes which are NOT direct child class of `Object`:</p>
+<ul><li>Byte, Short, Integer, Long, Float, Double</li></ul>
+<p>These extend Number first, then Number extends Object.</p>
+<p>Direct children of Object among wrappers: Boolean, Character (and Void).</p>
+<h3>Conclusion 3 — Final classes</h3>
+<p>Final classes (from diagram):</p>
+<ul><li>String, StringBuffer, StringBuilder</li></ul>
+<ul><li>All wrapper classes are final</li></ul>
+<p>Cannot subclass any wrapper class.</p>
+<h3>Conclusion 4 — Immutability</h3>
+<p>In addition to `String` objects, all wrapper class objects are also immutable.</p>
+<ul><li>Cannot change the internal value after creation</li></ul>
+<ul><li>Operations like x++ on Integer create new objects (relevant for autoboxing session, Video 115)</li></ul>
+<pre class='code'>class ImmutabilityDemo {
+    public static void main(String[] args) {
+        Integer x = new Integer(10);
+        Integer y = x;       // same reference
+        x = new Integer(20); // x points to NEW object; y still holds 10
+        System.out.println(y);  // 10
+    }
+}</pre>
+<h3>Conclusion 5 — `Void` as quasi-wrapper</h3>
+<p>Some books/sources also consider `Void` class as a wrapper class (debatable — very few members, special purpose).</p>
+<h2>51:05 — `Void` class introduction</h2>
+<h3>Why discuss `Void`?</h3>
+<ul><li>Some interviewers may ask: &quot;Can you explain `Void` class?&quot;</li></ul>
+<ul><li>Unlike String (hours of material) or Object (6–7 hours), Void is small — but worth knowing</li></ul>
+<ul><li>Sometimes treated as wrapper class alongside the eight standard wrappers</li></ul>
+<h3>Prototype / API structure</h3>
+<pre class='code'>public final class Void extends Object {
+    // No methods declared in Void class
+
+    public static final Class&lt;Void&gt; TYPE;
+}</pre>
+<p>Properties:</p>
+<h3>`Void` = class representation of `void` keyword</h3>
+<p>Analogy:</p>
+<p>Just as Integer wraps int, `Void` is the class representation of the `void` keyword in Java.</p>
+<h3>Where is `Void` used? — Reflection</h3>
+<p>Primary use case: Reflection API — checking whether a method&#x27;s return type is void or not.</p>
+<p>Board demo — reflection check:</p>
+<pre class='code'>import java.lang.reflect.Method;
+
+class VoidReflectionDemo {
+    void m1() { System.out.println(&quot;void method&quot;); }
+    int m2() { return 10; }
+
+    public static void main(String[] args) throws Exception {
+        VoidReflectionDemo obj = new VoidReflectionDemo();
+
+        Method method1 = obj.getClass().getMethod(&quot;m1&quot;);
+        Method method2 = obj.getClass().getMethod(&quot;m2&quot;);
+
+        System.out.println(method1.getReturnType() == Void.TYPE);  // true
+        System.out.println(method2.getReturnType() == Void.TYPE);  // false
+        System.out.println(method2.getReturnType() == int.class);  // true
+    }
+}</pre>
+<p>Key comparison:</p>
+<p>method.getReturnType() == Void.TYPE   // true if return type is void
+method.getReturnType() == void.class  // same — Void.TYPE equals void.class</p>
+<h3>`Void` quick facts (interview)</h3>
+<h2>59:19 — Session end</h2>
+<p>Session completes:</p>
+<ul><li>All four wrapper utility methods (valueOf, xxxValue, parseXXX, toString)</li></ul>
+<ul><li>Conversion cheat sheet (String ↔ wrapper ↔ primitive)</li></ul>
+<ul><li>Partial java.lang hierarchy</li></ul>
+<ul><li>Wrapper conclusions (final, immutable, inheritance)</li></ul>
+<ul><li>Brief Void class overview</li></ul>
+<p>Next in series: Autoboxing / Autounboxing (Video 115).</p>
+<h2>Combined board demo — all utility methods in one program</h2>
+<pre class='code'>class WrapperUtilityMethodsDemo {
+    public static void main(String[] args) {
+        // === valueOf: primitive/String → wrapper ===
+        Integer w1 = Integer.valueOf(10);
+        Integer w2 = Integer.valueOf(&quot;10&quot;);
+
+        // === xxxValue: wrapper → primitive ===
+        int p1 = w1.intValue();
+
+        // === parseXXX: String → primitive ===
+        int p2 = Integer.parseInt(&quot;10&quot;);
+        int p3 = Integer.parseInt(&quot;1111&quot;, 2);  // 15
+
+        // === toString Form 1: wrapper → String ===
+        String s1 = w1.toString();
+
+        // === toString Form 2: primitive → String ===
+        String s2 = Integer.toString(10);
+
+        // === toString Form 3: primitive → radix String ===
+        String s3 = Integer.toString(15, 2);   // &quot;1111&quot;
+
+        // === toString Form 4: shortcuts ===
+        String s4 = Integer.toBinaryString(15); // &quot;1111&quot;
+        String s5 = Integer.toOctalString(10);  // &quot;12&quot;
+        String s6 = Integer.toHexString(10);    // &quot;a&quot;
+
+        System.out.println(&quot;valueOf: &quot; + w1 + &quot;, &quot; + w2);
+        System.out.println(&quot;xxxValue: &quot; + p1);
+        System.out.println(&quot;parseInt: &quot; + p2 + &quot;, radix: &quot; + p3);
+        System.out.println(&quot;toString F1: &quot; + s1);
+        System.out.println(&quot;toString F2: &quot; + s2);
+        System.out.println(&quot;toString F3: &quot; + s3);
+        System.out.println(&quot;toString F4: &quot; + s4 + &quot;, &quot; + s5 + &quot;, &quot; + s6);
+    }
+}</pre>
+<p>Expected output:</p>
+<p>valueOf: 10, 10
+xxxValue: 10
+parseInt: 10, radix: 15
+toString F1: 10
+toString F2: 10
+toString F3: 1111
+toString F4: 1111, 12, a</p>
+<h2>Full transcript coverage (timestamp index)</h2>
+<h2>ASR decode notes (Whisper STT corrections)</h2>
+<h2>Quick reference card</h2>
+<p>Wrapper utility methods (4 families)
+├── valueOf()        → primitive or String → wrapper object
+├── xxxValue()       → wrapper object → primitive
+├── parseXXX()
+│   ├── Form 1: parseXXX(String)           → decimal String to primitive (all except Character)
+│   └── Form 2: parseXXX(String, int radix) → radix String to primitive (Byte, Short, Integer, Long)
+└── toString()
+    ├── Form 1: instance toString()                    → wrapper object to String (all wrappers)
+    ├── Form 2: static toString(primitive)             → primitive to String (all wrappers)
+    ├── Form 3: static toString(primitive, int radix)  → primitive to radix String (Integer, Long)
+    └── Form 4: toBinaryString / toOctalString / toHexString (Integer, Long)
+
+Conversion cheat sheet
+├── String → primitive       : parseXXX()
+├── String → wrapper object  : valueOf(String)
+├── primitive → wrapper      : valueOf(primitive)
+├── wrapper → primitive      : xxxValue()
+├── wrapper → String         : toString() instance
+└── primitive → String       : toString(primitive) static
+
+java.lang partial hierarchy conclusions
+├── NOT under Number: Boolean, Character
+├── NOT direct child of Object: Byte, Short, Integer, Long, Float, Double (via Number)
+├── All wrappers + String/StringBuffer/StringBuilder: final
+├── All wrapper objects: immutable
+└── Void: class representation of void; used in Reflection (Void.TYPE)
+
+Radix rules (parseXXX Form 2 and toString Form 3)
+└── Allowed range: 2 to 36 (digits 0-9, letters A-Z for 10-35)</p>
+<h2>Interview trap questions</h2>
+<h2>Method availability matrix</h2>
+<h3>`parseXXX` availability</h3>
+<h3>`toString` availability</h3>
+<p>End of Video 114 notes — java.lang Part 9, wrapper utility methods (`parseXXX`, `toString`), partial hierarchy, Void class</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: java.lang.package Part-9 \</td><td>\</td><td>wrapper class \</td><td>\</td><td>Utility methods</td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Position</td><td>114 of 203</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Series</td><td>java.lang.package</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Topic</td><td>Wrapper utility methods (parseXXX, toString); conversion map; partial java.lang hierarchy; Void class</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Duration</td><td>59m 51s</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>pmemJ6QfWjo</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=pmemJ6QfWjo</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT</td><td></td><td></td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Direction</th><th>Purpose</th></tr>
+<tr><td>valueOf()</td><td>primitive or String → wrapper object</td><td>Create wrapper object for given primitive or String</td></tr>
+<tr><td>xxxValue()</td><td>wrapper object → primitive</td><td>Get primitive value from wrapper object</td></tr>
+</table>
+<table>
+<tr><th>You have</th><th>You want</th><th>Method</th></tr>
+<tr><td>String</td><td>primitive</td><td>parseXXX()</td></tr>
+<tr><td>String</td><td>wrapper object</td><td>valueOf(String)</td></tr>
+<tr><td>primitive</td><td>wrapper object</td><td>valueOf(primitive)</td></tr>
+<tr><td>wrapper object</td><td>primitive</td><td>xxxValue()</td></tr>
+</table>
+<table>
+<tr><th>Wrapper</th><th>Method</th><th>Example</th></tr>
+<tr><td>Byte</td><td>parseByte(String)</td><td>Byte.parseByte(&quot;10&quot;)</td></tr>
+<tr><td>Short</td><td>parseShort(String)</td><td>Short.parseShort(&quot;10&quot;)</td></tr>
+<tr><td>Integer</td><td>parseInt(String)</td><td>Integer.parseInt(&quot;10&quot;)</td></tr>
+<tr><td>Long</td><td>parseLong(String)</td><td>Long.parseLong(&quot;10&quot;)</td></tr>
+<tr><td>Float</td><td>parseFloat(String)</td><td>Float.parseFloat(&quot;10.5&quot;)</td></tr>
+<tr><td>Double</td><td>parseDouble(String)</td><td>Double.parseDouble(&quot;10.5&quot;)</td></tr>
+<tr><td>Boolean</td><td>parseBoolean(String)</td><td>Boolean.parseBoolean(&quot;true&quot;)</td></tr>
+<tr><td>~~Character~~</td><td>(none)</td><td>—</td></tr>
+</table>
+<table>
+<tr><th>Form</th><th>Signature</th><th>Available in</th><th>Purpose</th></tr>
+<tr><td>Form 1</td><td>parseXXX(String s)</td><td>All wrappers except Character</td><td>Decimal string → primitive</td></tr>
+<tr><td>Form 2</td><td>parseXXX(String s, int radix)</td><td>Byte, Short, Integer, Long only</td><td>Radix string → primitive</td></tr>
+</table>
+<table>
+<tr><th>Source</th><th>Method kind</th><th>Example</th></tr>
+<tr><td>Wrapper object → String</td><td>instance toString()</td><td>i.toString()</td></tr>
+<tr><td>Primitive → String</td><td>static toString(primitive)</td><td>Integer.toString(10)</td></tr>
+<tr><td>Primitive → radix String</td><td>static toString(primitive, radix)</td><td>Integer.toString(15, 2)</td></tr>
+<tr><td>Primitive → binary/octal/hex String</td><td>static toBinaryString / toOctalString / toHexString</td><td>Integer.toBinaryString(15)</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Base</th><th>Classes</th></tr>
+<tr><td>toBinaryString(p)</td><td>2</td><td>Integer, Long</td></tr>
+<tr><td>toOctalString(p)</td><td>8</td><td>Integer, Long</td></tr>
+<tr><td>toHexString(p)</td><td>16</td><td>Integer, Long</td></tr>
+</table>
+<table>
+<tr><th>Form</th><th>Signature</th><th>Instance/Static</th><th>Classes</th><th>Purpose</th></tr>
+<tr><td>1</td><td>public String toString()</td><td>Instance</td><td>All wrappers incl. Character</td><td>Wrapper object → String</td></tr>
+<tr><td>2</td><td>public static String toString(primitive p)</td><td>Static</td><td>All wrappers incl. Character</td><td>Primitive → String (decimal)</td></tr>
+<tr><td>3</td><td>public static String toString(primitive p, int radix)</td><td>Static</td><td>Integer, Long only</td><td>Primitive → radix String</td></tr>
+<tr><td>4</td><td>toBinaryString / toOctalString / toHexString</td><td>Static</td><td>Integer, Long only</td><td>Primitive → base 2/8/16 String</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Method</th><th>Conversion</th></tr>
+<tr><td>1</td><td>valueOf()</td><td>primitive or String → wrapper object</td></tr>
+<tr><td>2</td><td>xxxValue()</td><td>wrapper object → primitive</td></tr>
+<tr><td>3</td><td>parseXXX()</td><td>String → primitive</td></tr>
+<tr><td>4</td><td>toString()</td><td>wrapper object or primitive → String</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer (method)</th></tr>
+<tr><td>Purpose of parseXXX()?</td><td>String → primitive</td></tr>
+<tr><td>Purpose of valueOf()?</td><td>primitive or String → wrapper object</td></tr>
+<tr><td>Purpose of xxxValue()?</td><td>wrapper object → primitive</td></tr>
+<tr><td>Wrapper object → String?</td><td>toString() (instance)</td></tr>
+<tr><td>String → primitive?</td><td>parseXXX()</td></tr>
+<tr><td>Primitive → wrapper object?</td><td>valueOf()</td></tr>
+<tr><td>Wrapper object → primitive?</td><td>xxxValue()</td></tr>
+<tr><td>Primitive → String?</td><td>toString() (static)</td></tr>
+<tr><td>String → wrapper object?</td><td>valueOf(String)</td></tr>
+</table>
+<table>
+<tr><th>From</th><th>To</th><th>Method</th></tr>
+<tr><td>String</td><td>primitive</td><td>parseXXX()</td></tr>
+<tr><td>String</td><td>wrapper object</td><td>valueOf(String)</td></tr>
+<tr><td>primitive</td><td>wrapper object</td><td>valueOf(primitive)</td></tr>
+<tr><td>wrapper object</td><td>primitive</td><td>xxxValue()</td></tr>
+<tr><td>wrapper object</td><td>String</td><td>toString() (instance)</td></tr>
+<tr><td>primitive</td><td>String</td><td>toString(primitive) (static)</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Direct parent</th></tr>
+<tr><td>String, StringBuffer, StringBuilder</td><td>Object</td></tr>
+<tr><td>Byte, Short, Integer, Long, Float, Double</td><td>Number → Object</td></tr>
+<tr><td>Boolean, Character, Void</td><td>Object</td></tr>
+<tr><td>Number</td><td>Object</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td>Modifier</td><td>public final class</td></tr>
+<tr><td>Extends</td><td>Object (direct child)</td></tr>
+<tr><td>Methods</td><td>None</td></tr>
+<tr><td>Variables</td><td>One only: public static final Class&lt;Void&gt; TYPE</td></tr>
+</table>
+<table>
+<tr><th>Primitive / keyword</th><th>Class representation</th></tr>
+<tr><td>int</td><td>Integer</td></tr>
+<tr><td>boolean</td><td>Boolean</td></tr>
+<tr><td>void</td><td>Void</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>How many methods in Void?</td><td>Zero</td></tr>
+<tr><td>How many variables?</td><td>One — TYPE</td></tr>
+<tr><td>Is Void final?</td><td>Yes</td></tr>
+<tr><td>Parent class?</td><td>Object</td></tr>
+<tr><td>Main use?</td><td>Reflection — check void return type</td></tr>
+<tr><td>Relationship to void keyword?</td><td>Class representation of void</td></tr>
+</table>
+<table>
+<tr><th>Time</th><th>Topic</th></tr>
+<tr><td>00:05</td><td>Recap: valueOf() and xxxValue() from previous session</td></tr>
+<tr><td>00:34</td><td>Purpose of valueOf() — primitive or String → wrapper object</td></tr>
+<tr><td>00:43</td><td>Purpose of xxxValue() — wrapper object → primitive</td></tr>
+<tr><td>01:02</td><td>Introduce parseXXX() — third utility method</td></tr>
+<tr><td>01:25</td><td>parseXXX purpose: String → primitive</td></tr>
+<tr><td>02:36</td><td>Form 1: parseXXX(String) — every wrapper except Character</td></tr>
+<tr><td>03:48</td><td>Form 1 signature: public static primitive parseXXX(String s)</td></tr>
+<tr><td>06:19</td><td>Examples: Integer.parseInt(&quot;10&quot;), Double.parseDouble(&quot;10.5&quot;), Boolean.parseBoolean(&quot;true&quot;)</td></tr>
+<tr><td>07:11</td><td>Form 2 introduced — radix overload</td></tr>
+<tr><td>07:31</td><td>Binary example: Integer.parseInt(&quot;11111&quot;, 2)</td></tr>
+<tr><td>08:12</td><td>Radix overload only in integral wrappers</td></tr>
+<tr><td>08:30</td><td>Radix range 2–36</td></tr>
+<tr><td>09:09</td><td>Form 2: integral types Byte, Short, Integer, Long</td></tr>
+<tr><td>10:36</td><td>Form 2 signature: parseXXX(String s, int radix)</td></tr>
+<tr><td>11:01</td><td>Example: parseInt(&quot;1111&quot;, 2) → 15</td></tr>
+<tr><td>11:29</td><td>Two forms of parseXXX complete</td></tr>
+<tr><td>12:29</td><td>Introduce toString() — fourth utility method</td></tr>
+<tr><td>12:47</td><td>Purpose: wrapper object or primitive → String</td></tr>
+<tr><td>13:50</td><td>Form 1: instance toString() — every wrapper incl. Character</td></tr>
+<tr><td>14:24</td><td>Demo: Integer i = new Integer(10); String s = i.toString();</td></tr>
+<tr><td>15:01</td><td>Printing wrapper ref internally calls toString()</td></tr>
+<tr><td>15:15</td><td>Overrides Object.toString() in all wrapper classes</td></tr>
+<tr><td>17:10</td><td>Rule: print wrapper object → toString() called</td></tr>
+<tr><td>18:25</td><td>Demo: SOP of s and SOP of i both print 10</td></tr>
+<tr><td>19:34</td><td>Form 1 complete</td></tr>
+<tr><td>19:44</td><td>Form 2: static toString(primitive) — primitive → String</td></tr>
+<tr><td>20:08</td><td>Demo: Integer.toString(10), Boolean.toString(true)</td></tr>
+<tr><td>20:55</td><td>Every wrapper incl. Character has static toString(primitive)</td></tr>
+<tr><td>22:32</td><td>Demo: Character.toString(&#x27;a&#x27;)</td></tr>
+<tr><td>23:09</td><td>Form 3: primitive → specified radix String</td></tr>
+<tr><td>23:51</td><td>Radix range 2–36 for toString(primitive, radix)</td></tr>
+<tr><td>24:05</td><td>Demo: Integer.toString(15, 2) → &quot;1111&quot;</td></tr>
+<tr><td>25:09</td><td>Form 3 only in Integer and Long</td></tr>
+<tr><td>28:25</td><td>Form 4: toBinaryString, toOctalString, toHexString</td></tr>
+<tr><td>29:04</td><td>Shortcut: Integer.toBinaryString(15)</td></tr>
+<tr><td>29:40</td><td>Integer.toOctalString(15)</td></tr>
+<tr><td>29:57</td><td>Integer.toHexString(15)</td></tr>
+<tr><td>30:23</td><td>Form 4 only for bases 2, 8, 16; only Integer and Long</td></tr>
+<tr><td>31:49</td><td>Demo: decimal 10 → binary &quot;1010&quot;, octal &quot;12&quot;, hex &quot;a&quot;</td></tr>
+<tr><td>34:24</td><td>Four forms of toString — summary</td></tr>
+<tr><td>34:28</td><td>All four utility methods covered</td></tr>
+<tr><td>35:39</td><td>Rapid-fire conversion drill</td></tr>
+<tr><td>36:05</td><td>parseXXX = String → primitive</td></tr>
+<tr><td>36:16</td><td>valueOf = primitive or String → object</td></tr>
+<tr><td>36:31</td><td>xxxValue = wrapper → primitive</td></tr>
+<tr><td>36:42</td><td>Wrapper → String = toString</td></tr>
+<tr><td>37:14</td><td>Complete conversion map on board</td></tr>
+<tr><td>40:45</td><td>Compulsory clarity — no hesitation in interviews</td></tr>
+<tr><td>42:27</td><td>Partial hierarchy of java.lang package</td></tr>
+<tr><td>43:17</td><td>Object root; String, StringBuffer, StringBuilder</td></tr>
+<tr><td>44:03</td><td>Number → Byte, Short, Integer, Long, Float, Double</td></tr>
+<tr><td>44:33</td><td>Boolean, Character, Void</td></tr>
+<tr><td>44:52</td><td>Partial only — System, Runtime, Exception also in java.lang</td></tr>
+<tr><td>46:44</td><td>Conclusion: Boolean, Character not child of Number</td></tr>
+<tr><td>47:09</td><td>Conclusion: numeric wrappers not direct child of Object</td></tr>
+<tr><td>47:20</td><td>Conclusion: String, StringBuffer, StringBuilder, all wrappers are final</td></tr>
+<tr><td>50:05</td><td>Conclusion: all wrapper objects immutable (like String)</td></tr>
+<tr><td>51:05</td><td>Void class — sometimes considered wrapper</td></tr>
+<tr><td>52:48</td><td>Void prototype: final class, extends Object, no methods</td></tr>
+<tr><td>53:37</td><td>One variable: public static final Class&lt;Void&gt; TYPE</td></tr>
+<tr><td>55:16</td><td>Void used in Reflection</td></tr>
+<tr><td>55:47</td><td>Demo: getReturnType() == Void.TYPE</td></tr>
+<tr><td>56:36</td><td>Void = class representation of void keyword</td></tr>
+<tr><td>56:53</td><td>Analogy: Integer ↔ int, Void ↔ void</td></tr>
+<tr><td>59:19</td><td>Session wrap-up</td></tr>
+</table>
+<table>
+<tr><th>Heard (Whisper)</th><th>Intended</th></tr>
+<tr><td>Parsec-Sex-Ex / parsecsex / parsa xa</td><td>parseXXX</td></tr>
+<tr><td>twisting / two string / dissu-tosing</td><td>toString</td></tr>
+<tr><td>rapper / upper / wer / Apper</td><td>wrapper</td></tr>
+<tr><td>radics / radic / rarix / relics</td><td>radix</td></tr>
+<tr><td>bullion / buan</td><td>Boolean</td></tr>
+<tr><td>Indigida / integer data</td><td>Integer</td></tr>
+<tr><td>Aata / art / octal</td><td>octal</td></tr>
+<tr><td>hexastring / access string</td><td>hex string</td></tr>
+<tr><td>immiotable</td><td>immutable</td></tr>
+<tr><td>j-le / chaili / chile</td><td>child</td></tr>
+<tr><td>wired / y by / VIDE</td><td>Void</td></tr>
+<tr><td>ATMAT / atima type</td><td>Void.TYPE</td></tr>
+<tr><td>reflections / reflections</td><td>Reflection API</td></tr>
+<tr><td>string of buffer / string of builder</td><td>StringBuffer / StringBuilder</td></tr>
+<tr><td>popcorn class</td><td>(unclear — ignore)</td></tr>
+<tr><td>keep sabading</td><td>keep studying / write in notes</td></tr>
+</table>
+<table>
+<tr><th>Trap</th><th>Correct answer</th></tr>
+<tr><td>String &quot;10&quot; to int 10</td><td>Integer.parseInt(&quot;10&quot;) — not valueOf (that gives Integer object)</td></tr>
+<tr><td>int 10 to &quot;10&quot;</td><td>Integer.toString(10) — static method</td></tr>
+<tr><td>Integer object to &quot;10&quot;</td><td>i.toString() — instance method</td></tr>
+<tr><td>Which class has no parseXXX(String)?</td><td>Character</td></tr>
+<tr><td>Which classes have radix parseXXX?</td><td>Byte, Short, Integer, Long only</td></tr>
+<tr><td>Which classes have toString(primitive, radix)?</td><td>Integer, Long only</td></tr>
+<tr><td>Print Integer ref — what method runs?</td><td>toString() (overridden)</td></tr>
+<tr><td>Are wrapper classes final?</td><td>Yes — all eight</td></tr>
+<tr><td>Are wrapper objects mutable?</td><td>No — immutable like String</td></tr>
+<tr><td>Boolean/Character parent?</td><td>Object directly (not Number)</td></tr>
+<tr><td>Integer parent?</td><td>Number → Object</td></tr>
+<tr><td>What is Void.TYPE?</td><td>Class&lt;Void&gt; constant for void return type checks</td></tr>
+<tr><td>How many methods in Void?</td><td>Zero</td></tr>
+</table>
+<table>
+<tr><th>Wrapper</th><th>parseXXX(String)</th><th>parseXXX(String, radix)</th></tr>
+<tr><td>Byte</td><td>✓</td><td>✓</td></tr>
+<tr><td>Short</td><td>✓</td><td>✓</td></tr>
+<tr><td>Integer</td><td>✓</td><td>✓</td></tr>
+<tr><td>Long</td><td>✓</td><td>✓</td></tr>
+<tr><td>Float</td><td>✓</td><td>✗</td></tr>
+<tr><td>Double</td><td>✓</td><td>✗</td></tr>
+<tr><td>Boolean</td><td>✓</td><td>✗</td></tr>
+<tr><td>Character</td><td>✗</td><td>✗</td></tr>
+</table>
+<table>
+<tr><th>Wrapper</th><th>instance toString()</th><th>static toString(p)</th><th>static toString(p, radix)</th><th>toBinary/Octal/HexString</th></tr>
+<tr><td>Byte</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>Short</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>Integer</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Long</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Float</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>Double</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>Boolean</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>Character</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+</table>
+</body></html>

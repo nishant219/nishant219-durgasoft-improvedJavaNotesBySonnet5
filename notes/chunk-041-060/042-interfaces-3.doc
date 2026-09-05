@@ -1,0 +1,912 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>042-interfaces-3</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 042 — Marker interface (and related board work)</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-13|| interfaces-3</p>
+<p>ASR decoded while reading the captions: keep subing / keep uping = keep writing (board heading); interace = interface; inter room / ENT / injp = interview / OCJP; cable / sterilizable = Serializable; clonable = Cloneable; Market / Mar = marker; JM / jbm / JM b d = JVM; djm = DJVM (his own JVM); surate / Cate / CATE = Servlet; generic Cate / generic Sur = GenericServlet; HTTP Ser / HP Cate / hisp = HttpServlet; Java X = javax.servlet; weic = WebLogic; jrocket = JRockit; tomat = Tomcat; web spere = WebSphere; vitamin M = money; NOA = Noida.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Marker interface is an interview topic. Empty is only half the definition.</li></ol>
+<ol><li>Full rule: no methods and implementing it gives the object some extra ability. Also called ability interface / tag interface.</li></ol>
+<ol><li>Examples he lists: Serializable, Cloneable, RandomAccess, SingleThreadModel.</li></ol>
+<ol><li>clone() lives in Object, not in Cloneable. Missing Cloneable → CloneNotSupportedException.</li></ol>
+<ol><li>Big doubt: no methods, so how does the object get ability? Internally the JVM provides it.</li></ol>
+<ol><li>Why the JVM? Reduce complexity of programming and make Java simple.</li></ol>
+<ol><li>Can we create our own marker (Sleepable, Jumpable)? Yes, but customization of JVM is required.</li></ol>
+<ol><li>Next topic: adapter classes — a programmer’s trick, not a language feature.</li></ol>
+<ol><li>Interface with 1000 methods; you need only m3 → dummy methods vs extend adapter.</li></ol>
+<ol><li>Declare the adapter abstract (dummy implementations; creating an object is waste).</li></ol>
+<ol><li>Servlet example: three ways; GenericServlet is more or less an adapter for Servlet.</li></ol>
+<ol><li>Closing board: marker interfaces and adapter classes simplify programming; best utilities to the programmer.</li></ol>
+<h3>00:04 — Marker interface (keep writing)</h3>
+<p>Next major concept. Very important for the interview room. Make sure you are aware of it. Board heading (he says “keep subing”):</p>
+<p>marker interface</p>
+<p>He writes the heading three times so everyone copies it. Then he asks the class: can you tell what is a marker interface? Spell out whatever knowledge you have so he can correct mistakes.</p>
+<h3>00:49 — Incomplete definition: empty is not enough</h3>
+<p>A student says: the interface which doesn’t contain any methods is a marker interface.</p>
+<p>He puts that on the board as rule one — first half only:</p>
+<p>interface X {
+    // doesn&#x27;t contain any method
+}</p>
+<p>Is X a marker interface? Yes or no?</p>
+<p>It is an empty interface. If the definition really were only “doesn’t contain any method,” then X should be a marker interface.</p>
+<p>He is sure no one is going to accept this X as a marker interface. So that student definition is wrong (or incomplete). Then how can you use the word “interface doesn’t contain any method is marker interface”?</p>
+<p>Most people know only the first half of the definition. You also have to highlight the second half.</p>
+<h3>01:47 — Full two-part definition</h3>
+<p>Rule 1 (what the student said): if an interface doesn’t contain any methods.</p>
+<p>AND — condition 2: by implementing that interface, if our objects will get some ability / some extra ability.</p>
+<p>Such type of interfaces are called marker interfaces.</p>
+<p>Full sentence he wants you to remember:</p>
+<p>If an interface doesn’t contain any methods and by implementing that interface if our objects will get some ability, such type of interfaces are called marker interfaces.</p>
+<p>interface MarkerStyle {
+    // no methods
+}
+
+class MyClass implements MarkerStyle {
+    // objects of MyClass get some extra ability
+    // (ability is NOT coming from a method inside MarkerStyle)
+}</p>
+<p>If the empty interface does not give any ability, it is just empty — not a marker. That is why random empty interface X is not accepted as a marker.</p>
+<h3>02:45 — Example: Serializable</h3>
+<p>“Can you please give an example? Maybe a chance to ask here.” Best example: Serializable.</p>
+<p>Serializable doesn’t contain any method. It is a marker interface.</p>
+<p>By implementing Serializable, what ability do we get by default?</p>
+<p>He has an object. If the object’s class does not implement Serializable, he cannot save this object to the file and he cannot send this object across the network.</p>
+<p>If you want to save the object to a file, or send it across a network, compulsory the corresponding class should implement Serializable.</p>
+<p>If the class implements Serializable, the object gets serializable ability: we can save it to the file; we can send it across the network.</p>
+<pre class='code'>import java.io.Serializable;
+
+class Student implements Serializable {
+    String name;
+    int rollNumber;
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Student s = new Student();
+        s.name = &quot;Durga&quot;;
+        s.rollNumber = 101;
+        // object s has serializable ability:
+        // can be saved to a file
+        // can travel across the network
+    }
+}
+class Employee {
+    String name;
+    int empId;
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Employee e = new Employee();
+        // class does not implement Serializable
+        // cannot save this object to the file
+        // cannot send this object across the network
+    }
+}</pre>
+<p>If you want that ability for your object, the corresponding class should implement Serializable.</p>
+<h3>03:56 — Example: Cloneable (`clone()` is in Object)</h3>
+<p>Similarly Cloneable interface.</p>
+<p>He has an object. He wants to produce an exactly duplicate cloned object. If you want that, the corresponding class should implement Cloneable.</p>
+<p>If the class doesn’t implement Cloneable, that object doesn’t have clonable ability. You cannot call `clone()` on that object. By mistake if you call clone(), immediately CloneNotSupportedException.</p>
+<p>If you want clonable ability for your object, compulsory the corresponding class should implement Cloneable.</p>
+<pre class='code'>class Test implements Cloneable {
+    int x = 10;
+
+    public static void main(String[] args) throws CloneNotSupportedException {
+        Test t1 = new Test();
+        Test t2 = (Test) t1.clone();
+        System.out.println(t2.x);
+        // prints 10
+        // object is in a position to produce exactly duplicate cloned object
+    }
+}
+class Test {
+    int x = 10;
+
+    public static void main(String[] args) throws CloneNotSupportedException {
+        Test t1 = new Test();
+        Test t2 = (Test) t1.clone();
+        // RE: CloneNotSupportedException
+        // class does not implement Cloneable → no clonable ability
+    }
+}</pre>
+<p>Don’t fail this: clone method is not available inside Cloneable. Clone method is present in Object class, not in Cloneable interface.</p>
+<pre class='code'>package java.lang;
+
+public class Object {
+    protected native Object clone() throws CloneNotSupportedException;
+    // clone() is here — Object class
+}
+
+package java.lang;
+
+public interface Cloneable {
+    // no methods
+    // marker / tag only
+}
+interface Cloneable {
+    // void clone();  // NO — clone() is NOT declared here
+}</pre>
+<p>He says: Cloneable doesn’t contain any method, and it provides some ability for our object — that’s why it is a marker interface.</p>
+<h3>05:01 — RandomAccess and SingleThreadModel</h3>
+<p>Similarly:</p>
+<ul><li>RandomAccess</li></ul>
+<ul><li>SingleThreadModel — at a time the Servlet object can be accessed by only one thread.</li></ul>
+<p>interface RandomAccess {
+    // no methods
+    // marked for random-access ability
+}
+
+interface SingleThreadModel {
+    // no methods
+    // marked: at a time Servlet object accessed by only one thread
+}</p>
+<p>All of these interfaces are marked. Have you observed the word marked? These are marked for some ability. That’s why they are considered marker interfaces. Marked with some ability → marker interfaces.</p>
+<h3>05:51 — Board definition + examples (keep writing)</h3>
+<p>He dictates the definition slowly so you copy it:</p>
+<p>If an interface doesn’t contain any methods and by implementing that interface if our objects will get some ability, such type of interfaces are called marker interfaces.</p>
+<p>Example — add:</p>
+<ul><li>Serializable</li></ul>
+<ul><li>Cloneable</li></ul>
+<ul><li>RandomAccess</li></ul>
+<ul><li>SingleThreadModel</li></ul>
+<ul><li>etc.</li></ul>
+<pre class='code'>// marker interfaces (examples he listed)
+interface Serializable { }
+interface Cloneable { }
+interface RandomAccess { }
+interface SingleThreadModel { }</pre>
+<p>These are marked for some ability. Better to write that line as it is: these are marked for some ability.</p>
+<p>Spell the definition again: if an interface doesn’t contain any methods and by implementing that interface if our objects will get some ability, such type of interfaces are called marker interfaces.</p>
+<h3>08:32 — Also called ability interface or tag interface</h3>
+<p>Better to write:</p>
+<p>marker interface or ability interface or tag interface</p>
+<p>Tagged with some ability → tag interface.</p>
+<pre class='code'>// three names he wants on the board for the same idea
+// 1. marker interface
+// 2. ability interface
+// 3. tag interface   (tagged with some ability)
+
+interface Serializable {
+    // marker / ability / tag
+}</pre>
+<p>Examples again (ASR: sterilizable clonable run AIS): Serializable, Cloneable, RandomAccess, SingleThreadModel. These are by default considered marker interfaces.</p>
+<h3>09:10 — Example 1 (board): Serializable ability</h3>
+<p>He wants one or two written examples, not only names.</p>
+<p>Example 1: by implementing Serializable interface, our objects can be saved to the file and can travel across the network.</p>
+<pre class='code'>import java.io.Serializable;
+
+class Student implements Serializable {
+    String name;
+    int rollNumber;
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student();
+        s.name = &quot;Ravi&quot;;
+        s.rollNumber = 102;
+        // by implementing Serializable, object s:
+        // 1. can be saved to the file
+        // 2. can travel across the network
+        // extra ability? yes
+    }
+}</pre>
+<p>By implementing Serializable, is my object going to get some extra ability or not? Yes.</p>
+<h3>10:12 — Example 2 (board): Cloneable ability</h3>
+<p>Example 2: by implementing Cloneable interface, our objects are in a position to produce exactly duplicate cloned objects.</p>
+<pre class='code'>class Test implements Cloneable {
+    int x = 10;
+    int y = 20;
+
+    public static void main(String[] args) throws CloneNotSupportedException {
+        Test t1 = new Test();
+        Test t2 = (Test) t1.clone();
+        System.out.println(t2.x + &quot; &quot; + t2.y);
+        // prints 10 20
+        // exactly duplicate cloned object
+    }
+}</pre>
+<p>RandomAccess and SingleThreadModel — not required to write long examples; just get the basic idea.</p>
+<p>Check: can you tell what is marker interface? Can you give an example?</p>
+<h3>11:15 — Interview doubt: no methods, how ability?</h3>
+<p>For majority of people there is a big doubt, even in the interview room you can expect this question.</p>
+<p>Marker interface doesn’t contain any method. Without having any methods, how will the objects get some ability?</p>
+<p>By implementing Serializable you get some ability. By implementing Cloneable you get some ability. But these interfaces don’t contain any method. How?</p>
+<p>Better to take it in question form on the board:</p>
+<p>Without having any methods, how will the objects get some ability in marker interfaces?</p>
+<p>He writes that question slowly, several times, so it is on the notes.</p>
+<p>interface Serializable {
+    // no methods at all
+}
+
+class Student implements Serializable {
+    // how does this object get &quot;save to file / send on network&quot; ability
+    // if Serializable declares zero methods?
+}</p>
+<h3>12:36 — Classroom analogy: job trials in New York City</h3>
+<p>Simple rule, but first a small analogy so you understand clearly.</p>
+<p>Assume you are learning Java. After completing this Java learning — maybe 2 months, 3 months, 6 months, one year — after completing the total Java course you start your trials (job hunt), as experienced or fresher.</p>
+<p>Where will you start your trials? Hyderabad or Bangalore or Chennai, Pune…? You have some idea in your mind.</p>
+<p>Answers from the class: Bangalore, Chennai, Pune, Hyderabad. Mumbai also — best place to get the job easily, less competition, more opportunities.</p>
+<p>Out of a thousand people in the classroom, everyone says Bangalore, Chennai, Hyderabad, Pune, Noida, Mumbai — those types of places.</p>
+<p>His question: why don’t you start your trials in New York City? Don’t laugh. Why not New York City, or California, or at least London?</p>
+<p>Think a bit. Even in your dreams this type of dream you never got: starting trials in New York City. At least in dreams you may not get it.</p>
+<p>He says: in this April I’m traveling to the US, checking new opportunities in the business; then maybe June or July travel to London also, to check training-area opportunities. He already has plans in his mind.</p>
+<p>Why don’t you start trials in New York City / California? Spell out whatever problem or restriction you have.</p>
+<h3>15:05 — Problems that stop people (Vitamin M, visa, …)</h3>
+<p>Highest / most common problem: Vitamin M problem. M means money. (AET in captions ≈ asset.) This vitamin is nothing but must be mandatory — take special care about this M. Very important. Money problem for most of the people.</p>
+<p>Other than this?</p>
+<p>Majority also face passport and visa problems. Some people may not have passports. Even if passport is there, visa problem may have a chance.</p>
+<p>Language problem — you should not use this word, being an MCA / engineering student. Luckily the British people gave a big gift for us: English. While leaving, British people gave Indian people English. Even in small villages, remote villages, English medium is very common. We never worry about language across the globe. Don’t use that word.</p>
+<p>Any other? New environment — how that environment will be, we don’t know. Some people: new-environment problem, because no one is there to provide support / guidance. He uses the word guidance problem. Here if some problem is there, several friends are there; there, maybe not.</p>
+<p>Food problem. Don’t think too much about food. Indian people already habituated to Chinese food, North Indian food; if you go for KFC, almost everywhere; Domino’s everywhere across the globe. Not required to worry. Traditional foods already gone in that sense; already habituated.</p>
+<p>He didn’t even expect food. Any other?</p>
+<p>He will spell one out because it is exactly the same thing as the marker interface — he is not telling any other new thing.</p>
+<p>Some people may have homesick problem also, especially ladies: without my parents we can’t live alone. Hyderabad: just within 3 hours, 4 hours, 6 hours, or at least 10 hours I can reach my home. Every time traveling from the US is not possible money-wise and distance-wise. Homesick: without my parents I can’t live.</p>
+<p>Some people may have XYZ problem also. Without her I can’t live alone, or without him I can’t live alone — Telugu movies especially: hero is ready to start for the US / abroad for higher education or job; heroine is there; last minute at airport hero or heroine came back: I can’t go alone. Several movies. He mentions Bhadra (hero struggles; last minute she tells…); another movie he doesn’t know the climax (TOA in captions) — anyway several movies. Without her / without him I can’t be alone. That problem also sometimes.</p>
+<p>Because of these problems, I’m not in a position to start my trials at New York City. Everyone in the classroom can tell their own problem: XYZ, homesick, Vitamin M, passport, visa, no one to provide guidance. That’s why we are not in a position to start trials in New York City. At least in dreams such a thought never came, because of these many problems. No one in the classroom wants to start trials in New York City because of one or some of these problems.</p>
+<h3>20:52 — Approach two: someone provides support</h3>
+<p>Observe very carefully.</p>
+<p>Whatever problem is stopping you from starting trials in New York City — believe me, each and every problem you are facing: I’m here to provide the support. Definitely I’m going to provide the support.</p>
+<p>Vitamin M: until getting your first salary, each and every paise required, I will provide support. Not required to worry at all.</p>
+<p>Example sake only — don’t ask really after the class. Up to few minutes, believe me.</p>
+<p>Money: forget about money problem.</p>
+<p>Passport and visa: not required to worry. In the passport office my known person is already there; within one week span you will get the passport. Visa: in the US Embassy already my known person is there. My team is going to take care about passport and visa. No longer a problem.</p>
+<p>New environment: there our guest house is there, our supporters are there, until getting your job / until getting habituated to that new environment. Each and every support: my team is going to take care. Guidance. Lodging, boarding: not required to worry. Until getting first salary, or until adjusting, first 6 months always someone is there to guide you.</p>
+<p>Food: not required to worry.</p>
+<p>Homesick: if you feel really without your parents you can’t live alone — bring your parents also. No problem.</p>
+<p>Without XYZ — no issue; bring that XYZ also.</p>
+<p>If you are going to believe me: I’m here to provide support for each and every requirement. How many of you start trials in New York City? He’s sure everyone in the classroom can start trials now.</p>
+<p>What is the difference between approach one and approach two?</p>
+<ul><li>Approach 1: everything we have to take care. Everything is a big problem. That’s why I don’t want to take that risk.</li></ul>
+<ul><li>Approach 2: someone is there to provide support. Then everyone can utilize this opportunity (if really happening).</li></ul>
+<h3>23:38 — Same story for marker interfaces (send object to London)</h3>
+<p>The same thing is happening in the case of marker interface.</p>
+<p>Assume: one person from London asked him: Durga, can you please send one object across a network — one Student object across a network. From Hyderabad I have to send an object to London. Requirement: send an object to London.</p>
+<p>He told: simply I can’t send object across a network. Sorry, don’t mind, don’t ask me.</p>
+<p>That person: why man? Can you please send this object across the network to London?</p>
+<p>Then he told: I don’t know how to convert this object into network-supported form. If any network-related issues are there, I don’t know how to handle. N number of problems. Just to send one Java object, assume 70 lakh lines of code is required. To write that 70 lakh lines, 12 network-related languages are required. I don’t know these network-related languages, network-related issues, how to convert the object into network-supported form, and so on. Don’t ask me to send the object across the network. Sorry man, don’t mind. I can’t send this object across the network.</p>
+<p>If the programmer is responsible to do each and every activity required to send an object across a network, then no programmer is in a position to send an object across a network. 70 lakh lines; 12 network languages to learn. I don’t want to take that risk. I can’t send that object. I don’t have that ability.</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student();
+        s.name = &quot;Shiva&quot;;
+        s.rollNumber = 700;
+        // send s from Hyderabad to London across the network?
+        // if PROGRAMMER must write everything:
+        //   convert object to network-supported form
+        //   handle all network issues
+        //   ~70 lakh lines of code
+        //   12 network-related languages
+        // no programmer is in a position to do this
+        // &quot;sorry man don&#x27;t mind I can&#x27;t send this object&quot;
+    }
+}</pre>
+<h3>25:56 — Sun people / JVM as the assistant</h3>
+<p>Immediately Java people / Sun people analyzed this type of problem. Because of lack of awareness of network-related languages, or because of this complexity, Java programmer may not be in a position to send object across a network.</p>
+<p>What Sun people did: they provided one assistant for us. They provided one assistant: JVM.</p>
+<p>If you want to send an object across a network, you are not required to do anything. Total required ability my JVM is going to provide internally.</p>
+<p>But: for which class objects do you want that ability? For that class, keep one word: `implements Serializable`. Automatically for this class objects I can provide that ability internally.</p>
+<p>Who is responsible to provide the ability? JVM is going to take care.</p>
+<pre class='code'>import java.io.Serializable;
+
+class Student implements Serializable {
+    String name;
+    int rollNumber;
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student();
+        s.name = &quot;Durga&quot;;
+        s.rollNumber = 101;
+        // programmer is not required to write 70 lakh lines
+        // just: implements Serializable
+        // JVM provides serializable ability internally
+    }
+}</pre>
+<h3>26:45 — Who provides the ability? JVM</h3>
+<p>In the case of marker interfaces, who is providing the required support to get that ability? JVM.</p>
+<p>Why is JVM providing the support? If JVM won’t provide support, who is responsible to write the code? Programmer. Complexity of the programming is going to be increased. Programmer may not be at that level. One wonderful utility we may miss.</p>
+<p>That’s why, to make Java language as simple, wherever this type of complexities are there, what Sun people did: they provided special ability from the JVM in the form of marker interfaces.</p>
+<p>Main purpose of marker interface: to reduce complexity of the programming and to make Java language as simple as possible.</p>
+<p>One buzzword of Java: Java is simple — “nursery standard language.” To make Java at the nursery standard / simple language, Sun people provided this type of arrangement wherever complexities are there.</p>
+<p>Internally, why the marker interface came into the picture: to simplify complexity of the programming. Internally who is responsible to provide support? JVM is responsible.</p>
+<h3>28:11 — Board Q&amp;A: how + why (keep writing)</h3>
+<p>Without having any methods, how will the objects get some ability in the case of marker interface?</p>
+<p>Answer: internally JVM is responsible to provide required ability.</p>
+<p>interface Serializable {
+    // no methods
+}
+
+class Student implements Serializable {
+    // ability does not come from a method we implement
+    // internally JVM is responsible to provide required ability
+}</p>
+<p>Next question: why is JVM providing required ability in marker interfaces?</p>
+<p>Answer: to reduce complexity of programming and to make Java language as simple.</p>
+<pre class='code'>// Q: without having any methods, how do objects get ability?
+// A: internally JVM is responsible to provide required ability
+//
+// Q: why is JVM providing required ability in marker interfaces?
+// A: to reduce complexity of programming
+//    and to make Java language as simple</pre>
+<p>This is: what is the marker interface; internally who is responsible to provide support; and so on.</p>
+<h3>30:44 — Can we create our own marker interface?</h3>
+<p>Last question from this area: is it possible to create our own marker interface?</p>
+<p>Better to take question form on the board:</p>
+<p>Is it possible to create our own marker interface?</p>
+<p>What answer can you tell? Nothing is impossible. There is no such type of word like impossible. Really, believe me.</p>
+<p>Is it possible or not? 100% possible. We can create our own marker interface. No problem at all.</p>
+<p>But here one small twist. Who is responsible to provide required ability in the case of marker interface? JVM.</p>
+<p>Already existing JVM can provide support for Serializable. Correct or not. Can provide support for Cloneable.</p>
+<pre class='code'>import java.io.Serializable;
+
+class Student implements Serializable {
+    // existing JVM: YES, provides serializable ability
+}
+
+class Test implements Cloneable {
+    public static void main(String[] args) throws CloneNotSupportedException {
+        Test t1 = new Test();
+        Test t2 = (Test) t1.clone();
+        // existing JVM: YES, provides clonable ability
+    }
+}</pre>
+<h3>32:05 — Sleepable / Jumpable and a custom JVM</h3>
+<p>Tomorrow I want to implement my own marker interfaces like Sleepable — my Java object can able to sleep — and Jumpable. Sleepable, Jumpable: I want to provide sleeping ability / jumpable ability for my Java object.</p>
+<p>To provide such type of ability, existing JVM may not provide support.</p>
+<p>Tomorrow I want to design my own JVM — DJVM. This DJVM can provide support for all these four things (Serializable, Cloneable, Sleepable, Jumpable).</p>
+<pre class='code'>interface Sleepable {
+    // no methods — our own marker
+}
+
+interface Jumpable {
+    // no methods — our own marker
+}
+
+class Dog implements Sleepable, Jumpable {
+}
+
+class Test {
+    public static void main(String[] args) {
+        Dog d = new Dog();
+        // existing JVM: may NOT provide sleep / jump ability
+        // need customization of JVM, or design our own JVM (DJVM)
+        // DJVM could support: Serializable, Cloneable, Sleepable, Jumpable
+    }
+}</pre>
+<p>JVM is not Sun proprietary. If you want, we can have our own JVM. For Tomcat one type of JVM; for WebLogic another type of JVM. WebLogic JVM is also known as JRockit. JRockit is not from Sun. WebLogic JVM developed by BEA people, or otherwise Oracle people. Not from Sun.</p>
+<p>So: is it possible to define our own marker interface? Yes — but customization of JVM is required. Or if you want to design our own JVM, our own JVM can provide support for Sleepable and Jumpable.</p>
+<p>How we can customize it: not in programmer scope. Not required to worry. But if you want we can do that. No problem. It’s not impossible; it’s happily possible. Product development teams are there: WebLogic people, Tomcat people, WebSphere people — they design their own JVMs. Database server they have their own JVM, not from Sun proprietary.</p>
+<p>Make sure you add the answer:</p>
+<p>Yes, but customization of JVM is required.</p>
+<pre class='code'>interface Sleepable { }
+
+class MyObject implements Sleepable {
+}
+
+class Test {
+    public static void main(String[] args) {
+        MyObject o = new MyObject();
+        // Q: is it possible to create our own marker interface?
+        // A: YES, but customization of JVM is required
+        //    (not in normal programmer scope)
+    }
+}</pre>
+<p>These are various important conclusions you should be aware of about marker interface. Several doubts got clarified: what is marker interface; example; without having any methods how ability; is it possible to define our own.</p>
+<h3>34:57 — Next topic: adapter classes</h3>
+<p>Keep writing. Next topic: adapter classes.</p>
+<p>Very simple concept. Not required to break your heads. Very simple.</p>
+<p>Adapter classes. He writes the heading several times.</p>
+<p>What is adapter class? Simple: programmer’s trick. Adapter class is a programmer’s trick. Let him explain what it means.</p>
+<h3>35:30 — Interface X with 1000 methods; only m3 needed</h3>
+<p>Suppose I have one interface X. This interface contains m1 method, m2 method, m3 method, … m1000 methods. Thousand methods are there.</p>
+<pre class='code'>interface X {
+    void m1();
+    void m2();
+    void m3();
+    void m4();
+    // ...
+    void m1000();
+}</pre>
+<p>Now my target: I want to implement interface X, but I’m very much interested to provide implementation only for `m3` method. Requirement is only for m3.</p>
+<h3>36:23 — Direct `implements X` — dummy methods (CE if you skip)</h3>
+<pre class='code'>class Test implements X {
+    public void m3() {
+        // I want to provide implementation only for m3
+        // say 10 lines of real code
+    }
+    // CE: Test is not abstract and does not override abstract method m1() in X
+    // CE: ... m2(), m4(), ... m1000() also missing
+}</pre>
+<p>Is this going to compile or not? Won’t compile. Whenever we are implementing an interface, for each and every method of that interface compulsory we should provide implementation. Otherwise declare the class as abstract. If I declare class as abstract, then at least in the child we should provide. Instead of that, compulsory we should provide implementation for all methods, whether you are interested or not interested.</p>
+<p>That’s why what I have to take: m1 at least empty implementation, m2, m4, … m1000.</p>
+<pre class='code'>class Test implements X {
+    public void m1() { }      // empty / dummy
+    public void m2() { }      // empty / dummy
+    public void m3() {
+        // required implementation only 10 lines
+        System.out.println(&quot;m3&quot;);
+    }
+    public void m4() { }
+    // ...
+    public void m1000() { }   // 999 dummy methods
+}</pre>
+<p>Required implementation is only 10 lines. How many lines of extra code we wrote? 999 lines.</p>
+<p>Problem with this approach: readability is going to be down. For one method, 999 dummy methods we require to implement. Length of the code is going to increase, readability is going to be down, and it’s very difficult for the programmer every time providing thousand methods’ implementation compulsory.</p>
+<p>If we implement an interface directly, for each and every method of that interface compulsory we should provide implementation — whether it is required or not required, whether you are interested or not interested. So:</p>
+<ul><li>readability of the code is going to be down</li></ul>
+<ul><li>length of the code is going to be increased</li></ul>
+<ul><li>complexity of the programming is going to be increased</li></ul>
+<p>To solve this problem: one small programmer trick — adapter class.</p>
+<h3>38:28 — Adapter class definition and AdapterX</h3>
+<p>How can we use adapter? What is the adapter?</p>
+<p>Adapter class is a simple normal Java class — a normal class — that implements an interface with only empty implementation. Each and every method: empty implementation only.</p>
+<p>Any name you can take. Need not be the word “adapter.” He takes AdapterX.</p>
+<pre class='code'>class AdapterX implements X {
+    public void m1() { }      // empty implementation
+    public void m2() { }      // empty implementation
+    public void m3() { }      // empty implementation
+    public void m4() { }
+    public void m5() { }
+    // ...
+    public void m1000() { }   // empty implementation
+}</pre>
+<p>Adapter class is a normal Java class that implements an interface with only empty implementation.</p>
+<p>Immediately ask: if with only empty implementation, what thing can you get? Observe.</p>
+<h3>39:57 — Extend adapter instead of implementing X</h3>
+<p>Tomorrow my requirement: I want to implement X, but I’m interested to implement only m3. If that is the requirement, don’t implement `X`. Better to extend adapter class.</p>
+<pre class='code'>class Test extends AdapterX {
+    public void m3() {
+        // provide implementation only for m3
+        System.out.println(&quot;only m3&quot;);
+    }
+    // remaining methods NOT required to implement
+    // they come from parent AdapterX through inheritance
+}</pre>
+<p>Observe: Test is child class of AdapterX. AdapterX implements X. That’s why indirectly `Test` implements `X` only. That rule is there. Indirectly Test implements X. There is no change in the rule. Valid.</p>
+<pre class='code'>interface X {
+    void m1();
+    void m2();
+    void m3();
+    void m1000();
+}
+
+class AdapterX implements X {
+    public void m1() { }
+    public void m2() { }
+    public void m3() { }
+    public void m1000() { }
+}
+
+class Test extends AdapterX {
+    public void m3() {
+        System.out.println(&quot;m3 only&quot;);
+    }
+}
+
+class Demo {
+    public static void main(String[] args) {
+        X x = new Test();   // valid — Test indirectly implements X
+        x.m3();
+        // prints m3 only
+        x.m1();             // empty from AdapterX — nothing
+    }
+}</pre>
+<p>If I extend AdapterX, for which method you want to provide implementation? Requirement only m3. Remaining methods we are not required to implement. Automatically remaining methods by default are going to come to Test class from the parent through inheritance.</p>
+<h3>41:15 — Adapter written once, used many times</h3>
+<p>After few minutes, another requirement:</p>
+<pre class='code'>class Sample extends AdapterX {
+    public void m7() {
+        // this time requirement is m7 implementation
+        System.out.println(&quot;m7&quot;);
+    }
+}
+class Demo extends AdapterX {
+    public void m1000() {
+        // this time requirement is m1000
+        System.out.println(&quot;m1000&quot;);
+    }
+}</pre>
+<p>How many times are we writing adapter class? Only once. How many times are we using adapter class? Three times (Test, Sample, Demo).</p>
+<p>Suppose adapter-class concept is not there — no such trick:</p>
+<pre class='code'>class Test implements X {
+    public void m1() { }
+    public void m2() { }
+    public void m3() { /* real */ }
+    public void m4() { }
+    // ... 1000 methods — compulsory
+}
+
+class Sample implements X {
+    public void m1() { }
+    public void m2() { }
+    public void m3() { }
+    public void m7() { /* real */ }
+    // ... 1000 methods again
+}
+
+class Demo implements X {
+    public void m1() { }
+    public void m2() { }
+    public void m1000() { /* real */ }
+    // ... 1000 methods again
+}</pre>
+<p>Unnecessary length of the code is going to increase. Such type of problem happily we can solve by using adapter class.</p>
+<p>Is it an advantage feature or not? Yes. Adapter class is a small programmer’s trick. It is not a language-level feature. It is an approach, a programmer’s trick, to solve these type of problems.</p>
+<h3>42:39 — Declare adapter class abstract</h3>
+<p>Last point: inside adapter class every method has empty implementation. Only empty implementation is there.</p>
+<p>If I create an object for this class and I call any of these methods, what response am I going to get? Nothing.</p>
+<p>I’m creating an object for this class and calling any of this method: what response? Nothing. Then what is the use of creating an object and calling these methods? Waste. Even though implementation is there, this implementation is a dummy implementation. Creating an object and calling these methods are waste.</p>
+<p>That’s why highly recommended to declare adapter class `abstract`.</p>
+<pre class='code'>class AdapterX implements X {
+    public void m1() { }
+    public void m2() { }
+    public void m3() { }
+    public void m1000() { }
+}
+
+class Test {
+    public static void main(String[] args) {
+        AdapterX a = new AdapterX();
+        a.m1();
+        a.m2();
+        a.m3();
+        // nothing happens — dummy empty implementation
+        // creating object and calling these methods is WASTE
+    }
+}
+abstract class AdapterX implements X {
+    public void m1() { }
+    public void m2() { }
+    public void m3() { }
+    public void m1000() { }
+}
+
+class Test {
+    public static void main(String[] args) {
+        AdapterX a = new AdapterX();
+        // CE: AdapterX is abstract; cannot be instantiated
+    }
+}</pre>
+<p>In the last class somewhere he covered: within abstract class there may be a chance of zero number of abstract methods. Any abstract method? No. Every method is concrete, but that concrete implementation is the dummy implementation. In that particular case happily you can declare the class as abstract. Abstract class can contain zero number of abstract methods.</p>
+<pre class='code'>abstract class AdapterX implements X {
+    public void m1() { }   // concrete, but dummy
+    public void m2() { }   // concrete, but dummy
+    public void m3() { }   // concrete, but dummy
+    public void m1000() { }
+    // zero abstract methods — still legal to declare class abstract
+}</pre>
+<p>What is adapter, what is the advantage of that — keep writing.</p>
+<h3>44:01 — Board notes: adapter class definition</h3>
+<p>He dictates:</p>
+<p>Adapter class is a simple Java class that implements an interface with only empty implementation.</p>
+<p>Take this code: first the interface, then this adapter class, then the second part (Test extends AdapterX).</p>
+<pre class='code'>interface X {
+    void m1();
+    void m2();
+    void m3();
+    // ...
+    void m1000();
+}
+
+abstract class AdapterX implements X {
+    public void m1() { }
+    public void m2() { }
+    public void m3() { }
+    public void m1000() { }
+}
+
+class Test extends AdapterX {
+    public void m3() {
+        // only required method
+    }
+}</pre>
+<p>Clarity: adapter class is a simple Java class that implements an interface with only empty implementation.</p>
+<p>He copies interface X with m1, m2, m3, … m1000 under the definition, then the adapter class. “Completed I hope.”</p>
+<h3>46:27 — Board: problem of implementing the interface directly</h3>
+<p>Next, the theory:</p>
+<p>If we implement an interface, for each and every method of that interface compulsory we should provide implementation, whether it is required or not required.</p>
+<p>Take this part: class Test implements X with only m3 (10 lines of real code) plus dummy m1, m2, m4, … m1000.</p>
+<pre class='code'>class Test implements X {
+    public void m3() {
+        // 10 lines of the code (required)
+        System.out.println(&quot;m3&quot;);
+    }
+
+    public void m1() { }
+    public void m2() { }
+    public void m4() { }
+    // ...
+    public void m1000() { }
+}</pre>
+<p>After completing it, the problem in this approach is: it increases length of the code and reduces readability.</p>
+<h3>49:08 — Board: extend adapter; only required methods</h3>
+<p>We can solve this problem by using adapter classes.</p>
+<p>Instead of implementing interface, if we extend adapter class, we have to provide implementation only for required methods, and we are not responsible to provide implementation for each and every method of the interface. So that length of the code will be reduced.</p>
+<p>Take this example — fourth one — and better to take that diagram also (parent AdapterX implements X; children Test / Sample / Demo extend AdapterX).</p>
+<pre class='code'>interface X {
+    void m1();
+    void m2();
+    void m3();
+    void m7();
+    void m1000();
+}
+
+abstract class AdapterX implements X {
+    public void m1() { }
+    public void m2() { }
+    public void m3() { }
+    public void m7() { }
+    public void m1000() { }
+}
+
+class Test extends AdapterX {
+    public void m3() {
+        System.out.println(&quot;m3&quot;);
+    }
+}
+
+class Sample extends AdapterX {
+    public void m7() {
+        System.out.println(&quot;m7&quot;);
+    }
+}
+
+class Demo extends AdapterX {
+    public void m1000() {
+        System.out.println(&quot;m1000&quot;);
+    }
+}</pre>
+<p>That’s all. Are you seeing advantage of adapter class? Is it advantage feature or not? Yes, definitely.</p>
+<h3>52:08 — Where is this used? Servlet programming</h3>
+<p>Can you give an example where this type of concept we are using? Let him explain one simple example so you will get that adapter classes is the useful feature to the programmer.</p>
+<p>He hopes at least few students may be aware of Servlet programming.</p>
+<p>In how many ways we can develop a Servlet? There are three ways. Very important question for the interview room.</p>
+<h3>53:37 — Three ways to develop a servlet (diagram)</h3>
+<p>Servlet interface is there. The Servlet interface is implemented by GenericServlet, which is an abstract class, because GenericServlet provides implementation for each and every method of Servlet interface except `service` method.</p>
+<p>Then HttpServlet, the child — which is also of course abstract class. HttpServlet doesn’t contain any abstract method, but still abstract because implementation is not complete: dummy implementation, error-message sending only implementation is there for most of the methods.</p>
+<p>This is MyServlet: class MyServlet extends … this Servlet we can develop in how many ways.</p>
+<pre class='code'>interface Servlet {
+    void init();
+    void service();
+    void destroy();
+    void getServletConfig();
+    void getServletInfo();
+}
+
+abstract class GenericServlet implements Servlet {
+    public void init() { }
+    public void destroy() { }
+    public void getServletConfig() { }
+    public void getServletInfo() { }
+    public abstract void service();   // except service
+}
+
+abstract class HttpServlet extends GenericServlet {
+    // no abstract method of its own
+    // still abstract — implementation not complete
+    // dummy / error-message sending only for most methods
+    public void service() {
+        // dummy implementation / error message sending
+    }
+}
+
+class MyServlet extends HttpServlet {
+    // typical servlet we write
+}</pre>
+<p>Three ways:</p>
+<ol><li>Implement Servlet interface</li></ol>
+<ol><li>Extend GenericServlet</li></ol>
+<ol><li>Extend HttpServlet</li></ol>
+<pre class='code'>class MyServlet1 implements Servlet {
+    // way 1
+    public void init() { }
+    public void service() { }
+    public void destroy() { }
+    public void getServletConfig() { }
+    public void getServletInfo() { }
+}
+
+class MyServlet2 extends GenericServlet {
+    // way 2
+    public void service() { }
+}
+
+class MyServlet3 extends HttpServlet {
+    // way 3 — most common
+}</pre>
+<p>Total three ways are there.</p>
+<h3>54:23 — Servlet interface has five methods (`javax.servlet`)</h3>
+<p>If I implement the Servlet interface directly, for each and every method of that interface we have to provide implementation.</p>
+<p>How many methods are there in the interface? He first says five, then “seven interface contain seven methods,” then: are you talking about `javax.servlet` only, right?</p>
+<p>Five methods: init, service, destroy, getServletConfig, getServletInfo.</p>
+<pre class='code'>package javax.servlet;
+
+interface Servlet {
+    void init();                 // init
+    void service();              // service
+    void destroy();              // destroy
+    void getServletConfig();     // getServletConfig
+    void getServletInfo();       // getServletInfo
+}</pre>
+<p>How many methods in the Servlet interface? Five methods.</p>
+<p>For all these five methods, whether we are interested or not interested, compulsory we should provide implementation.</p>
+<p>“I’m not having any initialization activity.” Whether you have or not, first write `init` method, then only I can compile.</p>
+<p>“I’m not having any cleanup activities.” Whether you have or not, you should write `destroy` method. Always a problem.</p>
+<pre class='code'>class MyServlet implements Servlet {
+    public void service() {
+        // real work
+    }
+    // CE: MyServlet is not abstract and does not override abstract method init() in Servlet
+    // CE: destroy(), getServletConfig(), getServletInfo() also missing
+}
+class MyServlet implements Servlet {
+    public void init() { }               // even if no initialization
+    public void service() {
+        System.out.println(&quot;service&quot;);
+    }
+    public void destroy() { }            // even if no cleanup
+    public void getServletConfig() { }
+    public void getServletInfo() { }
+}</pre>
+<p>That’s why this approach no one is going to use. At least your first demo program also, you never have the dare to implement Servlet interface directly. Most of the times we should go for either GenericServlet or HttpServlet only.</p>
+<h3>55:28 — Extend GenericServlet — only `service`</h3>
+<p>If I extend GenericServlet, because GenericServlet already provides implementation for all methods of Servlet interface except `service` method, if I extend GenericServlet, for how many methods I have to provide implementation? Only one method — what is that method? `service` method only.</p>
+<p>The remaining four methods happily by default available from parent to child. GenericServlet already contains those methods. Remaining four methods by default available to MyServlet. We are not required to provide implementation for the remaining. Only for service method is enough.</p>
+<pre class='code'>class MyServlet extends GenericServlet {
+    public void service() {
+        System.out.println(&quot;only service&quot;);
+        // remaining four methods from GenericServlet parent
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        MyServlet s = new MyServlet();
+        s.init();            // parent dummy / provided
+        s.service();
+        // prints only service
+        s.destroy();         // parent
+    }
+}</pre>
+<h3>56:20 — GenericServlet as adapter (more or less)</h3>
+<p>That’s why: can I use the term GenericServlet acts as adapter class for Servlet interface?</p>
+<p>Instead of implementing Servlet interface, we can extend GenericServlet. GenericServlet already implements Servlet interface with the four methods and so on. More or less GenericServlet acts as adapter class for Servlet interface. Can I use the term? Add this point.</p>
+<h3>56:45 — Board: three ways (keep writing)</h3>
+<p>We can develop a Servlet in the following three ways:</p>
+<ol><li>By implementing Servlet interface</li></ol>
+<ol><li>By extending GenericServlet</li></ol>
+<ol><li>By extending HttpServlet</li></ol>
+<p>Better to take this diagram first. Just beside this, take this diagram.</p>
+<pre class='code'>// Servlet  &lt;--implements--  GenericServlet  &lt;--extends--  HttpServlet  &lt;--extends--  MyServlet
+//
+// three ways to develop a Servlet:
+// 1. class MyServlet implements Servlet { }
+// 2. class MyServlet extends GenericServlet { }
+// 3. class MyServlet extends HttpServlet { }
+
+interface Servlet { }
+
+abstract class GenericServlet implements Servlet { }
+
+abstract class HttpServlet extends GenericServlet { }
+
+class MyServlet extends HttpServlet { }</pre>
+<p>Completed I hope. Clear for all of you. Total how many methods — three ways.</p>
+<h3>58:56 — Board: implementing Servlet vs extending GenericServlet</h3>
+<p>If we implement Servlet interface, for each and every method of that interface we should provide implementation. It increases length of the code and reduces readability.</p>
+<pre class='code'>class MyServlet implements Servlet {
+    public void init() { }
+    public void service() { /* real */ }
+    public void destroy() { }
+    public void getServletConfig() { }
+    public void getServletInfo() { }
+    // increases length of the code and reduces readability
+}</pre>
+<p>Instead of implementing Servlet interface directly, if we extend GenericServlet, we have to provide implementation only for `service` method, and for all remaining methods we are not required to provide implementation.</p>
+<pre class='code'>class MyServlet extends GenericServlet {
+    public void service() {
+        // only for service method
+    }
+    // remaining methods: not required to provide implementation
+}</pre>
+<p>Hence, more or less GenericServlet acts as adapter class for Servlet interface.</p>
+<p>He asks: what is the meaning of more or less?</p>
+<h3>1:02:07 — Why “more or less” (not 100% adapter)</h3>
+<p>Strictly speaking, adapter class contains only the methods with empty implementation. But in GenericServlet, beautiful implementation is there for some methods. It’s not empty. Wonderful / useful implementation is there.</p>
+<p>That’s why I can’t use the term 100% GenericServlet is adapter class. But more or less the concept is the same.</p>
+<p>Instead of implementing Servlet interface, if I extend GenericServlet we require to provide implementation only for service method. That’s all. It hides complexity. Programmer life will become easy.</p>
+<pre class='code'>abstract class AdapterServlet implements Servlet {
+    public void init() { }            // EMPTY — strict adapter style
+    public void destroy() { }
+    public void getServletConfig() { }
+    public void getServletInfo() { }
+    public abstract void service();
+}
+
+abstract class GenericServlet implements Servlet {
+    public void init() {
+        // NOT empty — useful / beautiful implementation
+    }
+    public void destroy() {
+        // useful implementation
+    }
+    public void getServletConfig() { /* useful */ }
+    public void getServletInfo() { /* useful */ }
+    public abstract void service();
+    // more or less adapter — but NOT 100% adapter
+    // (adapter strictly = only empty implementation)
+}</pre>
+<p>Clear for all of you.</p>
+<h3>1:02:45 — Closing note: marker + adapter simplify programming</h3>
+<p>Take a note.</p>
+<p>Can I use the term: marker interface is a big utility to the programmer or not? A big asset to the programmer.</p>
+<p>Next: adapter class concept is asset to the programmer or not? Programmer life is going to be simplified with these concepts.</p>
+<p>Board (keep writing):</p>
+<p>Marker interfaces and adapter classes simplify complexity of programming and these are best utilities to the programmer and the programmer’s life will become simple.</p>
+<pre class='code'>// marker interface — JVM provides ability; programmer writes only:
+class Student implements java.io.Serializable { }
+
+// adapter class — programmer implements only required methods:
+abstract class AdapterX implements X {
+    public void m1() { }
+    public void m2() { }
+    public void m3() { }
+    public void m1000() { }
+}
+
+class Test extends AdapterX {
+    public void m3() {
+        System.out.println(&quot;only what I need&quot;);
+    }
+}
+
+class Demo {
+    public static void main(String[] args) {
+        new Test().m3();
+        // prints only what I need
+        // marker + adapter: simplify complexity of programming
+        // best utilities to the programmer
+        // programmer&#x27;s life will become simple
+    }
+}</pre>
+<p>That’s the end of video 042 (1h 04m 31s).</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 42 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 13</td></tr>
+<tr><td>Topic</td><td>interfaces-3 (marker interface and related)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 04m 31s</td></tr>
+<tr><td>Video ID</td><td>Kveg8HH2g9c</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=Kveg8HH2g9c</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

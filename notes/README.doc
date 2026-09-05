@@ -1,0 +1,46 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>README</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Durga Sir Core Java notes</h1>
+<p>Detailed study notes from the YouTube playlist</p>
+<p>java tutorial by durga sir</p>
+<p>(Core Java with OCJP/SCJP, Durga Software Solutions).</p>
+<ul><li>203 videos, about 234 hours 37 minutes total</li></ul>
+<ul><li>One markdown file per video</li></ul>
+<ul><li>Worked in 20-video chunks so nothing is skipped</li></ul>
+<ul><li>Every file starts with title + video info, then the notes</li></ul>
+<h2>How to read a note</h2>
+<p>Each video file has this shape:</p>
+<ol><li>Video info — full title, playlist position, series/part, topic, instructor, duration, YouTube URL</li></ol>
+<ol><li>What this lecture covers — agenda</li></ol>
+<ol><li>Detailed notes — timestamped sections, rules, examples, exam traps</li></ol>
+<ol><li>Code from the lecture — reconstructed Java as written on the board</li></ol>
+<ol><li>Exam / interview points — what Durga Sir flags as important</li></ol>
+<h2>Chunks</h2>
+<p>Full list with links: 00-playlist-index.md</p>
+<table>
+<tr><th>Chunk</th><th>Videos</th><th>Folder</th></tr>
+<tr><td>1</td><td>001–020</td><td>chunk-001-020 (done)</td></tr>
+<tr><td>2</td><td>021–040</td><td>chunk-021-040 (not started)</td></tr>
+<tr><td>3</td><td>041–060</td><td>pending</td></tr>
+<tr><td>…</td><td>…</td><td>…</td></tr>
+<tr><td>11</td><td>201–203</td><td>pending</td></tr>
+</table>
+</body></html>

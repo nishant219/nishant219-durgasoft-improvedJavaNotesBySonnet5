@@ -1,0 +1,733 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>039-native-static-transient</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 039 — native, static, transient</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-10|| native,static,transient</p>
+<p>ASR decode notes (Whisper): CRC++ / NANJava / non-java → C / C++ / non-Java; mission → machine; I 3.754 / I-5754 / I3bj754 → IEEE 754; stricty of a p / Stricty-FFP / strict FAP → strictfp; Hasch / Hascode → hashCode; Javiyam / Chaviyam / Jeeviya → JVM; Transient / wallet tile keyboard → transient / volatile keyword; De-sabilization → deserialization; synced you / secure consign → security constraint; Intra-faces → interfaces; E-N-M → enum; bhalks / bloggs → blocks; Wired / why it → void; stringer A → String[] args; should a code / sudo code → pseudo code; N switha → ends with; Floor form → platform; Anishka / Anushka → sample password; abc.S / abc.ser → .ser file; threats → threads; GIFRI → every; nathima → nothing but; Kampal / compulsive → compulsory; J N I → JNI.</p>
+<p>What this lecture covers (actual board order): native (methods only) → transient (variables / serialization) → volatile (variables / threads; almost deprecated in his framing) → big 12-modifier applicability summary table → exam-style “only for …” conclusions. (static was Video 038; title lists it, but this Part-10 board is native / transient / volatile + summary.)</p>
+<h2>Detailed notes</h2>
+<h3>00:04 — Agenda: next modifier is `native`</h3>
+<p>After earlier modifiers, next board topic: `native`.</p>
+<h3>00:28 — Where can we apply `native`?</h3>
+<p>First point (repeat until clear):</p>
+<ul><li>native is a modifier.</li></ul>
+<ul><li>Applicable only for methods.</li></ul>
+<ul><li>We cannot apply native anywhere else (not on classes, variables, blocks, etc.).</li></ul>
+<ul><li>It is a method-specific modifier.</li></ul>
+<pre class='code'>// CE: modifier native not allowed here (class)
+native class Test {
+}
+class Test {
+    // CE: modifier native not allowed here (variable)
+    native int x = 10;
+}
+class Test {
+    // valid place: method declaration
+    public native void m1();
+}</pre>
+<p>Board conclusion:</p>
+<p>native is a modifier applicable only for methods and we can&#x27;t apply anywhere else.</p>
+<h3>01:55 — What is a native method?</h3>
+<p>Not “methods from our native place.”</p>
+<p>Native methods = methods whose implementation is in a non-Java language (mostly C / C++).</p>
+<p>Also called foreign methods — functionality coming from another language.</p>
+<pre class='code'>class Demo {
+    // declaration in Java; body lives in native (C/C++) code
+    public native int compute();
+}</pre>
+<h3>03:30 — Why depend on C/C++ if Java has so many “stars”?</h3>
+<p>Joke / motivation: Java is called simple, robust, secure, OO, multithreaded, platform independent, architecture neutral, … — still we use native for old C/C++. Why?</p>
+<p>There are areas where Java is not up to the mark. To fill those gaps → native.</p>
+<h3>06:48 — Objective 1: improve performance</h3>
+<p>Main important gap: performance.</p>
+<p>Wherever performance is very critical, Java is comparatively weaker than C/C++. As a Java programmer, don’t casually claim “Java is fastest.”</p>
+<p>Pattern on board:</p>
+<ol><li>Design most of the app in Java.</li></ol>
+<ol><li>For the performance-critical slice → implement in C/C++.</li></ol>
+<ol><li>Bring that functionality into Java with the `native` keyword.</li></ol>
+<p>Biggest / first objective of `native`: improve performance of the system.</p>
+<h3>09:05 — Objective 2: machine-level / memory-level communication</h3>
+<p>Second problem with Java:</p>
+<ul><li>Java is programmer-friendly, not machine-friendly.</li></ul>
+<ul><li>Java cannot talk directly to the machine / memory the way C can.</li></ul>
+<ul><li>Device drivers / OS-level work → typically C, not Java.</li></ul>
+<p>Wherever machine-level or memory-level communication is required → implement that part in C/C++, expose it to Java via `native`.</p>
+<p>Best example: `hashCode()`</p>
+<ul><li>Hash code is generated based on address.</li></ul>
+<ul><li>In pure Java there is no way to identify the address of an object.</li></ul>
+<ul><li>That part is implemented in C/C++ and made available as a native method.</li></ul>
+<pre class='code'>public class Object {
+    // conceptual signature as on board (Object API)
+    public native int hashCode();
+}</pre>
+<p>So: performance (objective 1) + mission/memory-level communication (objective 2).</p>
+<h3>11:26 — Objective 3: reuse legacy non-Java code</h3>
+<p>Third reason:</p>
+<ul><li>You want some XYZ functionality.</li></ul>
+<ul><li>It already exists in C/C++ legacy libraries.</li></ul>
+<ul><li>You are not interested in rewriting it in Java.</li></ul>
+<p>Then use `native` to call already existing legacy non-Java code.</p>
+<h3>12:20 — Board: main objectives of `native` keyword</h3>
+<p>Even with several benefits, he stresses the one most important practical benefit: fill Java’s performance gap with C/C++ via native.</p>
+<h3>14:42 — Pseudo code to use `native` in Java (3 steps)</h3>
+<p>Pseudo code / steps:</p>
+<ol><li>Load native libraries</li></ol>
+<ol><li>Declare native method</li></ol>
+<ol><li>Invoke native method</li></ol>
+<h4>Step 1 — load native libraries (in a `static` block)</h4>
+<p>At class loading time, corresponding native libraries must be loaded.</p>
+<p>Static blocks run at class loading → put System.loadLibrary(...) there.</p>
+<pre class='code'>class NativeDemo {
+    static {
+        // load native libraries at class-loading time
+        System.loadLibrary(&quot;nativeLibraryPath&quot;);
+        // or: System.load(&quot;/absolute/path/to/lib.so&quot;);
+    }
+}</pre>
+<h4>Step 2 — declare native method (ends with `;`)</h4>
+<p>Implementation already exists in C/C++ — you are not responsible to provide a Java body.</p>
+<p>Same idea as abstract method declarations: end with semicolon, not { }.</p>
+<pre class='code'>class NativeDemo {
+    static {
+        System.loadLibrary(&quot;nativeLibraryPath&quot;);
+    }
+
+    // declare native method — ends with semicolon
+    public native void m1();
+}</pre>
+<h4>Step 3 — invoke native method (from client / `main`)</h4>
+<p>Instance method → create object, then call.</p>
+<pre class='code'>class NativeDemo {
+    static {
+        System.loadLibrary(&quot;nativeLibraryPath&quot;);
+    }
+
+    public native void m1();
+}
+
+class Client {
+    public static void main(String[] args) {
+        NativeDemo n = new NativeDemo();
+        n.m1(); // invoke native method
+    }
+}</pre>
+<p>JNI note (high level): Internally JNI (Java Native Interface) / DLL / mapping layers are involved when calling into C/C++. As application programmers for this OCJP chapter, remember the three steps; deep JNI coding is not the focus here.</p>
+<p>Board recap of steps:</p>
+<ol><li>Load native libraries</li></ol>
+<ol><li>Declare native method</li></ol>
+<ol><li>Invoke native method</li></ol>
+<h3>21:48 — Native methods cannot have a body</h3>
+<p>Because implementation is already available in C/C++:</p>
+<ul><li>Declaration must end with `;`</li></ul>
+<ul><li>Opening { } body → compile-time error: native methods cannot have a body</li></ul>
+<pre class='code'>class Test {
+    // valid
+    public native void m1();
+}
+class Test {
+    // invalid — native methods cannot have a body
+    public native void m1() {
+    }
+    // CE: native methods cannot have a body
+}</pre>
+<p>Side-by-side on board:</p>
+<h3>25:10 — Illegal combo: `abstract` + `native`</h3>
+<p>Contradiction → `native abstract` is an illegal combination for methods.</p>
+<pre class='code'>abstract class Test {
+    // CE: illegal combination of modifiers: abstract and native
+    public abstract native void m1();
+}
+abstract class Test {
+    // CE: illegal combination of modifiers: native and abstract
+    public native abstract void m1();
+}</pre>
+<p>Board line:</p>
+<p>Hence we can&#x27;t declare native method as abstract.</p>
+<p>native abstract combination is illegal combination for methods.</p>
+<h3>27:54 — Illegal combo: `native` + `strictfp`</h3>
+<p>Recall strictfp (from earlier class):</p>
+<ul><li>If a method is strictfp, all floating-point calculations in that method must follow IEEE 754.</li></ul>
+<ul><li>Goal: platform-independent floating-point results.</li></ul>
+<ul><li>IEEE 754 / strictfp is a Java-language story.</li></ul>
+<p>But a native method’s body is in C/C++:</p>
+<ul><li>No guarantee that old languages follow IEEE 754.</li></ul>
+<ul><li>C/C++ are platform-dependent.</li></ul>
+<p>Therefore: cannot declare a native method as `strictfp`.</p>
+<p>`native strictfp` is an illegal combination for methods.</p>
+<pre class='code'>class Test {
+    // CE: illegal combination of modifiers: native and strictfp
+    public native strictfp void m1();
+}
+class Test {
+    // CE: illegal combination of modifiers: strictfp and native
+    public strictfp native void calculate();
+}</pre>
+<p>Board:</p>
+<p>We can&#x27;t declare native method as strictfp because there is no guarantee that old languages follow IEEE 754 standard.</p>
+<p>Hence native strictfp combination is illegal combination for methods.</p>
+<p>Also remember: `native` + `abstract` illegal, `native` + `strictfp` illegal.</p>
+<h3>31:16 — Advantage vs disadvantage of `native`</h3>
+<p>Main advantage: performance of the application improves (critical parts in C/C++).</p>
+<p>Main disadvantage: breaks platform-independent nature of Java.</p>
+<p>Reason: you depend on C/C++, which are platform-dependent → your Java program can become platform-dependent too.</p>
+<p>Example story with hashCode():</p>
+<ul><li>On one system, hashCode() may produce one number.</li></ul>
+<ul><li>Change the system → may get another number.</li></ul>
+<ul><li>Because the method is not pure Java.</li></ul>
+<p>Wherever you use native, don’t always expect platform-independent results.</p>
+<pre class='code'>class HashDemo {
+    public static void main(String[] args) {
+        Object o = new Object();
+        System.out.println(o.hashCode());
+        // number depends on JVM / native implementation / run —
+        // may differ across platforms / runs
+    }
+}</pre>
+<p>Board summary for native:</p>
+<h3>35:10 — Next keyword: `transient`</h3>
+<p>After finishing native, board moves to `transient`.</p>
+<h3>35:40 — Where can we apply `transient`?</h3>
+<p>Point 1:</p>
+<ul><li>transient is a modifier.</li></ul>
+<ul><li>Applicable only for variables.</li></ul>
+<ul><li>Variable-specific modifier — cannot apply anywhere else.</li></ul>
+<pre class='code'>class Test {
+    // CE: modifier transient not allowed here
+    transient void m1() {
+    }
+}
+class Account {
+    // valid: variable
+    transient String password;
+}</pre>
+<p>Point 2 — context: transient plays its role in the serialization concept.</p>
+<p>We can use transient keyword in serialization context.</p>
+<p>(Full serialization programs come later — ~6–7 hours of that topic. Here: basic idea only.)</p>
+<h3>37:26 — Serialization / deserialization (basic idea)</h3>
+<p>Serialization: save / send the state of an object to a file (or across network).</p>
+<p>Deserialization: reverse — read state of an object from the file.</p>
+<p>Example sketch:</p>
+<ul><li>Have an Account object.</li></ul>
+<ul><li>Want to save it to abc.ser (extension is convention; any extension is fine).</li></ul>
+<ul><li>Saving object state to file = serialization.</li></ul>
+<ul><li>Reading it back = deserialization.</li></ul>
+<p>File lives on hard disk → permanent storage.</p>
+<h3>39:05 — Why `transient`? Security while serializing</h3>
+<p>While saving object data to a file, some fields may be sensitive.</p>
+<p>Board example:</p>
+<ul><li>username = &quot;Durga&quot;</li></ul>
+<ul><li>password = &quot;Anushka&quot;</li></ul>
+<p>Saving username + password permanently to a file is not recommended — security risk / misuse.</p>
+<p>Classroom analogy:</p>
+<ul><li>Sharing mail ID: often OK.</li></ul>
+<ul><li>Sharing password: almost nobody will share — dangerous if username and password travel together.</li></ul>
+<p>So: username you may save; password you should not save at serialization time.</p>
+<p>Rule: If you don’t want to save the value of a particular variable (to meet a security constraint), declare that variable `transient`.</p>
+<pre class='code'>class Account {
+    String username = &quot;Durga&quot;;
+    transient String password = &quot;Anushka&quot;;
+}</pre>
+<h3>41:26 — What happens if a variable is `transient`?</h3>
+<p>At serialization time:</p>
+<ul><li>JVM ignores the original value of the transient variable.</li></ul>
+<ul><li>JVM saves the default value to the file instead.</li></ul>
+<p>For String password → default is `null`.</p>
+<p>Conceptual after serialize / deserialize:</p>
+<pre class='code'>import java.io.*;
+
+class Account implements Serializable {
+    String username = &quot;Durga&quot;;
+    transient String password = &quot;Anushka&quot;;
+}
+
+class SerializeDemo {
+    public static void main(String[] args) throws Exception {
+        Account a1 = new Account();
+
+        ObjectOutputStream oos =
+            new ObjectOutputStream(new FileOutputStream(&quot;abc.ser&quot;));
+        oos.writeObject(a1);
+        oos.close();
+
+        ObjectInputStream ois =
+            new ObjectInputStream(new FileInputStream(&quot;abc.ser&quot;));
+        Account a2 = (Account) ois.readObject();
+        ois.close();
+
+        System.out.println(a2.username + &quot;---&quot; + a2.password);
+        // prints Durga---null
+        // username kept; transient password → default null
+    }
+}</pre>
+<p>Board meaning:</p>
+<p>`transient` means not to serialize (not to save that field’s original value).</p>
+<p>At serialization:</p>
+<p>JVM ignores original value of transient variables and saves default value to the file.</p>
+<pre class='code'>class Account {
+    String username = &quot;Durga&quot;;
+    // &quot;not to serialize&quot; this sensitive field
+    transient String password = &quot;Anushka&quot;;
+}</pre>
+<p>Diagram idea (board): object → abc.ser with username kept, password replaced by default.</p>
+<h3>47:38 — Transient wrap-up; next: `volatile`</h3>
+<p>Serialization details deferred. Next modifier: `volatile` (Whisper: “wallet tile”).</p>
+<h3>48:00 — Where can we apply `volatile`?</h3>
+<p>Point 1:</p>
+<ul><li>volatile is a modifier.</li></ul>
+<ul><li>Applicable only for variables.</li></ul>
+<ul><li>Cannot apply anywhere else (not methods, not classes).</li></ul>
+<pre class='code'>class Test {
+    // CE: modifier volatile not allowed here
+    volatile void m1() {
+    }
+}
+class Test {
+    // valid
+    volatile int x;
+}</pre>
+<p>(He notes: more on multi-threading later; here conceptual introduction.)</p>
+<h3>49:11 — Meaning of “volatile” (everyday + memory analogy)</h3>
+<p>Everyday: volatile = keep on changing; no stable behavior.</p>
+<p>Hardware analogy he uses:</p>
+<ul><li>Volatile memory → RAM (data lost on shutdown).</li></ul>
+<ul><li>Non-volatile → hard disk (data remains after restart).</li></ul>
+<p>Idea: volatile things keep changing.</p>
+<h3>50:32 — When do we need `volatile`? Multiple threads + one variable</h3>
+<p>Suppose variable x is accessed by multiple threads (T1, T3, T4, …):</p>
+<ul><li>One thread sets 20, another 30, another −10, …</li></ul>
+<ul><li>Value keeps changing → risk of data inconsistency.</li></ul>
+<p>To overcome (in his framing of this chapter): declare the variable `volatile`.</p>
+<pre class='code'>class Shared {
+    // value may keep changing across threads
+    volatile int x;
+}</pre>
+<h3>51:37 — Kids-and-ball story → separate copy per thread</h3>
+<p>Long analogy:</p>
+<ul><li>Festival; kids share one ball → fights / crying.</li></ul>
+<ul><li>Solution: buy separate balls for every kid → problem solved.</li></ul>
+<p>Same idea for threads:</p>
+<ul><li>Multiple threads accessing / mutating the same variable → inconsistency risk.</li></ul>
+<ul><li>If variable is declared `volatile` (as he teaches here): JVM creates a separate local copy for every thread.</li></ul>
+<ul><li>Modifications by one thread happen in its copy → no effect on remaining threads.</li></ul>
+<ul><li>Data-inconsistency problem is “solved” in this story.</li></ul>
+<pre class='code'>class Counter {
+    volatile int x = 0;
+
+    // each thread works with its own local copy (as per lecture framing)
+    public void update(int value) {
+        x = value;
+    }
+}</pre>
+<p>Advantage of `volatile`: overcome data inconsistency problem.</p>
+<p>Disadvantage:</p>
+<ul><li>If 10,000 threads → 10,000 copies.</li></ul>
+<ul><li>Creating and maintaining a separate copy per thread increases complexity.</li></ul>
+<ul><li>Performance goes down.</li></ul>
+<p>Therefore (his OCJP-classroom conclusion):</p>
+<ul><li>volatile is almost deprecated / not recommended to use without specific need.</li></ul>
+<ul><li>Causes serious performance problems.</li></ul>
+<ul><li>Many Java programmers barely know it — “not required” in day-to-day coding as he frames it.</li></ul>
+<pre class='code'>class Demo {
+    // works, but he says: never recommended without specific requirement
+    volatile int sharedFlag;
+}</pre>
+<h3>56:54 — Board conclusions for `volatile`</h3>
+<p>If the value of a variable keeps on changing by multiple threads → chance of data inconsistency.</p>
+<p>Solve by declaring variable `volatile`.</p>
+<p>If declared volatile:</p>
+<ol><li>For every thread, JVM creates a separate local copy.</li></ol>
+<ol><li>Every modification by a thread happens in that copy.</li></ol>
+<ol><li>No effect on remaining threads.</li></ol>
+<pre class='code'>class SharedData {
+    volatile int x = 10;
+
+    public void m1() {
+        x = 20; // changes this thread&#x27;s local copy (lecture model)
+    }
+}</pre>
+<h3>1:03:04 — Illegal combo: `final` + `volatile`</h3>
+<p>Declaring volatile gives JVM big work: create and maintain a separate local copy per thread, because the value keeps changing.</p>
+<p>But if the variable is `final`:</p>
+<pre class='code'>class Test {
+    final int x = 10;
+}</pre>
+<ul><li>final → value is fixed; never changes.</li></ul>
+<ul><li>Nobody will change the value.</li></ul>
+<ul><li>Then: what is the need of volatile / per-thread copies?</li></ul>
+<p>Declaring final + volatile → compiler rejects: unnecessary / misuse of syntax.</p>
+<p>`volatile final` is an illegal combination for variables.</p>
+<pre class='code'>class Test {
+    // CE: illegal combination of modifiers: final and volatile
+    final volatile int x = 10;
+}
+class Test {
+    // CE: illegal combination of modifiers: volatile and final
+    volatile final int y = 20;
+}</pre>
+<p>Board logic:</p>
+<p>Contradiction → illegal together.</p>
+<h3>1:06:38 — All 12 modifiers covered — summary table begins</h3>
+<p>He lists the 12 modifiers covered across the series:</p>
+<ol><li>public</li></ol>
+<ol><li>default (no modifier)</li></ol>
+<ol><li>protected</li></ol>
+<ol><li>private</li></ol>
+<ol><li>final</li></ol>
+<ol><li>abstract</li></ol>
+<ol><li>static</li></ol>
+<ol><li>synchronized</li></ol>
+<ol><li>strictfp</li></ol>
+<ol><li>native</li></ol>
+<ol><li>transient</li></ol>
+<ol><li>volatile</li></ol>
+<p>Big table: for each modifier, is it applicable to…</p>
+<p>| Column ideas on board |</p>
+<p>| --- |</p>
+<p>| Outer classes |</p>
+<p>| Inner classes |</p>
+<p>| Methods |</p>
+<p>| Variables |</p>
+<p>| Blocks |</p>
+<p>| Outer interfaces |</p>
+<p>| Inner interfaces |</p>
+<p>| Outer enums |</p>
+<p>| Inner enums |</p>
+<p>| Constructors |</p>
+<p>Gaps / blank cells = not applicable.</p>
+<h3>1:12:03 — Filling the table (revision highlights)</h3>
+<h4>Outer classes</h4>
+<p>Applicable: public, default, final, abstract, strictfp.</p>
+<h4>Inner classes</h4>
+<p>Those five, plus extra: private, protected, static.</p>
+<pre class='code'>public final class OuterAllowed {
+}
+
+class OuterDefault {
+}
+
+abstract class OuterAbstract {
+}
+
+strictfp class OuterStrict {
+}
+class Outer {
+    private class InnerPrivate {
+    }
+
+    protected class InnerProtected {
+    }
+
+    static class NestedStatic {
+    }
+}</pre>
+<h4>Methods</h4>
+<p>Almost everything except last two:</p>
+<ul><li>Allowed: access modifiers, final, abstract, static, synchronized, native, strictfp</li></ul>
+<ul><li>Not for methods: transient, volatile</li></ul>
+<pre class='code'>class MethodMods {
+    public final synchronized void m1() {
+    }
+
+    public static strictfp void m2() {
+    }
+
+    public native void m3();
+
+    // CE: modifier transient not allowed here
+    // transient void bad1() { }
+
+    // CE: modifier volatile not allowed here
+    // volatile void bad2() { }
+}</pre>
+<h4>Variables</h4>
+<ul><li>Allowed: access modifiers, final, static, transient, volatile</li></ul>
+<ul><li>Not for variables: abstract, synchronized, native, strictfp</li></ul>
+<pre class='code'>class VarMods {
+    public static final int MAX = 100;
+    private transient String secret;
+    volatile int flag;
+
+    // CE: abstract not allowed on variables
+    // abstract int x;
+
+    // CE: synchronized not allowed on variables
+    // synchronized int y;
+
+    // CE: native not allowed on variables
+    // native int z;
+
+    // CE: strictfp not allowed on variables
+    // strictfp double d;
+}</pre>
+<h4>Blocks</h4>
+<p>Only two meaningful cases:</p>
+<ul><li>static block</li></ul>
+<ul><li>synchronized block</li></ul>
+<p>All other modifiers not applicable on blocks.</p>
+<pre class='code'>class BlockMods {
+    static {
+        System.out.println(&quot;static block&quot;);
+    }
+
+    void m() {
+        synchronized (this) {
+            System.out.println(&quot;synchronized block&quot;);
+        }
+    }
+}</pre>
+<h4>Interfaces (outer)</h4>
+<p>Similar to classes, but:</p>
+<ul><li>Every interface is abstract by default → `final` not possible on interface.</li></ul>
+<ul><li>public, default, abstract (implicit), strictfp OK.</li></ul>
+<ul><li>Modifier applicable for class but not interface: `final`.</li></ul>
+<pre class='code'>public interface I1 {
+}
+
+// CE: modifier final not allowed here / illegal for interface
+// final interface I2 { }
+
+strictfp interface I3 {
+}</pre>
+<h4>Inner interfaces</h4>
+<p>Like outer interface rules (no `final`), plus extras like inner classes: private, protected, static.</p>
+<pre class='code'>class Outer {
+    private interface InnerI {
+    }
+
+    protected static interface NestedI {
+    }
+}</pre>
+<h4>Enums</h4>
+<p>Enum is like a class, but:</p>
+<ul><li>Every enum is always final implicitly (discussed fully in enum chapter).</li></ul>
+<ul><li>Even though always final, you cannot declare `final` explicitly.</li></ul>
+<ul><li>You cannot declare enum abstract (in the simple rule he states here).</li></ul>
+<ul><li>Modifiers applicable for classes but not enums: `final` and `abstract`.</li></ul>
+<ul><li>public, default, strictfp OK for outer enum.</li></ul>
+<ul><li>Inner enum: same idea + private / protected / static allowed like inner types.</li></ul>
+<pre class='code'>public enum Color {
+    RED, GREEN, BLUE
+}
+
+// CE: cannot declare enum final explicitly (already final implicitly)
+// final enum Bad1 { A }
+
+// CE: cannot declare enum abstract (as per this summary rule)
+// abstract enum Bad2 { A }
+class Outer {
+    private enum InnerEnum {
+        A, B
+    }
+
+    static enum NestedEnum {
+        X, Y
+    }
+}</pre>
+<h4>Constructors</h4>
+<p>Only access modifiers:</p>
+<ul><li>public, private, protected, default</li></ul>
+<p>Any other modifier on a constructor → compile-time error.</p>
+<pre class='code'>class Test {
+    public Test() {
+    }
+
+    private Test(int x) {
+    }
+
+    protected Test(String s) {
+    }
+
+    Test(double d) { // default access
+    }
+
+    // CE: modifier final not allowed here
+    // final Test(boolean b) { }
+
+    // CE: modifier static not allowed here
+    // static Test(char c) { }
+
+    // CE: modifier synchronized not allowed here
+    // synchronized Test(long n) { }
+}</pre>
+<h3>1:19:34 — Table complete; “gap = not applicable”</h3>
+<p>If a cell is empty in the summary table → that modifier is not applicable for that member kind. Cross-mark or leave blank — your choice.</p>
+<h3>1:22:36 — Extra conclusions under the table (exam favorites)</h3>
+<h4>1) Only applicable modifier for **local variables**</h4>
+<p>Already covered earlier: only `final`.</p>
+<pre class='code'>class Test {
+    public void m1() {
+        final int x = 10; // only applicable modifier for local variable
+
+        // CE: public not allowed for local variable
+        // public int y = 20;
+
+        // CE: static not allowed for local variable
+        // static int z = 30;
+
+        // CE: transient not allowed for local variable
+        // transient int t = 40;
+    }
+}</pre>
+<h4>2) Only applicable modifiers for **constructors**</h4>
+<p>public, private, protected, default — nothing else.</p>
+<pre class='code'>class C {
+    public C() {
+    }
+
+    private C(int a) {
+    }
+
+    protected C(String s) {
+    }
+
+    C(byte b) {
+    }
+}</pre>
+<h4>3) Modifiers applicable **only for methods** (nowhere else)</h4>
+<p>From the table: `native` is the clear method-only tick (all other columns cross).</p>
+<pre class='code'>class OnlyMethod {
+    public native void m1(); // only for methods
+
+    // cannot apply native on class / variable / etc.
+}</pre>
+<p>(synchronized also appears mainly on methods/blocks — but his spoken punchline here is `native` as the method-specific modifier.)</p>
+<h4>4) Modifiers applicable **only for variables**</h4>
+<p>`transient` and `volatile`.</p>
+<pre class='code'>class OnlyVars {
+    transient int a;
+    volatile int b;
+}</pre>
+<h4>5) Applicable for **classes but not interfaces**</h4>
+<p>`final`.</p>
+<p>final class OkClass {
+}
+
+// CE: final interface not allowed
+// final interface BadInterface { }</p>
+<h4>6) Applicable for **classes but not enums**</h4>
+<p>`final` and `abstract`.</p>
+<p>abstract class OkAbstractClass {
+}
+
+final class OkFinalClass {
+}
+
+// not for enum (explicit final / abstract) — see enum rules above</p>
+<p>Exam may ask these “which modifier where?” questions — keep the complete picture.</p>
+<h3>1:27:14 — Closing / next topic</h3>
+<p>Summary of all modifiers concept ends here.</p>
+<p>Next topic: interfaces — “most valuable concept” for interviews / OCJP track.</p>
+<h2>Quick revision card</h2>
+<pre class='code'>// native — method only, no body
+class N {
+    static {
+        System.loadLibrary(&quot;lib&quot;);
+    }
+
+    public native void m1();
+}
+// transient — skip original value at serialization
+class A implements java.io.Serializable {
+    String user = &quot;Durga&quot;;
+    transient String pwd = &quot;secret&quot;;
+}
+// volatile — variable only; not with final
+class V {
+    volatile int x;
+    // final volatile int y = 1; // CE
+}
+// constructors — only access modifiers
+class T {
+    public T() {
+    }
+
+    private T(int x) {
+    }
+}
+// local variable — only final
+class L {
+    void m() {
+        final int x = 10;
+    }
+}</pre>
+<p>```java block count: 51</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 39 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 10</td></tr>
+<tr><td>Topic</td><td>native, static, transient</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 27m 49s</td></tr>
+<tr><td>Video ID</td><td>nJ8klW-SQXs</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=nJ8klW-SQXs</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Objective</th></tr>
+<tr><td>1</td><td>To improve performance of the system</td></tr>
+<tr><td>2</td><td>To achieve machine-level / memory-level communication</td></tr>
+<tr><td>3</td><td>To use already existing legacy non-Java code</td></tr>
+</table>
+<table>
+<tr><th>Declaration</th><th>Valid?</th><th>Reason</th></tr>
+<tr><td>public native void m1();</td><td>Yes</td><td>Ends with ; — no Java body</td></tr>
+<tr><td>public native void m1() { }</td><td>No</td><td>Native methods cannot have a body</td></tr>
+</table>
+<table>
+<tr><th>Kind</th><th>Implementation</th></tr>
+<tr><td>native method</td><td>Implementation already available (in C/C++)</td></tr>
+<tr><td>abstract method</td><td>Implementation must not be available (must be overridden later)</td></tr>
+</table>
+<table>
+<tr><th></th><th></th></tr>
+<tr><td>Applicable</td><td>methods only</td></tr>
+<tr><td>Meaning</td><td>implemented in non-Java (foreign methods)</td></tr>
+<tr><td>Advantage</td><td>performance improved</td></tr>
+<tr><td>Disadvantage</td><td>breaks platform independence</td></tr>
+<tr><td>Illegal with</td><td>abstract, strictfp</td></tr>
+<tr><td>Declaration</td><td>must end with `;` (no body)</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Transient?</th><th>Value saved / restored</th></tr>
+<tr><td>username</td><td>no</td><td>&quot;Durga&quot;</td></tr>
+<tr><td>password</td><td>yes</td><td>null (default)</td></tr>
+</table>
+<table>
+<tr><th></th><th></th></tr>
+<tr><td>Advantage</td><td>overcome data inconsistency</td></tr>
+<tr><td>Disadvantage</td><td>creating/maintaining per-thread copies ↑ complexity + performance problems</td></tr>
+<tr><td>Advice</td><td>if no specific requirement → never recommended; almost deprecated</td></tr>
+</table>
+<table>
+<tr><th>Modifier</th><th>Meaning for value</th></tr>
+<tr><td>final</td><td>value never changes</td></tr>
+<tr><td>volatile</td><td>value keeps on changing</td></tr>
+</table>
+<table>
+<tr><th>Modifier</th><th>Main target in this video</th><th>Key points</th></tr>
+<tr><td>native</td><td>methods only</td><td>C/C++ impl; ; no body; +abstract / +strictfp illegal; ↑ performance, ↓ platform independence</td></tr>
+<tr><td>transient</td><td>variables only</td><td>serialization: don’t save original value → default saved; “not to serialize”</td></tr>
+<tr><td>volatile</td><td>variables only</td><td>multi-thread changing value; per-thread copy story; +final illegal; almost not recommended</td></tr>
+<tr><td>(table)</td><td>all 12</td><td>applicability matrix + “only for …” exam lines</td></tr>
+</table>
+</body></html>

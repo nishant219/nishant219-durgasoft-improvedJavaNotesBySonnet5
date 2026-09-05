@@ -1,0 +1,264 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>166-copyonwritearraylist-program-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 166 — Concurrent Collections Part-13: CopyOnWriteArrayList Program-2</h1>
+<h2>Video info</h2>
+<p>ASR decode notes: copy-on-write a relay system / copy under a very Lister / puppy on Voyager Lister / copy on the returnees / nominee register / normally releases = ArrayList; concurrent a modification exception / current modification exception = ConcurrentModificationException; predator a ping / interpret trying to modify = iterator trying to modify; religious object = ArrayList object; smidge example = small example; change occurred = child thread; mr. Gilardi adapts = child thread updates; productive released = child thread; update oppression = update operation.</p>
+<h2>Session overview</h2>
+<p>This is Program-2 in Durga Sir&#x27;s CopyOnWriteArrayList demo series — the programmatic proof that CopyOnWriteArrayList does NOT throw `ConcurrentModificationException` when one thread iterates while another thread performs update operations.</p>
+<p>Prerequisites (earlier videos in this module):</p>
+<p>What this session covers:</p>
+<ol><li>Learning objective — demonstrate no CME with CopyOnWriteArrayList under concurrent iterate + modify</li></ol>
+<ol><li>Full board program — MyThread extends Thread with static CopyOnWriteArrayList</li></ol>
+<ol><li>Thread timeline — main iterates, child updates via run()</li></ol>
+<ol><li>Live compile/run — output shows all elements printed, no exception</li></ol>
+<ol><li>Controlled experiment — replace CopyOnWriteArrayList with ArrayList → same code throws CME</li></ol>
+<ol><li>Side-by-side comparison — the only variable is the list implementation</li></ol>
+<p>What this session does NOT cover (deferred):</p>
+<ul><li>Iterator snapshot behavior after update (→ Video 168, Program-4)</li></ul>
+<ul><li>Comparison with Vector / synchronizedList (→ Video 170)</li></ul>
+<ul><li>addIfAbsent / addAllAbsent details (→ Videos 164–165)</li></ul>
+<h2>00:21 — Program goal: No ConcurrentModificationException with CopyOnWriteArrayList</h2>
+<h3>Core rule (from Video 163 theory — now proven in code)</h3>
+<p>In the case of CopyOnWriteArrayList:</p>
+<ul><li>While one thread is iterating, the other thread is allowed to perform update operations (add, remove, set)</li></ul>
+<ul><li>There is no chance of ConcurrentModificationException</li></ul>
+<ul><li>This is the speciality of CopyOnWriteArrayList — the main reason we use concurrent collections instead of normal ArrayList in multi-threaded read-heavy scenarios</li></ul>
+<h3>Contrast with normal ArrayList (fail-fast)</h3>
+<p>In the case of normal ArrayList:</p>
+<ul><li>While one thread is iterating, the other thread is NOT allowed to modify the underlying list object</li></ul>
+<ul><li>By mistake, if another thread tries to modify → immediate `ConcurrentModificationException`</li></ul>
+<ul><li>Iterator of ArrayList is fail-fast</li></ul>
+<h3>Sir&#x27;s framing for this program</h3>
+<p>&quot;This is a small example — observe very carefully what I am doing.&quot;</p>
+<p>Target: Programmatically prove the theoretical point from Video 163 with a live demo, then flip one line (list type) to show ArrayList fails the same scenario.</p>
+<h2>00:76 — Program design: MyThread with static CopyOnWriteArrayList</h2>
+<h3>Design decisions (board walkthrough)</h3>
+<h3>Why static? (same explanation as Video 154)</h3>
+<p>Sir uses static so the list is shared across threads without passing references. Both main thread and child thread operate on the identical CopyOnWriteArrayList instance.</p>
+<h3>Thread responsibilities after `t.start()`</h3>
+<h3>Critical overlap (what would cause CME on ArrayList)</h3>
+<p>Main thread:   Iterator itr = l.iterator();
+               while (itr.hasNext()) { print itr.next(); }   // iterating
+
+Child thread:  l.add(&quot;D&quot;);                                   // structural modify</p>
+<p>On ArrayList → ConcurrentModificationException when modCount changes during iteration.</p>
+<p>On CopyOnWriteArrayList → no exception — update happens on a separate cloned copy; iterator&#x27;s snapshot is unaffected.</p>
+<h2>00:76 — Full board program (CopyOnWriteArrayList version)</h2>
+<pre class='code'>import java.util.*;
+import java.util.concurrent.*;
+
+class MyThread extends Thread {
+
+    // Shared static CopyOnWriteArrayList — both threads use same object
+    static CopyOnWriteArrayList l = new CopyOnWriteArrayList();
+
+    public void run() {
+        l.add(&quot;D&quot;);    // child thread: update operation
+    }
+
+    public static void main(String[] args) {
+        l.add(&quot;A&quot;);
+        l.add(&quot;B&quot;);
+        l.add(&quot;C&quot;);    // list = [A, B, C]
+
+        MyThread t = new MyThread();
+        t.start();     // now 2 threads: main + child
+
+        Iterator itr = l.iterator();
+        while (itr.hasNext()) {
+            System.out.println(
+                &quot;Main thread iterating list and current object is: &quot; + itr.next());
+        }
+    }
+}</pre>
+<h3>Step-by-step execution trace</h3>
+<ol><li>JVM starts — only main thread exists.</li></ol>
+<ol><li>Main adds &quot;A&quot;, &quot;B&quot;, &quot;C&quot; → underlying array = [A, B, C].</li></ol>
+<ol><li>Main creates MyThread t and calls t.start() → JVM spawns child thread.</li></ol>
+<ol><li>Both threads now compete for CPU:</li></ol>
+<ul><li>Main thread: obtains Iterator, enters while (itr.hasNext()) loop.</li></ul>
+<ul><li>Child thread: runs l.add(&quot;D&quot;) — CopyOnWriteArrayList creates a new cloned copy with [A, B, C, D]; original snapshot used by iterator is unchanged.</li></ul>
+<ol><li>Main continues itr.next() for each element in its snapshot — prints A, B, C (and possibly D depending on timing — Sir&#x27;s demo prints without exception).</li></ol>
+<ol><li>No `ConcurrentModificationException` — program completes normally.</li></ol>
+<h3>Why CopyOnWriteArrayList avoids CME (internal mechanism)</h3>
+<h3>Expected console output (CopyOnWriteArrayList)</h3>
+<p>Main thread iterating list and current object is: A
+Main thread iterating list and current object is: B
+Main thread iterating list and current object is: C</p>
+<p>Note: Whether &quot;D&quot; appears in output depends on thread scheduling. The guaranteed outcome is no exception. Sir&#x27;s demo emphasizes absence of CME, not necessarily seeing D during iteration (that behavior is covered in Video 168 — iterator sees snapshot, not post-iterator updates).</p>
+<h2>03:28 — Compile and run (CopyOnWriteArrayList version)</h2>
+<h3>Commands (as on Sir&#x27;s board)</h3>
+<p>javac MyThread.java
+java MyThread</p>
+<h3>Imports required</h3>
+<pre class='code'>import java.util.*;              // Iterator
+import java.util.concurrent.*;   // CopyOnWriteArrayList</pre>
+<h3>Observed result</h3>
+<ul><li>Code compiles fine (javac succeeds)</li></ul>
+<ul><li>Runtime: main thread prints &quot;Main thread iterating list and current object is: &quot; followed by each element</li></ul>
+<ul><li>No `ConcurrentModificationException` at the end</li></ul>
+<ul><li>Child thread successfully performed update operation while main thread was iterating</li></ul>
+<h3>Sir&#x27;s conclusion from live run</h3>
+<p>&quot;When main thread is iterating, child thread is able to perform update operation — advantage yes, that is the speciality of CopyOnWriteArrayList.&quot;</p>
+<p>Key takeaway: Many threads can perform update operations while another thread iterates — no CME. This is impossible with normal ArrayList without external synchronization.</p>
+<h2>05:09 — Controlled experiment: Replace CopyOnWriteArrayList with ArrayList</h2>
+<h3>The one-line change</h3>
+<p>Sir repeats the exact same program but replaces:</p>
+<pre class='code'>static CopyOnWriteArrayList l = new CopyOnWriteArrayList();</pre>
+<p>with:</p>
+<pre class='code'>static ArrayList l = new ArrayList();</pre>
+<p>Everything else stays identical — same run(), same main(), same iteration loop.</p>
+<h3>Full ArrayList version (for comparison)</h3>
+<pre class='code'>import java.util.*;
+
+class MyThread extends Thread {
+
+    static ArrayList l = new ArrayList();   // ONLY CHANGE
+
+    public void run() {
+        l.add(&quot;D&quot;);
+    }
+
+    public static void main(String[] args) {
+        l.add(&quot;A&quot;);
+        l.add(&quot;B&quot;);
+        l.add(&quot;C&quot;);
+
+        MyThread t = new MyThread();
+        t.start();
+
+        Iterator itr = l.iterator();
+        while (itr.hasNext()) {
+            System.out.println(
+                &quot;Main thread iterating list and current object is: &quot; + itr.next());
+        }
+    }
+}</pre>
+<h3>Observed result (ArrayList version)</h3>
+<p>Main thread iterating list and current object is: A
+Exception in thread &quot;main&quot; java.util.ConcurrentModificationException
+    at java.util.ArrayList$Itr.checkForComodification(ArrayList.java:...)
+    at java.util.ArrayList$Itr.next(ArrayList.java:...)
+    at MyThread.main(MyThread.java:...)</p>
+<ul><li>Program may print &quot;A&quot; (or more elements) before exception</li></ul>
+<ul><li>As soon as child thread&#x27;s l.add(&quot;D&quot;) changes modCount while main&#x27;s iterator is active → fail-fast detection → CME</li></ul>
+<h3>Side-by-side comparison table</h3>
+<h2>06:19 — Session recap: Programmatic proof of CME difference</h2>
+<h3>Sir&#x27;s closing summary</h3>
+<p>&quot;I hope you people are clear — with respect to the program, what is the difference between normal ArrayList and CopyOnWriteArrayList with respect to ConcurrentModificationException?&quot;</p>
+<p>Answer structure:</p>
+<ol><li>Normal ArrayList: While one thread is iterating, if another thread tries to modify → `ConcurrentModificationException`</li></ol>
+<ol><li>CopyOnWriteArrayList: While one thread is iterating, other threads can perform update operations → no CME</li></ol>
+<h3>Connection to Video 154 demo</h3>
+<p>Video 154 used the same `MyThread` pattern with ArrayList to introduce CME. Video 166 reuses that pattern with CopyOnWriteArrayList to show the concurrent collection solution.</p>
+<h2>Master comparison: Iterate + Modify scenario</h2>
+<h2>OCJP / SCJP exam checklist</h2>
+<ul><li>[ ] Know that CopyOnWriteArrayList allows concurrent iteration + modification without CME</li></ul>
+<ul><li>[ ] Know that ArrayList iterator is fail-fast → CME on concurrent structural modification</li></ul>
+<ul><li>[ ] Know CopyOnWriteArrayList iterator is fail-safe → no CME</li></ul>
+<ul><li>[ ] Understand update-on-clone-copy is why CME does not occur</li></ul>
+<ul><li>[ ] Recognize the MyThread demo pattern from certification questions</li></ul>
+<ul><li>[ ] Know package: java.util.concurrent.CopyOnWriteArrayList</li></ul>
+<ul><li>[ ] Distinguish: CME (ArrayList) vs no CME (CopyOnWriteArrayList) with same code structure</li></ul>
+<h2>Interview Q&amp;A (rapid fire)</h2>
+<h2>Related videos in CopyOnWriteArrayList series</h2>
+<h2>Summary (one paragraph)</h2>
+<p>Video 166 is Durga Sir&#x27;s second CopyOnWriteArrayList program — a live, side-by-side proof of the fail-safe iterator behavior taught in Video 163. Using the familiar MyThread extends Thread pattern with a static shared list, main thread adds A/B/C, starts a child thread, and iterates with an Iterator while the child calls l.add(&quot;D&quot;). With CopyOnWriteArrayList, the program runs to completion with no ConcurrentModificationException because updates happen on a separate cloned copy and the iterator reads from its original snapshot. Sir then replaces only the list type with ArrayList — identical code — and immediately gets ConcurrentModificationException, demonstrating fail-fast behavior. This programmatic comparison is the certification-ready answer to &quot;what is the difference between ArrayList and CopyOnWriteArrayList regarding concurrent modification during iteration?&quot;</p>
+<p>End of Video 166 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th></tr>
+<tr><td>Position</td><td>166 of 203</td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Concurrent Collections Part-13 \</td><td>CopyOnWriteArrayList Program-2</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td></tr>
+<tr><td>Duration</td><td>7m 07s</td><td></td></tr>
+<tr><td>Video ID</td><td>Puk_oT7_VNU</td><td></td></tr>
+<tr><td>Watch URL</td><td>https://www.youtube.com/watch?v=Puk_oT7_VNU</td><td></td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td></tr>
+<tr><td>Notes source</td><td>YouTube auto-captions (yt-dlp + node PO token)</td><td></td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th></tr>
+<tr><td>154</td><td>Need of concurrent collections — Reason 3 is CME</td></tr>
+<tr><td>163</td><td>CopyOnWriteArrayList properties Part-2 — fail-safe iterator, no CME during concurrent update</td></tr>
+<tr><td>164</td><td>CopyOnWriteArrayList constructors &amp; methods</td></tr>
+<tr><td>165</td><td>CopyOnWriteArrayList Program-1 — addIfAbsent, addAllAbsent</td></tr>
+</table>
+<table>
+<tr><th>Element</th><th>Choice</th><th>Why</th></tr>
+<tr><td>Class name</td><td>MyThread</td><td>Same pattern as Video 154 CME demo — students already know this structure</td></tr>
+<tr><td>Extends</td><td>Thread</td><td>Child thread runs run() method</td></tr>
+<tr><td>Shared list</td><td>static CopyOnWriteArrayList l</td><td>Static → both main thread and child thread access the same list object</td></tr>
+<tr><td>Child run()</td><td>l.add(&quot;D&quot;)</td><td>Child thread performs update operation while main may be iterating</td></tr>
+<tr><td>Main main()</td><td>Add A,B,C → start child → iterate with Iterator</td><td>Main thread responsible for iteration</td></tr>
+</table>
+<table>
+<tr><th>Thread</th><th>Responsibility</th></tr>
+<tr><td>Main thread</td><td>Continue in main() — obtain Iterator, loop with hasNext() / next(), print each element</td></tr>
+<tr><td>Child thread</td><td>Execute run() — call l.add(&quot;D&quot;) to update the list</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>What happens</th></tr>
+<tr><td>Iterator created</td><td>Iterator holds reference to current array snapshot at creation time</td></tr>
+<tr><td>Another thread calls add(&quot;D&quot;)</td><td>New array copy created with D added; iterator still points to old snapshot</td></tr>
+<tr><td>itr.next() called</td><td>Reads from snapshot — no modCount check that throws CME</td></tr>
+<tr><td>Iterator type</td><td>Fail-safe — never throws CME due to concurrent modification</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>CopyOnWriteArrayList</th><th>ArrayList</th></tr>
+<tr><td>One thread iterates, other modifies</td><td>Allowed — no exception</td><td>Not allowed — CME</td></tr>
+<tr><td>Iterator type</td><td>Fail-safe</td><td>Fail-fast</td></tr>
+<tr><td>Update mechanism</td><td>Separate cloned copy</td><td>In-place modify + modCount change</td></tr>
+<tr><td>Thread safety</td><td>Built-in (concurrent collection)</td><td>Not thread-safe</td></tr>
+<tr><td>Same program structure</td><td>Works</td><td>Throws CME</td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>List type</th><th>Outcome</th></tr>
+<tr><td>154</td><td>ArrayList</td><td>CME — proves the problem</td></tr>
+<tr><td>166</td><td>CopyOnWriteArrayList</td><td>No CME — proves the solution</td></tr>
+<tr><td>166 (part 2)</td><td>ArrayList again</td><td>CME — controlled comparison</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>List implementation</th><th>Thread-1 (main)</th><th>Thread-2 (child)</th><th>Result</th></tr>
+<tr><td>1</td><td>ArrayList</td><td>Iterate with Iterator</td><td>l.add(&quot;D&quot;)</td><td>ConcurrentModificationException</td></tr>
+<tr><td>2</td><td>CopyOnWriteArrayList</td><td>Iterate with Iterator</td><td>l.add(&quot;D&quot;)</td><td>No exception — program completes</td></tr>
+<tr><td>3</td><td>Vector</td><td>Iterate with Iterator</td><td>l.add(&quot;D&quot;)</td><td>ConcurrentModificationException (→ Video 170)</td></tr>
+<tr><td>4</td><td>Collections.synchronizedList(ArrayList)</td><td>Iterate (unsynchronized)</td><td>l.add(&quot;D&quot;)</td><td>ConcurrentModificationException (→ Video 170)</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>What happens if one thread iterates CopyOnWriteArrayList while another adds?</td><td>No ConcurrentModificationException — update on cloned copy</td></tr>
+<tr><td>What happens with ArrayList in the same scenario?</td><td>ConcurrentModificationException — fail-fast iterator</td></tr>
+<tr><td>Why no CME on CopyOnWriteArrayList?</td><td>Iterator works on snapshot; updates create new copy</td></tr>
+<tr><td>Is CopyOnWriteArrayList iterator fail-fast or fail-safe?</td><td>Fail-safe</td></tr>
+<tr><td>Best use case for CopyOnWriteArrayList?</td><td>Read-heavy, write-light multi-threaded scenarios</td></tr>
+<tr><td>Can multiple threads update CopyOnWriteArrayList simultaneously?</td><td>Yes — each update on separate clone (with performance cost)</td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th></tr>
+<tr><td>163</td><td>CopyOnWriteArrayList properties Part-2 (theory)</td></tr>
+<tr><td>164</td><td>Constructors &amp; methods</td></tr>
+<tr><td>165</td><td>Program-1 — addIfAbsent, addAllAbsent</td></tr>
+<tr><td>166</td><td>Program-2 — no CME demo (this video)</td></tr>
+<tr><td>167</td><td>Program-3 (iterator remove → UnsupportedOperationException)</td></tr>
+<tr><td>168</td><td>Program-4 — iterator snapshot after post-iterator add</td></tr>
+<tr><td>170</td><td>Comparison: CopyOnWriteArrayList vs synchronizedList vs Vector</td></tr>
+</table>
+</body></html>

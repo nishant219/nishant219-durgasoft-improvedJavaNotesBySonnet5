@@ -1,0 +1,677 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>071-default-exception-handling</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 071 — Default exception handling</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Exception Handling Part-2 || Default Exception Handling</p>
+<h2>Overview</h2>
+<p>This lecture continues Exception Handling Part 2. Part 1 showed a program where everything runs fine. Here Durga Sir asks: what happens when something goes wrong? The answer is default exception handling — the built-in mechanism the JVM uses when no programmer-written handling code (try-catch) exists anywhere in the call chain.</p>
+<p>The lecture has three major parts:</p>
+<ol><li>Default exception handling flow — theory, bike-accident analogy, stack unwinding, and live demos.</li></ol>
+<ol><li>Formal board notes — seven numbered points plus output format.</li></ol>
+<ol><li>Exception hierarchy — Throwable → Exception vs Error, recoverable vs non-recoverable, and partial class tree.</li></ol>
+<h3>00:04 — Recap: when everything goes fine vs when something goes wrong</h3>
+<p>In the previous example, no exception occurred — the program completed normally. The new question:</p>
+<p>If something goes wrong, what will happen? How can we handle it?</p>
+<p>Durga Sir introduces a simple but very important flow using a three-method program.</p>
+<p>Baseline program structure (no exception yet):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+    }
+}</pre>
+<p>When this runs: compiles fine, prints Hello, normal termination. No problem at all.</p>
+<h3>00:25 — Introducing the fault: `10 / 0` inside `doMoreStuff`</h3>
+<p>The instructor changes doMoreStuff to divide by zero instead of printing Hello:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(10 / 0);  // ArithmeticException — division by zero
+    }
+}</pre>
+<p>Decoded ASR: “Swapy of 10 by 0” → System.out.println(10 / 0); “water” → error; “or the medical exceptions” → ArithmeticException.</p>
+<p>Something goes wrong → `10 / 0` is nothing but an exception.</p>
+<h3>01:34 — Runtime stack for the main thread</h3>
+<p>When the JVM runs this program, it creates a separate runtime stack for the main thread.</p>
+<p>Inside doMoreStuff, 10 / 0 executes → ArithmeticException (an “accident” in that method’s territory).</p>
+<p>If something goes wrong and you do not handle it, you get default exception handling in Java — compulsory knowledge for every Java programmer.</p>
+<h3>02:38 — Analogy part 1: bike accident (Hyderabad → Vizag)</h3>
+<p>Story setup (decoded ASR):</p>
+<ul><li>Two people on a bike, travelling Hyderabad → Vizag (Visakhapatnam).</li></ul>
+<ul><li>After Choutuppal, they take a left turn.</li></ul>
+<ul><li>A heavy truck from the opposite direction hits them — major crash.</li></ul>
+<ul><li>Riders fall on the road, seriously injured — “something goes wrong.”</li></ul>
+<p>This maps to: an unexpected, unwanted event = an exception / accident.</p>
+<h3>04:04 — Analogy part 2: who calls 108 / 100?</h3>
+<p>After the accident, the immediate activity is emergency response.</p>
+<ul><li>108 = ambulance / medical emergency (India).</li></ul>
+<ul><li>100 = police.</li></ul>
+<p>Question: Who calls 108? The victims cannot — someone local/responsible must act.</p>
+<p>Decoded ASR: “Kaltu, 108” → call 108; “driver either response will” → driver / local people are responsible.</p>
+<p>If nobody at the scene calls, 108 will not arrive on its own — something must trigger the response.</p>
+<h3>05:21 — Personal experience: 108, police, follow-up calls</h3>
+<p>Durga Sir shares a real-life accident he witnessed:</p>
+<ul><li>A car swerved to avoid a lorry, hit a culvert; two occupants badly injured.</li></ul>
+<ul><li>He called 108 with location details; ambulance promised ~20 minutes.</li></ul>
+<ul><li>Police called back within ~2 minutes — confirming 108 was informed, asking about traffic.</li></ul>
+<ul><li>Within ~10 minutes he received ~10 follow-up calls from different numbers (108, traffic police, hospital coordination).</li></ul>
+<ul><li>Injured parties later went to Guntur for treatment in another car; he called 108 again to close the case — only then did calls stop.</li></ul>
+<p>Lesson for Java: When a serious problem occurs and local handlers fail, responsibility escalates up the chain until a default handler (108 / JVM’s default exception handler) takes over.</p>
+<h3>08:07 — Analogy part 3: police arrive, both dead — formalities</h3>
+<p>After 15–20 minutes, police (100) arrive. First check: is anyone alive? In the story, both are dead. Police then try to identify victims, check mobile/contact records — time-consuming formalities.</p>
+<p>Java mapping:</p>
+<p>main  →  calls  →  doStuff  →  calls  →  doMoreStuff
+                                              ↑
+                                    ArithmeticException here (accident)</p>
+<p>10 / 0 is a dramatic exception — an accident. If it happens and nobody handles it locally, default handling kicks in.</p>
+<h3>09:07 — Point 1 (informal): method where exception rises creates the object</h3>
+<p>Rule 1: Inside any method, if an exception occurs, the method in which it occurs is responsible to create an Exception object containing:</p>
+<p>That method hands over the object to the JVM.</p>
+<h3>10:48 — JVM visits `doMoreStuff`: any handling code?</h3>
+<p>The JVM comes directly to the spot — the method where the problem occurred (doMoreStuff).</p>
+<p>JVM asks: “Do you have any exception handling code?”</p>
+<p>doMoreStuff answers: No.</p>
+<p>JVM’s response:</p>
+<ol><li>Terminate this method abnormally — even if 1000 lines remain, none of the remaining code runs.</li></ol>
+<ol><li>Remove the corresponding stack frame (entry from the runtime stack).</li></ol>
+<h3>12:01 — JVM escalates to caller: `doStuff`</h3>
+<p>doMoreStuff did not appear by itself — someone called it. JVM identifies the caller: doStuff.</p>
+<p>Control moves to doStuff. JVM asks: “Do you have handling code for this exception?”</p>
+<p>doStuff: No, I don’t have any handling code.</p>
+<p>JVM: Terminate `doStuff` abnormally and remove its stack entry — again skipping any remaining lines after the doMoreStuff() call.</p>
+<h3>13:44 — JVM escalates to `main`</h3>
+<p>Caller of doStuff → `main`.</p>
+<p>Durga Sir’s memorable framing: `main` gives a “red carpet welcome” to JVM because `main` and JVM are best friends — the JVM is the one who invoked main in the first place.</p>
+<p>JVM explains the chain: main → doStuff → doMoreStuff → exception; both inner methods already terminated abnormally.</p>
+<p>JVM asks main: “Do you have handling code?”</p>
+<p>main: No handling code — “I don’t even know what happened deep inside.”</p>
+<h3>15:48 — Even friends follow rules: terminate `main`</h3>
+<p>main pleads: “I am your best friend — how can you terminate me?”</p>
+<p>JVM: “Rule is rule” (Telugu: “Dharmam dharmam” — decoded from ASR “Thamud Thamude Pekad Pekad”).</p>
+<p>JVM terminates `main` abnormally and removes its stack entry.</p>
+<p>Now no one in the call chain handled the exception.</p>
+<h3>16:19 — Default Exception Handler (JVM’s assistant)</h3>
+<p>Since no method handled the exception, JVM itself must respond.</p>
+<p>JVM maintains an assistant: the Default Exception Handler (part of the JVM).</p>
+<p>JVM hands the Exception object to the default handler with instructions: “Please handle this — no one else did.”</p>
+<p>Default handler does exactly two things:</p>
+<ol><li>Print exception information to the console (stderr).</li></ol>
+<ol><li>Terminate the program abnormally.</li></ol>
+<h3>17:15 — Console output format (first live run)</h3>
+<p>When the fault is 10/0 in doMoreStuff:</p>
+<pre class='code'>// prints (exact layout varies slightly by JDK; structure is stable):
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+//     at Test.doMoreStuff(Test.java:...)
+//     at Test.doStuff(Test.java:...)
+//     at Test.main(Test.java:...)</pre>
+<p>Decoded ASR: “Intred main” → Exception in thread &quot;main&quot;; “Java.Lang.Arthamatic exception” → `java.lang.ArithmeticException`; “Devision by zero” → / by zero.</p>
+<p>Who prints this? → Default Exception Handler (JVM component).</p>
+<p>Termination type? → Abnormal termination (not a clean main return).</p>
+<h3>18:21 — One-minute theory recap</h3>
+<p>Full default-handling sequence:</p>
+<ol><li>Exception rises in a method → that method creates Exception object → hands to JVM.</li></ol>
+<ol><li>JVM asks that method for handling code → none → terminate abnormally, pop stack frame.</li></ol>
+<ol><li>Repeat for caller, then caller’s caller, … until `main`.</li></ol>
+<ol><li>If main also has no handling code → terminate main, pop stack.</li></ol>
+<ol><li>JVM delegates to Default Exception Handler → print info → abnormal program exit.</li></ol>
+<p>Debugging tip: Do not panic and re-read source 20 times blindly. Read the exception message twice or thrice — thread name, exception name, description, and stack trace tell you exactly where to fix.</p>
+<h3>19:36 — Live demo: compile and run on screen</h3>
+<p>Durga Sir strips extras and runs the minimal example:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(10 / 0);
+    }
+}</pre>
+<p>javac Test.java   # compiles fine — division by zero is NOT a compile-time error
+java Test         # runtime: default handler output, abnormal exit</p>
+<p>Key insight: Compilation succeeds because `10/0` is legal syntax; failure happens at runtime.</p>
+<p>With Hello instead of 10/0: prints Hello, normal flow.</p>
+<h3>23:24 — Board notes: formal numbered points begin</h3>
+<p>Durga Sir switches to formal board terminology for exam/interview preparation.</p>
+<h3>23:32 — Board Point 1: create Exception object</h3>
+<p>Inside a method, if any exception occurs, the method in which it is raised is responsible to create an Exception object by including the following information:</p>
+<p>1. Name of the exception</p>
+<p>2. Description of the exception</p>
+<p>3. Location at which exception occurs (within stack trace)</p>
+<p>Example object content for our program:</p>
+<pre class='code'>// Conceptual — you never write this; JVM constructs it internally
+// new ArithmeticException(&quot;/ by zero&quot;)
+//   + stack trace elements:
+//       Test.doMoreStuff(Test.java:line)
+//       Test.doStuff(Test.java:line)
+//       Test.main(Test.java:line)</pre>
+<h3>25:46 — Board Point 2: hand object to JVM</h3>
+<p>After creating the Exception object, the method hands over that object to the JVM.</p>
+<p>The raising method does not print to console itself in default handling — it delegates upward immediately.</p>
+<h3>26:17 — Board Point 3: JVM checks handling code in current method</h3>
+<p>JVM will check whether that method contains exception handling code.</p>
+<p>If the method does not contain handling code → JVM terminates that method abnormally and removes the corresponding entry from the stack.</p>
+<pre class='code'>public static void doMoreStuff() {
+    System.out.println(10 / 0);
+    System.out.println(&quot;This line NEVER runs&quot;);  // skipped — abnormal termination
+}</pre>
+<h3>28:06 — Board Point 4: identify caller; repeat check</h3>
+<p>JVM identifies the caller method and checks whether the caller method contains handling code.</p>
+<p>If the caller does not contain handling code → JVM terminates the caller abnormally and removes its stack entry.</p>
+<pre class='code'>public static void doStuff() {
+    doMoreStuff();
+    System.out.println(&quot;Never reached if doMoreStuff threw&quot;);  // skipped in Example 1
+}</pre>
+<h3>30:04 — Board Point 5: continue until `main`</h3>
+<p>This process will be continued until the main method.</p>
+<p>Chain for Example 1:</p>
+<h3>30:26 — Board Point 5 (continued): `main` also terminated</h3>
+<p>If the main method also doesn&#x27;t contain handling code, then JVM terminates the main method abnormally and removes the corresponding entry from the stack.</p>
+<p>After this, the runtime stack for that thread is empty of application frames — no user code left to run.</p>
+<h3>31:53 — Board Point 6: hand responsibility to Default Exception Handler</h3>
+<p>Then JVM handovers the responsibility of exception handling to the Default Exception Handler.</p>
+<p>The default handler is part of the JVM — not your application code.</p>
+<h3>32:55 — Board Point 7: print and terminate</h3>
+<p>Default Exception Handler prints exception information to the console by invoking the following format, and terminates the program abnormally.</p>
+<h3>33:36 — Output format formula</h3>
+<p>General template ( `xxx` = thread name — often &quot;main&quot;, but could be any thread):</p>
+<p>Exception in thread &quot;xxx&quot; : &lt;name of exception&gt; : &lt;description&gt;
+    &lt;stack trace&gt;</p>
+<p>Expanded:</p>
+<p>Exception in thread &quot;xxx&quot;
+    &lt;name of exception&gt;
+    &lt;description&gt;
+    &lt;stack trace&gt;</p>
+<p>Concrete instance:</p>
+<pre class='code'>// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+//     at Test.doMoreStuff(Test.java:11)
+//     at Test.doStuff(Test.java:7)
+//     at Test.main(Test.java:3)</pre>
+<p>Memorize: name of exception · description · stack trace.</p>
+<h3>35:06 — Rewrite program on board (Example 1 restated)</h3>
+<p>Clean version for the whiteboard:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(10 / 0);
+    }
+}</pre>
+<p>Call chain: main → doStuff → doMoreStuff → problem in `doMoreStuff`.</p>
+<p>Expected output:</p>
+<pre class='code'>// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+//     at Test.doMoreStuff(Test.java:...)
+//     at Test.doStuff(Test.java:...)
+//     at Test.main(Test.java:...)</pre>
+<h3>39:35 — Example 1 analysis: how many methods terminated how?</h3>
+<p>Total methods: 3 (main, doStuff, doMoreStuff).</p>
+<p>Every method in the chain dies without completing normally when the exception originates in doMoreStuff and no try-catch exists anywhere.</p>
+<h3>39:57 — Variant A: `Hello` in `doMoreStuff`, `10/0` in `doStuff`</h3>
+<p>Change: Print Hello successfully inside doMoreStuff; move division by zero to `doStuff` after the call returns.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+        System.out.println(10 / 0);  // exception HERE, after doMoreStuff returns
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+    }
+}</pre>
+<p>Execution flow:</p>
+<ol><li>main → doStuff → doMoreStuff.</li></ol>
+<ol><li>doMoreStuff prints `Hello`, completes normally, frame popped.</li></ol>
+<ol><li>Control returns to doStuff; `10/0` throws ArithmeticException in doStuff.</li></ol>
+<ol><li>doStuff has no handler → abnormal termination → pop.</li></ol>
+<ol><li>main has no handler → abnormal termination → pop.</li></ol>
+<ol><li>Default handler prints stack trace rooted at `doStuff`, not doMoreStuff.</li></ol>
+<p>Expected output:</p>
+<pre class='code'>// prints:
+// Hello
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+//     at Test.doStuff(Test.java:...)
+//     at Test.main(Test.java:...)</pre>
+<p>Program still ends abnormally overall.</p>
+<h3>42:08 — Live demo: Variant A confirmed</h3>
+<p>Durga Sir runs Variant A on screen — students see `Hello` printed before the exception block. Stack trace shows `Test.doStuff` and `Test.main` only (no doMoreStuff line because that method finished cleanly).</p>
+<h3>43:07 — Variant B: `Hello` + `Hi` in `doMoreStuff`, `10/0` in `doStuff`</h3>
+<p>Add another line in doMoreStuff after Hello:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+        System.out.println(10 / 0);
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+        System.out.println(&quot;Hi&quot;);
+    }
+}</pre>
+<p>Flow:</p>
+<ol><li>doMoreStuff prints `Hello`, then `Hi`, completes normally → pop.</li></ol>
+<ol><li>doStuff hits 10/0 → exception → doStuff and main terminate abnormally.</li></ol>
+<p>Expected output:</p>
+<pre class='code'>// prints:
+// Hello
+// Hi
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+//     at Test.doStuff(Test.java:...)
+//     at Test.main(Test.java:...)</pre>
+<p>Wait — doStuff terminates abnormally, so only `doMoreStuff` is normal; `doStuff` and `main` abnormal. (2 normal? No — only 1 normal: doMoreStuff.)</p>
+<p>Correct table:</p>
+<h3>45:06 — Live demo: Variant B (`Hello`, `Hi`, then exception)</h3>
+<p>Confirmed output order: Hello → Hi → exception message.</p>
+<h3>46:13 — Example 2: `10/0` directly in `main`</h3>
+<p>Move fault to `main`; doStuff only prints messages (no arithmetic fault):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+        System.out.println(10 / 0);  // exception in main, after doStuff returns
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+        System.out.println(&quot;Hi&quot;);
+    }
+}</pre>
+<p>Flow:</p>
+<ol><li>main → doStuff → doMoreStuff → prints Hello, Hi → normal return all the way up.</li></ol>
+<ol><li>Back in main, `10/0` throws.</li></ol>
+<ol><li>Only `main` lacks handler → only `main` terminates abnormally (but entire program ends abnormally).</li></ol>
+<p>Expected output:</p>
+<pre class='code'>// prints:
+// Hello
+// Hi
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+//     at Test.main(Test.java:...)</pre>
+<p>Stack trace shows only `Test.main` — inner methods already completed.</p>
+<h3>47:25 — Example 2 with `main completed` line (conceptual)</h3>
+<p>If main had code after the fault, it would not run:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+        System.out.println(10 / 0);
+        System.out.println(&quot;main completed&quot;);  // NEVER prints
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+        System.out.println(&quot;Hi&quot;);
+    }
+}</pre>
+<p>Students sometimes expect “main completed” — it will not appear because abnormal termination skips remaining statements in main.</p>
+<h3>48:29 — Important exam notes: program vs method termination</h3>
+<p>Durga Sir dictates two rules for the notebook:</p>
+<h4>Rule A — at least one abnormal method ⇒ abnormal program</h4>
+<p>In a program, if at least one method terminates abnormally, then the program termination is abnormal termination.</p>
+<pre class='code'>// Even if doMoreStuff and doStuff finish normally,
+// one abnormal main ⇒ whole JVM exit is abnormal
+public static void main(String[] args) {
+    doStuff();
+    System.out.println(10 / 0);
+}</pre>
+<h4>Rule B — all methods normal ⇒ normal program</h4>
+<p>If all methods are terminated normally, then only the program termination is normal termination.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+        System.out.println(&quot;main completed&quot;);
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+// prints:
+// Hello
+// main completed
+// (normal program termination)</pre>
+<h3>50:44 — End of default handling; preview of custom handling</h3>
+<p>Summary: When something goes wrong and you write no `try-catch`, the JVM performs default exception handling — unwind stack, print diagnostics, exit abnormally.</p>
+<p>If default handling is not acceptable (you do not want abnormal termination), the next topic is customized exception handling using `try-catch` (covered in later videos).</p>
+<h3>50:49 — Transition: Exception Hierarchy (most valuable concept)</h3>
+<p>New major topic: Java Exception Hierarchy.</p>
+<p>Interview question: Which class is the root of the Java exception hierarchy?</p>
+<p>Answer: `Throwable`</p>
+<p>Note: For all Java classes, root is Object. For exception hierarchy specifically, root is `Throwable`.</p>
+<h3>51:42 — `Throwable` class details</h3>
+<pre class='code'>// java.lang.Throwable — a CLASS, not an interface
+// ASR confused it with &quot;-able&quot; interface names (Serializable, Cloneable, Runnable)
+// Throwable is definitely a class
+class Throwable extends Object { /* ... */ }</pre>
+<p>`Throwable` is the root for all Java exceptions AND errors.</p>
+<p>It has exactly two direct child classes:</p>
+<ol><li>`Exception`</li></ol>
+<ol><li>`Error`</li></ol>
+<h3>53:07 — Difference between `Exception` and `Error` (critical interview topic)</h3>
+<h3>54:45 — Exceptions: caused by program, recoverable (with example)</h3>
+<p>Most of the time, exceptions are caused by our program.</p>
+<p>Meaning of recoverable: Even after the exception, you can take alternate action and continue the rest of the program normally.</p>
+<p>Scenario: Read data from a remote file in London.</p>
+<pre class='code'>import java.io.*;
+
+class RemoteFileReader {
+    public static void main(String[] args) {
+        try {
+            readDataFromRemoteFile(&quot;London/data.txt&quot;);
+        } catch (FileNotFoundException e) {
+            // RECOVER: use local fallback
+            useLocalFile(&quot;local/data.txt&quot;);
+        }
+        System.out.println(&quot;Rest of program continues normally&quot;);
+    }
+
+    static void readDataFromRemoteFile(String path) throws FileNotFoundException {
+        FileInputStream fis = new FileInputStream(path);
+        // read...
+    }
+
+    static void useLocalFile(String path) {
+        System.out.println(&quot;Using local file: &quot; + path);
+    }
+}</pre>
+<p>If remote file missing → `FileNotFoundException` — caused by our code’s assumption, but we recover with a local file and continue.</p>
+<p>Without try-catch, default handler would kill the program — with handling, recoverable.</p>
+<h3>55:54 — More exception philosophy</h3>
+<p>Even when an exception occurs:</p>
+<p>No problem — catch it, recover, continue rest of program normally.</p>
+<p>Two bullet points for `Exception`:</p>
+<ol><li>Most of the time caused by our program.</li></ol>
+<ol><li>Recoverable.</li></ol>
+<h3>57:00 — Errors: not caused by program, non-recoverable</h3>
+<p>Errors:</p>
+<ul><li>Not caused by our program (most of the time).</li></ul>
+<ul><li>Due to lack of system resources.</li></ul>
+<ul><li>Non-recoverable from application code.</li></ul>
+<p>Examples:</p>
+<pre class='code'>// StackOverflowError — typically infinite / too-deep recursion
+class StackOverflowDemo {
+    public static void main(String[] args) {
+        recursive();
+    }
+    static void recursive() {
+        recursive();  // each call pushes a frame until stack exhausted
+    }
+}
+// OutOfMemoryError — heap cannot allocate more objects
+import java.util.*;
+
+class OutOfMemoryDemo {
+    public static void main(String[] args) {
+        List&lt;byte[]&gt; list = new ArrayList&lt;&gt;();
+        while (true) {
+            list.add(new byte[10_000_000]);  // eventually heap exhausted
+        }
+    }
+}</pre>
+<p>If `OutOfMemoryError` occurs:</p>
+<ul><li>Being a programmer, we can&#x27;t do anything in code to meaningfully continue.</li></ul>
+<ul><li>Program terminates abnormally.</li></ul>
+<ul><li>System admin / server admin must increase heap memory (-Xmx, server config).</li></ul>
+<p>Spelling note: `OutOfMemoryError` — no space in the middle (exam detail).</p>
+<h3>1:02:50 — Exception vs Error: side-by-side recap</h3>
+<pre class='code'>// EXCEPTION path — catch and recover
+try {
+    readRemote(&quot;London/server.dat&quot;);
+} catch (FileNotFoundException e) {
+    readLocal(&quot;backup.dat&quot;);  // continue
+}
+
+// ERROR path — nothing useful to catch as recovery
+// OutOfMemoryError → stop; call admin for more heap</pre>
+<h3>1:06:35 — Child classes under `Exception`</h3>
+<p>Exception has many direct subclasses. Important ones on the board:</p>
+<p>RuntimeException branch examples:</p>
+<pre class='code'>// ArithmeticException
+int x = 10 / 0;
+
+// NullPointerException
+String s = null;
+s.length();
+
+// ClassCastException
+Object o = &quot;hello&quot;;
+Integer i = (Integer) o;
+
+// ArrayIndexOutOfBoundsException
+int[] a = new int[3];
+a[10] = 1;
+
+// StringIndexOutOfBoundsException
+&quot;abc&quot;.charAt(10);
+
+// NumberFormatException (child of IllegalArgumentException)
+Integer.parseInt(&quot;abc&quot;);</pre>
+<p>IOException branch examples:</p>
+<pre class='code'>import java.io.*;
+
+// FileNotFoundException
+new FileInputStream(&quot;missing.txt&quot;);
+
+// EOFException — reading past end of file
+// InterruptedIOException — I/O interrupted during thread interrupt</pre>
+<h3>1:09:31 — Child classes under `Error`</h3>
+<pre class='code'>// ExceptionInInitializerError — static init throws
+class BadStaticInit {
+    static {
+        if (true) throw new RuntimeException(&quot;init failed&quot;);
+    }
+    public static void main(String[] args) {
+        new BadStaticInit();  // triggers ExceptionInInitializerError
+    }
+}</pre>
+<h3>1:10:34 — Partial hierarchy diagram (text form)</h3>
+<p>                        Object
+                          |
+                      Throwable
+                     /         \
+              Exception         Error
+                 /    \            \
+    RuntimeException  IOException   VirtualMachineError
+         |                |              /         \
+ ArithmeticException  FileNotFound   StackOverflow  OutOfMemory
+ NullPointerException
+ ClassCastException
+ ArrayIndexOutOfBoundsException
+ StringIndexOutOfBoundsException
+ IllegalArgumentException
+    |
+ NumberFormatException</p>
+<p>Also under Exception (direct): SQLException, ServletException, RemoteException, InterruptedException, …</p>
+<p>Also under Error: AssertionError, ExceptionInInitializerError, …</p>
+<p>Durga Sir draws the full tree on board — students told to copy the diagram clearly for exams (OCJP/SCJP).</p>
+<h3>1:11:24 — Hierarchy review questions</h3>
+<p>Quick oral revision:</p>
+<ol><li>Root of exception hierarchy? → Throwable</li></ol>
+<ol><li>Two children of `Throwable`? → Exception, Error</li></ol>
+<ol><li>Difference Exception vs Error? → program-caused &amp; recoverable vs resource/system &amp; non-recoverable</li></ol>
+<ol><li>`RuntimeException` children? → arithmetic, NPE, class cast, index bounds, illegal argument, number format, …</li></ol>
+<ol><li>`IOException` children? → EOF, file not found, interrupted IO, …</li></ol>
+<ol><li>`VirtualMachineError` children? → stack overflow, out of memory</li></ol>
+<h3>1:14:22 — Session wrap-up</h3>
+<p>Video completes the default exception handling theory + demos + partial exception hierarchy tree.</p>
+<p>Comes next in playlist: checked vs unchecked exceptions, try-catch, finally, throw/throws, etc. (Videos 072+).</p>
+<h2>Quick reference — default exception handling (7 board points)</h2>
+<p>Output template:</p>
+<p>Exception in thread &quot;&lt;thread-name&gt;&quot; &lt;ExceptionType&gt;: &lt;description&gt;
+    at Class.method(File.java:line)
+    ...</p>
+<h2>Quick reference — Exception vs Error</h2>
+<h2>OCJP / interview checklist</h2>
+<ul><li>[ ] Explain default exception handling without try-catch.</li></ul>
+<ul><li>[ ] Draw runtime stack for main → doStuff → doMoreStuff and show unwinding order.</li></ul>
+<ul><li>[ ] Read stack trace: thread, exception type, message, top frame = where it broke.</li></ul>
+<ul><li>[ ] Know Default Exception Handler belongs to JVM, prints to console, abnormal exit.</li></ul>
+<ul><li>[ ] Distinguish method termination (normal/abnormal) vs program termination.</li></ul>
+<ul><li>[ ] State root: `Throwable`; children: `Exception`, `Error`.</li></ul>
+<ul><li>[ ] Contrast recoverable Exception vs non-recoverable Error.</li></ul>
+<ul><li>[ ] Spell `OutOfMemoryError` correctly (no spaces).</li></ul>
+<ul><li>[ ] Name key subclasses: RuntimeException, IOException, VirtualMachineError.</li></ul>
+<p>Java block count: 28</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 71 of 203</td></tr>
+<tr><td>Series</td><td>Exception Handling · Part 2</td></tr>
+<tr><td>Topic</td><td>Default Exception Handling</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 15m 44s</td></tr>
+<tr><td>Video ID</td><td>46VtqhXIaeA</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=46VtqhXIaeA</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Stack (bottom → top)</th><th>How it got there</th></tr>
+<tr><td>main</td><td>Entry point — always present by default</td></tr>
+<tr><td>doStuff</td><td>main internally calls doStuff</td></tr>
+<tr><td>doMoreStuff</td><td>doStuff internally calls doMoreStuff</td></tr>
+</table>
+<table>
+<tr><th>Field in object</th><th>Example for 10/0 in doMoreStuff</th></tr>
+<tr><td>Name of exception</td><td>ArithmeticException</td></tr>
+<tr><td>Description</td><td>/ by zero (division by zero)</td></tr>
+<tr><td>Location (stack trace)</td><td>doMoreStuff ← called by doStuff ← called by main</td></tr>
+</table>
+<table>
+<tr><th>Line</th><th>Meaning</th></tr>
+<tr><td>Exception in thread &quot;main&quot;</td><td>Which thread had the problem</td></tr>
+<tr><td>java.lang.ArithmeticException: / by zero</td><td>Name + description</td></tr>
+<tr><td>at Test.doMoreStuff(...)</td><td>Stack trace — where and who called whom</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Method</th><th>Handling code?</th><th>Action</th></tr>
+<tr><td>1</td><td>doMoreStuff</td><td>No</td><td>Terminate + pop</td></tr>
+<tr><td>2</td><td>doStuff</td><td>No</td><td>Terminate + pop</td></tr>
+<tr><td>3</td><td>main</td><td>No</td><td>Terminate + pop</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>Methods terminated abnormally?</td><td>All 3</td></tr>
+<tr><td>Program termination</td><td>Abnormal</td></tr>
+</table>
+<table>
+<tr><th>Methods terminated normally</th><th>Methods terminated abnormally</th></tr>
+<tr><td>`doMoreStuff` only (1)</td><td>`doStuff`, `main` (2)</td></tr>
+</table>
+<table>
+<tr><th>Normal termination</th><th>Abnormal termination</th></tr>
+<tr><td>`doMoreStuff`, `doStuff`? — `doMoreStuff` only</td><td>`doStuff`, `main`</td></tr>
+</table>
+<table>
+<tr><th>Normal</th><th>Abnormal</th></tr>
+<tr><td>1 method (doMoreStuff)</td><td>2 methods (doStuff, main)</td></tr>
+</table>
+<table>
+<tr><th>Normal termination</th><th>Abnormal termination</th></tr>
+<tr><td>`doMoreStuff`, `doStuff` (2)</td><td>`main` (1)</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>Exception</th><th>Error</th></tr>
+<tr><td>Usually caused by</td><td>Our program (programmatic mistake)</td><td>NOT our program — lack of system resources</td></tr>
+<tr><td>Recoverable?</td><td>Yes (recoverable)</td><td>No (non-recoverable)</td></tr>
+<tr><td>Programmer action</td><td>Can often catch and recover</td><td>Cannot fix in code — need admin / more memory</td></tr>
+<tr><td>Examples</td><td>FileNotFoundException, ArithmeticException</td><td>OutOfMemoryError, StackOverflowError</td></tr>
+</table>
+<table>
+<tr><th></th><th>Exception</th><th>Error</th></tr>
+<tr><td>Cause</td><td>Program logic / environment interaction we coded</td><td>JVM / system resource exhaustion</td></tr>
+<tr><td>Fix</td><td>Fix code or catch + alternate path</td><td>Increase memory, fix recursion, JVM tuning</td></tr>
+<tr><td>Catch in practice?</td><td>Yes (try-catch)</td><td>Theoretically catchable but should not treat as recoverable</td></tr>
+</table>
+<table>
+<tr><th>Direct child of Exception</th><th>Notable grandchildren</th></tr>
+<tr><td>`RuntimeException`</td><td>ArithmeticException, NullPointerException, ClassCastException, ArrayIndexOutOfBoundsException, StringIndexOutOfBoundsException, IllegalArgumentException, NumberFormatException</td></tr>
+<tr><td>`IOException`</td><td>EOFException, `FileNotFoundException`, InterruptedIOException</td></tr>
+<tr><td>`SQLException`</td><td>(database errors)</td></tr>
+<tr><td>`ServletException`</td><td>(web)</td></tr>
+<tr><td>`RemoteException`</td><td>(RMI)</td></tr>
+<tr><td>`InterruptedException`</td><td>(thread interrupt)</td></tr>
+</table>
+<table>
+<tr><th>Direct child of Error</th><th>Notable grandchildren</th></tr>
+<tr><td>`VirtualMachineError`</td><td>`StackOverflowError`, `OutOfMemoryError`</td></tr>
+<tr><td>`AssertionError`</td><td>(failed assert statements)</td></tr>
+<tr><td>`ExceptionInInitializerError`</td><td>(static/instance initializer block failure)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Statement</th></tr>
+<tr><td>1</td><td>Method where exception is raised creates Exception object (name, description, location/stack trace).</td></tr>
+<tr><td>2</td><td>That method hands object to JVM.</td></tr>
+<tr><td>3</td><td>JVM checks for handling code in that method; if absent → abnormal termination + pop stack.</td></tr>
+<tr><td>4</td><td>JVM checks caller method; same rule → terminate + pop if no handler.</td></tr>
+<tr><td>5</td><td>Repeat until `main`.</td></tr>
+<tr><td>6</td><td>If `main` has no handler → terminate main + pop; JVM gives object to Default Exception Handler.</td></tr>
+<tr><td>7</td><td>Default handler prints exception info → abnormal program termination.</td></tr>
+</table>
+<table>
+<tr><th></th><th>Exception</th><th>Error</th></tr>
+<tr><td>Root parent</td><td>Throwable</td><td>Throwable</td></tr>
+<tr><td>Typical cause</td><td>Programmer / application logic</td><td>System resources / JVM limits</td></tr>
+<tr><td>Recoverable</td><td>Yes (e.g. fallback file)</td><td>No (increase heap, fix environment)</td></tr>
+<tr><td>Examples</td><td>FileNotFoundException, ArithmeticException</td><td>OutOfMemoryError, StackOverflowError</td></tr>
+</table>
+</body></html>

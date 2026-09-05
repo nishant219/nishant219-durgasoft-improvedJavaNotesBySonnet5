@@ -1,0 +1,237 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>119-string-class-part-14</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 119</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: java.lang.package Part-14 ||String class</p>
+<h3>00:08 — Session opener: practical proof for heap vs SCP</h3>
+<p>Previous session explained where String objects are created (heap vs String Constant Pool / SCP) theoretically but without running code. This session provides executable proof and extends into interning, SCP importance, and entry-room FAQs.</p>
+<p>(ASR note: SCP, SAP, SP in captions = String Constant Pool.)</p>
+<h3>01:21 — Diagram setup: two `new String(...)` lines</h3>
+<pre class='code'>String s1 = new String(&quot;you cannot change me&quot;);
+String s2 = new String(&quot;you cannot change me&quot;);</pre>
+<p>Memory diagram (board):</p>
+<p>Total from two lines: 3 objects — 2 heap + 1 SCP.</p>
+<p>Reference variables: s1 → heap object #1; s2 → heap object #2.</p>
+<h3>03:48 — Reference comparisons: `s1`, `s2`, `s3`, `s4`</h3>
+<p>System.out.print(s1 == s2);  // false — different heap objects
+
+String s3 = &quot;you cannot change me&quot;;   // SCP reuse
+System.out.print(s1 == s3);           // false — heap vs SCP
+
+String s4 = &quot;you cannot change me&quot;;   // reuses same SCP object as s3
+System.out.print(s3 == s4);           // true — same SCP object</p>
+<p>Rules demonstrated:</p>
+<ul><li>new → always new heap object.</li></ul>
+<ul><li>String literal assignment → SCP; reuse if literal already exists.</li></ul>
+<h3>05:54 — Compile-time constant concatenation: `s5`</h3>
+<p>String s5 = &quot;you cannot&quot; + &quot; change me&quot;;
+System.out.print(s3 == s5);  // true</p>
+<p>Critical insight (exam trap):</p>
+<ul><li>&quot;you cannot&quot; and &quot; change me&quot; are compile-time constants.</li></ul>
+<ul><li>`+` evaluated at compile time → entire line becomes equivalent to:</li></ul>
+<pre class='code'>String s5 = &quot;you cannot change me&quot;;</pre>
+<ul><li>No runtime heap object for the concatenation result.</li></ul>
+<ul><li>s5 points to same SCP object as s3 → s3 == s5 is true.</li></ul>
+<p>Analogy from earlier operators topic:</p>
+<p>System.out.println(20 + 30);     // compiles as SOP(50)
+System.out.println(&quot;ab&quot; + &quot;cd&quot;); // compiles as SOP(&quot;abcd&quot;)</p>
+<p>If all operands are compile-time constants, operation happens at compile time — JVM performance improves.</p>
+<h3>09:46 — Runtime concatenation with normal variable: `s6`, `s7`</h3>
+<p>String s6 = &quot;you cannot&quot;;              // SCP literal
+String s7 = s6 + &quot; change me&quot;;         // s6 is NORMAL variable (not final)
+System.out.print(s3 == s7);            // false</p>
+<p>Why runtime:</p>
+<ul><li>s6 is a normal variable — may be reassigned (s6 = &quot;something else&quot;), so compiler cannot treat it as constant.</li></ul>
+<ul><li>At least one non-constant operand → + runs at runtime.</li></ul>
+<ul><li>&quot; change me&quot; still goes to SCP, but result &quot;you cannot change me&quot; is a new heap object.</li></ul>
+<ul><li>s3 (SCP) vs s7 (heap) → `false`.</li></ul>
+<p>Three-line special-care summary (board):</p>
+<h3>13:06 — `final` variable restores compile-time folding: `s8`, `s9`</h3>
+<p>final String s8 = &quot;you cannot&quot;;
+String s9 = s8 + &quot; change me&quot;;
+System.out.print(s3 == s9);   // true
+
+System.out.print(s6 == s8);   // true — both refer to same SCP &quot;you cannot&quot;</p>
+<p>Reason: final variable replaced by its value at compile time → both operands constants → fold to &quot;you cannot change me&quot; in SCP.</p>
+<h3>17:07 — Full `Test` program executed on board</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s1 = new String(&quot;you cannot change me&quot;);
+        String s2 = new String(&quot;you cannot change me&quot;);
+        System.out.print(s1 == s2);           // false
+
+        String s3 = &quot;you cannot change me&quot;;
+        System.out.print(s1 == s3);           // false
+
+        String s4 = &quot;you cannot change me&quot;;
+        System.out.print(s3 == s4);           // true
+
+        String s5 = &quot;you cannot&quot; + &quot; change me&quot;;
+        System.out.print(s3 == s5);           // true
+
+        String s6 = &quot;you cannot&quot;;
+        String s7 = s6 + &quot; change me&quot;;
+        System.out.print(s3 == s7);           // false
+
+        final String s8 = &quot;you cannot&quot;;
+        String s9 = s8 + &quot; change me&quot;;
+        System.out.print(s3 == s9);           // true
+
+        System.out.print(s6 == s8);           // true
+    }
+}</pre>
+<p>Executed concatenated output: false false true true false true true</p>
+<p>Durga Sir confirms: `false true true false true true` (seven boolean prints).</p>
+<p>Object count in program: 6 objects total in heap+SCP diagram; 3 distinct constants in SCP: &quot;you cannot change me&quot;, &quot;you cannot&quot;, &quot; change me&quot;.</p>
+<h3>19:02 — Diagram snapshot: heap vs SCP object tally</h3>
+<p>Board diagram labels:</p>
+<ul><li>Heap area: s1 object, s2 object, s7 result object (runtime concat).</li></ul>
+<ul><li>SCP area: &quot;you cannot change me&quot;, &quot;you cannot&quot;, &quot; change me&quot; — literals/constants only.</li></ul>
+<p>Durga Sir asks students to photograph diagram showing 6 total objects and 3 constants in SCP.</p>
+<h3>25:05 — Board notes: compile-time vs runtime for string `+`</h3>
+<p>Line 1 type (&quot;you cannot&quot; + &quot; change me&quot;):</p>
+<p>Operation performed yet compile time only because both arguments are compile-time constants.</p>
+<p>Line 2 type (s6 + &quot; change me&quot;):</p>
+<p>Performed yet runtime only because at least one argument is a normal variable.</p>
+<p>Line 3 type (s8 + &quot; change me&quot; with final s8):</p>
+<p>Performed at compile time only — both arguments become compile-time constants.</p>
+<h3>29:18 — Interning of String objects</h3>
+<p>Problem: new String(&quot;durga&quot;) → reference points to heap object. How to get the corresponding SCP reference for that content?</p>
+<p>Solution: `intern()` method</p>
+<p>String s1 = new String(&quot;durga&quot;);   // s1 → heap; &quot;durga&quot; also in SCP
+String s2 = s1;                    // s2 → heap (same as s1)
+String s2b = s1.intern();          // s2b → SCP reference for &quot;durga&quot;
+
+System.out.print(s1 == s2);        // true (both heap if s2 = s1)
+System.out.print(s1 == s2b);       // false — heap vs SCP
+
+String s3 = &quot;durga&quot;;               // s3 → SCP
+System.out.print(s2b == s3);       // true — both SCP</p>
+<p>Purpose of `intern()`:</p>
+<p>By using heap object reference, if you want corresponding SCP object reference, call `intern()`.</p>
+<p>Board wording:</p>
+<p>We can use intern() to get corresponding SCP object reference by using heap object reference.</p>
+<h3>38:41 — `intern()` when no SCP entry exists yet (runtime `concat`)</h3>
+<p>String s1 = new String(&quot;durga&quot;);
+String s2 = s1.concat(&quot;software&quot;);   // runtime → heap &quot;durgasoftware&quot;; NO SCP entry yet
+String s3 = s2.intern();             // creates &quot;durgasoftware&quot; IN SCP, returns it
+
+String s4 = &quot;durgasoftware&quot;;
+System.out.print(s2 == s3);   // false — s2 heap, s3 SCP
+System.out.print(s3 == s4);   // true — same SCP object</p>
+<p>Loophole / rule:</p>
+<p>If corresponding SCP object is not available, `intern()` itself creates that object in SCP and returns the reference.</p>
+<p>Not every heap object has a pre-existing SCP twin — runtime-created strings may exist only in heap until intern() is called.</p>
+<h3>44:50 — Importance of String Constant Pool (SCP)</h3>
+<p>Motivation: String is the most commonly used object in Java (forms, JSP parameters, voter registration example with ~11 strings per voter × crores of users → memory disaster without optimization).</p>
+<p>Why SCP exists only for `String`, not `StringBuffer`:</p>
+<p>String is the most commonly used object → special memory management (SCP) provided.</p>
+<p>StringBuffer is rarely used → no special pool needed.</p>
+<p>Advantage of SCP:</p>
+<p>Instead of creating a separate object for every requirement, create one object and reuse for repeated literals (e.g. city name &quot;Hyderabad&quot; shared by 1 crore voters).</p>
+<p>→ Memory utilization and performance improve.</p>
+<p>Disadvantage / problem:</p>
+<ul><li>Many references (v1…v1cr) share one &quot;Hyderabad&quot; object in SCP.</li></ul>
+<ul><li>If one reference could mutate shared content, all voters’ city names would change → program behaves abnormally.</li></ul>
+<p>Solution → immutability:</p>
+<p>String objects implemented as immutable — cannot change existing object. Any “change” creates a new object; only that reference reassigned. Other references unaffected.</p>
+<p>Trade-off:</p>
+<p>SCP is the only reason for immutability of String objects. Without SCP, immutability would not be required.</p>
+<h3>1:02:01 — Formal SCP advantage/disadvantage board lines</h3>
+<p>Durga Sir writes extended theory:</p>
+<p>If string repeatedly required:</p>
+<ul><li>Not recommended: separate object every time → memory + performance problems.</li></ul>
+<ul><li>Recommended: one object, reuse → utilization improves (because of SCP).</li></ul>
+<p>Main advantages of SCP: memory utilization + performance improved.</p>
+<p>Main problem with SCP: several references → same object; one reference changing content would affect all → solved by immutability (each change → new object).</p>
+<p>Hence: SCP is the only reason for immutability of String objects.</p>
+<h3>1:01:53 — Board theory: reuse vs separate objects</h3>
+<p>If a String is repeatedly required in program:</p>
+<ul><li>Not recommended: separate object per use → performance + memory problems.</li></ul>
+<ul><li>Recommended: one object, reuse → improved utilization (possible because of SCP).</li></ul>
+<h3>1:11:12 — Entry-room FAQs (frequently asked questions)</h3>
+<h4>FAQ 1 — Difference between `String` and `StringBuffer`?</h4>
+<ul><li>String → immutable</li></ul>
+<ul><li>StringBuffer → mutable</li></ul>
+<h4>FAQ 2 — Explain immutability and mutability with example?</h4>
+<p>Already covered in course (SCP + change creates new object).</p>
+<h4>FAQ 3 — Difference: `new String(&quot;durga&quot;)` vs `&quot;durga&quot;`?</h4>
+<h4>FAQ 4 — Other differences besides immutability?</h4>
+<ul><li>String.equals() → content comparison (overridden)</li></ul>
+<ul><li>StringBuffer.equals() → reference comparison (not overridden)</li></ul>
+<h4>FAQ 5 — What is SCP?</h4>
+<p>Specially designed memory area for String objects (String Constant Pool).</p>
+<h4>FAQ 6 — Advantage of SCP?</h4>
+<p>Memory utilization + performance improved (reuse).</p>
+<h4>FAQ 7 — Disadvantage of SCP?</h4>
+<p>Forces immutability — every change needs new object.</p>
+<h4>FAQ 8 — Why SCP only for String, not StringBuffer?</h4>
+<p>String = most commonly used → special management. StringBuffer = not commonly used.</p>
+<h4>FAQ 9 — Why String immutable but StringBuffer mutable?</h4>
+<p>String: SCP → one object shared by many references → mutation would affect all → immutability required.</p>
+<p>StringBuffer: no SCP → separate object per requirement → changing one does not affect others → mutability OK.</p>
+<h3>1:26:29 — String vs StringBuffer diagram (why mutability differs)</h3>
+<p>String + SCP: voters v1…v1cr share one &quot;Hyderabad&quot; SCP object — memory win, mutation danger.</p>
+<p>StringBuffer: each voter gets separate &quot;Hyderabad&quot; object (v1, v2, v3 …) — if v3 changes to &quot;Vijayawada&quot;, others unaffected → no need for immutability.</p>
+<p>Board lines:</p>
+<p>But in StringBuffer there is no concept like SCP. Hence for every requirement a separate object will be created. By using one reference, if we change content, no effect on remaining references → immutability concept not required for StringBuffer.</p>
+<p>All wrapper class objects (Byte, Short, Integer, Long, Float, Double, Character, Boolean) are also immutable.</p>
+<h4>FAQ 11–14 — Preview only (deferred to later API session)</h4>
+<ul><li>Is it possible to create our own immutable class? → Yes</li></ul>
+<ul><li>How to create immutable class with example? → deferred</li></ul>
+<ul><li>Immutable means non-changeable</li></ul>
+<ul><li>Difference between `final` and `immutable`? → deferred (both “non-changeable” at surface but different concepts — covered later)</li></ul>
+<h3>1:33:08 — Session close</h3>
+<p>Next: complete String API concepts, then immutable-class design and final vs immutable in detail.</p>
+<p>Java block count: 10</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP (java.lang package series)</td></tr>
+<tr><td>Position</td><td>119 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP — java.lang package</td></tr>
+<tr><td>Topic</td><td>String class — heap vs SCP, compile-time constants, intern(), SCP importance, FAQs</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 33m 29s (from transcript)</td></tr>
+<tr><td>Video ID</td><td>oEAiBx_06SA</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=oEAiBx_06SA</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Area</th><th>Objects</th></tr>
+<tr><td>SCP</td><td>One literal &quot;you cannot change me&quot; (for future reuse)</td></tr>
+<tr><td>Heap</td><td>Two separate String objects (one per new)</td></tr>
+</table>
+<table>
+<tr><th>Line pattern</th><th>When evaluated</th><th>Object location</th></tr>
+<tr><td>&quot;a&quot; + &quot;b&quot; (both constants)</td><td>Compile time</td><td>SCP (reuse)</td></tr>
+<tr><td>s6 + &quot; change me&quot; (s6 normal var)</td><td>Runtime</td><td>Heap</td></tr>
+<tr><td>final String s8 = &quot;you cannot&quot;; s9 = s8 + &quot; change me&quot;</td><td>Compile time</td><td>SCP (reuse)</td></tr>
+</table>
+<table>
+<tr><th>SCP gives</th><th>SCP costs</th></tr>
+<tr><td>Memory + performance</td><td>Immutability required — every change creates new object</td></tr>
+</table>
+<table>
+<tr><th>Form</th><th>Objects</th><th>Where</th></tr>
+<tr><td>new String(&quot;durga&quot;)</td><td>2 — SCP literal + heap String</td><td>Reference usually points to heap</td></tr>
+<tr><td>&quot;durga&quot;</td><td>1 — SCP only</td><td>Reference points to SCP</td></tr>
+</table>
+</body></html>

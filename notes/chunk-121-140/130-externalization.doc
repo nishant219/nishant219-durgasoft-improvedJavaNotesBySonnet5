@@ -1,0 +1,377 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>130-externalization</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 130</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Serialization Part- 6||Externalization</p>
+<h3>00:07 — Session opening: why Externalization exists</h3>
+<ul><li>Durga Sir opens Externalization (ASR often says &quot;externalization&quot; / &quot;calization&quot; for serialization).</li></ul>
+<ul><li>Most programmers know Serialization but not Externalization, even though it is very useful.</li></ul>
+<ul><li>Core question: Serialization already exists — when/why go for Externalization?</li></ul>
+<p>Serialization recap (JVM-driven):</p>
+<ul><li>In Serialization, the JVM reads every instance variable (i, j, …), writes them to the file, and reads them back on deserialization.</li></ul>
+<ul><li>Programmer writes essentially one line: oos.writeObject(obj); — JVM handles everything else.</li></ul>
+<ul><li>Advantage: complexity is low; even a beginner can serialize.</li></ul>
+<ul><li>Problem: programmer has no control over which fields are saved or how they are saved.</li></ul>
+<h3>00:44 — Serialization: JVM owns everything</h3>
+<p>Board point (decoded ASR):</p>
+<p>In Serialization, everything is taken care of by the JVM. The programmer has no control.</p>
+<ul><li>Programmer does not know how many properties exist, how values are stored in the file, etc.</li></ul>
+<ul><li>Only calls writeObject / readObject.</li></ul>
+<h3>02:16 — Motivating example: Account object with 1000 properties</h3>
+<p>Scenario: An Account object has ~1000 properties (holder name, address, PIN, account number, …).</p>
+<ul><li>If you serialize the whole object → all 1000 properties go to the file.</li></ul>
+<ul><li>On deserialization → all 1000 come back.</li></ul>
+<ul><li>Requirement: save/read only account number; fetch remaining data from a local database when needed.</li></ul>
+<ul><li>Unnecessary network/file I/O for 999 fields you do not need.</li></ul>
+<p>Serialization limitation:</p>
+<ul><li>Cannot save only 1 or 2 properties.</li></ul>
+<ul><li>Compulsory: total object is always saved/restored.</li></ul>
+<p>Performance analogy (Durga Sir&#x27;s math):</p>
+<ul><li>Assume 1 minute to read/write one property.</li></ul>
+<ul><li>1000 properties → 1000 minutes read + 1000 minutes write = 2000 minutes.</li></ul>
+<ul><li>Actual need: 1 property → 2 minutes work.</li></ul>
+<ul><li>Wasting 1998 minutes → performance goes down.</li></ul>
+<p>Formal problem statement:</p>
+<p>In Serialization, whether required or not, it is always possible to save the total object to the file. It is not possible to save part of the object.</p>
+<h3>05:16 — SCJP course registration analogy</h3>
+<p>Same idea:</p>
+<ul><li>Serialization = forced full package (total object).</li></ul>
+<ul><li>Externalization = pick only what you need (part of object).</li></ul>
+<h3>06:52 — Three differences (verbal, before board)</h3>
+<p>When to choose which:</p>
+<ul><li>Save total object → Serialization is best.</li></ul>
+<ul><li>Save part of object → Externalization is best.</li></ul>
+<h3>11:18 — Board notes: Serialization problems → Externalization solution</h3>
+<p>In Serialization:</p>
+<ol><li>Everything takes care by JVM; programmer doesn&#x27;t have any control.</li></ol>
+<ol><li>It is always possible to save total object to the file; not possible to save part of the object — which may create performance problems.</li></ol>
+<ol><li>To overcome this problem → go for Externalization.</li></ol>
+<p>Main advantage of Externalization over Serialization:</p>
+<ol><li>Everything takes care by programmer; JVM doesn&#x27;t have any control.</li></ol>
+<ol><li>Based on our requirement, we can save either total object or part of the object — which improves performance of the system.</li></ol>
+<h3>15:59 — Serializable vs Externalizable interfaces</h3>
+<p>Externalizable interface — 2 methods:</p>
+<ol><li>writeExternal(ObjectOutput out)</li></ol>
+<ol><li>readExternal(ObjectInput in)</li></ol>
+<p>Important hierarchy (board diagram):</p>
+<p>Externalizable is a child interface of Serializable.</p>
+<p>Both introduced in Java 1.1 (same version).</p>
+<p>Why Serialization is more popular than Externalization:</p>
+<ul><li>Laziness / complexity of the programmer — two big methods must be implemented manually.</li></ul>
+<ul><li>Programmer thinks: &quot;JVM will take care; why should I worry about performance?&quot;</li></ul>
+<h3>23:51 — Demo program: `ExternalizableDemo`</h3>
+<p>Durga Sir begins the main board program. Class has 3 instance variables: String s, int i, int j.</p>
+<pre class='code'>// Board: class skeleton
+class ExternalizableDemo implements Externalizable {
+    String s;
+    int i;
+    int j;
+
+    // Parameterized constructor (for creating T1)
+    ExternalizableDemo(String s, int i, int j) {
+        this.s = s;
+        this.i = i;
+        this.j = j;
+    }
+}</pre>
+<p>Main method — create object and serialize:</p>
+<pre class='code'>public static void main(String[] args) throws Exception {
+    ExternalizableDemo t1 = new ExternalizableDemo(&quot;Durga&quot;, 10, 20);
+    // t1: s=&quot;Durga&quot;, i=10, j=20
+
+    FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+    ObjectOutputStream oos = new ObjectOutputStream(fos);
+    oos.writeObject(t1);   // serialization trigger
+}</pre>
+<p>Requirement (key teaching point):</p>
+<ul><li>Object has 3 properties, but we want to save only `s` and `i` to abc.ser.</li></ul>
+<ul><li>Remaining property `j` should not be written to the file.</li></ul>
+<ul><li>→ This is exactly why we use Externalization.</li></ul>
+<h3>28:33 — Serialization flow when class implements Externalizable</h3>
+<p>When `oos.writeObject(t1)` is called:</p>
+<ol><li>JVM checks: does class of t1 implement Serializable or Externalizable?</li></ol>
+<ol><li>If Serializable → save total object (default JVM mechanism).</li></ol>
+<ol><li>If Externalizable → JVM understands: programmer does not want total object; only selected fields → JVM calls `writeExternal(...)` automatically.</li></ol>
+<p>Implement `writeExternal`:</p>
+<pre class='code'>public void writeExternal(ObjectOutput out) throws IOException {
+    out.writeObject(s);   // save s  (&quot;Durga&quot;)
+    out.writeInt(i);      // save i  (10)
+    // j is intentionally NOT written
+}</pre>
+<p>Conclusions about `writeExternal` (board, highlighted box):</p>
+<ol><li>Executed automatically at the time of serialization.</li></ol>
+<ol><li>Inside this method, programmer writes code to save required variables to the file.</li></ol>
+<p>File contents (Externalization): only required properties (s, i) — not all three.</p>
+<h3>32:24 — First half complete; start deserialization (second half)</h3>
+<p>Deserialization code:</p>
+<pre class='code'>FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+ObjectInputStream ois = new ObjectInputStream(fis);
+ExternalizableDemo t2 = (ExternalizableDemo) ois.readObject();</pre>
+<p>Critical Externalization deserialization flow:</p>
+<ol><li>JVM checks: class implements Externalizable?</li></ol>
+<ol><li>File does not contain a full serialized object — only partial data (s, i).</li></ol>
+<ol><li>readObject() return type is Object, but file lacks complete object state.</li></ol>
+<ol><li>Extra JVM step: create a new separate object by invoking `public no-arg constructor`.</li></ol>
+<ol><li>On that new object, JVM calls `readExternal(ObjectInput in)`.</li></ol>
+<p>Why public no-arg constructor is mandatory:</p>
+<pre class='code'>// MUST exist in every Externalizable class
+public ExternalizableDemo() {
+    System.out.println(&quot;public no-arg Constructor&quot;);
+    // default values: s=null, i=0, j=0
+}</pre>
+<ul><li>After no-arg ctor: t2.s = null, t2.i = 0, t2.j = 0.</li></ul>
+<ul><li>Then readExternal fills in saved fields.</li></ul>
+<pre class='code'>public void readExternal(ObjectInput in)
+        throws IOException, ClassNotFoundException {
+    s = (String) in.readObject();  // null → &quot;Durga&quot;
+    i = in.readInt();              // 0 → 10
+    // j was never written → stays default 0
+}</pre>
+<p>Conclusions about `readExternal` (board, highlighted box):</p>
+<ol><li>Executed automatically at the time of deserialization.</li></ol>
+<ol><li>Programmer writes code to read required variables from the file and assign to the current object.</li></ol>
+<p>Strict deserialization order (board):</p>
+<ol><li>JVM creates new object via public no-arg constructor.</li></ol>
+<ol><li>On that object, JVM calls `readExternal`.</li></ol>
+<p>Rule:</p>
+<p>Every Externalizable-implemented class must compulsorily contain a public no-arg constructor.</p>
+<p>Otherwise → `InvalidClassException` at runtime (&quot;no valid constructor&quot; — same family of error as in prior Serialization sessions*).</p>
+<p>Contrast with Serializable:</p>
+<ul><li>Serializable class not required to have public no-arg constructor (file already has total object).</li></ul>
+<h3>48:51 — Print results after deserialization</h3>
+<p>System.out.println(t2.s);  // Durga
+System.out.println(t2.i);  // 10
+System.out.println(t2.j);  // 0  (never saved/restored)</p>
+<ul><li>j = 0 is expected — we chose not to externalize j.</li></ul>
+<ul><li>Student question: &quot;Why is j zero?&quot; → Because only s and i were required.</li></ul>
+<h3>49:44 — Live execution</h3>
+<p>Compile &amp; run (Externalizable):</p>
+<pre class='code'>// CE: javac ExternalizableDemo.java
+// Run: java ExternalizableDemo
+public no-arg Constructor
+Durga
+10
+0</pre>
+<ul><li>CE: compiles fine with implements Externalizable, both methods, public no-arg ctor.</li></ul>
+<ul><li>Print: no-arg ctor message first (deserialization), then field values.</li></ul>
+<h3>51:47 — Change to Serializable: compare output</h3>
+<p>Change class to implements Serializable (remove writeExternal / readExternal logic conceptually — JVM default serialization):</p>
+<pre class='code'>class ExternalizableDemo implements Serializable {
+    String s;
+    int i;
+    int j;
+    // constructors ...
+}</pre>
+<p>Output:</p>
+<p>Durga
+10
+20</p>
+<ul><li>All three fields restored.</li></ul>
+<ul><li>Public no-arg constructor NOT called (no print of ctor message).</li></ul>
+<ul><li>File already contained total object.</li></ul>
+<h3>52:38 — Remove public no-arg constructor (Externalizable)</h3>
+<p>If class implements Externalizable but no public no-arg constructor:</p>
+<p>Exception in thread &quot;main&quot; ...
+InvalidClassException: ExternalizableDemo; no valid constructor</p>
+<ul><li>Code compiles fine.</li></ul>
+<ul><li>Runtime failure on deserialization.</li></ul>
+<h3>56:03 — Recap: only 2 of 1000 properties saved</h3>
+<p>Central methods of Externalization:</p>
+<pre class='code'>public void writeExternal(ObjectOutput out) throws IOException { /* ... */ }
+
+public void readExternal(ObjectInput in)
+        throws IOException, ClassNotFoundException { /* ... */ }</pre>
+<p>Full working demo (consolidated board + screen):</p>
+<pre class='code'>import java.io.*;
+
+class ExternalizableDemo implements Externalizable {
+    String s;
+    int i;
+    int j;
+
+    public ExternalizableDemo() {
+        System.out.println(&quot;public no-arg Constructor&quot;);
+    }
+
+    ExternalizableDemo(String s, int i, int j) {
+        this.s = s;
+        this.i = i;
+        this.j = j;
+    }
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(s);
+        out.writeInt(i);
+    }
+
+    public void readExternal(ObjectInput in)
+            throws IOException, ClassNotFoundException {
+        s = (String) in.readObject();
+        i = in.readInt();
+    }
+
+    public static void main(String[] args) throws Exception {
+        ExternalizableDemo t1 = new ExternalizableDemo(&quot;Durga&quot;, 10, 20);
+
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(t1);
+
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        ExternalizableDemo t2 = (ExternalizableDemo) ois.readObject();
+
+        System.out.println(t2.s);
+        System.out.println(t2.i);
+        System.out.println(t2.j);
+    }
+}</pre>
+<p>Print (Externalizable):</p>
+<pre class='code'>public no-arg Constructor
+Durga
+10
+0</pre>
+<h3>1:01:08 — Summary diagram: Serializable vs Externalizable outputs</h3>
+<h3>1:03:49 — Re-run demo; when to use Externalization</h3>
+<ul><li>Use Externalization when you want to save part of the object.</li></ul>
+<ul><li>Performance-wise, Externalization is better when only subset needed.</li></ul>
+<h3>1:05:07 — File size experiment: 54 bytes vs 88 bytes</h3>
+<p>Durga Sir inspects abc.ser on disk (ls -l / column listing):</p>
+<p>In Serialization more data is saved; in Externalization less data is saved.</p>
+<h3>1:07:32 — Who saves data? Role of `transient`</h3>
+<p>Serialization:</p>
+<ul><li>JVM saves data to file.</li></ul>
+<ul><li>To exclude a sensitive field → declare it `transient` (tell JVM: don&#x27;t save this variable).</li></ul>
+<pre class='code'>// Serializable example — transient excludes fields from JVM serialization
+class Account implements Serializable {
+    transient String s;
+    transient int i;
+    transient int j;
+}
+// Output after deserialization: null, 0, 0</pre>
+<p>Externalization:</p>
+<ul><li>Programmer saves data (inside writeExternal).</li></ul>
+<ul><li>If you don&#x27;t want a field saved → simply don&#x27;t write it in writeExternal.</li></ul>
+<ul><li>`transient` keyword has NO role in Externalization.</li></ul>
+<p>Demo — all fields marked transient but Externalizable with manual save of s, i:</p>
+<pre class='code'>class ExternalizableDemo implements Externalizable {
+    transient String s;
+    transient int i;
+    transient int j;
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(s);  // still writes — transient ignored here
+        out.writeInt(i);
+    }
+    // readExternal restores s, i ...
+}</pre>
+<p>Output unchanged:</p>
+<pre class='code'>public no-arg Constructor
+Durga
+10
+0</pre>
+<p>Whether variables are transient or not → no effect in Externalization.</p>
+<p>Board note:</p>
+<ul><li>In Serialization → transient keyword will play a role.</li></ul>
+<ul><li>In Externalization → transient keyword won&#x27;t play any role; not required.</li></ul>
+<h3>1:14:50 — Eight differences: Serialization vs Externalization (final table)</h3>
+<p>Durga Sir dictates full comparison for notes/interview:</p>
+<p>Terminology mapping:</p>
+<ul><li>Serialization = default serialization (JVM-driven).</li></ul>
+<ul><li>Externalization = customized serialization (programmer-driven).</li></ul>
+<ul><li>Externalizable extends Serializable — child interface.</li></ul>
+<h3>1:28:24 — Session close</h3>
+<ul><li>Total 8 differences covered — must be able to explain in interview (&quot;enter your room&quot; phrasing).</li></ul>
+<ul><li>Externalization is rarely asked on OCJP/SCJP exam itself but important for interviews and performance-sensitive designs.</li></ul>
+<ul><li>Most developers don&#x27;t know this concept — Durga Sir emphasizes clarity.</li></ul>
+<h2>Quick reference</h2>
+<pre class='code'>// Minimal Externalizable pattern
+class MyClass implements Externalizable {
+    // fields...
+
+    public MyClass() { }  // REQUIRED: public no-arg
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        // write ONLY what you need
+    }
+
+    public void readExternal(ObjectInput in)
+            throws IOException, ClassNotFoundException {
+        // read ONLY what you wrote; assign to this object
+    }
+}</pre>
+<p>Java code block count: 13</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Position</td><td>130 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>Serialization — Part 6: Externalization</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 29m 02s</td></tr>
+<tr><td>Video ID</td><td>hMJzf0E_ut4</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=hMJzf0E_ut4</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Policy</th><th>Effect</th></tr>
+<tr><td>Must join entire Java package to attend SCJP</td><td>Very few students join</td></tr>
+<tr><td>Can register only SCJP (or only Advanced Java, etc.) based on need</td><td>Many more students join</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Serialization</th><th>Externalization</th></tr>
+<tr><td>1</td><td>Everything by JVM; programmer has no control</td><td>Everything by programmer; JVM has no control</td></tr>
+<tr><td>2</td><td>Always saves total object; cannot save part</td><td>Can save total or part based on requirement</td></tr>
+<tr><td>3</td><td>Relatively lower performance (when only subset needed)</td><td>Relatively higher performance</td></tr>
+</table>
+<table>
+<tr><th></th><th>Serializable</th><th>Externalizable</th></tr>
+<tr><td>To give ability</td><td>Class must implements Serializable</td><td>Class must implements Externalizable</td></tr>
+<tr><td>Interface type</td><td>Marker interface (0 methods)</td><td>Functional interface (2 methods)</td></tr>
+<tr><td>Who does the work</td><td>JVM</td><td>Programmer</td></tr>
+</table>
+<table>
+<tr><th>Mechanism</th><th>What file contains</th></tr>
+<tr><td>Serialization</td><td>All properties</td></tr>
+<tr><td>Externalization</td><td>Only required properties</td></tr>
+</table>
+<table>
+<tr><th>If class implements</th><th>File saves</th><th>Output</th></tr>
+<tr><td>Serializable</td><td>Total object</td><td>Durga 10 20</td></tr>
+<tr><td>Externalizable (save s, i only)</td><td>Only required vars</td><td>public no-arg Constructor then Durga 10 0</td></tr>
+</table>
+<table>
+<tr><th>Implementation</th><th>File size</th><th>Reason</th></tr>
+<tr><td>Externalizable (only s, i)</td><td>54 bytes</td><td>Less data — only required variables</td></tr>
+<tr><td>Serializable (all fields)</td><td>88 bytes</td><td>More data — total object metadata + all fields</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Serialization</th><th>Externalization</th></tr>
+<tr><td>1</td><td>Meant for default serialization</td><td>Meant for customized serialization</td></tr>
+<tr><td>2</td><td>Everything by JVM; programmer has no control</td><td>Everything by programmer; JVM has no control</td></tr>
+<tr><td>3</td><td>Always save total object; cannot save part</td><td>Can save total or part based on requirement</td></tr>
+<tr><td>4</td><td>Relatively low performance (when subset needed)</td><td>Relatively high performance</td></tr>
+<tr><td>5</td><td>Best choice if you want to save total object</td><td>Best choice if you want to save part of object</td></tr>
+<tr><td>6</td><td>Serializable — marker interface, no methods</td><td>Externalizable — 2 methods: writeExternal, readExternal</td></tr>
+<tr><td>7</td><td>Serializable class not required to have public no-arg constructor</td><td>Externalizable class must have public no-arg constructor; else InvalidClassException</td></tr>
+<tr><td>8</td><td>transient keyword plays a role</td><td>transient keyword won&#x27;t play any role / not required</td></tr>
+</table>
+</body></html>

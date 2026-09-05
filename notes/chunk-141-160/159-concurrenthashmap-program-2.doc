@@ -1,0 +1,325 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>159-concurrenthashmap-program-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 159 — Concurrent Collections Part-6: ConcurrentHashMap Program-2</h1>
+<h2>Video info</h2>
+<h3>ASR decode corrections (auto-caption garble → intended term)</h3>
+<h2>Session overview</h2>
+<p>This lecture is the second demo program for ConcurrentHashMap. Video 158 (Program-1) demonstrated the three ConcurrentMap-specific methods. This session proves two critical runtime behaviors programmatically:</p>
+<ol><li>While one thread is iterating a `ConcurrentHashMap`, other threads ARE allowed to modify the map safely — no ConcurrentModificationException.</li></ol>
+<ol><li>That concurrent modification is NOT guaranteed to be visible to the active iterator — but it will appear when you print the map after iteration completes.</li></ol>
+<p>What this lecture covers (~12 minutes):</p>
+<ol><li>Why ConcurrentHashMap is the best choice when a huge number of threads operate on a shared map</li></ol>
+<ol><li>Program-2 — main thread iterates; child thread modifies concurrently</li></ol>
+<ol><li>Live execution — proof that ConcurrentHashMap never throws ConcurrentModificationException during concurrent iteration + modification</li></ol>
+<ol><li>Control experiment — replace ConcurrentHashMap with HashMap → immediate ConcurrentModificationException</li></ol>
+<ol><li>Iterator visibility rule — no guarantee that mid-iteration updates appear in the iterator; forward-only cursor explanation</li></ol>
+<ol><li>Teaser — next session: HashMap vs ConcurrentHashMap vs Hashtable differences</li></ol>
+<p>Scope note: This is a hands-on continuation of Video 157&#x27;s theoretical property &quot;ConcurrentHashMap never throws ConcurrentModificationException.&quot; Program-1 (158) covered API methods; Program-2 (this video) covers fail-safe concurrent iteration.</p>
+<h2>00:20 — Why ConcurrentHashMap matters (recap before the demo)</h2>
+<p>Sir restates the main objective of ConcurrentHashMap:</p>
+<h3>When is ConcurrentHashMap the **best choice**?</h3>
+<p>If a huge number of threads are present in your application, ConcurrentHashMap is the best choice.</p>
+<p>The specific behavior this demo proves:</p>
+<p>Thread-1 (main)  → iterating ConcurrentHashMap (via keySet + Iterator)
+Thread-2 (child) → modifying ConcurrentHashMap (put/remove) at the same time
+                   ↓
+                   ALLOWED — in a safe manner
+                   ↓
+                   ConcurrentHashMap NEVER throws ConcurrentModificationException</p>
+<p>Sir&#x27;s programmatic intention for this session:</p>
+<p>&quot;My intention is I have to show how is it possible for the other thread to perform modification while the first thread is iterating data.&quot;</p>
+<p>This is not theory anymore — he will compile and run it.</p>
+<h2>01:37 — Program-2: Full source code (ConcurrentHashMap version)</h2>
+<h3>Imports and class structure</h3>
+<pre class='code'>import java.util.*;
+import java.util.concurrent.*;
+
+class MyThread extends Thread {
+
+    static ConcurrentHashMap m = new ConcurrentHashMap();
+    // static map — accessible from both main() and run()
+    // Sir confirms: static vs non-static — no problem for this demo
+
+    public void run() {
+        try {
+            Thread.sleep(1000);   // child thread sleeping some time
+        } catch (InterruptedException e) {}
+        System.out.println(&quot;Child thread updating map&quot;);
+        m.put(103, &quot;C&quot;);          // child thread updating map while main iterates
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        // ── Phase 1: only MAIN thread exists ──
+        m.put(101, &quot;A&quot;);
+        m.put(102, &quot;B&quot;);
+
+        // ── Phase 2: start child thread → now TWO threads ──
+        MyThread t = new MyThread();
+        t.start();
+
+        // ── MAIN thread: iterate map keys ──
+        Set s = m.keySet();           // get only keys of the map
+        Iterator itr = s.iterator();  // open iterator on keySet
+        while (itr.hasNext()) {
+            Object key = itr.next();
+            System.out.println(&quot;Main thread iterating map and current entry is &quot;
+                + key + &quot; &quot; + m.get(key));
+            Thread.sleep(3000);       // slow down so child can update mid-iteration
+        }
+
+        // ── After iteration: print full map ──
+        System.out.println(m);
+    }
+}</pre>
+<h3>Thread timeline (step-by-step)</h3>
+<p>Sir walks through how many threads exist at each line — this is a recurring multithreading teaching pattern:</p>
+<p>Sir&#x27;s prerequisite warning (02:46):</p>
+<p>&quot;If you are able to understand this terminology, compulsory first you have to complete multithreading clearly and then come to these examples. I don&#x27;t know multithreading — then these classes are not at all helpful for you. Remember that.&quot;</p>
+<h2>03:13 — What main thread does vs what child thread does</h2>
+<h3>Main thread responsibilities</h3>
+<ol><li>Add initial entries: 101→A, 102→B</li></ol>
+<ol><li>Start child thread</li></ol>
+<ol><li>Get keySet() — only keys (not values, not entries)</li></ol>
+<ol><li>Open Iterator on the key set</li></ol>
+<ol><li>Iterate — for each key, print key and corresponding value via m.get(key)</li></ol>
+<ol><li>After loop, print entire map m</li></ol>
+<h3>Child thread responsibilities (`run()`)</h3>
+<ol><li>Sleep briefly (gives main thread time to begin iteration)</li></ol>
+<ol><li>Update map: m.put(103, &quot;C&quot;)</li></ol>
+<ol><li>Print &quot;Child thread updating map&quot;</li></ol>
+<h3>The core question Sir asks</h3>
+<p>&quot;Child thread is updating map while main thread is iterating — is it allowed or not allowed?&quot;</p>
+<p>Answer for ConcurrentHashMap: ALLOWED.</p>
+<p>In ConcurrentHashMap, while one thread is iterating, the remaining threads are allowed to perform any modification to the underlying map object in a safe manner.</p>
+<p>And:</p>
+<p>`ConcurrentHashMap` never throws `ConcurrentModificationException`.</p>
+<h2>04:31 — Live execution: ConcurrentHashMap output</h2>
+<p>Sir compiles and runs:</p>
+<p>javac MyThread.java
+java MyThread</p>
+<h3>Observed console output (from the lecture)</h3>
+<p>Child thread updating map
+Main thread iterating map and current entry is 102 B
+Main thread iterating map and current entry is 101 A
+{101=A, 102=B, 103=C}</p>
+<p>(Exact key order in iteration may vary — HashMap/ConcurrentHashMap ordering is hash-code based, not insertion order.)</p>
+<h3>What the output proves</h3>
+<p>Sir&#x27;s conclusion:</p>
+<p>&quot;ConcurrentHashMap never throws ConcurrentModificationException — programmatic proof. While main thread is iterating, child thread is trying to update map — no problem, it itself is acceptable. Proper output — we are not going to get ConcurrentModificationException.&quot;</p>
+<h2>06:13 — Control experiment: replace ConcurrentHashMap with HashMap</h2>
+<p>Sir asks the natural follow-up:</p>
+<p>&quot;Suppose if I replace ConcurrentHashMap with normal HashMap — while one thread is iterating, is the remaining thread allowed to modify the underlying map object?&quot;</p>
+<p>Answer: NO.</p>
+<h3>The one-line change</h3>
+<pre class='code'>// BEFORE (safe):
+static ConcurrentHashMap m = new ConcurrentHashMap();
+
+// AFTER (unsafe — demo only):
+static HashMap m = new HashMap();
+// import java.util.HashMap;  (already covered by java.util.*)</pre>
+<p>Everything else stays identical — same two threads, same iteration, same child put(103, &quot;C&quot;).</p>
+<h3>HashMap output</h3>
+<p>Main thread iterating map and current entry is ...
+Child thread updating map
+Exception in thread &quot;main&quot; java.util.ConcurrentModificationException
+    at java.util.HashMap$HashIterator.next(HashMap.java:...)
+    ...</p>
+<p>Immediately when the child thread updates the map, the main thread&#x27;s iterator detects structural modification and throws `ConcurrentModificationException`.</p>
+<h3>Side-by-side comparison (exam table)</h3>
+<p>Sir&#x27;s board conclusion:</p>
+<p>&quot;If I took normal HashMap — I got ConcurrentModificationException. If I took ConcurrentHashMap — we don&#x27;t get ConcurrentModificationException. That is the advantage of concurrent collection. Concurrent collections are best suitable for multithreaded scalable applications.&quot;</p>
+<h3>Why HashMap fails (quick internal recap)</h3>
+<p>Normal HashMap iterators are fail-fast:</p>
+<ul><li>Iterator tracks an `expectedModCount`</li></ul>
+<ul><li>Any structural change (put, remove) increments `modCount`</li></ul>
+<ul><li>On next(), if modCount != expectedModCount → `ConcurrentModificationException`</li></ul>
+<p>ConcurrentHashMap iterators are weakly consistent — they do not use this fail-fast check, so concurrent modification during iteration is permitted.</p>
+<h2>07:55 — Critical second property: iterator visibility (no guarantee)</h2>
+<p>After proving CME behavior, Sir highlights a second point many students miss:</p>
+<p>While main thread is iterating the map, child thread updated the map — correct. But is that update available to the iterator?</p>
+<p>Answer: There is NO guarantee.</p>
+<h3>The rule (copy to exam notes)</h3>
+<p>While one thread is iterating over a ConcurrentHashMap, if another thread performs any modification, that updation is NOT guaranteed to be available to the iterator.</p>
+<p>This is different from &quot;modification is not allowed.&quot; Modification is allowed — it just may not appear in the iterator&#x27;s view.</p>
+<h3>Why — forward-only cursor (Sir&#x27;s bucket-by-bucket explanation)</h3>
+<p>Sir explains using internal iteration model:</p>
+<p>ConcurrentHashMap internal buckets:
+
+  Bucket-0   Bucket-1   Bucket-2   ...
+     ↓
+  Iterator cursor moves forward (one direction only — &quot;next&quot;)
+     ↓
+  If update happens BEFORE cursor reaches that bucket/cell
+      → iterator MAY see the new entry
+  If update happens AFTER cursor already passed that position
+      → iterator will NOT see the new entry</p>
+<p>Key phrases from Sir:</p>
+<ul><li>Iterator is a forward-direction cursor only (hasNext / next — no going back)</li></ul>
+<ul><li>Iteration proceeds bucket by bucket</li></ul>
+<ul><li>Timing of child thread&#x27;s put() relative to cursor position determines visibility</li></ul>
+<ul><li>No guarantee either way — do not rely on seeing concurrent updates in an active iterator</li></ul>
+<h3>Evidence from the demo output</h3>
+<p>Sir&#x27;s walkthrough:</p>
+<p>*&quot;Main thread iterating — current entry is 102 B and 101 A. Child already updated — but that updation you are not able to see [in the iterator]. After iterator, if you print m — that updation by default you can see.&quot;*</p>
+<h2>10:28 — Contrast with CopyOnWriteArrayList (forward reference)</h2>
+<p>Sir briefly contrasts with other concurrent collections:</p>
+<p>For the remaining concurrent collections (he names CopyOnWriteArrayList), that updation will never be available to the iterator — he will explain Copy-On-Write there.</p>
+<p>CopyOnWriteArrayList is covered in later videos (166 area). For now, remember: ConcurrentHashMap allows concurrent writes during iteration, but don&#x27;t expect the iterator to reflect them.</p>
+<h2>10:40 — Final conclusion (Sir repeats three times)</h2>
+<p>Sir explicitly asks students to repeat this conclusion:</p>
+<h3>The three-part rule for ConcurrentHashMap iteration</h3>
+<ol><li>While the main thread is iterating, the other thread is allowed to perform any modification to the map.</li></ol>
+<ol><li>That update is NOT available to the iterator — there is no guarantee.</li></ol>
+<ol><li>After iteration completes, if you print the map (System.out.println(m)), that update you CAN see.</li></ol>
+<p>┌─────────────────────────────────────────────────────────────┐
+│  ConcurrentHashMap + Iterator during concurrent modification │
+├─────────────────────────────────────────────────────────────┤
+│  ✓ Modification allowed                                     │
+│  ✓ No ConcurrentModificationException                       │
+│  ✗ No guarantee iterator sees the update                    │
+│  ✓ Map itself contains the update after iteration ends      │
+└─────────────────────────────────────────────────────────────┘</p>
+<h2>11:27 — Next session preview</h2>
+<p>Sir closes with a teaser for Video 160:</p>
+<p>Next: HashMap vs ConcurrentHashMap vs Hashtable — what are the differences and so on.</p>
+<p>That session consolidates the three-way comparison started theoretically in Video 157 and proven programmatically in Videos 158–159.</p>
+<h2>Complete comparison: HashMap vs ConcurrentHashMap (iteration scenario)</h2>
+<h2>Exam traps and interview questions</h2>
+<h3>Q1: Can I modify a ConcurrentHashMap while iterating it?</h3>
+<p>Yes. Other threads (or even the same thread in some cases) can modify the map while one thread holds an iterator. It is safe and will not throw ConcurrentModificationException.</p>
+<h3>Q2: Will the iterator always show entries added during iteration?</h3>
+<p>No. There is no guarantee. The iterator reflects a weakly consistent view; entries added after the cursor passes may not appear.</p>
+<h3>Q3: How do I see updates made during iteration?</h3>
+<p>Don&#x27;t use the iterator for that. After iteration completes, read the map directly (m.get(key), m.containsKey(), System.out.println(m)).</p>
+<h3>Q4: What happens if I use HashMap instead?</h3>
+<p>ConcurrentModificationException as soon as a structural modification occurs during iteration.</p>
+<h3>Q5: Is this the same as CopyOnWriteArrayList behavior?</h3>
+<p>No. CopyOnWriteArrayList iterators operate on a snapshot — concurrent updates are never visible to the iterator. ConcurrentHashMap iterators are weakly consistent — updates might be visible depending on timing, but never guaranteed.</p>
+<h3>Q6: Does ConcurrentHashMap allow null keys or values?</h3>
+<p>No — neither null keys nor null values (covered in Video 157). The demo uses non-null keys and values.</p>
+<h2>Program variants summary (single file, three experiments)</h2>
+<p>Sir runs the same program skeleton three ways:</p>
+<h2>Relationship to prior videos in this sub-series</h2>
+<h2>Key takeaways (one-page revision)</h2>
+<ol><li>ConcurrentHashMap objective: thread safety + performance for many threads.</li></ol>
+<ol><li>Unique iteration property: one thread may iterate while others modify — safely, without CME.</li></ol>
+<ol><li>HashMap fails this scenario — fail-fast iterator throws ConcurrentModificationException.</li></ol>
+<ol><li>Iterator visibility: concurrent updates are not guaranteed to appear in the iterator (forward-only cursor, bucket-by-bucket traversal).</li></ol>
+<ol><li>Map state after iteration: updates are in the map — print m or call get() after the loop.</li></ol>
+<ol><li>Not the same as CopyOnWriteArrayList — different iterator consistency model (deferred to later lecture).</li></ol>
+<ol><li>Prerequisite: multithreading (Thread, start(), run(), main vs child thread) must be clear first.</li></ol>
+<h2>Video metadata footer</h2>
+<p>End of Video 159 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>159 of 203</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Concurrent Collections Part-6 \</td><td>\</td><td>ConcurrentHashMap Program-2</td></tr>
+<tr><td>YouTube URL</td><td>https://www.youtube.com/watch?v=4XfL2wJYLsU</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>4XfL2wJYLsU</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>11m 56s</td><td></td><td></td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td><td></td></tr>
+<tr><td>Module</td><td>Concurrent Collections (Part 6 of 7 in this sub-series)</td><td></td><td></td></tr>
+<tr><td>Caption source</td><td>YouTube auto-generated (yt-dlp + node PO token)</td><td></td><td></td></tr>
+<tr><td>Prerequisite</td><td>Video 157 (ConcurrentHashMap theory — locking, concurrency level, properties). Video 158 (Program-1 — putIfAbsent, conditional remove, replace). Multithreading fundamentals are mandatory — Sir explicitly warns: without clear multithreading knowledge, these concurrent collection demos will not help.</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Heard in captions</th><th>Correct term</th></tr>
+<tr><td>concatMap / concat currentMap / current hash map</td><td>ConcurrentHashMap</td></tr>
+<tr><td>concatModificationException / currentModificationException</td><td>ConcurrentModificationException</td></tr>
+<tr><td>concat collection / current collection</td><td>concurrent collection</td></tr>
+<tr><td>java cand star / ut daar</td><td>`import java.util.concurrent.*` (and java.util.* for Set/Iterator)</td></tr>
+<tr><td>legion</td><td>let us</td></tr>
+<tr><td>old thread / l thread</td><td>child thread</td></tr>
+<tr><td>ao of m</td><td>`System.out.println(m)` / map&#x27;s toString()</td></tr>
+<tr><td>10 a / 10 b</td><td>101→A, 102→B (numeric keys garbled in captions)</td></tr>
+<tr><td>th c / child thread dead 103 c</td><td>child thread added 103→C</td></tr>
+</table>
+<table>
+<tr><th>Goal</th><th>How ConcurrentHashMap delivers</th></tr>
+<tr><td>Improve performance</td><td>Segment/bucket-level locking (Video 157) — not total-map lock like Hashtable</td></tr>
+<tr><td>Achieve thread safety</td><td>Safe concurrent reads and writes without data corruption</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Code</th><th>Threads active</th><th>Who executes</th></tr>
+<tr><td>1</td><td>m.put(101, &quot;A&quot;); m.put(102, &quot;B&quot;);</td><td>1 — main only</td><td>Main thread adds two entries</td></tr>
+<tr><td>2</td><td>t.start();</td><td>2 — main + child</td><td>Child begins run() asynchronously</td></tr>
+<tr><td>3</td><td>keySet() → iterator() → while loop</td><td>2</td><td>Main iterates; child may be sleeping or updating</td></tr>
+<tr><td>4</td><td>Child wakes, m.put(103, &quot;C&quot;)</td><td>2</td><td>Modification while main is in the loop</td></tr>
+<tr><td>5</td><td>Loop ends, System.out.println(m)</td><td>1 or 2</td><td>Final map state printed</td></tr>
+</table>
+<table>
+<tr><th>Observation</th><th>Meaning</th></tr>
+<tr><td>Program did not crash</td><td>No ConcurrentModificationException</td></tr>
+<tr><td>Child printed &quot;Child thread updating map&quot; during main&#x27;s loop</td><td>Concurrent modification happened</td></tr>
+<tr><td>Iterator showed only 102→B and 101→A</td><td>Two original entries</td></tr>
+<tr><td>103→C NOT shown during iteration</td><td>Child&#x27;s update not visible to iterator</td></tr>
+<tr><td>Final System.out.println(m) shows 103→C</td><td>Update IS in the map after iteration</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Map type</th><th>Child modifies while main iterates?</th><th>Exception?</th></tr>
+<tr><td>Demo 2a</td><td>ConcurrentHashMap</td><td>Yes — allowed safely</td><td>Never throws CME</td></tr>
+<tr><td>Demo 2b</td><td>HashMap</td><td>No — not allowed</td><td>Immediately throws ConcurrentModificationException</td></tr>
+</table>
+<table>
+<tr><th>Fact</th><th>Confirms</th></tr>
+<tr><td>Child added 103→C during iteration</td><td>Modification succeeded</td></tr>
+<tr><td>Iterator loop printed only 102 and 101</td><td>103→C not visible to iterator</td></tr>
+<tr><td>Final System.out.println(m) included 103→C</td><td>Update is in the map; just not in iterator snapshot</td></tr>
+</table>
+<table>
+<tr><th>Collection</th><th>Concurrent modification during iteration</th><th>Update visible to active iterator?</th></tr>
+<tr><td>ConcurrentHashMap</td><td>Allowed; no CME</td><td>No guarantee (may or may not appear)</td></tr>
+<tr><td>CopyOnWriteArrayList</td><td>Allowed; no CME</td><td>Never available to iterator (snapshot iterator)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Property</th><th>HashMap</th><th>ConcurrentHashMap</th></tr>
+<tr><td>1</td><td>Thread-safe?</td><td>No</td><td>Yes</td></tr>
+<tr><td>2</td><td>Multiple threads iterate + modify simultaneously?</td><td>No (CME on modify)</td><td>Yes</td></tr>
+<tr><td>3</td><td>Throws ConcurrentModificationException during concurrent mod?</td><td>Yes</td><td>No</td></tr>
+<tr><td>4</td><td>Concurrent update visible to active iterator?</td><td>N/A (throws first)</td><td>No guarantee</td></tr>
+<tr><td>5</td><td>Concurrent update visible in map after iteration?</td><td>N/A</td><td>Yes</td></tr>
+<tr><td>6</td><td>Iterator type</td><td>Fail-fast</td><td>Weakly consistent</td></tr>
+<tr><td>7</td><td>Best for multi-threaded scalable apps?</td><td>No</td><td>Yes</td></tr>
+</table>
+<table>
+<tr><th>Experiment</th><th>Map declaration</th><th>Result</th></tr>
+<tr><td>2a — Default (this video&#x27;s main demo)</td><td>new ConcurrentHashMap()</td><td>Runs cleanly; child adds 103→C; iterator misses it; final print shows it</td></tr>
+<tr><td>2b — Control (HashMap)</td><td>new HashMap()</td><td>ConcurrentModificationException when child updates</td></tr>
+<tr><td>2c — After iteration check</td><td>ConcurrentHashMap + System.out.println(m) at end</td><td>Proves update persisted even though iterator didn&#x27;t show it</td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th><th>Connection to 159</th></tr>
+<tr><td>156</td><td>ConcurrentMap interface intro</td><td>Defines the interface ConcurrentHashMap implements</td></tr>
+<tr><td>157</td><td>ConcurrentHashMap theory</td><td>Stated &quot;never throws CME&quot; — 159 proves it</td></tr>
+<tr><td>158</td><td>Program-1: putIfAbsent, remove(key,val), replace</td><td>API methods demo</td></tr>
+<tr><td>159</td><td>Program-2: iterate + concurrent modify</td><td>Runtime behavior demo (this video)</td></tr>
+<tr><td>160</td><td>HashMap vs ConcurrentHashMap vs Hashtable</td><td>Three-way comparison (next)</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Chunk</td><td>141–160</td></tr>
+<tr><td>Output file</td><td>159-concurrenthashmap-program-2</td></tr>
+<tr><td>Playlist position</td><td>159 / 203</td></tr>
+<tr><td>Previous</td><td>Video 158 — ConcurrentHashMap Program-1</td></tr>
+<tr><td>Next</td><td>Video 160 — HashMap &amp; ConcurrentHashMap comparison</td></tr>
+</table>
+</body></html>

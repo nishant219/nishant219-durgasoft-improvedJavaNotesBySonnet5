@@ -1,0 +1,275 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>068-oops-concepts-compilation</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 068 — OOPs Concepts compilation</h1>
+<h2>Video info</h2>
+<p>Title: Object Oriented Programming (OOPs) Concepts In Java || by Durga sir</p>
+<h2>Important: this is a mega compilation, not a new lecture</h2>
+<p>This upload is a ~10.5-hour re-package of the individual OOPs lectures already in the same playlist (videos 051–067). It does not introduce new board material beyond those component videos.</p>
+<p>Captions: YouTube has no usable auto-captions for this mega upload (none that can drive timestamped board-level notes). Do not treat this file as a full transcript rewrite of the 10h video.</p>
+<p>Where the real notes live: Detailed caption-based lecture notes with Java board examples are in the component videos 051–067 under notes/chunk-041-060/ and notes/chunk-061-080/. Study those files (and watch those shorter videos) for board timestamps, ASR-decoded board text, and full examples.</p>
+<p>This file is only an index + OCJP study checklist + exam-checklist snippets for the compilation entry at position 68.</p>
+<h2>Mapping: compilation topics → individual playlist videos</h2>
+<p>Watch URLs for component videos: https://www.youtube.com/watch?v=&lt;VideoID&gt; using IDs from notes/playlist.tsv (rows 051–067).</p>
+<h2>OCJP study checklist (topics covered by this compilation)</h2>
+<p>Use this as a revision checklist; tick off after reading the matching component notes.</p>
+<ul><li>[ ] Data hiding — private fields; public getters/setters with validation; outsider CE on private access</li></ul>
+<ul><li>[ ] Inheritance — is-a (extends) vs has-a (composition); method/variable availability in child</li></ul>
+<ul><li>[ ] Overloading — same method name, different argument lists; automatic promotion; most-specific match for null</li></ul>
+<ul><li>[ ] Overriding — same signature in child; runtime (JVM) resolution via object type; covariant return types</li></ul>
+<ul><li>[ ] Overriding modifiers — cannot reduce access; final / private / static rules; abstract override</li></ul>
+<ul><li>[ ] Varargs &amp; related overriding traps — varargs vs array; binding differences vs overloading</li></ul>
+<ul><li>[ ] Coupling — tight vs loose; why interfaces / dependency direction matter for maintainability</li></ul>
+<ul><li>[ ] Type casting — upcasting always OK; downcasting needs compatible runtime type or ClassCastException</li></ul>
+<ul><li>[ ] Static control flow — identification → preparation → execution of static members / blocks</li></ul>
+<ul><li>[ ] Instance control flow — instance variables &amp; blocks before constructor body; order with inheritance</li></ul>
+<ul><li>[ ] Constructors — name = class name; no return type; this() / super(); default constructor rules</li></ul>
+<ul><li>[ ] Overloaded constructors — chaining with this(...); recursive constructor call CE</li></ul>
+<ul><li>[ ] Singleton — private constructor + private static instance + factory (getRuntime() / getTest() style)</li></ul>
+<h2>Exam-checklist snippets (not board timestamps from this mega video)</h2>
+<p>The following ``java blocks summarize **key OCJP points** from the component OOPs lectures (051–067). They are **exam-checklist snippets**, not claimed board timestamps or a transcript of video 5NQjLBuNL0I`.</p>
+<h3>1) Data hiding — private field vs getter</h3>
+<pre class='code'>class Account {
+    private double balance = 25000.0;
+    public double getBalance() {
+        return balance;
+    }
+}
+class Outsider {
+    public static void main(String[] args) {
+        Account a = new Account();
+        // System.out.println(a.balance); // CE: balance has private access in Account
+        System.out.println(a.getBalance()); // prints 25000.0
+    }
+}</pre>
+<h3>2) Overloading — promotion and double trap</h3>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;int-arg method&quot;);
+    }
+    public void m1(float f) {
+        System.out.println(&quot;float-arg method&quot;);
+    }
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10);      // prints int-arg method
+        t.m1(10.5f);   // prints float-arg method
+        t.m1(&#x27;a&#x27;);     // prints int-arg method  (char -&gt; int)
+        t.m1(10L);     // prints float-arg method (long -&gt; float)
+        // t.m1(10.5); // CE: cannot find symbol — method m1(double)
+    }
+}</pre>
+<h3>3) Overloading — most specific for null</h3>
+<pre class='code'>class Test {
+    public void m1(Object o) {
+        System.out.println(&quot;Object version&quot;);
+    }
+    public void m1(String s) {
+        System.out.println(&quot;String version&quot;);
+    }
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(new Object()); // prints Object version
+        t.m1(&quot;durga&quot;);      // prints String version
+        t.m1(null);         // prints String version (most specific)
+    }
+}</pre>
+<h3>4) Overriding — parent ref vs child object</h3>
+<pre class='code'>class P {
+    public void marry() {
+        System.out.println(&quot;Subbalakshmi&quot;);
+    }
+}
+class C extends P {
+    public void marry() {
+        System.out.println(&quot;Trisha&quot;);
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        P p1 = new P();
+        p1.marry(); // prints Subbalakshmi
+        C c = new C();
+        c.marry();  // prints Trisha
+        P p2 = new C();
+        p2.marry(); // prints Trisha  (JVM uses object type)
+    }
+}</pre>
+<h3>5) Overriding — cannot reduce access; final method</h3>
+<pre class='code'>class P {
+    public void m1() { }
+    public final void m2() { }
+}
+class C extends P {
+    // void m1() { } // CE: attempting to assign weaker access privileges; was public
+    // public void m2() { } // CE: m2() in C cannot override m2() in P — overridden method is final
+}</pre>
+<h3>6) Type casting — upcast OK, bad downcast</h3>
+<pre class='code'>class Parent { }
+class Child extends Parent { }
+class Demo {
+    public static void main(String[] args) {
+        Parent p = new Child(); // upcasting — OK
+        Child c = (Child) p;    // downcasting — OK (runtime type is Child)
+        Parent p2 = new Parent();
+        // Child c2 = (Child) p2; // Runtime: ClassCastException
+    }
+}</pre>
+<h3>7) Static control flow — order of statics</h3>
+<pre class='code'>class Test {
+    static int i = 10;
+    static {
+        m1();
+        System.out.println(&quot;first static block&quot;);
+    }
+    public static void main(String[] args) {
+        m1();
+        System.out.println(&quot;main method&quot;);
+    }
+    public static void m1() {
+        System.out.println(j);
+    }
+    static {
+        System.out.println(&quot;second static block&quot;);
+    }
+    static int j = 20;
+}
+// Typical prints (Durga-style SCF demo):
+// 0
+// first static block
+// second static block
+// 20
+// main method</pre>
+<h3>8) Instance control flow — instance before constructor body</h3>
+<pre class='code'>class Test {
+    int i = 10;
+    {
+        m1();
+        System.out.println(&quot;first instance block&quot;);
+    }
+    Test() {
+        System.out.println(&quot;constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(&quot;main&quot;);
+    }
+    public void m1() {
+        System.out.println(j);
+    }
+    {
+        System.out.println(&quot;second instance block&quot;);
+    }
+    int j = 20;
+}
+// Typical prints when object is created:
+// 0
+// first instance block
+// second instance block
+// constructor
+// main</pre>
+<h3>9) Constructors — no return type; this() must be first</h3>
+<pre class='code'>class Test {
+    Test() {
+        this(10);
+        System.out.println(&quot;no-arg&quot;);
+    }
+    Test(int i) {
+        System.out.println(&quot;int-arg&quot;);
+    }
+    // Test(double d) {
+    //     System.out.println(&quot;double&quot;);
+    //     this(10); // CE: call to this must be first statement in constructor
+    // }
+    public static void main(String[] args) {
+        new Test(); // prints int-arg then no-arg
+    }
+}</pre>
+<h3>10) Private constructor — child cannot call super()</h3>
+<pre class='code'>class P {
+    private P() { }
+}
+class C extends P {
+    // C() { } // CE: P() has private access in P
+}</pre>
+<h3>11) Singleton — eager factory style (Runtime idea)</h3>
+<pre class='code'>class Test {
+    private static Test t = new Test();
+    private Test() { }
+    public static Test getTest() {
+        return t;
+    }
+}
+class Demo {
+    public static void main(String[] args) {
+        Test t1 = Test.getTest();
+        Test t2 = Test.getTest();
+        System.out.println(t1 == t2); // prints true
+        // Test t3 = new Test(); // CE: Test() has private access in Test
+    }
+}</pre>
+<h3>12) Singleton — lazy creation</h3>
+<pre class='code'>class Test {
+    private static Test t = null;
+    private Test() { }
+    public static Test getTest() {
+        if (t == null) {
+            t = new Test();
+        }
+        return t;
+    }
+}</pre>
+<h2>How to use this file</h2>
+<ol><li>Prefer videos 051–067 (and their note files) for board-level study.</li></ol>
+<ol><li>Use this file when you landed on the mega upload at position 68 and need a map + OCJP checklist.</li></ol>
+<ol><li>Do not expect a minute-by-minute transcript here — captions for 5NQjLBuNL0I are not usable for that purpose.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 68 of 203</td></tr>
+<tr><td>Series</td><td>OOPs (mega compilation)</td></tr>
+<tr><td>Topic</td><td>Object Oriented Programming (OOPs) Concepts In Java</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>10h 33m 31s (38011 seconds)</td></tr>
+<tr><td>Video ID</td><td>5NQjLBuNL0I</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=5NQjLBuNL0I</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Compilation topic (OOPs stretch)</th><th>Playlist #</th><th>Individual title (short)</th><th>Detailed notes file</th><th></th><th></th></tr>
+<tr><td>OOPs intro, data hiding</td><td>051</td><td>Introduction \</td><td>\</td><td>data hiding</td><td>notes/chunk-041-060/051-oops-intro-data-hiding.doc / .docx</td></tr>
+<tr><td>Inheritance — is-a</td><td>052</td><td>Inheritance \</td><td>\</td><td>is a relationship</td><td>notes/chunk-041-060/052-inheritance-is-a.doc / .docx</td></tr>
+<tr><td>Inheritance — has-a</td><td>053</td><td>Inheritance \</td><td>\</td><td>has a relationship</td><td>Component video 053 (same playlist); notes may be under chunk-041-060 when present</td></tr>
+<tr><td>Overloading</td><td>054</td><td>overloading</td><td>notes/chunk-041-060/054-overloading.doc / .docx</td><td></td><td></td></tr>
+<tr><td>Overriding (basics, covariant returns)</td><td>055</td><td>overriding</td><td>notes/chunk-041-060/055-overriding.doc / .docx</td><td></td><td></td></tr>
+<tr><td>Overriding — access modifiers</td><td>056</td><td>overriding \</td><td>\</td><td>access modifiers</td><td>notes/chunk-041-060/056-overriding-access-modifiers.doc / .docx</td></tr>
+<tr><td>Overriding — varargs / related rules</td><td>057</td><td>overriding \</td><td>\</td><td>varargs method</td><td>notes/chunk-041-060/057-overriding-varargs.doc / .docx</td></tr>
+<tr><td>Coupling</td><td>058</td><td>coupling</td><td>Component video 058 (same playlist)</td><td></td><td></td></tr>
+<tr><td>Type casting</td><td>059</td><td>type casting</td><td>notes/chunk-041-060/059-type-casting.doc / .docx</td><td></td><td></td></tr>
+<tr><td>Static control flow</td><td>060</td><td>static control flow</td><td>notes/chunk-041-060/060-static-control-flow.doc / .docx</td><td></td><td></td></tr>
+<tr><td>Static block</td><td>061</td><td>static block</td><td>Component video 061 (same playlist); notes may be under chunk-061-080 when present</td><td></td><td></td></tr>
+<tr><td>Instance control flow</td><td>062</td><td>instance control flow</td><td>notes/chunk-061-080/062-instance-control-flow.doc / .docx</td><td></td><td></td></tr>
+<tr><td>Instance + static control flow together</td><td>063</td><td>instance, static control flow</td><td>Component video 063 (same playlist)</td><td></td><td></td></tr>
+<tr><td>Constructors</td><td>064</td><td>constructors</td><td>notes/chunk-061-080/064-constructors.doc / .docx</td><td></td><td></td></tr>
+<tr><td>Default constructor</td><td>065</td><td>default constructor</td><td>Component video 065 (same playlist)</td><td></td><td></td></tr>
+<tr><td>Overloaded constructors</td><td>066</td><td>overloaded constructor</td><td>notes/chunk-061-080/066-overloaded-constructor.doc / .docx</td><td></td><td></td></tr>
+<tr><td>Singleton class</td><td>067</td><td>singleton class</td><td>notes/chunk-061-080/067-singleton-class.doc / .docx</td><td></td><td></td></tr>
+</table>
+</body></html>

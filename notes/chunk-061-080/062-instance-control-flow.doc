@@ -1,0 +1,1057 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>062-instance-control-flow</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 062 — Instance control flow</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-12 || instance control flow</p>
+<p>Source: real YouTube auto-captions (.transcripts/062-q4hbAd7cHuQ.txt). ASR decoded in place: inense / instant = instance; public static wired/wire/wide/vine/vid main = public static void main; string array ox/access/accept/a = String[] args; Inda / int is equal to 10 = int i = 10; index = 100 = int x = 100; intal 200 = int y = 200; past instance block = First instance block; sop / system.out.tprint / sopr = System.out.println; public y1 / v1 / v M2 / s = public void m1() / m2(); Read in directly write only / read indirectly write only / read and directly write only = RIWO (Read Indirectly Write Only); Java C = javac; doclass / childcl = .class; tested / tester = Test t; extense = extends; parent one do java = Parent1.java; JC is equal to new jail = Child c = new Child(); base control flow = static control flow is the base flow; cinema started = object-creation work starts.</p>
+<h3>00:05 — From static control flow to instance control flow</h3>
+<p>Last session: static control flow — if everything is static, in which order do things execute? That is already done.</p>
+<p>This session: instance control flow — if everything is instance (non-static terminology: instance variable, instance method, instance block, constructor), in which order do things execute? You must have that order clearly.</p>
+<p>He writes the heading on the board: instance control flow.</p>
+<h3>01:03 — Board example: class `Test` (everything instance except `main`)</h3>
+<p>He takes class Test. First member: int i = 10 — instance variable, not static.</p>
+<p>Then a pair of curly braces { } — that is an instance block (just covered in the previous instance-block session). Inside it he calls m1() and prints &quot;First instance block&quot;.</p>
+<p>Then a constructor (Test()), because a constructor is object terminology. It prints &quot;Constructor&quot;.</p>
+<p>Then public static void main(String[] args) printing &quot;main&quot; / &quot;Main method&quot;. He flags this: main method is the static — the one static thing that must exist so the class can run.</p>
+<p>Then instance method m1() printing j. Students: where is j? Not declared yet — he will declare it.</p>
+<p>Then another instance block printing &quot;Second instance block&quot;.</p>
+<p>Then int j = 20.</p>
+<p>Full board program as he built it (still no new Test() in main):</p>
+<pre class='code'>class Test {
+    int i = 10;
+
+    {
+        m1();
+        System.out.println(&quot;First instance block&quot;);
+    }
+
+    Test() {
+        System.out.println(&quot;Constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;main&quot;);
+    }
+
+    public void m1() {
+        System.out.println(j);
+    }
+
+    {
+        System.out.println(&quot;Second instance block&quot;);
+    }
+
+    int j = 20;
+}</pre>
+<p>Inventory he walks: instance variable i, instance block, constructor, main (the only static member), instance method m1, second instance block, instance variable j = 20. Target: run java Test.</p>
+<h3>04:01 — Class guesses the output (the trap)</h3>
+<p>He asks: if we run this, what output? Several instance blocks, constructor, instance variables, instance method, main — at least nearby, not necessarily exact.</p>
+<p>A student says zero. He likes that — they remembered original values / RIWO from static control flow.</p>
+<p>Guess on the board:</p>
+<p>0
+First instance block
+Second instance block
+Constructor
+main</p>
+<p>That guess is the instance order. He is about to show it is wrong for this program as written, because nobody created an object.</p>
+<h3>05:08 — Why the real default output is only `main`</h3>
+<p>Whenever we execute a Java class, first which control flow starts? Static control flow.</p>
+<p>Static control flow (already taught):</p>
+<ol><li>Identification of static members from top to bottom.</li></ol>
+<ol><li>Execution of static variable assignments and static blocks from top to bottom.</li></ol>
+<ol><li>Execution of main.</li></ol>
+<p>In this class: how many static members? Only one — main. No static variable, no static block. So step 2 is empty. Step 3 runs main, prints &quot;main&quot;, program stops.</p>
+<pre class='code'>class Test {
+    int i = 10;
+    {
+        m1();
+        System.out.println(&quot;First instance block&quot;);
+    }
+    Test() {
+        System.out.println(&quot;Constructor&quot;);
+    }
+    public static void main(String[] args) {
+        System.out.println(&quot;main&quot;);
+    }
+    public void m1() {
+        System.out.println(j);
+    }
+    {
+        System.out.println(&quot;Second instance block&quot;);
+    }
+    int j = 20;
+}
+// java Test
+// prints main</pre>
+<p>Point he hammers: instance members are identified only when we create an object. If we are not creating an object, even identification of instance members will not happen by the JVM. Control is only: identify static members, execute main. Output by default: only `main`.</p>
+<pre class='code'>class DemoNoObject {
+    {
+        System.out.println(&quot;instance block — will NOT run&quot;);
+    }
+
+    DemoNoObject() {
+        System.out.println(&quot;constructor — will NOT run&quot;);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;main&quot;);
+    }
+}
+// java DemoNoObject
+// prints main</pre>
+<h3>06:16 — Same example typed and run (still no object)</h3>
+<p>He copies the same board program into the editor: int i = 10, first instance block, constructor, main printing &quot;main&quot;, m1 printing j, second instance block, int j = 20.</p>
+<pre class='code'>class Test {
+    int i = 10;
+
+    {
+        m1();
+        System.out.println(&quot;First instance block&quot;);
+    }
+
+    Test() {
+        System.out.println(&quot;Constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;main&quot;);
+    }
+
+    public void m1() {
+        System.out.println(j);
+    }
+
+    {
+        System.out.println(&quot;Second instance block&quot;);
+    }
+
+    int j = 20;
+}</pre>
+<p>javac Test.java — compiles fine. java Test — by default only `main`. He is not creating an object, so only static control flow runs.</p>
+<h3>07:32 — Create an object: the whole instance story starts</h3>
+<p>Now he creates an object. Then instance control flow starts.</p>
+<pre class='code'>class Test {
+    int i = 10;
+
+    {
+        m1();
+        System.out.println(&quot;First instance block&quot;);
+    }
+
+    Test() {
+        System.out.println(&quot;Constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(&quot;main&quot;);
+    }
+
+    public void m1() {
+        System.out.println(j);
+    }
+
+    {
+        System.out.println(&quot;Second instance block&quot;);
+    }
+
+    int j = 20;
+}</pre>
+<p>Student instinct: whenever we create an object, constructor executes, so constructor then main.</p>
+<p>He stops that: do not feel only constructor. For every object creation, instance blocks also execute — first instance block, second instance block, then constructor.</p>
+<h3>08:30 — The three steps of instance control flow</h3>
+<p>Whenever we execute a Java class, first static control flow starts. Inside that static control flow, whenever we create an object, instance control flow is performed.</p>
+<p>Sequence of actions for every object creation:</p>
+<ol><li>Identification of instance members from top to bottom.</li></ol>
+<ol><li>Execution of instance variable assignments and instance blocks from top to bottom.</li></ol>
+<ol><li>Execution of constructor.</li></ol>
+<p>Once the constructor completes, object creation is complete.</p>
+<p>He almost says “execution of main method” as step 3, then corrects himself: sorry, it is not static control flow — execution of constructor.</p>
+<p>Instance control flow is not a one-time activity. For every object creation these three things execute. Static control flow is a one-time activity, performed at the beginning (class loading).</p>
+<h3>11:26 — Dictation (he repeats this for notes)</h3>
+<p>He dictates slowly, several times:</p>
+<p>Whenever we are executing a Java class, first static control flow will be executed. In the static control flow, if we are creating an object, the following sequence of events will be executed as a part of instance control flow:</p>
+<p>1. Identification of instance members from top to bottom.</p>
+<p>2. Execution of instance variable assignments and instance blocks from top to bottom.</p>
+<p>3. Execution of constructor.</p>
+<pre class='code'>class InstanceControlFlowSteps {
+    // 1. identification of instance members (top → bottom)
+    int i = 10;                          // identified, then later assigned
+    { System.out.println(&quot;block&quot;); }     // identified, then later executed
+    InstanceControlFlowSteps() {         // identified, executed LAST
+        System.out.println(&quot;Constructor&quot;);
+    }
+    public static void main(String[] args) {
+        new InstanceControlFlowSteps();  // this line STARTS the 3 steps
+        System.out.println(&quot;main&quot;);
+    }
+}
+// prints
+// block
+// Constructor
+// main</pre>
+<h3>14:09 — Nested picture: static flow is the base; instance flow sits inside `new`</h3>
+<p>He asks them to read it again. Static control flow rules (from last session):</p>
+<ol><li>Identification of static members from top to bottom.</li></ol>
+<ol><li>Execution of static variable assignments and static blocks from top to bottom.</li></ol>
+<ol><li>Execution of main.</li></ol>
+<p>Anywhere you create an object (here: inside main), for every object creation the instance sequence runs automatically.</p>
+<pre class='code'>class StaticThenInstance {
+    public static void main(String[] args) {
+        // static CF step 3 is running HERE
+        StaticThenInstance t = new StaticThenInstance(); // instance CF starts
+        System.out.println(&quot;main&quot;);
+    }
+}</pre>
+<h3>15:07 — Numbered trace of the same `Test` (steps 1–16)</h3>
+<p>Base flow = static control flow.</p>
+<ul><li>Step 1 of static CF: identification of static members — only `main`.</li></ul>
+<ul><li>Step 2 of static CF: execution of static variable assignments and static blocks — none.</li></ul>
+<ul><li>Step 3 of static CF: execution of main.</li></ul>
+<p>Inside main he writes Test t = new Test();. Object creation starts. He numbers that statement as step 2 of the overall cinema (static identification was step 1; empty static init is not given a number; new is where the long work begins).</p>
+<p>Instance CF step 1 — identification of instance members, top to bottom (overall steps 3–8):</p>
+<p>RIWO = Read Indirectly Write Only: original value assigned (0 for int). From another method you can read it; the explicit assignment = 10 / = 20 has not run yet.</p>
+<pre class='code'>class Test {
+    int i = 10; // 3: i=0 RIWO     9: i=10 R&amp;W
+
+    {           // 4: identified
+        m1();   // 10: call m1
+        System.out.println(&quot;First instance block&quot;); // 12
+    }
+
+    Test() {    // 5: identified   15: execute
+        System.out.println(&quot;Constructor&quot;);
+    }
+
+    public static void main(String[] args) { // 1: identified
+        Test t = new Test();                 // 2: cinema starts
+        System.out.println(&quot;main&quot;);          // 16
+    }
+
+    public void m1() { // 6: identified
+        System.out.println(j); // 11: j still 0
+    }
+
+    { // 7: identified   13: execute
+        System.out.println(&quot;Second instance block&quot;);
+    }
+
+    int j = 20; // 8: j=0 RIWO     14: j=20 R&amp;W
+}</pre>
+<p>Instance CF step 2 — execution of instance variable assignments and instance blocks, top to bottom (overall 9–14):</p>
+<p>First line of program output is therefore `0`, then &quot;First instance block&quot;.</p>
+<pre class='code'>class PrintJFromInstanceBlock {
+    {
+        m1();
+        System.out.println(&quot;First instance block&quot;);
+    }
+    public void m1() {
+        System.out.println(j); // j still original 0
+    }
+    int j = 20;
+    public static void main(String[] args) {
+        new PrintJFromInstanceBlock();
+    }
+}
+// prints
+// 0
+// First instance block</pre>
+<p>Instance CF step 3 — execution of constructor (overall 15):</p>
+<pre class='code'>class OnlyConstructorLeft {
+    {
+        System.out.println(&quot;instance block first&quot;);
+    }
+    OnlyConstructorLeft() {
+        System.out.println(&quot;Constructor&quot;); // step 15
+    }
+    public static void main(String[] args) {
+        new OnlyConstructorLeft();
+        System.out.println(&quot;main&quot;); // step 16
+    }
+}
+// prints
+// instance block first
+// Constructor
+// main</pre>
+<p>Object created successfully after step 15. Control returns to main. Remaining part is step 16: print &quot;main&quot;. Once main completes, static control flow is finished.</p>
+<p>Full output of the numbered `Test`:</p>
+<pre class='code'>class Test {
+    int i = 10;
+    {
+        m1();
+        System.out.println(&quot;First instance block&quot;);
+    }
+    Test() {
+        System.out.println(&quot;Constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(&quot;main&quot;);
+    }
+    public void m1() {
+        System.out.println(j);
+    }
+    {
+        System.out.println(&quot;Second instance block&quot;);
+    }
+    int j = 20;
+}
+// java Test
+// prints
+// 0
+// First instance block
+// Second instance block
+// Constructor
+// main</pre>
+<p>Cinema started at step 2 (new Test()). Came back at step 16.</p>
+<h3>20:06 — Live run; comment the object; only `main`</h3>
+<p>He types the same Test t = new Test(); inside main, compiles, runs. Observed output:</p>
+<p>0
+First instance block
+Second instance block
+Constructor
+main</p>
+<p>Why these many lines? Just because of one object creation.</p>
+<p>If we comment that line:</p>
+<pre class='code'>class Test {
+    int i = 10;
+    {
+        m1();
+        System.out.println(&quot;First instance block&quot;);
+    }
+    Test() {
+        System.out.println(&quot;Constructor&quot;);
+    }
+    public static void main(String[] args) {
+        // Test t = new Test();  // commented
+        System.out.println(&quot;main&quot;);
+    }
+    public void m1() {
+        System.out.println(j);
+    }
+    {
+        System.out.println(&quot;Second instance block&quot;);
+    }
+    int j = 20;
+}
+// prints main</pre>
+<h3>21:13 — Object creation is the most costly operation</h3>
+<p>That is why: object creation is the most costly operation. The “cinema” started at step 2; you only come back at step 16. Not recommended to create an object if there is no specific requirement. Unnecessary objects pull system performance down. Create an object only when it is compulsory.</p>
+<p>He tells them to copy: the example, the output, and the step numbers on the members.</p>
+<h3>21:43 — Classroom copy time (board + numbers)</h3>
+<p>Long pause while they write. He repeats the three instance steps they must keep:</p>
+<ol><li>Identification of instance members from top to bottom.</li></ol>
+<ol><li>Execution of instance variable assignments and instance blocks from top to bottom.</li></ol>
+<ol><li>Execution of constructor.</li></ol>
+<p>They should also copy first instance block / constructor on the example with the numbers (3–8 identification, 9–14 assignments+blocks, 15 constructor, 16 main).</p>
+<pre class='code'>class CopyThisTrace {
+    int i = 10;                 // id 3, assign 9
+    { m1(); System.out.println(&quot;First instance block&quot;); } // id 4, exec 10–12
+    CopyThisTrace() { System.out.println(&quot;Constructor&quot;); } // id 5, exec 15
+    public static void main(String[] args) {               // id 1
+        CopyThisTrace t = new CopyThisTrace();             // 2
+        System.out.println(&quot;main&quot;);                        // 16
+    }
+    public void m1() { System.out.println(j); }            // id 6, called at 11
+    { System.out.println(&quot;Second instance block&quot;); }       // id 7, exec 13
+    int j = 20;                                            // id 8, assign 14
+}</pre>
+<h3>26:10 — Mark `new Test()` as **line 1**</h3>
+<p>Better to label Test t = new Test(); as line 1 in the notes.</p>
+<p>If we comment line 1, the output is `main`. He spells that out several times.</p>
+<pre class='code'>class Line1Demo {
+    {
+        System.out.println(&quot;First instance block&quot;);
+    }
+    Line1Demo() {
+        System.out.println(&quot;Constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Line1Demo t = new Line1Demo(); // line 1
+        System.out.println(&quot;main&quot;);
+    }
+}
+// with line 1: First instance block / Constructor / main
+// comment line 1: main</pre>
+<h3>27:11 — Second object: all three activities repeat</h3>
+<p>He asks: after println(&quot;main&quot;), if we take one more Test object, how many activities repeat — all three, or only constructor?</p>
+<p>For every object creation, all three activities repeat — not only constructor. After main prints, the instance output appears again because of the second object.</p>
+<pre class='code'>class Test {
+    int i = 10;
+    {
+        m1();
+        System.out.println(&quot;First instance block&quot;);
+    }
+    Test() {
+        System.out.println(&quot;Constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(&quot;main&quot;);
+        Test t1 = new Test();
+    }
+    public void m1() {
+        System.out.println(j);
+    }
+    {
+        System.out.println(&quot;Second instance block&quot;);
+    }
+    int j = 20;
+}</pre>
+<p>He compiles and runs. Observed:</p>
+<p>0
+First instance block
+Second instance block
+Constructor
+main
+0
+First instance block
+Second instance block
+Constructor</p>
+<p>First object, then &quot;main&quot;, then second object. Instance control flow is not a one-time activity. For every object creation this thing is performed.</p>
+<h3>28:41 — Two notes he wants on paper</h3>
+<p>Note 1 — one-time vs every object (dictated repeatedly):</p>
+<p>Static control flow is a one-time activity, which will be performed at the time of class loading.</p>
+<p>But instance control flow is not a one-time activity, and it will be performed for every object creation.</p>
+<pre class='code'>class OnceVsEvery {
+    static {
+        System.out.println(&quot;static block — class loading, once&quot;);
+    }
+    {
+        System.out.println(&quot;instance block — every new&quot;);
+    }
+    OnceVsEvery() {
+        System.out.println(&quot;constructor — every new&quot;);
+    }
+    public static void main(String[] args) {
+        new OnceVsEvery();
+        new OnceVsEvery();
+    }
+}
+// prints
+// static block — class loading, once
+// instance block — every new
+// constructor — every new
+// instance block — every new
+// constructor — every new</pre>
+<p>Note 2 — cost:</p>
+<p>Object creation is the most costly operation. If there is no specific requirement, then it is not recommended to create object.</p>
+<p>Reason he already gave: work that starts at step 2 only returns at step 15/16.</p>
+<h3>31:31 — Instance control flow in parent-to-child relationship</h3>
+<p>Last part of the “single class” story is done. For every object, that big sequence runs: identification of instance members → execution of instance variable assignments and instance blocks → execution of constructor.</p>
+<p>Now: if it is parent to child, and we create a child object, in which sequence are the activities performed? Heading on the board:</p>
+<p>Instance control flow in parent to child relationship.</p>
+<h3>32:53 — Parent class on the board</h3>
+<p>Big example. class Parent:</p>
+<ul><li>int i = 10</li></ul>
+<ul><li>instance block { } calling m1(), then print parent instance block</li></ul>
+<ul><li>He considers a short label PFIB / parent first instance block, then decides: only one instance block in the parent is enough, because they already know the multi-block flow. Print `&quot;Parent instance block&quot;`.</li></ul>
+<ul><li>constructor printing constructor — later he changes the string to `&quot;Parent constructor&quot;` so it is not confused with the child constructor</li></ul>
+<ul><li>public static void main creating a parent object and printing &quot;Parent main&quot;</li></ul>
+<ul><li>public void m1() printing j</li></ul>
+<ul><li>int j = 20</li></ul>
+<p>Same shape as the last example; difference: no second instance block in parent.</p>
+<pre class='code'>class Parent {
+    int i = 10;
+
+    {
+        m1();
+        System.out.println(&quot;Parent instance block&quot;);
+    }
+
+    Parent() {
+        System.out.println(&quot;Parent constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Parent p = new Parent();
+        System.out.println(&quot;Parent main&quot;);
+    }
+
+    public void m1() {
+        System.out.println(j);
+    }
+
+    int j = 20;
+}</pre>
+<h3>35:29 — Child class on the board</h3>
+<pre class='code'>class Child extends Parent. Same terminology with small differences:</pre>
+<ul><li>int x = 100 (ASR index = 100)</li></ul>
+<ul><li>instance block calling m2(), print `&quot;Child first instance block&quot;` (ASR child past instance block)</li></ul>
+<ul><li>constructor — he first wrote only &quot;constructor&quot;, then fears confusion, so parent constructor string is &quot;Parent constructor&quot; and child is `&quot;Child constructor&quot;`</li></ul>
+<ul><li>public static void main — target: create child object Child c = new Child();, print &quot;Child main&quot;</li></ul>
+<ul><li>public void m2() printing y</li></ul>
+<ul><li>second instance block printing `&quot;Child second instance block&quot;`</li></ul>
+<ul><li>int y = 200</li></ul>
+<pre class='code'>class Child extends Parent {
+    int x = 100;
+
+    {
+        m2();
+        System.out.println(&quot;Child first instance block&quot;);
+    }
+
+    Child() {
+        System.out.println(&quot;Child constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Child c = new Child();
+        System.out.println(&quot;Child main&quot;);
+    }
+
+    public void m2() {
+        System.out.println(y);
+    }
+
+    {
+        System.out.println(&quot;Child second instance block&quot;);
+    }
+
+    int y = 200;
+}</pre>
+<p>Two classes: parent and child. Whole program saved as `Parent.java`.</p>
+<h3>38:00 — Two `.class` files; run `java Child`</h3>
+<p>javac Parent.java → how many .class files? Two: Parent.class and Child.class.</p>
+<p>He then runs `java Child`.</p>
+<p>Whenever we execute child class or parent class or any class, first which flow? Static control flow, not instance control flow.</p>
+<h3>38:55 — Static control flow in parent-to-child (recall)</h3>
+<p>Static control flow in parent to child (previous session):</p>
+<ol><li>Identification of static members from parent to child.</li></ol>
+<ol><li>Execution of static variable assignments and static blocks from parent to child.</li></ol>
+<ol><li>Execution of child class `main` (because we ran java Child).</li></ol>
+<pre class='code'>class Parent {
+    public static void main(String[] args) {
+        System.out.println(&quot;Parent main&quot;); // identified, NOT run by java Child
+    }
+}
+class Child extends Parent {
+    public static void main(String[] args) {
+        System.out.println(&quot;Child main&quot;); // this main runs
+    }
+}
+// java Child
+// prints Child main</pre>
+<p>Inside this Child.main he is creating a child object. Whenever we create a child object, internally a big sequence happens.</p>
+<p>Reminder of single-class instance sequence (no parent):</p>
+<pre class='code'>class Single {
+    int i = 10;
+    { System.out.println(&quot;block&quot;); }
+    Single() { System.out.println(&quot;Constructor&quot;); }
+    public static void main(String[] args) {
+        new Single();
+    }
+}</pre>
+<p>That was: identify instance members top→bottom; execute assignments and instance blocks top→bottom; execute constructor.</p>
+<p>Now the object is a child object and a parent-to-child relation exists. The sequence is not “assignments and blocks from parent to child in one go”.</p>
+<h3>40:36 — Five steps when creating a child object (the important difference)</h3>
+<p>Whenever we create a child class object, sequence of events:</p>
+<ol><li>Identification of instance members from parent to child.</li></ol>
+<ol><li>Execution of instance variable assignments and instance blocks only in the parent class.</li></ol>
+<p>Small difference: not parent-to-child in this step. First complete parent activities, then think about child.</p>
+<ol><li>Execution of parent constructor.</li></ol>
+<ol><li>Execution of instance variable assignments and instance blocks in the child class.</li></ol>
+<ol><li>Execution of child constructor.</li></ol>
+<p>Only the first step is common “from parent to child”. Then parent init + parent constructor, then child init + child constructor.</p>
+<pre class='code'>class Parent {
+    int i = 10;
+    {
+        m1();
+        System.out.println(&quot;Parent instance block&quot;);
+    }
+    Parent() {
+        System.out.println(&quot;Parent constructor&quot;);
+    }
+    public void m1() {
+        System.out.println(j);
+    }
+    int j = 20;
+}
+
+class Child extends Parent {
+    int x = 100;
+    {
+        m2();
+        System.out.println(&quot;Child first instance block&quot;);
+    }
+    Child() {
+        System.out.println(&quot;Child constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Child c = new Child(); // these 5 steps run here
+        System.out.println(&quot;Child main&quot;);
+    }
+    public void m2() {
+        System.out.println(y);
+    }
+    {
+        System.out.println(&quot;Child second instance block&quot;);
+    }
+    int y = 200;
+}</pre>
+<p>Still: base flow is static control flow. Only if, inside that, we create a child object, these instance activities run.</p>
+<p>He asks them to run java Child and know the output; then he traces by these steps.</p>
+<h3>44:03 — First flow is still static; then child `main` creates the object</h3>
+<p>First flow: static control flow in parent to child.</p>
+<ol><li>Identify static members parent → child.</li></ol>
+<p>Parent: one static member (main).</p>
+<p>Child: he numbers child main as the second identified static member (“yes, two”).</p>
+<ol><li>Execute static variable assignments and static blocks parent → child. None — no static variable, no static block. (He slips “no static method” while meaning no static block / static variable to execute here; main is executed as step 3.)</li></ol>
+<ol><li>Execution of child class `main`, because the command is java Child.</li></ol>
+<p>Inside Child.main: Child c = new Child(); — he treats this as overall step 3 (object creation starts), after static identification 1–2.</p>
+<p>Whenever that child object is created, the five instance steps run.</p>
+<h3>45:15 — Identification of instance members, parent then child (steps 4–14)</h3>
+<p>Instance CF step 1: identification of instance members from parent to child.</p>
+<p>Parent members (already used numbers 1–3 for static/new):</p>
+<p>Then child members:</p>
+<p>j, x, y are different variables; each gets original 0, RIWO. Identification from parent to child is steps 4 to 14.</p>
+<pre class='code'>class Parent {
+    int i = 10;                         // 4  i=0 RIWO
+    { m1(); System.out.println(&quot;Parent instance block&quot;); } // 5
+    Parent() { System.out.println(&quot;Parent constructor&quot;); } // 6
+    public static void main(String[] args) { /* 1 identified; not run */ }
+    public void m1() { System.out.println(j); }            // 7
+    int j = 20;                         // 8  j=0 RIWO
+}
+
+class Child extends Parent {
+    int x = 100;                        // 9  x=0 RIWO
+    { m2(); System.out.println(&quot;Child first instance block&quot;); } // 10
+    Child() { System.out.println(&quot;Child constructor&quot;); }        // 11
+    public static void main(String[] args) {                    // 2 identified
+        Child c = new Child();                                  // 3 cinema
+        System.out.println(&quot;Child main&quot;);                       // 28
+    }
+    public void m2() { System.out.println(y); }                 // 12
+    { System.out.println(&quot;Child second instance block&quot;); }      // 13
+    int y = 200;                        // 14 y=0 RIWO
+}</pre>
+<h3>47:41 — Parent assignments and instance blocks only (steps 15–19)</h3>
+<p>Instance CF step 2: execution of instance variable assignments and instance blocks only in parent.</p>
+<p>Parent-only execution = 15 to 19. First visible output: 0 then Parent instance block.</p>
+<pre class='code'>class ParentOnlyInit {
+    int i = 10;
+    {
+        m1();
+        System.out.println(&quot;Parent instance block&quot;);
+    }
+    public void m1() {
+        System.out.println(j);
+    }
+    int j = 20;
+    public static void main(String[] args) {
+        new ParentOnlyInit();
+    }
+}
+// prints
+// 0
+// Parent instance block</pre>
+<p>(In the inheritance demo, parent constructor still follows this; this snippet is only the parent assignment + block slice he numbered 15–19.)</p>
+<h3>49:43 — Parent constructor (step 20)</h3>
+<p>Instance CF step 3: execution of parent constructor — one activity, step 20. Output gains &quot;Parent constructor&quot;.</p>
+<pre class='code'>class Parent {
+    {
+        System.out.println(&quot;Parent instance block&quot;);
+    }
+    Parent() {
+        System.out.println(&quot;Parent constructor&quot;); // 20
+    }
+}
+class Child extends Parent {
+    public static void main(String[] args) {
+        new Child();
+    }
+}
+// prints
+// Parent instance block
+// Parent constructor</pre>
+<h3>50:16 — Child assignments and instance blocks (steps 21–26)</h3>
+<p>Instance CF step 4: execution of instance variable assignments and instance blocks in child class.</p>
+<p>Child-only execution = 21 to 26. Next output lines: 0, Child first instance block, Child second instance block.</p>
+<pre class='code'>class ChildInitSlice extends Parent {
+    int x = 100;
+    {
+        m2();
+        System.out.println(&quot;Child first instance block&quot;);
+    }
+    public void m2() {
+        System.out.println(y);
+    }
+    {
+        System.out.println(&quot;Child second instance block&quot;);
+    }
+    int y = 200;
+    public static void main(String[] args) {
+        new ChildInitSlice();
+    }
+}</pre>
+<p>After parent init + parent constructor, this slice prints 0 / child first block / child second block (then child constructor still remains).</p>
+<h3>52:05 — Child constructor (27) then back to `Child.main` (28)</h3>
+<p>Instance CF step 5: execution of child constructor — step 27 — &quot;Child constructor&quot;.</p>
+<p>Cinema started at step 3 (Child c = new Child();). After 27, object is created and initialized. Control returns to execute the remaining part of main: step 28 — &quot;Child main&quot;.</p>
+<p>Output when executing the child class (java Child):</p>
+<p>0
+Parent instance block
+Parent constructor
+0
+Child first instance block
+Child second instance block
+Child constructor
+Child main</p>
+<p>That is the “sin” / sequence internally when creating a child class object in a parent-to-child relation.</p>
+<p>Full compilable pair again:</p>
+<pre class='code'>class Parent {
+    int i = 10;
+    {
+        m1();
+        System.out.println(&quot;Parent instance block&quot;);
+    }
+    Parent() {
+        System.out.println(&quot;Parent constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Parent p = new Parent();
+        System.out.println(&quot;Parent main&quot;);
+    }
+    public void m1() {
+        System.out.println(j);
+    }
+    int j = 20;
+}
+
+class Child extends Parent {
+    int x = 100;
+    {
+        m2();
+        System.out.println(&quot;Child first instance block&quot;);
+    }
+    Child() {
+        System.out.println(&quot;Child constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Child c = new Child();
+        System.out.println(&quot;Child main&quot;);
+    }
+    public void m2() {
+        System.out.println(y);
+    }
+    {
+        System.out.println(&quot;Child second instance block&quot;);
+    }
+    int y = 200;
+}
+// javac Parent.java
+// java Child
+// prints
+// 0
+// Parent instance block
+// Parent constructor
+// 0
+// Child first instance block
+// Child second instance block
+// Child constructor
+// Child main</pre>
+<p>Parent.main does not run on java Child.</p>
+<h3>53:25 — Live demo: `Parent1.java` / `Child` (small name fix)</h3>
+<p>He asks them not to type yet — watch. File Parent1.java: class Parent1 with int i = 10, instance block, parent constructor, parent main, m1, int j = 20. Class Child extends Parent with int x = 100, first instance block, constructor, main, then int y = 200.</p>
+<p>Small mistake: child class name is Child, but in main he first kept variable/type C. He also had Parent p = new Parent() written properly in parent main. Fix:</p>
+<pre class='code'>Child c = new Child();</pre>
+<p>and int y = 200 in the child second-instance-block area.</p>
+<p>He compiles Parent1.java and runs the child class, because only child `main` created the child object:</p>
+<pre class='code'>class Parent1 {
+    int i = 10;
+    {
+        m1();
+        System.out.println(&quot;Parent instance block&quot;);
+    }
+    Parent1() {
+        System.out.println(&quot;Parent constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Parent1 p = new Parent1();
+        System.out.println(&quot;Parent main&quot;);
+    }
+    public void m1() {
+        System.out.println(j);
+    }
+    int j = 20;
+}
+
+class Child1 extends Parent1 {
+    int x = 100;
+    {
+        m2();
+        System.out.println(&quot;Child first instance block&quot;);
+    }
+    Child1() {
+        System.out.println(&quot;Child constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Child1 c = new Child1();
+        System.out.println(&quot;Child main&quot;);
+    }
+    public void m2() {
+        System.out.println(y);
+    }
+    {
+        System.out.println(&quot;Child second instance block&quot;);
+    }
+    int y = 200;
+}
+// javac Parent1.java
+// java Child1
+// prints
+// 0
+// Parent instance block
+// Parent constructor
+// 0
+// Child first instance block
+// Child second instance block
+// Child constructor
+// Child main</pre>
+<p>He checks with the class: exactly that output. Instance control flow in parent to child is this.</p>
+<p>Contrast — if you ran the parent entry point instead (parent main only creates a parent object; child never loads for that command in the previous-session loading rule):</p>
+<pre class='code'>class Parent1 {
+    int i = 10;
+    {
+        m1();
+        System.out.println(&quot;Parent instance block&quot;);
+    }
+    Parent1() {
+        System.out.println(&quot;Parent constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Parent1 p = new Parent1();
+        System.out.println(&quot;Parent main&quot;);
+    }
+    public void m1() {
+        System.out.println(j);
+    }
+    int j = 20;
+}
+// java Parent1
+// prints
+// 0
+// Parent instance block
+// Parent constructor
+// Parent main</pre>
+<p>And if child main comments the object:</p>
+<pre class='code'>class Child1 extends Parent1 {
+    public static void main(String[] args) {
+        // Child1 c = new Child1();
+        System.out.println(&quot;Child main&quot;);
+    }
+}
+// java Child1
+// prints Child main</pre>
+<p>(Static identification of both classes still happened; no instance cinema.)</p>
+<h3>55:46 — Theory dictation with the step numbers from this example</h3>
+<p>He dictates (many repetitions for copying):</p>
+<p>Whenever we are creating a child class object, the following sequence of events will be performed automatically as a part of instance control flow:</p>
+<p>1. Identification of instance members from parent to child. *(this example: 4 to 14)*</p>
+<p>2. Execution of instance variable assignments and instance blocks only in parent class. *(15 to 19)*</p>
+<p>3. Execution of parent constructor. *(20)*</p>
+<p>4. Execution of instance variable assignments and instance blocks in child class. *(21 to 26)*</p>
+<p>5. Execution of child constructor. *(27)*</p>
+<p>Then remaining Child.main print is 28.</p>
+<pre class='code'>class Child extends Parent {
+    public static void main(String[] args) {
+        Child c = new Child(); // steps 4–27 happen here
+        System.out.println(&quot;Child main&quot;); // 28
+    }
+}</pre>
+<h3>59:50 — Copy the example, variable tracing, and numbers</h3>
+<p>Long classroom pause. He says it is not that easy — compulsory clear clarity. Give the numbers appropriately. Mention child first instance block and child second instance block. Complete example: whenever we execute parent-to-child child class, what happens; whenever we create an object, what happens.</p>
+<p>He restates steps while they write: execution of parent constructor; execution of instance variable assignments and instance blocks in child class.</p>
+<h3>1:02:51 — Only child `main` runs; parent `main` does not</h3>
+<p>Because we are executing child class, only child class `main` will be executed. Parent class main will not be executed.</p>
+<p>Recall from last session (static / class loading):</p>
+<ul><li>Whenever we are executing / loading child class, both parent and child classes are involved (static control flow of both).</li></ul>
+<ul><li>Whenever we are executing parent, child class will not be loaded; child members are not required.</li></ul>
+<pre class='code'>class Parent {
+    static {
+        System.out.println(&quot;Parent static&quot;);
+    }
+    public static void main(String[] args) {
+        System.out.println(&quot;Parent main&quot;);
+    }
+}
+class Child extends Parent {
+    static {
+        System.out.println(&quot;Child static&quot;);
+    }
+    public static void main(String[] args) {
+        System.out.println(&quot;Child main&quot;);
+    }
+}
+// java Child
+// prints
+// Parent static
+// Child static
+// Child main
+// (Parent main is identified, never executed)
+// java Parent
+// prints
+// Parent static
+// Parent main
+// (Child class not loaded)</pre>
+<p>He tells them to finish numbers on the instance example.</p>
+<h3>1:04:26 — Recap of the five steps + `java Child` output</h3>
+<p>On the board again:</p>
+<ol><li>Identification of instance members from parent to child.</li></ol>
+<ol><li>Execution of instance variable assignments and instance blocks only in parent class.</li></ol>
+<ol><li>Execution of parent constructor.</li></ol>
+<ol><li>Execution of instance variable assignments and instance blocks in child class.</li></ol>
+<ol><li>Execution of child constructor.</li></ol>
+<p>Better to take the output also for java Child:</p>
+<p>0
+Parent instance block
+Parent constructor
+0
+Child first instance block
+Child second instance block
+Child constructor
+Child main</p>
+<pre class='code'>class Parent {
+    int i = 10;
+    {
+        m1();
+        System.out.println(&quot;Parent instance block&quot;);
+    }
+    Parent() {
+        System.out.println(&quot;Parent constructor&quot;);
+    }
+    public void m1() {
+        System.out.println(j);
+    }
+    int j = 20;
+}
+
+class Child extends Parent {
+    int x = 100;
+    {
+        m2();
+        System.out.println(&quot;Child first instance block&quot;);
+    }
+    Child() {
+        System.out.println(&quot;Child constructor&quot;);
+    }
+    public static void main(String[] args) {
+        Child c = new Child();
+        System.out.println(&quot;Child main&quot;);
+    }
+    public void m2() {
+        System.out.println(y);
+    }
+    {
+        System.out.println(&quot;Child second instance block&quot;);
+    }
+    int y = 200;
+}</pre>
+<p>He hopes the terminology is very clear: parent constructor, then child instance variable assignments and instance blocks, then child constructor.</p>
+<h3>1:05:54 — Next session: mix static + instance (this video stops here)</h3>
+<p>Take very special care. Here we executed child class; internally, creating a child object does the sequence they now know.</p>
+<p>Next: mix instance control flow and static control flow, generate one or two examples, so they get much more clarity. He starts that thought (“Anyway…”) and the video ends at 1:06:38 — the mixed examples are not in this lecture (they belong to the next video). Do not invent extra mixed programs here.</p>
+<h2>Board rules from this video (keep these)</h2>
+<p>Whenever a Java class is executed, static control flow always starts first.</p>
+<p>Static control flow:</p>
+<ol><li>Identification of static members (top → bottom).</li></ol>
+<ol><li>Execution of static variable assignments and static blocks (top → bottom).</li></ol>
+<ol><li>Execution of main.</li></ol>
+<p>If no object is created, instance members are not even identified. Output of the first Test without new: only main.</p>
+<p>Whenever an object is created (anywhere), instance control flow runs:</p>
+<ol><li>Identification of instance members (top → bottom). Original values; instance variables go RIWO.</li></ol>
+<ol><li>Execution of instance variable assignments and instance blocks (top → bottom). After assignment: R&amp;W. Calling m1() from an instance block can print a later instance variable as 0.</li></ol>
+<ol><li>Execution of constructor.</li></ol>
+<p>Static CF = one-time, at class loading. Instance CF = every `new`.</p>
+<p>Object creation is the most costly operation — do not create objects without a requirement.</p>
+<p>Child object (parent-to-child) — five instance steps after static CF:</p>
+<ol><li>Identify instance members parent → child.</li></ol>
+<ol><li>Assignments + instance blocks parent only.</li></ol>
+<ol><li>Parent constructor.</li></ol>
+<ol><li>Assignments + instance blocks child.</li></ol>
+<ol><li>Child constructor.</li></ol>
+<p>Then remaining child main. java Child does not run Parent.main.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 62 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 12</td></tr>
+<tr><td>Topic</td><td>instance control flow</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 06m 38s</td></tr>
+<tr><td>Video ID</td><td>q4hbAd7cHuQ</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=q4hbAd7cHuQ</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Overall</th><th>Member</th><th>After identification</th></tr>
+<tr><td>3</td><td>int i = 10</td><td>i = 0, RIWO</td></tr>
+<tr><td>4</td><td>first instance block</td><td>identified</td></tr>
+<tr><td>5</td><td>constructor</td><td>identified</td></tr>
+<tr><td>6</td><td>m1()</td><td>identified</td></tr>
+<tr><td>7</td><td>second instance block</td><td>identified</td></tr>
+<tr><td>8</td><td>int j = 20</td><td>j = 0, RIWO</td></tr>
+</table>
+<table>
+<tr><th>Overall</th><th>Action</th></tr>
+<tr><td>9</td><td>i = 10 — now Read and Write</td></tr>
+<tr><td>10</td><td>first instance block starts → call m1()</td></tr>
+<tr><td>11</td><td>m1 prints j — j still 0 (RIWO, assignment not yet)</td></tr>
+<tr><td>12</td><td>print &quot;First instance block&quot;</td></tr>
+<tr><td>13</td><td>second instance block → print &quot;Second instance block&quot;</td></tr>
+<tr><td>14</td><td>j = 20 — now Read and Write</td></tr>
+</table>
+<table>
+<tr><th>Overall</th><th>Member</th><th>After identification</th></tr>
+<tr><td>4</td><td>int i</td><td>i = 0 RIWO</td></tr>
+<tr><td>5</td><td>parent instance block</td><td>identified</td></tr>
+<tr><td>6</td><td>parent constructor</td><td>identified</td></tr>
+<tr><td>7</td><td>m1()</td><td>identified</td></tr>
+<tr><td>8</td><td>int j</td><td>j = 0 RIWO</td></tr>
+</table>
+<table>
+<tr><th>Overall</th><th>Member</th><th>After identification</th></tr>
+<tr><td>9</td><td>int x</td><td>x = 0 RIWO</td></tr>
+<tr><td>10</td><td>child first instance block</td><td>identified</td></tr>
+<tr><td>11</td><td>child constructor</td><td>identified</td></tr>
+<tr><td>12</td><td>m2() (ASR m1 ma)</td><td>identified</td></tr>
+<tr><td>13</td><td>child second instance block</td><td>identified</td></tr>
+<tr><td>14</td><td>int y</td><td>y = 0 RIWO</td></tr>
+</table>
+<table>
+<tr><th>Overall</th><th>Action</th></tr>
+<tr><td>15</td><td>i = 10 R&amp;W</td></tr>
+<tr><td>16</td><td>parent instance block calls m1()</td></tr>
+<tr><td>17</td><td>m1 prints j → 0 (still RIWO) — first output line</td></tr>
+<tr><td>18</td><td>print &quot;Parent instance block&quot;</td></tr>
+<tr><td>19</td><td>j = 20 R&amp;W</td></tr>
+</table>
+<table>
+<tr><th>Overall</th><th>Action</th></tr>
+<tr><td>21</td><td>x = 100 R&amp;W</td></tr>
+<tr><td>22</td><td>child first instance block calls m2()</td></tr>
+<tr><td>23</td><td>m2 prints y → 0 (original value, not yet assigned 200)</td></tr>
+<tr><td>24</td><td>print &quot;Child first instance block&quot;</td></tr>
+<tr><td>25</td><td>print &quot;Child second instance block&quot;</td></tr>
+<tr><td>26</td><td>y = 200 R&amp;W</td></tr>
+</table>
+</body></html>

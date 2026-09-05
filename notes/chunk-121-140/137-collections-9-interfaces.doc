@@ -1,0 +1,744 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>137-collections-9-interfaces</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 137 — Collections Part-2: 9 Key Interfaces</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>Continuation of Collections Part-1 (Video 136). Part-1 covered: need for collections, difference between collections and arrays. This session introduces the nine key interfaces of the Java Collections Framework — the backbone for OCJP/SCJP and interview questions.</p>
+<p>Mnemonic — 9 key interfaces:</p>
+<ol><li>Collection</li></ol>
+<ol><li>List</li></ol>
+<ol><li>Set</li></ol>
+<ol><li>SortedSet</li></ol>
+<ol><li>NavigableSet</li></ol>
+<ol><li>Queue</li></ol>
+<ol><li>Map</li></ol>
+<ol><li>SortedMap</li></ol>
+<ol><li>NavigableMap</li></ol>
+<p>Framework split:</p>
+<ul><li>First half (Collection side): interfaces 1–6 — represent a group of individual objects as a single entity.</li></ul>
+<ul><li>Second half (Map side): interfaces 7–9 — represent objects as key–value pairs.</li></ul>
+<ul><li>Map is not a child of Collection; both are separate roots within java.util collection framework.</li></ul>
+<h3>00:04 — Recap &amp; nine interfaces introduction</h3>
+<p>From the previous session:</p>
+<ul><li>Why collections exist.</li></ul>
+<ul><li>Difference between collections (framework) and arrays.</li></ul>
+<p>Today&#x27;s focus: nine key interfaces inside the collection framework. You must be able to name all nine from memory.</p>
+<p>Sir&#x27;s classroom mantra (repeat until automatic):</p>
+<p>Nine key interfaces of collection framework.</p>
+<h3>00:37 — Listing all nine interfaces (board spell-out)</h3>
+<p>Spoken order on board: Collection → List → Set → SortedSet → NavigableSet → Queue → Map → SortedMap → NavigableMap.</p>
+<h3>02:27 — Interface 1: `Collection` (I)</h3>
+<h4>When to use</h4>
+<p>If you want to represent a group of individual objects as a single entity, go for Collection.</p>
+<p>Individual objects have no dependency on each other (unlike key–value pairs).</p>
+<h4>What it defines</h4>
+<p>Collection is an interface (not a class). It defines the most common methods applicable to any collection object:</p>
+<ul><li>add(Object o) / add(E e)</li></ul>
+<ul><li>remove(Object o)</li></ul>
+<ul><li>isEmpty()</li></ul>
+<ul><li>size()</li></ul>
+<ul><li>contains(Object o)</li></ul>
+<ul><li>etc.</li></ul>
+<h4>Root interface — with nuance</h4>
+<ul><li>In general, Collection is considered the root interface of the collection framework.</li></ul>
+<ul><li>Strictly speaking, the framework has two independent parts: Collection hierarchy and Map hierarchy — no inheritance link between them.</li></ul>
+<ul><li>In practice and in interviews, saying &quot;Collection is the root interface&quot; is accepted.</li></ul>
+<h4>No direct concrete implementation</h4>
+<p>There is no concrete class that implements `Collection` directly.</p>
+<p>Concrete classes implement child interfaces (List, Set, Queue, etc.), not Collection itself.</p>
+<pre class='code'>import java.util.*;
+
+// Collection is interface — cannot instantiate
+// Collection c = new Collection(); // CE: Collection is abstract; cannot be instantiated
+
+// Concrete classes implement child interfaces, not Collection directly
+Collection&lt;String&gt; c1 = new ArrayList&lt;&gt;();   // via List
+Collection&lt;String&gt; c2 = new HashSet&lt;&gt;();     // via Set
+Collection&lt;String&gt; c3 = new LinkedList&lt;&gt;();  // via List
+
+public class CollectionDemo {
+    public static void main(String[] args) {
+        Collection&lt;String&gt; c = new ArrayList&lt;&gt;();
+        c.add(&quot;Durga&quot;);
+        c.add(&quot;Java&quot;);
+        System.out.println(c.size());    // prints 2
+        System.out.println(c.isEmpty()); // prints false
+        c.remove(&quot;Durga&quot;);
+        System.out.println(c);           // prints [Java]
+    }
+}</pre>
+<h4>Board conclusions — `Collection (I)`</h4>
+<ol><li>If we want to represent a group of individual objects as a single entity → go for Collection.</li></ol>
+<ol><li>Collection interface defines the most common methods applicable for any collection object.</li></ol>
+<ol><li>In general, Collection is considered as root interface of collection framework.</li></ol>
+<ol><li>There is no concrete class which implements `Collection` interface directly.</li></ol>
+<h3>09:53 — Interview FAQ: `Collection` vs `Collections`</h3>
+<p>Most commonly asked entry-level / interview question.</p>
+<p>Key insight: List never talks about sorting — it preserves insertion order. If you want to sort a List, use Collections.sort(list).</p>
+<pre class='code'>import java.util.*;
+
+public class CollectionVsCollectionsDemo {
+    public static void main(String[] args) {
+        List&lt;Integer&gt; list = new ArrayList&lt;&gt;();
+        list.add(30);
+        list.add(10);
+        list.add(20);
+
+        // List preserves insertion order — no built-in sort
+        System.out.println(&quot;Before sort: &quot; + list); // prints Before sort: [30, 10, 20]
+
+        Collections.sort(list);  // utility method in Collections CLASS
+        System.out.println(&quot;After sort: &quot; + list);  // prints After sort: [10, 20, 30]
+
+        // Collections is utility class — cannot instantiate
+        // Collections c = new Collections(); // CE: Collections() has private access
+    }
+}</pre>
+<h4>Board notes — `Collections` (utility class)</h4>
+<ul><li>Collections is a utility class present in `java.util` package.</li></ul>
+<ul><li>Defines several utility methods for collection objects: sorting, searching, etc.</li></ul>
+<p>One-word interview answer: Collection = interface; Collections = class.</p>
+<h3>15:44 — Interface 2: `List` (I)</h3>
+<h4>Hierarchy</h4>
+<p>List is the child interface of `Collection`.</p>
+<h4>When to use</h4>
+<p>If you want to represent a group of individual objects as a single entity where:</p>
+<ul><li>Duplicates are allowed, AND</li></ul>
+<ul><li>Insertion order must be preserved (objects saved in the same order they were added)</li></ul>
+<p>→ go for `List`.</p>
+<h4>Specific properties of List</h4>
+<h4>Implementation classes</h4>
+<p>Hierarchy diagram (board):</p>
+<p>Collection
+    └── List
+         ├── ArrayList
+         ├── LinkedList
+         ├── Vector      (1.0 — legacy)
+         └── Stack       (1.0 — legacy, extends Vector)</p>
+<h4>Vector/Stack re-engineering (1.2)</h4>
+<ul><li>List interface introduced in Java 1.2.</li></ul>
+<ul><li>Vector and Stack existed since Java 1.0 — before List existed.</li></ul>
+<ul><li>In 1.2, Vector and Stack were re-engineered (modified/updated) to implement `List` interface.</li></ul>
+<ul><li>The List link did not exist in 1.0/1.1.</li></ul>
+<pre class='code'>import java.util.*;
+
+public class ListDemo {
+    public static void main(String[] args) {
+        List&lt;String&gt; list = new ArrayList&lt;&gt;();
+        list.add(&quot;First&quot;);
+        list.add(&quot;Second&quot;);
+        list.add(&quot;First&quot;);  // duplicate allowed
+
+        System.out.println(list);
+        // prints [First, Second, First] — insertion order preserved
+
+        List&lt;String&gt; vector = new Vector&lt;&gt;();  // legacy, now implements List
+        vector.add(&quot;A&quot;);
+        vector.add(&quot;B&quot;);
+        System.out.println(vector); // prints [A, B]
+
+        Stack&lt;String&gt; stack = new Stack&lt;&gt;();   // legacy
+        stack.push(&quot;bottom&quot;);
+        stack.push(&quot;top&quot;);
+        System.out.println(stack.pop()); // prints top
+    }
+}</pre>
+<h3>23:56 — Interface 3: `Set` (I)</h3>
+<h4>Hierarchy</h4>
+<p>Set is the child interface of `Collection`.</p>
+<h4>When to use</h4>
+<p>If you want to represent a group of individual objects as a single entity where:</p>
+<ul><li>Duplicates are NOT allowed, AND</li></ul>
+<ul><li>Insertion order is NOT required (not preserved)</li></ul>
+<p>→ go for `Set`.</p>
+<h4>Specific properties</h4>
+<h4>Implementation classes</h4>
+<p>Hierarchy:</p>
+<p>Collection
+    └── Set
+         ├── HashSet
+         └── LinkedHashSet</p>
+<pre class='code'>import java.util.*;
+
+public class SetDemo {
+    public static void main(String[] args) {
+        Set&lt;String&gt; set = new HashSet&lt;&gt;();
+        set.add(&quot;Durga&quot;);
+        set.add(&quot;Java&quot;);
+        set.add(&quot;Durga&quot;);  // duplicate — silently ignored
+
+        System.out.println(set.size()); // prints 2
+        System.out.println(set);        // order NOT guaranteed
+        // prints something like [Java, Durga] — insertion order not preserved
+
+        Set&lt;String&gt; linkedSet = new LinkedHashSet&lt;&gt;();
+        linkedSet.add(&quot;C&quot;);
+        linkedSet.add(&quot;A&quot;);
+        linkedSet.add(&quot;B&quot;);
+        System.out.println(linkedSet);
+        // prints [C, A, B] — LinkedHashSet preserves insertion order (exception among Sets)
+    }
+}</pre>
+<p>Note: LinkedHashSet preserves insertion order — Sir focuses on plain Set/HashSet behavior in this lecture (insertion order not required for Set interface contract).</p>
+<h3>28:17 — Interface 4: `SortedSet` (I)</h3>
+<h4>Hierarchy</h4>
+<p>SortedSet is the child interface of `Set`.</p>
+<h4>When to use</h4>
+<p>If you want to represent a group of individual objects as a single entity where:</p>
+<ul><li>Duplicates are NOT allowed, AND</li></ul>
+<ul><li>All objects inserted according to some sorting order (not insertion order)</li></ul>
+<p>→ go for `SortedSet`.</p>
+<p>The name itself indicates: this set is sorted according to some sorting order.</p>
+<h4>Implementation class</h4>
+<p>No concrete class in this lecture for SortedSet alone — implementation comes via NavigableSet → TreeSet (covered next).</p>
+<h3>31:21 — Interface 5: `NavigableSet` (I)</h3>
+<h4>Hierarchy</h4>
+<p>NavigableSet is the child interface of `SortedSet`.</p>
+<h4>Purpose</h4>
+<p>Contains several methods for navigation purposes:</p>
+<ul><li>lower(e), floor(e), ceiling(e), higher(e)</li></ul>
+<ul><li>pollFirst(), pollLast()</li></ul>
+<ul><li>descendingSet(), etc.</li></ul>
+<p>Navigable = can be used for navigation (find previous/next element).</p>
+<h4>Implementation class</h4>
+<p>Version history:</p>
+<ul><li>TreeSet existed since 1.2 but was modified in 1.6 to implement NavigableSet (same pattern as Vector/Stack → List in 1.2).</li></ul>
+<p>Hierarchy:</p>
+<p>Collection → Set → SortedSet → NavigableSet → TreeSet</p>
+<p>All interfaces except TreeSet are interfaces only.</p>
+<pre class='code'>import java.util.*;
+
+public class NavigableSetDemo {
+    public static void main(String[] args) {
+        NavigableSet&lt;Integer&gt; set = new TreeSet&lt;&gt;();
+        set.add(30);
+        set.add(10);
+        set.add(20);
+        set.add(10); // duplicate ignored
+
+        System.out.println(set);           // prints [10, 20, 30] — sorted order
+        System.out.println(set.lower(20)); // prints 10
+        System.out.println(set.higher(20));// prints 30
+        System.out.println(set.ceiling(15));// prints 20
+        System.out.println(set.floor(15)); // prints 10
+    }
+}</pre>
+<h3>35:17 — Interview FAQ: `List` vs `Set`</h3>
+<p>Very important interview question — know at least two differences.</p>
+<p>Explanation for Set&#x27;s non-insertion-order:</p>
+<ul><li>In Set, objects are stored based on hash code (HashSet) or sorting order (TreeSet).</li></ul>
+<ul><li>You cannot expect objects to remain in the order you added them (except LinkedHashSet special case).</li></ul>
+<pre class='code'>import java.util.*;
+
+public class ListVsSetDemo {
+    public static void main(String[] args) {
+        List&lt;String&gt; list = new ArrayList&lt;&gt;();
+        list.add(&quot;Durga&quot;);
+        list.add(&quot;Ravi&quot;);
+        list.add(&quot;Durga&quot;); // duplicate OK
+        System.out.println(&quot;List: &quot; + list);
+        // prints List: [Durga, Ravi, Durga]
+
+        Set&lt;String&gt; set = new HashSet&lt;&gt;();
+        set.add(&quot;Durga&quot;);
+        set.add(&quot;Ravi&quot;);
+        set.add(&quot;Durga&quot;); // duplicate ignored
+        System.out.println(&quot;Set: &quot; + set);
+        // prints Set: [Ravi, Durga] or [Durga, Ravi] — order not guaranteed
+    }
+}</pre>
+<h3>38:02 — Interface 6: `Queue` (I)</h3>
+<h4>Hierarchy</h4>
+<p>Queue is the child interface of `Collection`.</p>
+<h4>Real-world meaning</h4>
+<p>Queue = standing in line (passport office, temple, ticket counter) — FIFO (First In First Out).</p>
+<h4>Technical definition (Java API wording)</h4>
+<p>Prior to processing — if you want to represent a group of individual objects, go for Queue.</p>
+<ul><li>Prior to processing = before the actual work happens (before sending mail, before offering service).</li></ul>
+<h4>FIFO default behavior</h4>
+<ul><li>Usually Queue follows FIFO (First In First Out).</li></ul>
+<ul><li>But based on requirement, you can implement priority order → PriorityQueue.</li></ul>
+<h4>Examples from lecture</h4>
+<ol><li>Mail sending application: Store all mail IDs in a queue before sending; first added mail sent first.</li></ol>
+<ol><li>Bulk SMS: 10 lakh mobile numbers stored in queue; message delivered in insertion order.</li></ol>
+<ol><li>Passport query queue: Stand in queue before officer processes your request.</li></ol>
+<h4>Implementation classes</h4>
+<p>Version: Entire Queue concept introduced in Java 1.5.</p>
+<p>Hierarchy (board):</p>
+<p>Collection
+    └── Queue
+         ├── PriorityQueue
+         └── BlockingQueue
+              ├── PriorityBlockingQueue
+              └── LinkedBlockingQueue</p>
+<pre class='code'>import java.util.*;
+
+public class QueueDemo {
+    public static void main(String[] args) {
+        // FIFO queue — mail sending scenario
+        Queue&lt;String&gt; mailQueue = new LinkedList&lt;&gt;();
+        mailQueue.offer(&quot;durga@gmail.com&quot;);
+        mailQueue.offer(&quot;student@gmail.com&quot;);
+        mailQueue.offer(&quot;java@gmail.com&quot;);
+
+        System.out.println(mailQueue.poll()); // prints durga@gmail.com — first in, first out
+        System.out.println(mailQueue.poll()); // prints student@gmail.com
+        System.out.println(mailQueue.poll()); // prints java@gmail.com
+
+        // PriorityQueue — not necessarily FIFO
+        Queue&lt;Integer&gt; pq = new PriorityQueue&lt;&gt;();
+        pq.offer(30);
+        pq.offer(10);
+        pq.offer(20);
+        System.out.println(pq.poll()); // prints 10 — natural ordering (min-heap)
+    }
+}</pre>
+<h4>Board notes — `Queue (I)`</h4>
+<ol><li>Child interface of Collection.</li></ol>
+<ol><li>Prior to processing → go for Queue.</li></ol>
+<ol><li>Usually follows FIFO order.</li></ol>
+<ol><li>Based on requirement, can implement priority order (PriorityQueue).</li></ol>
+<ol><li>Example: before sending mail, store all mail IDs; deliver in same order added.</li></ol>
+<h3>53:21 — Collection vs Map: the great divide</h3>
+<p>Six interfaces covered so far (Collection side):</p>
+<p>Collection, List, Set, SortedSet, NavigableSet, Queue</p>
+<p>All six are for representing a group of individual objects — objects with no dependency on each other.</p>
+<p>When objects are related as key–value pairs → cannot use Collection interfaces → must use Map.</p>
+<p>Examples:</p>
+<ul><li>Student roll number → name (roll number is unique key)</li></ul>
+<ul><li>Attribute name → attribute value (Servlet request attributes, parameters)</li></ul>
+<ul><li>Parameter name → parameter value</li></ul>
+<h4>Board note (critical)</h4>
+<p>All the above interfaces (Collection, List, Set, SortedSet, NavigableSet, Queue) are meant for representing a group of individual objects.</p>
+<p>If you want to represent a group of objects as key–value pairs → go for Map.</p>
+<h3>57:21 — Interface 7: `Map` (I)</h3>
+<h4>NOT a child of Collection</h4>
+<ul><li>Map is NOT the child interface of Collection.</li></ul>
+<ul><li>Collection framework = two halves of a movie: first half Collection, second half Map.</li></ul>
+<ul><li>Map is still part of collection framework (same java.util package ecosystem) but separate hierarchy.</li></ul>
+<h4>When to use</h4>
+<p>If you want to represent a group of objects as key–value pairs → go for Map.</p>
+<h4>Key rules</h4>
+<p>Recommended key choice: Use the unique identifier as key (e.g., roll number as key, name as value — not the reverse, because duplicate names exist).</p>
+<h4>Example (board)</h4>
+<p>Key (roll no)  →  Value (name)
+1              →  Durga
+2              →  Ravi
+3              →  Shiva</p>
+<p>Servlet/server examples using Map internally:</p>
+<ul><li>parameter name → parameter value</li></ul>
+<ul><li>attribute name → attribute value</li></ul>
+<ul><li>Request attributes, session attributes</li></ul>
+<h4>Implementation classes</h4>
+<p>Hashtable spelling trap:</p>
+<ul><li>Correct: Hashtable (lowercase t)</li></ul>
+<ul><li>Wrong: HashTable → compile error — no such class</li></ul>
+<p>Dictionary hierarchy:</p>
+<p>Dictionary (Abstract Class) — legacy, 1.0
+    └── Hashtable
+         └── Properties</p>
+<h4>Board conclusions — `Map (I)`</h4>
+<ol><li>Map is NOT child interface of Collection.</li></ol>
+<ol><li>If key–value pairs → go for Map.</li></ol>
+<ol><li>Both key and value are objects only.</li></ol>
+<ol><li>Duplicate keys not allowed; duplicate values can be duplicated.</li></ol>
+<pre class='code'>import java.util.*;
+
+public class MapDemo {
+    public static void main(String[] args) {
+        Map&lt;Integer, String&gt; students = new HashMap&lt;&gt;();
+        students.put(1, &quot;Durga&quot;);
+        students.put(2, &quot;Ravi&quot;);
+        students.put(3, &quot;Shiva&quot;);
+        students.put(2, &quot;Ravi2&quot;); // same key — replaces previous value
+
+        System.out.println(students.get(1)); // prints Durga
+        System.out.println(students);        // prints {1=Durga, 2=Ravi2, 3=Shiva}
+
+        // Duplicate key not allowed — second put replaces
+        students.put(1, &quot;DurgaUpdated&quot;);
+        System.out.println(students.get(1)); // prints DurgaUpdated
+
+        // Duplicate values allowed
+        Map&lt;String, String&gt; phoneBook = new HashMap&lt;&gt;();
+        phoneBook.put(&quot;Durga&quot;, &quot;9848022338&quot;);
+        phoneBook.put(&quot;Ravi&quot;, &quot;9848022338&quot;); // same value, different keys — OK
+        System.out.println(phoneBook); // prints {Durga=9848022338, Ravi=9848022338}
+
+        // Map is NOT a Collection
+        // Collection c = new HashMap(); // CE: HashMap cannot be converted to Collection
+    }
+}
+import java.util.*;
+
+public class HashtableSpellingDemo {
+    public static void main(String[] args) {
+        // Correct spelling — lowercase &#x27;t&#x27;
+        Hashtable&lt;String, String&gt; ht = new Hashtable&lt;&gt;();
+        ht.put(&quot;key&quot;, &quot;value&quot;);
+        System.out.println(ht); // prints {key=value}
+
+        Properties props = new Properties();
+        props.setProperty(&quot;user&quot;, &quot;durga&quot;);
+        System.out.println(props.getProperty(&quot;user&quot;)); // prints durga
+    }
+}
+
+// class BadSpelling {
+//     HashTable&lt;String, String&gt; ht = new HashTable&lt;&gt;(); // CE: cannot find symbol — HashTable
+// }</pre>
+<h3>1:07:36 — Interface 8: `SortedMap` (I)</h3>
+<h4>Hierarchy</h4>
+<p>SortedMap is the child interface of `Map`.</p>
+<h4>When to use</h4>
+<p>If you want to represent a group of key–value pairs where entries are stored according to some sorting order of keys → go for SortedMap.</p>
+<h4>Critical rule — sorting on keys ONLY</h4>
+<p>Sorting should be based on key, but NOT based on value.</p>
+<p>Value never participates in sorting.</p>
+<h4>Implementation</h4>
+<p>Comes via NavigableMap → TreeMap (next section).</p>
+<h3>1:10:50 — Interface 9: `NavigableMap` (I)</h3>
+<h4>Hierarchy</h4>
+<p>NavigableMap is the child interface of `SortedMap`.</p>
+<h4>Purpose</h4>
+<p>Defines several methods for navigation purposes (analogous to NavigableSet).</p>
+<h4>Implementation class</h4>
+<p>Version history:</p>
+<p>Hierarchy:</p>
+<p>Map → SortedMap → NavigableMap → TreeMap</p>
+<pre class='code'>import java.util.*;
+
+public class NavigableMapDemo {
+    public static void main(String[] args) {
+        NavigableMap&lt;Integer, String&gt; map = new TreeMap&lt;&gt;();
+        map.put(3, &quot;Shiva&quot;);
+        map.put(1, &quot;Durga&quot;);
+        map.put(2, &quot;Ravi&quot;);
+
+        System.out.println(map);              // prints {1=Durga, 2=Ravi, 3=Shiva} — sorted by KEY
+        System.out.println(map.lowerKey(2));  // prints 1
+        System.out.println(map.higherKey(2)); // prints 3
+        System.out.println(map.firstEntry()); // prints 1=Durga
+        System.out.println(map.lastEntry());  // prints 3=Shiva
+    }
+}</pre>
+<h3>1:13:14 — All nine interfaces complete</h3>
+<p>Summary hierarchy (full framework):</p>
+<p>COLLECTION SIDE (individual objects):
+Collection (I)
+├── List (I) → ArrayList, LinkedList, Vector*, Stack*
+├── Set (I) → HashSet, LinkedHashSet
+│    └── SortedSet (I)
+│         └── NavigableSet (I) → TreeSet
+└── Queue (I) → PriorityQueue, BlockingQueue → ...
+
+MAP SIDE (key-value pairs):
+Map (I) → HashMap, LinkedHashMap, WeakHashMap, IdentityHashMap, Hashtable*, Properties*
+    └── SortedMap (I)
+         └── NavigableMap (I) → TreeMap
+
+* = legacy (1.0)</p>
+<h3>1:13:20 — Grand summary &amp; &quot;Collection King&quot; interview story</h3>
+<p>Sir summarizes the decision tree an OCJP student (Ravi) wrote on paper in a CTS interview:</p>
+<p>Interview lesson: Know the framework deeply — write the hierarchy confidently, don&#x27;t just claim &quot;Collection King&quot; without substance.</p>
+<pre class='code'>import java.util.*;
+
+/**
+ * Decision-tree demo matching Sir&#x27;s interview white-paper summary.
+ */
+public class NineInterfacesSummaryDemo {
+    public static void main(String[] args) {
+        // LIST — duplicates + insertion order
+        List&lt;String&gt; list = new ArrayList&lt;&gt;();
+        list.add(&quot;A&quot;); list.add(&quot;B&quot;); list.add(&quot;A&quot;);
+        System.out.println(&quot;List: &quot; + list); // prints List: [A, B, A]
+
+        // SET — no duplicates
+        Set&lt;String&gt; set = new HashSet&lt;&gt;();
+        set.add(&quot;A&quot;); set.add(&quot;B&quot;); set.add(&quot;A&quot;);
+        System.out.println(&quot;Set: &quot; + set); // prints Set: [A, B] (order varies)
+
+        // SORTED SET — TreeSet via NavigableSet
+        NavigableSet&lt;Integer&gt; sortedSet = new TreeSet&lt;&gt;();
+        sortedSet.add(3); sortedSet.add(1); sortedSet.add(2);
+        System.out.println(&quot;SortedSet: &quot; + sortedSet); // prints SortedSet: [1, 2, 3]
+
+        // QUEUE — prior to processing
+        Queue&lt;String&gt; queue = new LinkedList&lt;&gt;();
+        queue.offer(&quot;mail1&quot;); queue.offer(&quot;mail2&quot;);
+        System.out.println(&quot;Queue poll: &quot; + queue.poll()); // prints Queue poll: mail1
+
+        // MAP — key-value
+        Map&lt;Integer, String&gt; map = new HashMap&lt;&gt;();
+        map.put(1, &quot;Durga&quot;); map.put(2, &quot;Ravi&quot;);
+        System.out.println(&quot;Map: &quot; + map); // prints Map: {1=Durga, 2=Ravi}
+
+        // SORTED MAP — TreeMap via NavigableMap
+        NavigableMap&lt;Integer, String&gt; sortedMap = new TreeMap&lt;&gt;();
+        sortedMap.put(2, &quot;Ravi&quot;); sortedMap.put(1, &quot;Durga&quot;);
+        System.out.println(&quot;SortedMap: &quot; + sortedMap); // prints SortedMap: {1=Durga, 2=Ravi}
+    }
+}</pre>
+<h3>1:21:07 — Legacy classes in collection framework</h3>
+<p>Legacy = coming from old generation (Java 1.0).</p>
+<p>Six legacy characters present in collection framework.</p>
+<p>Re-engineering notes:</p>
+<ul><li>Vector, Stack → re-engineered in 1.2 to implement List</li></ul>
+<ul><li>TreeSet → re-engineered in 1.6 to implement NavigableSet</li></ul>
+<ul><li>TreeMap → re-engineered in 1.6 to implement NavigableMap</li></ul>
+<h3>1:22:11 — Preview topics (next sessions)</h3>
+<p>Sir briefly previews upcoming collection topics:</p>
+<h4>Sorting — Comparable vs Comparator</h4>
+<p>Used with SortedSet, SortedMap, TreeSet, TreeMap, and Collections.sort().</p>
+<h4>Cursors — traversing collections one-by-one</h4>
+<p>If you want to get objects one by one from a collection → Cursor concept:</p>
+<h4>Utility classes in collection framework</h4>
+<h3>1:25:00 — Complete version matrix (board diagram)</h3>
+<h3>1:31:24 — Session closing</h3>
+<ul><li>All nine key interfaces covered at overview level.</li></ul>
+<ul><li>Next session: each interface and implementation class in more detail (methods, programs, OCJP traps).</li></ul>
+<ul><li>Memorize: nine key interfaces, Collection vs Collections, List vs Set, Collection vs Map, legacy classes, version numbers.</li></ul>
+<h2>Quick reference tables</h2>
+<h3>Nine interfaces at a glance</h3>
+<h3>Collection vs Collections vs Map</h3>
+<h3>List vs Set (interview)</h3>
+<h3>Implementation class cheat sheet</h3>
+<h2>OCJP / interview checklist</h2>
+<ul><li>[ ] Name all 9 key interfaces from memory</li></ul>
+<ul><li>[ ] Explain Collection vs Collections in one sentence each</li></ul>
+<ul><li>[ ] Explain List vs Set (duplicates + insertion order)</li></ul>
+<ul><li>[ ] State when to use Queue (&quot;prior to processing&quot;)</li></ul>
+<ul><li>[ ] State why Map is NOT child of Collection</li></ul>
+<ul><li>[ ] Map rules: duplicate keys, duplicate values, both are Objects</li></ul>
+<ul><li>[ ] SortedMap sorts by key only, not value</li></ul>
+<ul><li>[ ] List all 6 legacy members (Vector, Stack, Dictionary, Hashtable, Properties, Enumeration)</li></ul>
+<ul><li>[ ] Know 1.0 vs 1.2 re-engineering (Vector/Stack → List; TreeSet/TreeMap → Navigable*)</li></ul>
+<ul><li>[ ] Know version: Queue = 1.5, Navigable* = 1.6, LinkedHash* = 1.4</li></ul>
+<ul><li>[ ] Spell Hashtable correctly (lowercase t)</li></ul>
+<h2>Homework / self-test</h2>
+<ol><li>Draw the full hierarchy diagram from memory (Collection side + Map side).</li></ol>
+<ol><li>For each interface, write when to use in one line.</li></ol>
+<ol><li>Without looking, fill the version matrix.</li></ol>
+<ol><li>Write a program using all nine interface types as variable declarations with appropriate concrete classes.</li></ol>
+<ol><li>Explain to a friend why HashTable fails to compile but Hashtable works.</li></ol>
+<pre class='code'>import java.util.*;
+
+public class SelfTestNineInterfaces {
+    public static void main(String[] args) {
+        Collection&lt;String&gt; c = new ArrayList&lt;&gt;();
+        List&lt;String&gt; list = new ArrayList&lt;&gt;();
+        Set&lt;String&gt; set = new HashSet&lt;&gt;();
+        SortedSet&lt;String&gt; ss = new TreeSet&lt;&gt;();
+        NavigableSet&lt;String&gt; ns = new TreeSet&lt;&gt;();
+        Queue&lt;String&gt; q = new PriorityQueue&lt;&gt;();
+        Map&lt;Integer, String&gt; m = new HashMap&lt;&gt;();
+        SortedMap&lt;Integer, String&gt; sm = new TreeMap&lt;&gt;();
+        NavigableMap&lt;Integer, String&gt; nm = new TreeMap&lt;&gt;();
+
+        c.add(&quot;test&quot;); list.add(&quot;test&quot;); set.add(&quot;test&quot;);
+        ss.add(&quot;test&quot;); ns.add(&quot;test&quot;); q.offer(&quot;test&quot;);
+        m.put(1, &quot;test&quot;); sm.put(1, &quot;test&quot;); nm.put(1, &quot;test&quot;);
+
+        System.out.println(&quot;All 9 interface types demonstrated OK&quot;);
+        // prints All 9 interface types demonstrated OK
+    }
+}</pre>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>Video 137 of 203</td><td></td><td></td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Collections Part-2 \</td><td>\</td><td>9 Key Interfaces</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 31m 50s</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>n8RRsB2dP7k</td><td></td><td></td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=n8RRsB2dP7k</td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>YouTube auto-captions</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Interface</th><th>Package</th></tr>
+<tr><td>1</td><td>Collection</td><td>java.util</td></tr>
+<tr><td>2</td><td>List</td><td>java.util</td></tr>
+<tr><td>3</td><td>Set</td><td>java.util</td></tr>
+<tr><td>4</td><td>SortedSet</td><td>java.util</td></tr>
+<tr><td>5</td><td>NavigableSet</td><td>java.util</td></tr>
+<tr><td>6</td><td>Queue</td><td>java.util</td></tr>
+<tr><td>7</td><td>Map</td><td>java.util</td></tr>
+<tr><td>8</td><td>SortedMap</td><td>java.util</td></tr>
+<tr><td>9</td><td>NavigableMap</td><td>java.util</td></tr>
+</table>
+<table>
+<tr><th></th><th>Collection</th><th>Collections</th></tr>
+<tr><td>Type</td><td>Interface</td><td>Utility class</td></tr>
+<tr><td>Package</td><td>java.util</td><td>java.util</td></tr>
+<tr><td>Purpose</td><td>Represent group of individual objects as single entity</td><td>Define utility/static methods for collection objects</td></tr>
+<tr><td>Examples</td><td>add, remove, size, isEmpty</td><td>sort, reverse, shuffle, binarySearch, synchronizedList</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>List behavior</th></tr>
+<tr><td>Duplicates</td><td>Allowed</td></tr>
+<tr><td>Insertion order</td><td>Must be preserved</td></tr>
+<tr><td>Sorting order</td><td>Not guaranteed (List ≠ sorted)</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Java version</th><th>Notes</th></tr>
+<tr><td>ArrayList</td><td>1.2</td><td>Resizable array</td></tr>
+<tr><td>LinkedList</td><td>1.2</td><td>Doubly-linked list</td></tr>
+<tr><td>Vector</td><td>1.0</td><td>Legacy class</td></tr>
+<tr><td>Stack</td><td>1.0</td><td>Legacy class (extends Vector)</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>Set behavior</th></tr>
+<tr><td>Duplicates</td><td>Not allowed</td></tr>
+<tr><td>Insertion order</td><td>Not preserved (objects stored based on hash code or sorting — unpredictable insertion order)</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Java version</th></tr>
+<tr><td>HashSet</td><td>1.2</td></tr>
+<tr><td>LinkedHashSet</td><td>1.4 (newly added)</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Java version</th><th>Notes</th></tr>
+<tr><td>TreeSet</td><td>1.2</td><td>Only implementation class of NavigableSet</td></tr>
+</table>
+<table>
+<tr><th>Interface/Class</th><th>Version</th></tr>
+<tr><td>Collection, Set, SortedSet, TreeSet</td><td>1.2</td></tr>
+<tr><td>NavigableSet</td><td>1.6 (new concept)</td></tr>
+</table>
+<table>
+<tr><th>Feature</th><th>List</th><th>Set</th></tr>
+<tr><td>Duplicates</td><td>Allowed</td><td>Not allowed</td></tr>
+<tr><td>Insertion order</td><td>Preserved</td><td>Not preserved</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Notes</th></tr>
+<tr><td>PriorityQueue</td><td>Priority-based ordering</td></tr>
+<tr><td>BlockingQueue</td><td>Blocking operations (interface)</td></tr>
+<tr><td>↳ PriorityBlockingQueue</td><td>Child of BlockingQueue</td></tr>
+<tr><td>↳ LinkedBlockingQueue</td><td>Child of BlockingQueue</td></tr>
+<tr><td>SynchronousQueue, DelayQueue, etc.</td><td>Mentioned briefly</td></tr>
+</table>
+<table>
+<tr><th>Rule</th><th>Detail</th></tr>
+<tr><td>Key type</td><td>Every key is an Object</td></tr>
+<tr><td>Value type</td><td>Every value is an Object</td></tr>
+<tr><td>Duplicate keys</td><td>NOT allowed</td></tr>
+<tr><td>Duplicate values</td><td>Allowed</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Version</th><th>Notes</th></tr>
+<tr><td>HashMap</td><td>1.2</td><td>General purpose</td></tr>
+<tr><td>LinkedHashMap</td><td>1.4</td><td>Preserves insertion order of keys</td></tr>
+<tr><td>WeakHashMap</td><td>1.2</td><td>Weak references for keys</td></tr>
+<tr><td>IdentityHashMap</td><td>1.4</td><td>== instead of equals()</td></tr>
+<tr><td>Hashtable</td><td>1.0</td><td>Legacy — note lowercase &#x27;t&#x27;</td></tr>
+<tr><td>Properties</td><td>1.0</td><td>Legacy — child of Hashtable</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Version</th></tr>
+<tr><td>TreeMap</td><td>1.2</td></tr>
+</table>
+<table>
+<tr><th>Interface/Class</th><th>Version</th></tr>
+<tr><td>Map, SortedMap, TreeMap</td><td>1.2</td></tr>
+<tr><td>NavigableMap</td><td>1.6</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>Interface</th><th>Implementation classes</th></tr>
+<tr><td>Group of individual objects</td><td>Collection</td><td>(via child interfaces)</td></tr>
+<tr><td>Duplicates + insertion order</td><td>List</td><td>ArrayList, LinkedList, Vector, Stack</td></tr>
+<tr><td>No duplicates, no insertion order</td><td>Set</td><td>HashSet, LinkedHashSet</td></tr>
+<tr><td>No duplicates + sorting order</td><td>SortedSet</td><td>(via NavigableSet)</td></tr>
+<tr><td>+ navigation support</td><td>NavigableSet</td><td>TreeSet</td></tr>
+<tr><td>Prior to processing (FIFO)</td><td>Queue</td><td>PriorityQueue, BlockingQueue, ...</td></tr>
+<tr><td>Key–value pairs</td><td>Map</td><td>HashMap, LinkedHashMap, WeakHashMap, IdentityHashMap</td></tr>
+<tr><td>Key–value + sorted keys</td><td>SortedMap</td><td>(via NavigableMap)</td></tr>
+<tr><td>+ navigation support</td><td>NavigableMap</td><td>TreeMap</td></tr>
+<tr><td>Legacy map</td><td>—</td><td>Hashtable, Properties (Dictionary hierarchy)</td></tr>
+</table>
+<table>
+<tr><th>Legacy member</th><th>Type</th><th>Version</th></tr>
+<tr><td>Vector</td><td>Class</td><td>1.0</td></tr>
+<tr><td>Stack</td><td>Class</td><td>1.0</td></tr>
+<tr><td>Dictionary</td><td>Abstract class</td><td>1.0</td></tr>
+<tr><td>Hashtable</td><td>Class</td><td>1.0</td></tr>
+<tr><td>Properties</td><td>Class</td><td>1.0</td></tr>
+<tr><td>Enumeration</td><td>Interface</td><td>1.0</td></tr>
+</table>
+<table>
+<tr><th>Need</th><th>Interface</th></tr>
+<tr><td>Default natural sorting order</td><td>Comparable</td></tr>
+<tr><td>Customized sorting order</td><td>Comparator</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Cursor</th><th>Notes</th></tr>
+<tr><td>1</td><td>Enumeration</td><td>Legacy (1.0) — only for legacy collections</td></tr>
+<tr><td>2</td><td>Iterator</td><td>Universal (1.2+)</td></tr>
+<tr><td>3</td><td>ListIterator</td><td>List-only, bidirectional (1.2+)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Class</th><th>Package</th></tr>
+<tr><td>1</td><td>Collections</td><td>java.util</td></tr>
+<tr><td>2</td><td>Arrays</td><td>java.util</td></tr>
+</table>
+<table>
+<tr><th>Interface / Class</th><th>Version</th></tr>
+<tr><td>Collection, List, Set, SortedSet, Map, SortedMap</td><td>1.2</td></tr>
+<tr><td>ArrayList, LinkedList, HashSet, HashMap, TreeSet, TreeMap, WeakHashMap</td><td>1.2</td></tr>
+<tr><td>LinkedHashSet, LinkedHashMap, IdentityHashMap</td><td>1.4</td></tr>
+<tr><td>Queue, PriorityQueue, BlockingQueue, ...</td><td>1.5</td></tr>
+<tr><td>NavigableSet, NavigableMap</td><td>1.6</td></tr>
+<tr><td>Vector, Stack, Dictionary, Hashtable, Properties, Enumeration</td><td>1.0 (legacy)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Interface</th><th>Parent</th><th>Represents</th><th>Key rule</th></tr>
+<tr><td>1</td><td>Collection</td><td>— (root, collection side)</td><td>Individual objects</td><td>Common methods</td></tr>
+<tr><td>2</td><td>List</td><td>Collection</td><td>Individual objects</td><td>Duplicates ✓, insertion order ✓</td></tr>
+<tr><td>3</td><td>Set</td><td>Collection</td><td>Individual objects</td><td>Duplicates ✗, insertion order ✗</td></tr>
+<tr><td>4</td><td>SortedSet</td><td>Set</td><td>Individual objects</td><td>+ sorted insertion</td></tr>
+<tr><td>5</td><td>NavigableSet</td><td>SortedSet</td><td>Individual objects</td><td>+ navigation methods</td></tr>
+<tr><td>6</td><td>Queue</td><td>Collection</td><td>Individual objects</td><td>Prior to processing, usually FIFO</td></tr>
+<tr><td>7</td><td>Map</td><td>— (root, map side)</td><td>Key–value pairs</td><td>Duplicate keys ✗</td></tr>
+<tr><td>8</td><td>SortedMap</td><td>Map</td><td>Key–value pairs</td><td>Sorted by key only</td></tr>
+<tr><td>9</td><td>NavigableMap</td><td>SortedMap</td><td>Key–value pairs</td><td>+ navigation methods</td></tr>
+</table>
+<table>
+<tr><th></th><th>Collection</th><th>Collections</th><th>Map</th></tr>
+<tr><td>Kind</td><td>Interface</td><td>Utility class</td><td>Interface</td></tr>
+<tr><td>Data model</td><td>Individual objects</td><td>N/A (helper)</td><td>Key–value pairs</td></tr>
+<tr><td>Child of Collection?</td><td>Root (collection side)</td><td>No</td><td>No</td></tr>
+<tr><td>Instantiate?</td><td>Via subtypes</td><td>No (private ctor)</td><td>Via subtypes</td></tr>
+</table>
+<table>
+<tr><th></th><th>List</th><th>Set</th></tr>
+<tr><td>Duplicates</td><td>Allowed</td><td>Not allowed</td></tr>
+<tr><td>Insertion order</td><td>Preserved</td><td>Not preserved</td></tr>
+</table>
+<table>
+<tr><th>Interface</th><th>Implementation classes</th></tr>
+<tr><td>List</td><td>ArrayList, LinkedList, Vector, Stack</td></tr>
+<tr><td>Set</td><td>HashSet, LinkedHashSet</td></tr>
+<tr><td>NavigableSet</td><td>TreeSet</td></tr>
+<tr><td>Queue</td><td>PriorityQueue, BlockingQueue, PriorityBlockingQueue, LinkedBlockingQueue</td></tr>
+<tr><td>Map</td><td>HashMap, LinkedHashMap, WeakHashMap, IdentityHashMap, Hashtable, Properties</td></tr>
+<tr><td>NavigableMap</td><td>TreeMap</td></tr>
+</table>
+</body></html>

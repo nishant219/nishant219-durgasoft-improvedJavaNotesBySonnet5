@@ -1,0 +1,386 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>021-assignment-conditional-new</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 021 — Assignment, conditional, new operators</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Operators &amp; Assignments Part-5  ||Assignment,conditional,new Operators</p>
+<p>Source: real YouTube auto-captions (English, auto-generated). ASR writes index / in xal for int x, change assignment for chained assignment, compar meod for compile-time error, bite for byte, column for colon, nting for nesting, Mis perspection for misconception. These notes restore the board Java he speaks and writes.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Recap: type-cast operator (implicit + explicit) already finished in Part-4.</li></ol>
+<ol><li>Three kinds of assignment: simple, chained, compound.</li></ol>
+<ol><li>Chained assignment is legal, but not as int a = b = c = d = 20 at declaration time (cannot find symbol).</li></ol>
+<ol><li>Eleven compound assignment operators; &lt;&lt;&lt; does not exist.</li></ol>
+<ol><li>&gt;&gt; vs &gt;&gt;&gt; (sign bit vs zero-fill) — basic idea only; not for SCJP.</li></ol>
+<ol><li>Loophole: byte b = b + 1 is CE, but b++ and b += 1 are valid because of internal type casting.</li></ol>
+<ol><li>Exam mix: chained assignment + compound assignment, evaluated right to left.</li></ol>
+<ol><li>Conditional / ternary ?:, including nesting.</li></ol>
+<ol><li>new creates the object; constructor only initializes. No delete (garbage collector).</li></ol>
+<ol><li>[] to declare and create arrays.</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:08] Recap, then assignment operators</h3>
+<p>Last class: type-cast operator — implicit type casting and explicit type casting. Done.</p>
+<p>Board heading (he says “keep copying”): assignment operators.</p>
+<p>What is an assignment operator, and how many types? Students should have clear clarity.</p>
+<h3>[00:46] Three types of assignment</h3>
+<p>1. Simple assignment — assign a value to a variable.</p>
+<p>int x = 10; // simple assignment: 10 is assigned to int variable x</p>
+<p>2. Chained assignment — a sequence / chain of = operators.</p>
+<p>a = b = c = d = 20; // chained assignment</p>
+<p>3. Compound assignment — assignment mixed with some other operator.</p>
+<p>a += 20; // assignment mixed with +  → compound assignment</p>
+<p>How many types? Three: simple, chained, compound. That is the whole classification; he says no extra explanation is required.</p>
+<p>He dictates the same three headings again for the notebook:</p>
+<ol><li>Simple assignment — example int x = 10</li></ol>
+<ol><li>Chained assignment</li></ol>
+<ol><li>Compound assignment (comes after the chained loophole)</li></ol>
+<h3>[03:26] Chained assignment on the board</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int a, b, c, d;
+        a = b = c = d = 20;
+        System.out.println(a + &quot;........&quot; + b + &quot;........&quot; + c + &quot;........&quot; + d);
+        // prints 20........20........20........20
+    }
+}</pre>
+<p>Order he speaks: first 20 is assigned to `d`, then d’s value to c, then c to b, then b to a. All four become 20.</p>
+<p>A sequence / chain of assignment operators is possible. Values of a, b, c, d are 20, 20, 20, 20.</p>
+<h3>[05:21] Twist: chained assignment at the time of declaration</h3>
+<p>Why not combine the two lines (int a, b, c, d; and a = b = c = d = 20;) into a single line?</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int a = b = c = d = 20;
+        // CE: cannot find symbol
+        // symbol: variable b
+        // location: class Test
+        // (same error for c and for d)
+    }
+}</pre>
+<p>Compiler “gives left and right.” Reason: in this line, how many variables are we declaring? Students first say four. He corrects: only one — a. b, c, d are used but not declared.</p>
+<p>Compiler asks: you are using b — where did you declare that variable? Same for c and d.</p>
+<p>Error (he assumes the line is inside class Test):</p>
+<p>cannot find symbol
+symbol: variable b
+location: class Test</p>
+<p>Same compile-time error for c and for d. Default compiler message; not required to keep much explanation.</p>
+<p>Conclusion he dictates: we can perform chained assignment. We cannot perform chained assignment directly at the time of declaration, because the declaration introduces only one variable.</p>
+<pre class='code'>// invalid at declaration
+int a = b = c = d = 20; // CE: cannot find symbol (b, c, d)</pre>
+<h3>[09:08] Fix: declare the others first, then chain</h3>
+<p>If we declare b, c, d first, then the single-line chain for a is valid — the earlier complaint was only “you didn’t declare b, c, d.”</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int b, c, d;
+        int a = b = c = d = 20; // valid
+        System.out.println(a + &quot;........&quot; + b + &quot;........&quot; + c + &quot;........&quot; + d);
+        // prints 20........20........20........20
+    }
+}</pre>
+<p>This is what they should be aware of clearly: what chained assignment is, and the declaration loophole.</p>
+<h3>[10:18] Compound assignment operator</h3>
+<p>Sometimes the assignment operator is mixed with some other operator. Best example:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int a = 10;
+        a += 20; // assignment mixed with +
+        System.out.println(a); // prints 30
+    }
+}</pre>
+<p>a += 20 means a = a + 20. Start a = 10, then += 20 → 30. Valid; not required to keep much explanation.</p>
+<p>Such an assignment is by default considered a compound assignment operator (ASR also says “chain compound” once; the name he wants is compound).</p>
+<h3>[11:36] How many compound assignment operators? The list of 11</h3>
+<p>He asks: total how many compound assignment operators are there in Java?</p>
+<ul><li>Every arithmetic operator mixed with assignment is fine: +=, -=, *=, /=, %=</li></ul>
+<ul><li>Bitwise too: &amp;= (AND equal), |= (OR equal), ^= (XOR equal)</li></ul>
+<ul><li>Shift too: &gt;&gt;= (right shift equal), &gt;&gt;&gt;= (unsigned right shift equal), &lt;&lt;= (left shift equal)</li></ul>
+<p>Count he writes: 5 + 3 + 3 = 11 compound assignment operators in Java. These are the only possible ones.</p>
+<pre class='code'>int a = 10;
+a += 1;
+a -= 1;
+a *= 2;
+a /= 2;
+a %= 2;
+a &amp;= 1;
+a |= 1;
+a ^= 1;
+a &gt;&gt;= 1;
+a &gt;&gt;&gt;= 1;
+a &lt;&lt;= 1;</pre>
+<h3>[12:21] `&gt;&gt;` vs `&gt;&gt;&gt;` (not in SCJP; basic idea only)</h3>
+<p>Someone may ask the difference. These operators are not there in the SCJP exam — not required to worry. Even in real code they are very rare; almost outdated.</p>
+<p>He still gives a basic idea.</p>
+<p>Take bits of x: 1 0 1 0 1 1 1 0. Right-shift x by two digits: the rightmost two bits are gone; two vacant cells appear on the left.</p>
+<ul><li>If those vacant cells are filled with the sign bit (positive → 0, negative → 1) — normal right shift &gt;&gt;.</li></ul>
+<ul><li>If you do not want the sign bit, and vacant cells are always filled with zero — unsigned right shift, also called zero-filling right shift &gt;&gt;&gt;. Unsigned: never consider the sign; always fill with zero.</li></ul>
+<p>Same idea can be applied with left shift &lt;&lt;=.</p>
+<h3>[15:24] There is no unsigned left shift in Java</h3>
+<p>He asks what &lt;&lt;&lt; would be. Students guess unsigned left shift / zero-filling left shift.</p>
+<p>There is no such operator in Java. Java has only three shift operators:</p>
+<ol><li>Right shift &gt;&gt;</li></ol>
+<ol><li>Unsigned right shift &gt;&gt;&gt;</li></ol>
+<ol><li>Left shift &lt;&lt;</li></ol>
+<p>Unsigned left shift is not there; there is no such terminology. So the compound list stops at the 11 above — no &lt;&lt;&lt;=.</p>
+<h3>[16:36] Dictation + `+=` meaning again</h3>
+<p>He dictates: sometimes assignment is mixed with some other operator; such assignment operators are called compound assignment operators.</p>
+<p>Example again (same as before):</p>
+<p>int a = 10;
+a += 20; // means a = a + 20
+System.out.println(a); // prints 30</p>
+<p>Board list of all possible compound assignment operators in Java:</p>
+<h3>[19:24] Loophole: `b = b + 1` vs `b++` vs `b += 1`</h3>
+<p>He says they covered this somewhere in the last class; now the compound-assignment twist.</p>
+<p>Three cases, all starting from byte b = 10:</p>
+<p>Case 1 — normal arithmetic (invalid)</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 10;
+        b = b + 1;
+        System.out.println(b);
+        // CE: possible loss of precision
+        // found: int
+        // required: byte
+    }
+}</pre>
+<p>Invalid. Why? If we apply any arithmetic operator between two operands, the result type is always max(`int`, type of first argument, type of second argument).</p>
+<ul><li>First argument b → byte</li></ul>
+<ul><li>Second argument 1 → int</li></ul>
+<ul><li>max(int, byte, int) → `int`</li></ul>
+<p>How can you assign an int value to a byte variable? Immediate compile-time error: possible loss of precision, found int, required byte.</p>
+<p>Case 2 — increment (valid)</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 10;
+        b++;
+        System.out.println(b); // prints 11
+    }
+}</pre>
+<p>Valid. Internally b++ is b = (byte)(b + 1). In increment and decrement operators, internal type casting is performed automatically. Answer 11. Already covered; not required to keep much explanation.</p>
+<p>Case 3 — compound assignment (valid — this class’s loophole)</p>
+<pre class='code'>byte b = 10;
+b += 1;
+System.out.println(b);</pre>
+<p>What is the equivalent line? Is b += 1 the same as b = b + 1 or the same as b++?</p>
+<p>If it were b = b + 1, the code would not compile (int into byte).</p>
+<p>We will not get any compile-time error. In the case of compound assignment operators, internal type casting is performed automatically — exactly the same as increment and decrement.</p>
+<p>So the equivalent line is:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 10;
+        b += 1; // equivalent to: b = (byte)(b + 1);
+        System.out.println(b); // prints 11
+    }
+}</pre>
+<p>Because of that type cast, 11 is the answer. Perfectly valid. Happily the code runs; no compile error.</p>
+<p>He dictates: In the case of compound assignment operators, internal type casting will be performed automatically.</p>
+<h3>[24:11] Extra example for more clarity — `byte` overflow</h3>
+<p>Maximum byte value:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 127; // max value of byte
+        b += 3;
+        System.out.println(b); // prints -126
+    }
+}</pre>
+<p>127 + 3 is 130. Is 130 possible to assign to a byte? Normally no — we would expect a compile error. We will not get any compile error. 130 (int) is type-cast to byte. Printed value: `-126`.</p>
+<p>(They already covered this wrap-around example. ASR once says “minus 1.6”; he means −126.)</p>
+<p>Biggest advantage of compound assignment: internal type casting is performed automatically.</p>
+<p>Notebook (he repeats the sentence several times while they copy):</p>
+<p>In the case of compound assignment operators, internal type casting will be performed automatically.</p>
+<p>Full comparison he wants them to copy:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // first case — CE
+        byte b = 10;
+        b = b + 1;
+        System.out.println(b);
+        // CE: possible loss of precision
+        // found: int
+        // required: byte
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        // increment — valid, 11
+        byte b = 10;
+        b++;
+        System.out.println(b); // prints 11
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        // compound — valid, 11
+        byte b = 10;
+        b += 1;
+        System.out.println(b); // prints 11
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        byte b = 127;
+        b += 3;
+        System.out.println(b); // prints -126
+    }
+}</pre>
+<p>This is an important loophole they should be aware of.</p>
+<h3>[28:03] SCJP mix: chained assignment + compound assignment</h3>
+<p>Very, very important for the SCJP exam: they mix compound assignment and chained assignment. There may be a chance to ask a bit like this. Have you ever seen this type of code? Not seeing it does not mean it is invalid. Perfectly valid.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int a, b, c, d;
+        a = b = c = d = 20;
+        a += b -= c *= d /= 2;
+        System.out.println(a + &quot;........&quot; + b + &quot;........&quot; + c + &quot;........&quot; + d);
+        // prints -160........-180........200........10
+    }
+}</pre>
+<p>After a = b = c = d = 20, all four are 20.</p>
+<p>Assignment always happens right to left.</p>
+<ol><li>d /= 2 → d = d / 2 → 20 / 2 → `d = 10`</li></ol>
+<ol><li>c *= d → c = c * d → 20 * 10 → `c = 200`</li></ol>
+<ol><li>b -= c → b = b - c → 20 - 200 → `b = -180` (captions first garble this as “−1880”, then he says 20 plus b means −180)</li></ol>
+<ol><li>a += b → a = a + b → 20 + (-180) → `a = -160`</li></ol>
+<p>Output: −160, −180, 200, 10. They should have clear clarity; this style can appear on the exam.</p>
+<h3>[32:09] Assignment wrap-up</h3>
+<p>That is assignment operators. Total three: simple, chained, compound. Various loopholes: in compound assignment, internal type casting is performed automatically.</p>
+<h3>[32:36] Conditional operator (`?:`) — the only ternary operator in Java</h3>
+<p>Board: conditional operator — question mark, colon (? :).</p>
+<p>A few conclusions. First, the speciality of this operator (unary / binary / ternary).</p>
+<p>Unary — apply ++ to only one operand (a++ or ++a). Operators that take one operand are unary operators.</p>
+<p>a++;
+++a; // unary: one operand</p>
+<p>Binary — a + b. + applied to two operands → binary operator.</p>
+<p>int sum = a + b; // binary: two operands</p>
+<p>Ternary — conditional operator takes three arguments.</p>
+<pre class='code'>int x = (10 &lt; 20) ? 30 : 40;</pre>
+<ul><li>10 &lt; 20 — first argument (condition)</li></ul>
+<ul><li>30 — second argument (value if true)</li></ul>
+<ul><li>40 — third argument (value if false)</li></ul>
+<p>+ is for two operands; this operator is for three. Hence ternary operator.</p>
+<p>First conclusion: the only possible ternary operator in Java is the conditional operator. Interchangeably we can say conditional operator or ternary operator — there is only one ternary operator, so either name is fine.</p>
+<p>Not only in Java: in most programming languages the only possible ternary operator is this one.</p>
+<p>Syntax they must know: some condition; if the condition is true, this value; if false, that value.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = (10 &lt; 20) ? 30 : 40;
+        System.out.println(x); // prints 30
+    }
+}</pre>
+<p>10 &lt; 20 is true → value 30.</p>
+<h3>[36:08] Nesting of conditional operator is possible</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = (10 &gt; 20) ? 30 : ((40 &gt; 50) ? 60 : 70);
+        System.out.println(x); // prints 70
+    }
+}</pre>
+<p>Walkthrough he speaks (right-associative ?:, so the colon side is another conditional):</p>
+<ul><li>10 &gt; 20? False → take the colon side.</li></ul>
+<ul><li>That side is 40 &gt; 50 ? 60 : 70.</li></ul>
+<ul><li>40 &gt; 50? False → 70.</li></ul>
+<p>From this example: nesting of conditional operator is possible — within a conditional operator we can apply a conditional operator one more time. n levels: no problem.</p>
+<p>What they should be clear on: what is the conditional operator, why it is ternary, the syntax, and whether nesting is possible (yes).</p>
+<p>He dictates again:</p>
+<p>The only possible ternary operator in Java is the conditional operator.</p>
+<p>Syntax example (copy):</p>
+<p>int x = (10 &lt; 20) ? 30 : 40;
+System.out.println(x); // 30</p>
+<p>Then nesting:</p>
+<p>int x = (10 &gt; 20) ? 30 : ((40 &gt; 50) ? 60 : 70);
+System.out.println(x); // 70</p>
+<p>He says in the olden days they spent almost one hour on several important loopholes of this operator. Those loopholes are not required for the exam, and not even for day-to-day coding — leave that. This is about the conditional operator.</p>
+<h3>[40:37] `new` operator</h3>
+<p>Purpose of new? Very common. Almost: in a lifetime they will use it a minimum of 10 or 20 crore times; every day at least once — new, new, new.</p>
+<p>Purpose: to create a new object.</p>
+<p>Test t = new Test(); // create Test class object</p>
+<p>Two things they should have clear.</p>
+<p>To create an object, people think of the constructor. Why then new?</p>
+<ul><li>Constructor is not to create an object.</li></ul>
+<ul><li>We use the `new` operator to create an object.</li></ul>
+<ul><li>Role of the constructor: after creating the Test class object, immediately the constructor will be executed to perform initialization.</li></ul>
+<p>Most people say “we can use constructor to create an object.” That is a misconception. It is wrong.</p>
+<p>After creating an object, the next activity performed automatically is constructor execution. Purpose of constructor: initialization of an object, not creation.</p>
+<p>Is there a `delete` operator in Java? No. Destruction of an object is the responsibility of the garbage collector. Garbage collector is responsible to destroy the object. It is not the programmer’s responsibility. That is why delete is not there in Java.</p>
+<p>In old languages like C++, both new and delete exist, because in C++ the programmer is responsible to create the object and to destroy the object.</p>
+<p>In Java, destruction of useless objects is not the programmer’s responsibility. Some people provided a separate assistant: the garbage collector.</p>
+<p>He dictates two notebook points:</p>
+<p>First</p>
+<p>We can use a new operator to create an object.</p>
+<pre class='code'>Example: Test t = new Test();</pre>
+<p>After creating an object, constructor will be executed to perform initialization of an object.</p>
+<p>Hence a constructor is not for creation of object; it is for initialization of an object.</p>
+<p>Test t = new Test();
+// 1. new Test() creates the object
+// 2. then constructor runs to initialize that object</p>
+<p>Second</p>
+<p>In Java we have only new keyword but not delete keyword, because destruction of useless objects is the responsibility of garbage collector.</p>
+<h3>[46:30] Square-bracket operator `[]`</h3>
+<p>One more operator. Not much information; not required to discuss in depth; just for the sake of the exam.</p>
+<p>`[]` — square bracket open and close.</p>
+<p>For which purpose? With respect to arrays. We can use this operator to declare and create arrays.</p>
+<p>Want an int array of size 10:</p>
+<pre class='code'>int[] x = new int[10];</pre>
+<p>We can use this operator to declare and create arrays. Other than arrays, in general we are not going to use this operator anywhere.</p>
+<p>He dictates:</p>
+<p>We can use this operator to declare and create arrays.</p>
+<pre class='code'>Example: int[] x = new int[10];</pre>
+<h3>[48:09] End of operators</h3>
+<p>That’s all. These are the various operators present / available in Java.</p>
+<h2>Rules (as he states them)</h2>
+<ol><li>Three assignment styles: simple (int x = 10), chained (a = b = c = d = 20), compound (a += 20).</li></ol>
+<ol><li>Chained assignment is allowed. Chained assignment at the time of declaration (int a = b = c = d = 20) is not — only a is declared.</li></ol>
+<ol><li>Declare the other variables first, then int a = b = c = d = 20 is valid.</li></ol>
+<ol><li>Exactly 11 compound assignment operators: += -= *= /= %= &amp;= |= ^= &gt;&gt;= &gt;&gt;&gt;= &lt;&lt;=. No &lt;&lt;&lt;.</li></ol>
+<ol><li>Java shift operators are only &gt;&gt;, &gt;&gt;&gt;, &lt;&lt;.</li></ol>
+<ol><li>Compound assignment performs internal type casting automatically (same idea as ++ / --). So byte b; b += 1; is valid; b = b + 1; is CE.</li></ol>
+<ol><li>Mixed chain a += b -= c *= d /= 2 is valid; evaluate right to left.</li></ol>
+<ol><li>?: is the only ternary operator in Java; nesting is allowed.</li></ol>
+<ol><li>new creates the object; constructor initializes. No delete; GC destroys unused objects.</li></ol>
+<ol><li>[] is for declaring and creating arrays.</li></ol>
+<h2>Exam traps (from this lecture)</h2>
+<ul><li>int a = b = c = d = 20; → cannot find symbol for b, c, d, location class Test.</li></ul>
+<ul><li>byte b = 10; b = b + 1; → possible loss of precision found int required byte.</li></ul>
+<ul><li>b += 1 and b++ do not give that error; result 11.</li></ul>
+<ul><li>byte b = 127; b += 3; compiles; prints `-126`, not a compile error and not 130.</li></ul>
+<ul><li>a += b -= c *= d /= 2 after all 20s → −160, −180, 200, 10 (right to left). Do not assume “never saw it ⇒ invalid.”</li></ul>
+<ul><li>?: with three operands is ternary; + is not.</li></ul>
+<ul><li>Nested ?: is legal; walk the condition true/false, do not panic.</li></ul>
+<ul><li>Constructor does not create the object; new does.</li></ul>
+<ul><li>Java has new, not delete.</li></ul>
+<ul><li>Unsigned left shift is a trap name — does not exist.</li></ul>
+<h2>Recap</h2>
+<p>Part-5 finishes assignment (simple / chained / compound + the byte and right-to-left loopholes), the only ternary operator, new vs constructor vs GC, and [] for arrays. That closes the operators list he has been covering.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 21 of 203</td></tr>
+<tr><td>Series</td><td>Operators &amp; Assignments · Part 5 of 7</td></tr>
+<tr><td>Topic</td><td>Simple / chained / compound assignment; ?:; new; []</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>48m 30s (2910 seconds)</td></tr>
+<tr><td>Video ID</td><td>_zZ2Eazelxc</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=_zZ2Eazelxc</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Group</th><th>Operators</th><th></th></tr>
+<tr><td>Arithmetic</td><td>+= -= *= /= %=</td><td></td></tr>
+<tr><td>Bitwise</td><td>&amp;= `</td><td>= ^=`</td></tr>
+<tr><td>Shift</td><td>&gt;&gt;= &gt;&gt;&gt;= &lt;&lt;=</td><td></td></tr>
+</table>
+</body></html>

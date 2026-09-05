@@ -1,0 +1,560 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>022-operator-precedence</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 022 — operator &amp; operand precedence</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Operators &amp; Assignments Part-6  || operator  &amp; operand precedence</p>
+<h3>What this lecture covers</h3>
+<ol><li>Recap of Part-5: assignment, ?:, new, []. Operators list is finished; two remaining concepts.</li></ol>
+<ol><li>Why precedence exists: one expression, many operators — who will execute first?</li></ol>
+<ol><li>Board chart as Durga draws it (unary / [] / new at the top, assignment at the bottom).</li></ol>
+<ol><li>Associativity: most operators left → right; assignment, ternary, prefix unary right → left.</li></ol>
+<ol><li>Parentheses () override the chart. Sir: if doubt undi, brackets pettandi.</li></ol>
+<ol><li>Golden rule (exam): operands ki precedence undadu. Before applying any operator, all operands are evaluated left to right.</li></ol>
+<ol><li>Famous board program: m1(1)+m1(2)*m1(3)/m1(4)*m1(5)+m1(6) prints 1 2 3 4 5 6 then 12.</li></ol>
+<ol><li>Interview tricks: i += ++i + i++ + ++i + i++, x = ++x + ++x, x = x++, a[index] = index = 3.</li></ol>
+<ol><li>Difference he keeps repeating: operator precedence vs operand evaluation order — two different topics. Do not mix.</li></ol>
+<h3>Classroom opening — last class recap</h3>
+<p>Last session (Part-5) operators list complete: simple / chained / compound assignment, the only ternary ?:, new to create object (constructor only initializes), [] to declare and create arrays. Sir: operators anni cover ayyayi. Ippudu rendu important concepts leftover: (1) precedence of Java operators (2) evaluation order of Java operands.</p>
+<p>He puts four recap lines on the board so the class is in the same page:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int a, b, c, d;
+        a = b = c = d = 20; // chained assignment, right to left
+        a += 20;            // compound assignment
+        System.out.println(a); // prints 40
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x = (10 &gt; 20) ? 30 : 40;
+        System.out.println(x); // prints 40
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        Test t = new Test(); // new creates the object; constructor initializes
+        System.out.println(t.getClass().getName()); // prints Test
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int[] x = new int[10]; // [] to declare and create arrays
+        x[0] = 99;
+        System.out.println(x[0]); // prints 99
+    }
+}</pre>
+<p>Ippudu asalu topic: if one expression contains many operators, JVM ye operator ni first apply chestundi? That is operator precedence. After that he writes in big letters: operands ki separate rule undi — always left to right. Students mix these two and lose marks. Ee distinction clear ga undali.</p>
+<h3>Why we need a chart — `*` vs `+`</h3>
+<p>School maths nunchi same idea. * / % are higher than + -. Sir writes two lines and asks the class before explaining:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(1 + 2 * 3); // prints 7   →  1 + (2 * 3)
+    }
+}</pre>
+<p>Students who scan left to right like English ((1+2)*3) say 9. That is the first OCJP trap of this class. Multiplication has higher precedence, so grouping is 1 + (2 * 3) = 7.</p>
+<p>Parentheses override the chart. Doubt unte brackets pettandi — professional practice also idi.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println((1 + 2) * 3); // prints 9
+    }
+}</pre>
+<p>Same idea with division:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 + 20 / 10); // prints 12  →  10 + (20 / 10)
+        System.out.println((10 + 20) / 10); // prints 3
+    }
+}</pre>
+<h3>Board chart as Durga draws it</h3>
+<p>Sir does not dump the full JLS grammar. He draws a simplified 9-level chart (highest at the top, lowest at the bottom) and says: SCJP ki ee much enough; remaining rare operators same family lo unnai.</p>
+<p>He then splits arithmetic on the board because students treat + and * as same family:</p>
+<ul><li>First * / % (same precedence, left → right).</li></ul>
+<ul><li>Then + - (same precedence, left → right). + is also string concatenation — same precedence as numeric +.</li></ul>
+<p>Bitwise he also splits if there is time: &amp; above ^ above |. Short-circuit: &amp;&amp; above ||. Exam lo `&amp;` vs `&amp;&amp;` precedence mix vastadi — bitwise AND is higher than `&amp;&amp;`.</p>
+<p>Associativity he writes as a side box:</p>
+<h3>Highest family — `[]`, `()`, `.`, `new`</h3>
+<p>Array access, method call, member access, object creation — almost the top. That is why new int[10] and x[0] bind tighter than +.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int[] a = {10, 20, 30};
+        System.out.println(a[0] + a[1] * a[2]); // prints 610  →  10 + (20 * 30)
+    }
+}</pre>
+<p>new plus method call — no extra brackets needed, because . and () sit in the highest band:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(new String(&quot;durga&quot;).length()); // prints 5
+    }
+}</pre>
+<p>Anonymous array + index in one shot (exam likes this look):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(new int[] {10, 20, 30}[1]); // prints 20
+    }
+}</pre>
+<p>new creates, then [1] indexes. If someone writes the index on the class name, compiler screams:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(new int[1, 20, 30]);
+        // CE: malformed new array (comma in dimension) / not a legal array creation
+    }
+}</pre>
+<h3>Unary band — `++` `--` `+` `-` `~` `!` and cast</h3>
+<p>Unary minus is not the same operator as binary minus. Precedence of unary - is higher than binary + -.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 + -5);  // prints 5    →  10 + (-5)
+        System.out.println(-10 + 5);  // prints -5
+        System.out.println(-10 - -5); // prints -5   →  (-10) - (-5)
+    }
+}</pre>
+<p>Pre-increment vs using the value in arithmetic:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        System.out.println(++x * 2); // prints 22  →  x becomes 11, then 11 * 2
+        System.out.println(x);       // prints 11
+    }
+}</pre>
+<p>Post-increment: first remaining operation, then change — but remaining operation still respects *:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        System.out.println(x++ * 2); // prints 20  →  10 * 2, then x becomes 11
+        System.out.println(x);       // prints 11
+    }
+}</pre>
+<p>~ (tilde) only for integrals; ! only for boolean. Same unary band, different applicable types — Part-3 loophole, he repeats because precedence questions mix them.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(~4);     // prints -5
+        System.out.println(!true);  // prints false
+        // System.out.println(~true); // CE: operator ~ cannot be applied to boolean
+        // System.out.println(!4);    // CE: operator ! cannot be applied to int
+    }
+}</pre>
+<p>Cast is unary (right → left). Cast vs * is a favourite:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println((int) 10.9 * 2);   // prints 20  →  ((int)10.9) * 2  →  10 * 2
+        System.out.println((int) (10.9 * 2)); // prints 21  →  (int)21.8
+    }
+}</pre>
+<p>Nested increment is not associativity practice — it is a compile error. Postfix is higher than prefix, so ++x-- is parsed as ++(x--), and x-- is a value, not a variable.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        int y = ++x--;
+        // CE: unexpected type
+        // required: variable
+        // found:    value
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x = 4;
+        int y = ++(++x);
+        // CE: unexpected type
+        // required: variable
+        // found:    value
+    }
+}</pre>
+<h3>Arithmetic — `*` `/` `%` then `+` `-`</h3>
+<p>Same-precedence operators: left to right. Sir: left to right ante first pair evaluate chesi, result ni next operator ki istamu.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(20 / 4 * 2); // prints 10  →  (20 / 4) * 2  →  5 * 2
+        System.out.println(20 / 4 / 2); // prints 2   →  (20 / 4) / 2  →  5 / 2  →  2  (int division)
+        System.out.println(20 / (4 / 2)); // prints 10
+    }
+}</pre>
+<p>Integer division trap inside the precedence story:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(2 * 3 / 4 * 5); // prints 5  →  ((2*3)/4)*5 → (6/4)*5 → 1*5
+        System.out.println(10 % 3 * 2);    // prints 2  →  (10 % 3) * 2 → 1 * 2
+        System.out.println(10 + 20 % 3);   // prints 11 →  10 + (20 % 3) → 10 + 2
+    }
+}</pre>
+<p>String + lives in the additive band. Once a String appears, remaining + in that left-to-right chain become concatenation. Precedence still lets * happen first:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;durga&quot; + 10 + 20); // prints durga1020
+        System.out.println(10 + 20 + &quot;durga&quot;); // prints 30durga
+        System.out.println(&quot;durga&quot; + 10 * 20); // prints durga200  →  &quot;durga&quot; + (10 * 20)
+    }
+}</pre>
+<h3>Shift vs additive — Java is not “shift like multiply”</h3>
+<p>On the chart, additive is above shift. So + binds tighter than &lt;&lt;. C-background students guess wrong.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(1 + 2 &lt;&lt; 1); // prints 6  →  (1 + 2) &lt;&lt; 1  →  3 &lt;&lt; 1
+        System.out.println(1 + (2 &lt;&lt; 1)); // prints 5
+        System.out.println(8 &gt;&gt; 2 + 1);   // prints 1  →  8 &gt;&gt; (2 + 1) → 8 &gt;&gt; 3
+        System.out.println((8 &gt;&gt; 2) + 1); // prints 3
+    }
+}</pre>
+<p>Exam trap: “shift has higher precedence than +.” False in Java. Chart lo additive first, then shift.</p>
+<h3>Comparison, `instanceof`, equality</h3>
+<p>Relational band is below arithmetic and shift, above ==.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 + 5 &gt; 12);     // prints true   →  (10 + 5) &gt; 12
+        System.out.println(10 &lt; 20 == true); // prints true   →  (10 &lt; 20) == true
+        // System.out.println(10 &lt; 20 &lt; 30);
+        // CE: operator &lt; cannot be applied to boolean, int
+    }
+}</pre>
+<p>instanceof sits with &lt; &gt; — higher than ==. So r instanceof Type == true is legal grouping.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = &quot;durga&quot;;
+        System.out.println(s instanceof String == true);  // prints true
+        System.out.println(s instanceof Object);          // prints true
+        System.out.println(null instanceof String);       // prints false
+    }
+}</pre>
+<h3>Bitwise vs short-circuit vs ternary vs assignment</h3>
+<p>&amp; ^ | are below equality and above &amp;&amp; ||. Assignment is the floor of the chart.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(4 &amp; 5 == 4);
+        // prints true? NO.  ==  is higher than  &amp;
+        // grouping:  4 &amp; (5 == 4)  →  4 &amp; false
+        // CE: operator &amp; cannot be applied to int, boolean
+    }
+}</pre>
+<p>Correct grouping if you wanted bitwise first:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println((4 &amp; 5) == 4); // prints true  →  4 == 4
+        System.out.println(4 &amp; 5);        // prints 4
+    }
+}</pre>
+<p>&amp;&amp; above ||:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(true || false &amp;&amp; false); // prints true  →  true || (false &amp;&amp; false)
+        System.out.println((true || false) &amp;&amp; false); // prints false
+    }
+}</pre>
+<p>Ternary is just above assignment. Assignment is lowest, so x = 1 + 2 * 3 assigns 7, not “assign 1 then add”:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x;
+        x = 1 + 2 * 3;
+        System.out.println(x); // prints 7  →  x = (1 + (2 * 3))
+    }
+}</pre>
+<p>Chained assignment is right-associative (Part-5), he repeats because precedence and associativity both apply:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int a, b, c;
+        a = b = c = 20; // c = 20, then b = 20, then a = 20
+        System.out.println(a + &quot;...&quot; + b + &quot;...&quot; + c); // prints 20...20...20
+    }
+}</pre>
+<p>Subtraction chain is the opposite associativity — left to right:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 - 5 - 2);     // prints 3   →  (10 - 5) - 2
+        System.out.println(10 - (5 - 2));   // prints 7
+    }
+}</pre>
+<h3>Golden rule — there is **no** precedence for operands</h3>
+<p>Sir underlines this twice. Operator precedence decides which operator is applied first. Operand evaluation decides which operand is computed first.</p>
+<p>Board sentence (copy as-is):</p>
+<p>There is no precedence for operands. Before applying any operator, all operands will be evaluated from left to right.</p>
+<p>Two-phase model he draws:</p>
+<ol><li>Walk the expression left → right. Evaluate every operand (method calls, ++, --, array indexes, …). Side effects happen now.</li></ol>
+<ol><li>Then apply operators using the chart and associativity.</li></ol>
+<p>Students think * runs before the left + operand is even touched. Wrong. The left method still runs first.</p>
+<p>Small board proof:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(m1(1) + m1(2) * m1(3));
+    }
+    public static int m1(int i) {
+        System.out.println(i);
+        return i;
+    }
+}
+// prints
+// 1
+// 2
+// 3
+// 7</pre>
+<p>Phase 1: m1(1) then m1(2) then m1(3) — prints 1, 2, 3 even though * is stronger than +.</p>
+<p>Phase 2: expression is 1 + 2 * 3 → 1 + 6 → 7.</p>
+<h3>Famous program — `m1(1)+m1(2)*m1(3)/m1(4)*m1(5)+m1(6)`</h3>
+<p>This is the Part-6 program. Sir types it, runs it, then only then explains. Output order ni chudandi — 1 to 6 sequential. Precedence `` ki unna, operand order maaraledu.*</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(m1(1) + m1(2) * m1(3) / m1(4) * m1(5) + m1(6));
+    }
+    public static int m1(int i) {
+        System.out.println(i);
+        return i;
+    }
+}
+// prints
+// 1
+// 2
+// 3
+// 4
+// 5
+// 6
+// 12</pre>
+<p>Phase 1 — operands left to right: returns 1, 2, 3, 4, 5, 6. Expression becomes:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(1 + 2 * 3 / 4 * 5 + 6); // prints 12
+    }
+}</pre>
+<p>Phase 2 — * / % left to right, then +:</p>
+<ul><li>2 * 3 → 6</li></ul>
+<ul><li>6 / 4 → 1 (integer division — idi miss cheste 13 ani cheptaru)</li></ul>
+<ul><li>1 * 5 → 5</li></ul>
+<ul><li>1 + 5 + 6 → 12</li></ul>
+<p>Wrong answers he collects from the class:</p>
+<ul><li>1 2 3 4 5 6 then 13 — used real-number 6/4 = 1.5.</li></ul>
+<ul><li>prints 2 3 4 5 first because * / — operand order confusion.</li></ul>
+<ul><li>15 — did 2*3/4*5 as 2*(3/4)*5 with floats, or grouped + first.</li></ul>
+<h3>Interview trick — `i += ++i + i++ + ++i + i++`</h3>
+<p>Compound assignment: left operand is evaluated once, first. Then the right-hand expression, left to right. Then operator. Then assign back.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int i = 1;
+        i += ++i + i++ + ++i + i++;
+        System.out.println(i); // prints 13
+    }
+}</pre>
+<p>Sir expands on the board:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int i = 1;
+        // i += ++i + i++ + ++i + i++;
+        // means (conceptually):
+        // i = i + (++i + i++ + ++i + i++);
+        // left i is captured as 1 first
+        System.out.println(1 + 2 + 2 + 4 + 4); // prints 13
+    }
+}</pre>
+<p>Walk with a table (he draws columns: operand, value used, i after):</p>
+<p>1 + 2 + 2 + 4 + 4 = 13. Then i = 13. Final print 13, not 5, not 15, not 11.</p>
+<h3>Interview trick — `x = ++x + ++x`</h3>
+<p>User-facing favourite. Operands of + are evaluated left to right; assignment is last (lowest precedence).</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 0;
+        x = ++x + ++x;
+        System.out.println(x); // prints 3
+    }
+}</pre>
+<p>Board walk, x starts at 0:</p>
+<ol><li>Left ++x → x becomes 1, value used 1.</li></ol>
+<ol><li>Right ++x → x becomes 2, value used 2.</li></ol>
+<ol><li>+ → 1 + 2 = 3.</li></ol>
+<ol><li>= → x = 3.</li></ol>
+<p>Students say 2 (they stop after two increments) or 4 (they add after assigning). Answer is 3.</p>
+<p>Start at 1:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 1;
+        x = ++x + ++x;
+        System.out.println(x); // prints 5   →  2 + 3
+    }
+}</pre>
+<p>Mix pre and post:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 0;
+        x = x++ + ++x;
+        System.out.println(x); // prints 2
+        // x++ uses 0, x becomes 1; ++x makes x 2, uses 2; 0+2=2; assign 2
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x = 1;
+        x = x++ + ++x;
+        System.out.println(x); // prints 4
+        // x++ uses 1, x=2; ++x → x=3 uses 3; 1+3=4
+    }
+}</pre>
+<p>The Part-1 / Part-7 cousin x = x++ is the same two-phase story: increment happens, then assignment writes the old value back.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        x = x++;
+        System.out.println(x); // prints 10
+        // 1) capture old value 10 for the assignment
+        // 2) increment x to 11
+        // 3) assign the captured 10 back to x
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        x = ++x;
+        System.out.println(x); // prints 11
+    }
+}</pre>
+<h3>Operand evaluation of assignment — `a[index] = index = 3`</h3>
+<p>Assignment is right-associative, but operands of each = are still evaluated left to right. Left-hand array access is resolved before the right-hand assignment changes index.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int[] a = {10, 20, 30, 40, 50};
+        int index = 0;
+        a[index] = index = 3;
+        System.out.println(index);    // prints 3
+        System.out.println(a[0]);     // prints 3
+        System.out.println(a[3]);     // prints 40   (unchanged!)
+    }
+}</pre>
+<p>Sir: slot `a[0]` already selected. Then `index` becomes 3. Then 3 is stored in `a[0]`, not in `a[3]`. Exam option “array becomes {10,20,30,3,50}” is the trap.</p>
+<h3>Method arguments are also left to right</h3>
+<p>Same golden rule for argument lists:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        m(m1(1), m1(2), m1(3));
+    }
+    public static int m1(int i) {
+        System.out.println(i);
+        return i;
+    }
+    public static void m(int a, int b, int c) {
+        System.out.println(a + b * c); // prints 7  →  1 + 2 * 3
+    }
+}
+// prints
+// 1
+// 2
+// 3
+// 7</pre>
+<p>Side-effect mix (method + increments), same two phases:</p>
+<pre class='code'>class Test {
+    static int x = 5;
+    public static int getValue() {
+        System.out.print(&quot;G&quot;);
+        return 10;
+    }
+    public static void main(String[] args) {
+        int result = getValue() + x++ * ++x;
+        System.out.println();
+        System.out.println(result); // prints 45
+        System.out.println(x);      // prints 7
+        // operands: getValue()→10, x++ uses 5 (x=6), ++x → 7
+        // 10 + 5 * 7 = 45
+    }
+}
+// prints
+// G
+// 45
+// 7</pre>
+<h3>Parentheses vs the chart — what he wants in real code</h3>
+<p>Precedence exists so the language is defined. Production lo extra brackets pettadam shame kadu. Exam lo they remove brackets on purpose.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int a = 10, b = 20, c = 30;
+        System.out.println(a + b * c);       // prints 610
+        System.out.println(a &gt; 5 &amp;&amp; b &gt; 5);  // prints true
+        System.out.println(a = b = c);       // prints 30 (value of assignment)
+    }
+}</pre>
+<p>Value of assignment expression is the value written to the left variable — that is why System.out.println(a = b = c) compiles and prints 30. Lowest precedence, right associativity, result still a value.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        System.out.println(x = 20); // prints 20
+        System.out.println(x);      // prints 20
+    }
+}</pre>
+<h3>Rules (as he states them)</h3>
+<ol><li>Operators ki precedence undi; operands ki precedence undadu.</li></ol>
+<ol><li>Highest band: [] () . postfix ++ --, then prefix unary, new, cast.</li></ol>
+<ol><li>Then * / %, then + - (and String +), then shift, then comparison / instanceof, then == !=.</li></ol>
+<ol><li>Then &amp; then ^ then |, then &amp;&amp; then ||, then ?:, then assignment (lowest).</li></ol>
+<ol><li>Same-precedence binaries: left → right. Assignment, ternary, prefix unary: right → left.</li></ol>
+<ol><li>Parentheses override everything. Doubt unte `()` pettandi.</li></ol>
+<ol><li>Evaluation of an expression: first all operands left → right (side effects now), then operators by the chart.</li></ol>
+<ol><li>Integer / and % truncate toward zero — 6/4 is 1, that is why the famous program ends with 12.</li></ol>
+<ol><li>+= evaluates the left variable once, first, then the right expression.</li></ol>
+<ol><li>a[index] = index = 3 updates a[old index], not a[3].</li></ol>
+<h3>Exam traps (from this lecture)</h3>
+<ul><li>1 + 2 * 3 is 7, not 9.</li></ul>
+<ul><li>1 + 2 &lt;&lt; 1 is 6, not 5. Additive is above shift in Java.</li></ul>
+<ul><li>8 &gt;&gt; 2 + 1 is 1, not 3.</li></ul>
+<ul><li>(int)10.9 * 2 is 20, not 21.</li></ul>
+<ul><li>10 &lt; 20 &lt; 30 is CE, not a chained comparison.</li></ul>
+<ul><li>4 &amp; 5 == 4 is CE (int &amp; boolean), not true.</li></ul>
+<ul><li>true || false &amp;&amp; false is true because &amp;&amp; binds tighter.</li></ul>
+<ul><li>Famous m1 program: print order 1..6, result 12 (not 13).</li></ul>
+<ul><li>i += ++i + i++ + ++i + i++ with i=1 → 13.</li></ul>
+<ul><li>x = ++x + ++x with x=0 → 3, not 2, not 4.</li></ul>
+<ul><li>x = x++ with x=10 → 10.</li></ul>
+<ul><li>a[index] = index = 3 with index=0 writes `a[0]`, not a[3].</li></ul>
+<ul><li>++x-- / ++(++x) → CE unexpected type, required variable.</li></ul>
+<ul><li>Seeing a “crazy” mix does not mean invalid. Chart + left-to-right operands is enough.</li></ul>
+<h3>Recap</h3>
+<p>Part-6 is short but this is the scoring operators class. Chart for operators; left-to-right for operands; never confuse the two. Next class (Part-7) is interview FAQs: new vs newInstance(), instanceof vs isInstance(), ClassNotFoundException vs NoClassDefFoundError, plus the remaining operator interview mix (== vs equals, increment puzzles, boolean vs bitwise, = vs ==, reachability-adjacent questions). Operators module wraps there.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 22 of 203</td></tr>
+<tr><td>Series</td><td>Operators &amp; Assignments · Part 6 of 7</td></tr>
+<tr><td>Topic</td><td>Operator precedence chart (new, [], (), unary, *, /, +, assignment, …), associativity, operand evaluation order (always left to right), interview tricks like x = ++x + ++x</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>22m 52s</td></tr>
+<tr><td>Video ID</td><td>jTmACfmmpUs</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=jTmACfmmpUs</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Captions</td><td>None on YouTube. Notes reconstructed from this lecture topic as Durga Sir teaches it, with full Java board examples.</td></tr>
+</table>
+<table>
+<tr><th>Priority (high → low)</th><th>Group he names</th><th>Operators on the board</th><th></th><th></th></tr>
+<tr><td>1 (highest)</td><td>Unary / primary</td><td>[]  ()  .  x++  x--  ++x  --x  ~  !  new  (type)</td><td></td><td></td></tr>
+<tr><td>2</td><td>Arithmetic (multiplicative first)</td><td>*  /  %   then   +  -</td><td></td><td></td></tr>
+<tr><td>3</td><td>Shift</td><td>&lt;&lt;  &gt;&gt;  &gt;&gt;&gt;</td><td></td><td></td></tr>
+<tr><td>4</td><td>Comparison</td><td>&lt;  &lt;=  &gt;  &gt;=  instanceof</td><td></td><td></td></tr>
+<tr><td>5</td><td>Equality</td><td>==  !=</td><td></td><td></td></tr>
+<tr><td>6</td><td>Bitwise</td><td>&amp;   then   ^   then   `\</td><td>`  (AND, XOR, OR — three different levels)</td><td></td></tr>
+<tr><td>7</td><td>Short-circuit</td><td>&amp;&amp;   then   `\</td><td>\</td><td>`</td></tr>
+<tr><td>8</td><td>Conditional</td><td>?:</td><td></td><td></td></tr>
+<tr><td>9 (lowest)</td><td>Assignment</td><td>=  +=  -=  *=  /=  %=  &amp;=  ^=  `\</td><td>=  &lt;&lt;=  &gt;&gt;=  &gt;&gt;&gt;=`</td><td></td></tr>
+</table>
+<table>
+<tr><th>Kind</th><th>Associativity</th><th>Sir’s one-liner</th></tr>
+<tr><td>postfix [] () . x++ x--</td><td>left → right</td><td>array / call / member chain left nunchi</td></tr>
+<tr><td>prefix unary ++x --x + - ~ ! (type) new</td><td>right → left</td><td>~~x means ~(~x)</td></tr>
+<tr><td>all binary except assignment</td><td>left → right</td><td>a - b - c is (a - b) - c</td></tr>
+<tr><td>?:</td><td>right → left</td><td>nesting of ternary</td></tr>
+<tr><td>assignment</td><td>right → left</td><td>a = b = c = 20 starts at c</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Operand</th><th>Value used</th><th>i after</th></tr>
+<tr><td>1</td><td>left-hand i of +=</td><td>1</td><td>1</td></tr>
+<tr><td>2</td><td>++i</td><td>2</td><td>2</td></tr>
+<tr><td>3</td><td>i++</td><td>2</td><td>3</td></tr>
+<tr><td>4</td><td>++i</td><td>4</td><td>4</td></tr>
+<tr><td>5</td><td>i++</td><td>4</td><td>5</td></tr>
+</table>
+</body></html>

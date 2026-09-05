@@ -1,0 +1,465 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>144-comparator</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 144 — Collections Part-9: Comparator Interface &amp; Customized Sorting</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This is the Comparator deep-dive session in the Collections sorting block. Durga Sir spends roughly the first hour on one flagship example (TreeSet + Integer + descending order) and then a postmortem of seven different compare method implementations to prove that the JVM is blind — it only trusts your return value.</p>
+<p>What this lecture covers:</p>
+<ol><li>Comparator interface location, methods, and method prototypes</li></ol>
+<ol><li>Why only compare() needs implementation when implementing Comparator (equals is inherited)</li></ol>
+<ol><li>Comparable vs Comparator recap (natural vs customized sorting)</li></ol>
+<ol><li>Full program: insert Integer objects into TreeSet with descending order</li></ol>
+<ol><li>Line-one theory: with vs without Comparator object in TreeSet constructor</li></ol>
+<ol><li>Step-by-step trace of every compare() call during insertion</li></ol>
+<ol><li>TreeSet internal BST placement + in-order traversal output</li></ol>
+<ol><li>Various possible implementations of compare method — seven styles and their outputs</li></ol>
+<ol><li>JVM-as-blind-person analogy (negative = before, positive = after, zero = duplicate)</li></ol>
+<p>What continues in next sessions:</p>
+<ul><li>Five to six more Comparator examples (String, custom objects, multiple comparators, etc.)</li></ul>
+<p>Exam mantra: If you understand this one TreeSet example and the seven compare implementations, every remaining Comparator program becomes easy. If you miss this session, the rest of the sorting block will feel impossible.</p>
+<h2>00:04 — Comparator interface: package and methods</h2>
+<h3>Board point 1: Package location</h3>
+<p>Board note: Comparator present in java.util package.</p>
+<h3>Board point 2: Methods defined</h3>
+<p>The equals() in Comparator is the same concept as Object.equals() — same name, same role.</p>
+<h2>01:49 — Comparator method prototypes</h2>
+<h3>Method 1: compare (THE method you must master)</h3>
+<pre class='code'>public int compare(Object obj1, Object obj2)</pre>
+<p>Return value contract (identical logic to compareTo() — copy-paste behavior):</p>
+<p>Durga Sir&#x27;s emphasis: compare method behavior = compareTo method behavior. Same terminology, same rules.</p>
+<h3>Method 2: equals (dummy for implementation purposes)</h3>
+<pre class='code'>public boolean equals(Object obj)</pre>
+<p>No special explanation required — standard Object-class-style equals. You do NOT implement this when implementing Comparator.</p>
+<h2>06:00 — Implementing Comparator: only compare() is compulsory</h2>
+<h3>The classroom question</h3>
+<p>&quot;Sir, Comparator defines two methods. When I implement an interface, I must implement every method. So why don&#x27;t I implement equals()?&quot;</p>
+<h3>Answer (inheritance reasoning)</h3>
+<pre class='code'>class MyComparator implements Comparator {
+    // Must implement compare() only
+}</pre>
+<ol><li>MyComparator is a child class of Object (every class extends Object).</li></ol>
+<ol><li>Object already contains equals() → inherited by default to every child.</li></ol>
+<ol><li>Therefore MyComparator already has equals() from Object.</li></ol>
+<ol><li>Remaining method to implement = `compare()` only.</li></ol>
+<h3>Board conclusion (must copy)</h3>
+<p>Whenever we are implementing Comparator interface, compulsory we should provide implementation only for compare method.</p>
+<p>We are not required to provide implementation for equals method, because it is already available to our class from Object class through inheritance.</p>
+<h2>10:16 — Comparable vs Comparator: when to use which</h2>
+<p>Natural sorting = the class&#x27;s own compareTo() logic (e.g., Integer ascending).</p>
+<p>Customized sorting = your Comparator&#x27;s compare() logic (e.g., Integer descending, sort by name length, etc.).</p>
+<h2>11:04 — Flagship example: TreeSet descending order for Integer</h2>
+<h3>Problem statement (board)</h3>
+<p>Write a program to insert Integer objects into TreeSet where the sorting order is descending order.</p>
+<h3>Starter code (without Comparator — ascending by default)</h3>
+<pre class='code'>import java.util.*;
+
+public class TreeSetDemo3 {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet();   // LINE ONE — mark this on your notes
+        t.add(10);
+        t.add(0);
+        t.add(15);
+        t.add(5);
+        t.add(20);
+        t.add(20);   // duplicate
+        System.out.println(t);
+    }
+}</pre>
+<h3>Expected vs actual output</h3>
+<p>Sir&#x27;s requirement: &quot;I don&#x27;t want this bloody ascending order. I want descending: 20, 15, 10, 5, 0.&quot;</p>
+<h2>14:57 — Solution: pass Comparator object to TreeSet constructor</h2>
+<h3>Step 1: Create Comparator class</h3>
+<pre class='code'>class MyComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        Integer I1 = (Integer) obj1;
+        Integer I2 = (Integer) obj2;
+
+        if (I1 &lt; I2)
+            return +1;      // smaller element → after (descending)
+        else if (I1 &gt; I2)
+            return -1;      // bigger element → before (descending)
+        else
+            return 0;       // equal → duplicate
+    }
+}</pre>
+<h3>Step 2: Pass Comparator at LINE ONE</h3>
+<p>TreeSet t = new TreeSet(new MyComparator());   // LINE ONE with Comparator</p>
+<h3>Critical rule: which method does JVM call?</h3>
+<p>Observe the difference: Without Comparator → compareTo. With Comparator → compare.</p>
+<h2>17:28 — Descending-order compare logic explained</h2>
+<h3>Mental model for descending order</h3>
+<p>When sorting descending (biggest first):</p>
+<ul><li>Smaller value should come after larger value → return positive</li></ul>
+<ul><li>Larger value should come before smaller value → return negative</li></ul>
+<ul><li>Equal values → return zero (duplicate, not inserted in TreeSet)</li></ul>
+<h3>Logic table for descending Integer sort</h3>
+<p>Any positive number works (+1, +1000, etc.). Any negative number works (-1, -1000, etc.). Convention: use +1, -1, 0.</p>
+<h2>17:28 — Full insertion trace (step by step)</h2>
+<p>Elements added in order: 10, 0, 15, 5, 20, 20</p>
+<h3>Insert 10 (first element)</h3>
+<ul><li>No comparison required for the first element.</li></ul>
+<ul><li>10 becomes the root of the internal BST.</li></ul>
+<h3>Insert 0 — compare(0, 10)</h3>
+<ul><li>I1 = 0, I2 = 10</li></ul>
+<ul><li>0 &lt; 10 → return +1 (positive)</li></ul>
+<ul><li>Positive → 0 should come after 10</li></ul>
+<ul><li>0 placed to the right of 10</li></ul>
+<p>       10
+        \
+         0</p>
+<h3>Insert 15 — compare(15, 10)</h3>
+<ul><li>I1 = 15, I2 = 10</li></ul>
+<ul><li>15 &gt; 10 → return -1 (negative)</li></ul>
+<ul><li>Negative → 15 should come before 10</li></ul>
+<ul><li>15 placed to the left of 10</li></ul>
+<p>      15
+        \
+        10
+          \
+           0</p>
+<h3>Insert 5 — compare(5, 10) then compare(5, 0)</h3>
+<p>First: compare(5, 10)</p>
+<ul><li>I1 = 5, I2 = 10 → 5 &lt; 10 → return +1 → 5 goes right of 10</li></ul>
+<p>Second: compare(5, 0) (0 already on right side)</p>
+<ul><li>I1 = 5, I2 = 0 → 5 &gt; 0 → return -1 → 5 goes before 0</li></ul>
+<p>Result: 5 after 10, before 0.</p>
+<p>      15
+        \
+        10
+       /
+      5
+        \
+         0</p>
+<h3>Insert 20 — compare(20, 10) then compare(20, 15)</h3>
+<p>First: compare(20, 10) → 20 &gt; 10 → -1 → go left of 10</p>
+<p>Second: compare(20, 15) → 20 &gt; 15 → -1 → go left of 15</p>
+<p>    20
+      \
+      15
+        \
+        10
+       /
+      5
+        \
+         0</p>
+<h3>Insert 20 (duplicate) — compare(20, 10) → compare(20, 15) → compare(20, 20)</h3>
+<ul><li>compare(20, 10) → -1 → go left</li></ul>
+<ul><li>compare(20, 15) → -1 → go left</li></ul>
+<ul><li>compare(20, 20) → 0 → duplicate, NOT inserted</li></ul>
+<h3>Final TreeSet output — in-order traversal</h3>
+<p>Durga Sir uses in-order traversal (Left → Root → Right) on the BST:</p>
+<p>&quot;First left, next root, next right...&quot;</p>
+<p>In-order on the tree above → [20, 15, 10, 5, 0]</p>
+<h2>26:40 — Central idea: JVM is the blind person</h2>
+<p>Durga Sir&#x27;s famous analogy:</p>
+<p>JVM is a blind person. JVM doesn&#x27;t know anything about your sorting logic. JVM simply calls compare(). Based on what you return:</p>
+<p>- Return negative → place element before</p>
+<p>- Return positive → place element after</p>
+<p>- Return zero → treat as duplicate, don&#x27;t insert</p>
+<p>JVM never checks whether your logic is &quot;really&quot; greater-than or less-than. JVM never validates duplicates. Your compare method controls everything.</p>
+<h2>27:04 — LINE ONE theory (board — must memorize)</h2>
+<h3>Case A: At LINE ONE, if we are NOT passing Comparator object</h3>
+<p>TreeSet t = new TreeSet();   // no Comparator</p>
+<ul><li>Internally JVM will call compareTo() method</li></ul>
+<ul><li>compareTo() is meant for default natural sorting order</li></ul>
+<ul><li>Output: 0, 5, 10, 15, 20 (ascending for Integer)</li></ul>
+<h3>Case B: At LINE ONE, if we are passing Comparator object</h3>
+<pre class='code'>TreeSet t = new TreeSet(new MyComparator());</pre>
+<ul><li>Internally JVM will call compare() method (of your Comparator class)</li></ul>
+<ul><li>compare() is meant for customized sorting</li></ul>
+<ul><li>Output: 20, 15, 10, 5, 0 (descending in our example)</li></ul>
+<h2>27:31 — Complete runnable program (verified in IDE)</h2>
+<pre class='code'>import java.util.*;
+
+public class TreeSetDemo3 {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet(new MyComparator());
+        t.add(10);
+        t.add(0);
+        t.add(15);
+        t.add(5);
+        t.add(20);
+        t.add(20);
+        System.out.println(t);   // [20, 15, 10, 5, 0]
+    }
+}
+
+class MyComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        Integer I1 = (Integer) obj1;
+        Integer I2 = (Integer) obj2;
+
+        if (I1 &lt; I2)
+            return +1;
+        else if (I1 &gt; I2)
+            return -1;
+        else
+            return 0;
+    }
+}</pre>
+<h3>Demo without Comparator (ascending)</h3>
+<p>Remove new MyComparator() → run again:</p>
+<p>Output: [0, 5, 10, 15, 20]</p>
+<h3>Demo with Comparator (descending)</h3>
+<p>Add new MyComparator() back → run:</p>
+<p>Output: [20, 15, 10, 5, 0]</p>
+<h2>41:18 — Postmortem: various possible implementations of compare method</h2>
+<p>Durga Sir now explores seven different compare implementations using the same insertion sequence (10, 0, 15, 5, 20, 20) to show that output depends entirely on what compare returns.</p>
+<p>Setup reminder:</p>
+<ul><li>Without Comparator → JVM calls obj1.compareTo(obj2)</li></ul>
+<ul><li>With Comparator → JVM calls yourComparator.compare(obj1, obj2)</li></ul>
+<p>All examples below assume Comparator IS passed to TreeSet unless stated otherwise.</p>
+<h3>Implementation 1: return I1.compareTo(I2)</h3>
+<pre class='code'>public int compare(Object obj1, Object obj2) {
+    Integer I1 = (Integer) obj1;
+    Integer I2 = (Integer) obj2;
+    return I1.compareTo(I2);
+}</pre>
+<p>Why? You are doing inside compare() exactly what JVM would do via compareTo() anyway.</p>
+<h3>Implementation 2: return -(I1.compareTo(I2))</h3>
+<pre class='code'>return -(I1.compareTo(I2));</pre>
+<p>Trace example: compare(0, 10)</p>
+<ul><li>0.compareTo(10) returns negative (0 before 10 in natural order)</li></ul>
+<ul><li>Your minus sign flips it to positive</li></ul>
+<ul><li>JVM sees positive → 0 comes after 10 → descending behavior</li></ul>
+<p>Shortcut: One line for descending Integer sort instead of if-else blocks.</p>
+<h3>Implementation 3: return I2.compareTo(I1) — reverse arguments</h3>
+<pre class='code'>return I2.compareTo(I1);</pre>
+<p>Trace example: compare(0, 10)</p>
+<ul><li>Returns 10.compareTo(0) → positive (10 naturally after 0)</li></ul>
+<ul><li>JVM sees positive → 0 comes after 10 → descending</li></ul>
+<h3>Implementation 4: return -(I2.compareTo(I1)) — reverse + negate</h3>
+<pre class='code'>return -(I2.compareTo(I1));</pre>
+<p>One reversal (I2 vs I1) + minus sign = double reversal = natural order restored.</p>
+<h3>Summary table: first four &quot;sensible&quot; implementations</h3>
+<h3>Implementation 5 (DANGEROUS): always return +1</h3>
+<p>return +1;   // always positive, no real comparison</p>
+<p>This is insertion order, NOT sorted order!</p>
+<ul><li>First element 10 inserted (no comparison)</li></ul>
+<ul><li>0 compared → +1 → after 10</li></ul>
+<ul><li>15 compared → +1 → after 0</li></ul>
+<ul><li>5 compared → +1 → after 15</li></ul>
+<ul><li>20 compared → +1 → after 5</li></ul>
+<ul><li>Second 20 compared → +1 → still inserted (compare says NOT duplicate!)</li></ul>
+<p>Trap: TreeSet allows &quot;duplicate&quot; 20 because your compare never returns 0. JVM doesn&#x27;t decide duplicates — you do.</p>
+<h3>Implementation 6 (DANGEROUS): always return -1</h3>
+<p>return -1;   // always negative</p>
+<p>Sir uses term: reverse of insertion order.</p>
+<p>Trace: each new element pushed to front because -1 always means &quot;before.&quot;</p>
+<h3>Implementation 7 (DANGEROUS): always return 0</h3>
+<p>return 0;   // always zero</p>
+<ul><li>First 10 inserted (no comparison needed)</li></ul>
+<ul><li>Every subsequent add → compare returns 0 → JVM treats as duplicate → not inserted</li></ul>
+<ul><li>Only the first inserted element survives</li></ul>
+<p>Board note: Only first element will be inserted and all remaining are considered as duplicates.</p>
+<h2>58:47 — Master summary: seven implementations at a glance</h2>
+<h2>58:56 — JVM dancing analogy (exam favorite)</h2>
+<p>Based on your return value, JVM can dance.</p>
+<p>- Is it really duplicate? JVM doesn&#x27;t worry.</p>
+<p>- Is it really greater or less? JVM doesn&#x27;t worry.</p>
+<p>- You return positive → JVM places after.</p>
+<p>- You return negative → JVM places before.</p>
+<p>- You return zero → JVM skips as duplicate.</p>
+<p>Central logic for customized sorting = inside compare method only.</p>
+<h2>1:01:04 — Heterogeneous objects note (preview)</h2>
+<p>Student question: What if we add different types of objects?</p>
+<p>Sir&#x27;s answer (brief — full rule in later session):</p>
+<ul><li>If you add heterogeneous objects but your compare always returns +1, they will all be added (insertion-order behavior).</li></ul>
+<ul><li>TreeSet normally requires mutually comparable objects; Comparator gives you control, but wrong compare logic can break expectations.</li></ul>
+<ul><li>Detailed heterogeneous-object rules will be explained in upcoming examples.</li></ul>
+<h2>Quick reference tables</h2>
+<h3>Comparable vs Comparator (complete)</h3>
+<h3>compare() / compareTo() return contract</h3>
+<h3>TreeSet constructor decision tree</h3>
+<p>Need sorting in TreeSet?
+│
+├─ Default natural order (class&#x27;s compareTo)
+│   └─ TreeSet ts = new TreeSet();
+│       JVM → compareTo()
+│
+└─ Custom order (your logic)
+    └─ TreeSet ts = new TreeSet(new MyComparator());
+        JVM → compare()</p>
+<h2>OCJP / SCJP exam checklist</h2>
+<ul><li>[ ] State Comparator package: java.util (not java.lang)</li></ul>
+<ul><li>[ ] State Comparable package: java.lang</li></ul>
+<ul><li>[ ] Comparator defines 2 methods: compare and equals</li></ul>
+<ul><li>[ ] When implementing Comparator, implement compare() only — equals inherited from Object</li></ul>
+<ul><li>[ ] Write compare() prototype: public int compare(Object obj1, Object obj2)</li></ul>
+<ul><li>[ ] Negative = before, positive = after, zero = equal/duplicate</li></ul>
+<ul><li>[ ] Natural sorting → Comparable / compareTo(); Customized → Comparator / compare()</li></ul>
+<ul><li>[ ] TreeSet without Comparator → ascending for Integer</li></ul>
+<ul><li>[ ] TreeSet with descending Comparator → reverse of natural order</li></ul>
+<ul><li>[ ] return I1.compareTo(I2) inside compare = same as no Comparator</li></ul>
+<ul><li>[ ] return -(I1.compareTo(I2)) = descending shortcut</li></ul>
+<ul><li>[ ] return +1 always → insertion order (NOT sorted)</li></ul>
+<ul><li>[ ] return -1 always → reverse insertion order</li></ul>
+<ul><li>[ ] return 0 always → only first element survives</li></ul>
+<ul><li>[ ] JVM does NOT validate whether compare logic is &quot;correct&quot; — only trusts return value</li></ul>
+<ul><li>[ ] First element in TreeSet: no comparison performed</li></ul>
+<h2>Homework / self-test</h2>
+<ol><li>Write TreeSetDemo3 from memory: TreeSet + MyComparator + descending Integer sort.</li></ol>
+<ol><li>Trace compare(5, 10) and compare(5, 0) by hand for descending logic.</li></ol>
+<ol><li>Predict output for each of the seven compare implementations without running code.</li></ol>
+<ol><li>Explain why return +1 allows duplicate 20 in TreeSet but natural sorting does not.</li></ol>
+<ol><li>Convert descending if-else compare to one-line return -(I1.compareTo(I2)); and verify same output.</li></ol>
+<ol><li>Draw the BST after inserting 10, 0, 15, 5, 20 with descending Comparator.</li></ol>
+<ol><li>Write compare() for ascending String sort using return s1.compareTo(s2);.</li></ol>
+<h3>Self-test program template</h3>
+<pre class='code'>import java.util.*;
+
+public class ComparatorSelfTest {
+    public static void main(String[] args) {
+        // Test 1: no Comparator
+        TreeSet&lt;Integer&gt; natural = new TreeSet&lt;&gt;();
+        for (int n : new int[]{10, 0, 15, 5, 20, 20})
+            natural.add(n);
+        System.out.println(&quot;Natural: &quot; + natural);
+        // Expected: [0, 5, 10, 15, 20]
+
+        // Test 2: descending via negated compareTo
+        TreeSet&lt;Integer&gt; desc = new TreeSet&lt;&gt;(new Comparator&lt;Integer&gt;() {
+            public int compare(Integer a, Integer b) {
+                return -(a.compareTo(b));
+            }
+        });
+        for (int n : new int[]{10, 0, 15, 5, 20, 20})
+            desc.add(n);
+        System.out.println(&quot;Descending: &quot; + desc);
+        // Expected: [20, 15, 10, 5, 0]
+    }
+}</pre>
+<h2>Session closing</h2>
+<ul><li>This session is foundational for all remaining Comparator examples in the playlist.</li></ul>
+<ul><li>Sir will cover 5–6 more examples in follow-up videos (String sorting, multiple criteria, etc.).</li></ul>
+<ul><li>The one-hour investment on TreeSet + Integer + descending + seven compare styles is intentional — everything else builds on this.</li></ul>
+<ul><li>Take the method-call trace diagram and BST diagram from the board/screen into your notes alongside the code.</li></ul>
+<p>End of Video 144 study notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>144 of 203</td><td></td><td></td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Collections Part-9 \</td><td>\</td><td>comparator</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 04m 58s</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>uu9DHLJVRIs</td><td></td><td></td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=uu9DHLJVRIs</td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>YouTube auto-captions</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Interface</th><th>Package</th><th>Exam trap</th></tr>
+<tr><td>Comparable</td><td>java.lang</td><td>Only one method: compareTo()</td></tr>
+<tr><td>Comparator</td><td>java.util</td><td>NOT java.lang — always java.util</td></tr>
+</table>
+<table>
+<tr><th>Interface</th><th># Methods</th><th>Method names</th></tr>
+<tr><td>Comparable</td><td>1</td><td>compareTo()</td></tr>
+<tr><td>Comparator</td><td>2</td><td>compare() and equals()</td></tr>
+</table>
+<table>
+<tr><th>Return value</th><th>Meaning</th></tr>
+<tr><td>Negative</td><td>obj1 has to come before obj2</td></tr>
+<tr><td>Positive</td><td>obj1 has to come after obj2</td></tr>
+<tr><td>Zero</td><td>obj1 and obj2 are equal (duplicate for TreeSet)</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>Go for</th><th>Package</th><th>Methods</th><th>Implementation burden</th></tr>
+<tr><td>Default natural sorting order</td><td>Comparable</td><td>java.lang</td><td>1 (compareTo)</td><td>Implement compareTo() in the class itself</td></tr>
+<tr><td>Customized sorting order</td><td>Comparator</td><td>java.util</td><td>2 (compare, equals)</td><td>Implement compare() only in a separate class</td></tr>
+</table>
+<table>
+<tr><th>Constructor used</th><th>JVM calls</th><th>Sorting type</th><th>Output</th></tr>
+<tr><td>new TreeSet() (no Comparator)</td><td>compareTo()</td><td>Default natural (ascending)</td><td>[0, 5, 10, 15, 20]</td></tr>
+<tr><td>new TreeSet(new MyComparator())</td><td>compare()</td><td>Customized (descending)</td><td>[20, 15, 10, 5, 0]</td></tr>
+</table>
+<table>
+<tr><th>LINE ONE</th><th>JVM internally calls</th><th>Purpose</th></tr>
+<tr><td>new TreeSet()</td><td>compareTo() on inserted objects</td><td>Default natural sorting order</td></tr>
+<tr><td>new TreeSet(comparatorObj)</td><td>compare(obj1, obj2) on your Comparator</td><td>Customized sorting order</td></tr>
+</table>
+<table>
+<tr><th>Condition</th><th>Meaning</th><th>obj1 position relative to obj2</th><th>Return</th></tr>
+<tr><td>I1 &lt; I2</td><td>obj1 is smaller</td><td>obj1 should come after obj2</td><td>+1 (positive)</td></tr>
+<tr><td>I1 &gt; I2</td><td>obj1 is bigger</td><td>obj1 should come before obj2</td><td>-1 (negative)</td></tr>
+<tr><td>I1 == I2</td><td>equal</td><td>duplicate</td><td>0</td></tr>
+</table>
+<table>
+<tr><th>Effect</th><th>Output</th></tr>
+<tr><td>Same as default natural sorting</td><td>[0, 5, 10, 15, 20] ascending</td></tr>
+</table>
+<table>
+<tr><th>Effect</th><th>Output</th></tr>
+<tr><td>Negate natural order → descending</td><td>[20, 15, 10, 5, 0]</td></tr>
+</table>
+<table>
+<tr><th>Effect</th><th>Output</th></tr>
+<tr><td>Reversing arguments reverses order</td><td>[20, 15, 10, 5, 0] descending</td></tr>
+</table>
+<table>
+<tr><th>Effect</th><th>Output</th></tr>
+<tr><td>Two reversals = back to original</td><td>[0, 5, 10, 15, 20] ascending</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Implementation</th><th>Output</th><th>Order name</th></tr>
+<tr><td>1</td><td>return I1.compareTo(I2);</td><td>0, 5, 10, 15, 20</td><td>Ascending (natural)</td></tr>
+<tr><td>2</td><td>return -(I1.compareTo(I2));</td><td>20, 15, 10, 5, 0</td><td>Descending</td></tr>
+<tr><td>3</td><td>return I2.compareTo(I1);</td><td>20, 15, 10, 5, 0</td><td>Descending</td></tr>
+<tr><td>4</td><td>return -(I2.compareTo(I1));</td><td>0, 5, 10, 15, 20</td><td>Ascending</td></tr>
+</table>
+<table>
+<tr><th>Effect</th><th>Output</th></tr>
+<tr><td>Every new element always goes after existing</td><td>[10, 0, 15, 5, 20, 20]</td></tr>
+</table>
+<table>
+<tr><th>Effect</th><th>Output</th></tr>
+<tr><td>Every new element always goes before existing</td><td>[20, 5, 15, 0, 10]</td></tr>
+</table>
+<table>
+<tr><th>Effect</th><th>Output</th></tr>
+<tr><td>First element inserted; all others treated as duplicates</td><td>[10] only</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>compare() body</th><th>Output for 10,0,15,5,20,20</th><th>Order type</th></tr>
+<tr><td>1</td><td>I1.compareTo(I2)</td><td>0, 5, 10, 15, 20</td><td>Ascending</td></tr>
+<tr><td>2</td><td>-(I1.compareTo(I2))</td><td>20, 15, 10, 5, 0</td><td>Descending</td></tr>
+<tr><td>3</td><td>I2.compareTo(I1)</td><td>20, 15, 10, 5, 0</td><td>Descending</td></tr>
+<tr><td>4</td><td>-(I2.compareTo(I1))</td><td>0, 5, 10, 15, 20</td><td>Ascending</td></tr>
+<tr><td>5</td><td>return +1;</td><td>10, 0, 15, 5, 20, 20</td><td>Insertion order</td></tr>
+<tr><td>6</td><td>return -1;</td><td>20, 5, 15, 0, 10</td><td>Reverse insertion order</td></tr>
+<tr><td>7</td><td>return 0;</td><td>10</td><td>Only first element</td></tr>
+</table>
+<table>
+<tr><th>Feature</th><th>Comparable</th><th>Comparator</th></tr>
+<tr><td>Package</td><td>java.lang</td><td>java.util</td></tr>
+<tr><td>Methods</td><td>1 (compareTo)</td><td>2 (compare, equals)</td></tr>
+<tr><td>Method to implement</td><td>compareTo()</td><td>compare() only</td></tr>
+<tr><td>Sorting type</td><td>Default natural</td><td>Customized</td></tr>
+<tr><td>Where logic lives</td><td>Inside the class itself</td><td>Separate Comparator class</td></tr>
+<tr><td>TreeSet constructor</td><td>new TreeSet()</td><td>new TreeSet(comparatorObj)</td></tr>
+<tr><td>JVM calls</td><td>compareTo()</td><td>compare()</td></tr>
+</table>
+<table>
+<tr><th>Return</th><th>Placement rule</th><th>TreeSet meaning</th></tr>
+<tr><td>Negative</td><td>obj1 before obj2</td><td>Go left in BST</td></tr>
+<tr><td>Positive</td><td>obj1 after obj2</td><td>Go right in BST</td></tr>
+<tr><td>Zero</td><td>obj1 equals obj2</td><td>Duplicate — not inserted</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,572 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>036-member-modifiers</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 036 — Member-level modifiers (and `strictfp`)</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-7||  MemberLevel Modifiers</p>
+<h2>What this lecture covers</h2>
+<ol><li>Recap of class-level modifiers already done: public, default, final, abstract.</li></ol>
+<ol><li>Last class-level modifier: strictfp (Java 1.2) — classes and methods, not variables.</li></ol>
+<ol><li>Why strictfp: 10.0 / 3 floating-point results vary from platform to platform.</li></ol>
+<ol><li>strictfp method: every floating-point calculation in that method follows IEEE 754.</li></ol>
+<ol><li>strictfp class: every floating-point calculation in every concrete method follows IEEE 754.</li></ol>
+<ol><li>abstract + strictfp: illegal for methods, legal for classes. He compiles both.</li></ol>
+<ol><li>Member modifiers = method or variable level modifiers.</li></ol>
+<ol><li>public members: anywhere, but the class must be visible (pack1.A / pack2.B).</li></ol>
+<ol><li>Default members: current package only (package-level access).</li></ol>
+<ol><li>private members: same class only; private + abstract illegal for methods.</li></ol>
+<ol><li>protected — “the most misunderstood modifier in Java”: pack1 parent/child, then pack2 child, then D extends C.</li></ol>
+<ol><li>Visibility summary table and recommended modifiers (private data, public methods).</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:04] Recap, then `strictfp`</h3>
+<p>Class-level modifiers already covered: public classes, default classes, final, abstract.</p>
+<p>The next modifier is `strictfp` — strict floating-point.</p>
+<ul><li>Introduced in 1.2 (not from 1.0).</li></ul>
+<ul><li>Applicable for classes and methods.</li></ul>
+<ul><li>Not for variables — same story as abstract (abstract / strictfp on a variable is illegal).</li></ul>
+<pre class='code'>strictfp class Test {
+}
+
+class Demo {
+    strictfp void m1() {
+        System.out.println(10.0 / 3);
+    }
+
+    // strictfp int x; // CE: modifier strictfp not allowed here
+}</pre>
+<h3>[02:00] Need of `strictfp` — `10.0 / 3` is platform dependent</h3>
+<p>He writes:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10.0 / 3);
+        // mathematically 3.333... forever
+        // 16-bit processor: maybe five or six 3s, e.g. 3.33333
+        // 32-bit processor: 14 to 15 decimal places
+        // result of floating-point arithmetic varies from platform to platform
+    }
+}</pre>
+<p>Java is a platform-independent language, so if you do not want platform-dependent floating-point results, declare strictfp.</p>
+<p>Board line: usually the result of floating-point arithmetic is varied from platform to platform. If we want platform-independent results for floating-point arithmetic, then we should go for the strictfp modifier.</p>
+<h3>[07:00] `strictfp` method</h3>
+<pre class='code'>class Test {
+    public strictfp void m1() {
+        System.out.println(10.0 / 3);
+        // float and double calculations in this method
+    }
+}</pre>
+<p>If a method is declared strictfp, all floating-point calculations in that method have to follow IEEE 754, so we get platform-independent results.</p>
+<p>IEEE 754 is a set of rules (his classroom picture: “after the decimal point consider only four digits” whether the CPU is 16-bit, 32-bit, or 64-bit). The exact IEEE 754 rule list is not in the Java-programmer exam scope. Internally strictfp is implemented based on IEEE 754.</p>
+<h3>[10:33] `abstract` + `strictfp` is illegal for **methods**</h3>
+<p>strictfp always talks about implementation (the calculations inside the method). abstract never talks about implementation (no body). Contradiction → illegal combination for methods.</p>
+<pre class='code'>abstract class Test {
+    abstract strictfp void m1();
+    // CE: illegal combination of modifiers: abstract and strictfp
+}</pre>
+<h3>[12:45] `strictfp` class</h3>
+<p>He draws class Test with concrete methods m1, m2, m3, … m100 and abstract methods mx, my, mz.</p>
+<p>Two approaches for IEEE 754 on every concrete method:</p>
+<ol><li>Declare every concrete method strictfp, or</li></ol>
+<ol><li>Declare the class strictfp (better).</li></ol>
+<p>If a class is declared strictfp, every floating-point calculation present in every concrete method has to follow IEEE 754, so we get platform-independent results.</p>
+<pre class='code'>strictfp class Test {
+    public void m1() {
+        System.out.println(10.0 / 3);
+        // this concrete method is automatically strictfp
+    }
+
+    public void m2() {
+        double d = 22.0 / 7;
+        System.out.println(d);
+    }
+}</pre>
+<h3>[15:10] `abstract` + `strictfp` is **legal for classes**</h3>
+<p>strictfp talks about concrete methods. abstract talks about abstract methods. No contradiction at class level.</p>
+<p>If the class has at least one abstract method, the class must be abstract. You can still add strictfp for the concrete methods.</p>
+<pre class='code'>abstract strictfp class Test {
+    public void m1() {
+        System.out.println(10.0 / 3);
+        // concrete — taken care by strictfp
+    }
+
+    public abstract void mx();
+    // abstract — taken care by abstract
+}</pre>
+<p>Board line: we can declare the abstract strictfp combination for classes; it is legal for classes but illegal for methods.</p>
+<h3>[19:25] He compiles both side by side</h3>
+<p>File Test.java:</p>
+<p>abstract strictfp class Test {
+    // valid — he runs: javac Test.java — compiles fine
+}</p>
+<p>Then he adds a method:</p>
+<pre class='code'>class Test {
+    abstract strictfp void m1();
+    // CE: illegal combination of modifiers: abstract and strictfp
+}</pre>
+<p>Take both simultaneously:</p>
+<pre class='code'>abstract strictfp class Test {
+    // valid
+}
+
+class MethodCombo {
+    abstract strictfp void m1();
+    // CE: illegal combination of modifiers: abstract and strictfp
+}</pre>
+<p>Contrast: `final` + `abstract` is illegal at both class level and method level. abstract + strictfp is legal only at class level.</p>
+<p>These five are the class-level modifiers: public, default, final, abstract, `strictfp`. He already discussed final methods, abstract methods, and now strictfp methods. Next topic is member modifiers.</p>
+<h3>[23:11] Member modifiers = method or variable level</h3>
+<p>Member means method or variable. Member modifiers are method-level or variable-level modifiers.</p>
+<pre class='code'>class MemberMeans {
+    int x;                 // variable = member
+    void m1() {            // method = member
+    }
+}</pre>
+<h3>[24:19] Public members</h3>
+<p>If a member is declared public, we can access that member from anywhere — within the package or outside the package — like a public class.</p>
+<pre class='code'>package pack1;
+
+public class A {
+    public void m1() {
+        System.out.println(&quot;A class public method&quot;);
+    }
+}</pre>
+<p>Twist: don’t feel that happy. Even if the member is public, we first have to check class visibility. If the class is not public, a public method is useless from outside the package.</p>
+<h3>[25:40] `pack1.A` is **not** public; `pack2.B` tries `a.m1()`</h3>
+<p>He writes two files.</p>
+<p>A.java:</p>
+<pre class='code'>package pack1;
+
+class A {
+    public void m1() {
+        System.out.println(&quot;A class method&quot;);
+        // method is public; class A is default (not public)
+    }
+}</pre>
+<p>B.java:</p>
+<pre class='code'>package pack2;
+
+import pack1.A;
+
+class B {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();
+        // CE while compiling B: pack1.A is not public in pack1;
+        // cannot be accessed from outside package
+    }
+}</pre>
+<p>He compiles:</p>
+<pre class='code'>class PublicTwistCompile {
+    public static void main(String[] args) {
+        // javac -d . A.java   → A compiles fine
+        // javac -d . B.java   → CE
+        // pack1.A is not public in pack1; cannot be accessed from outside package
+        System.out.println(&quot;even though m1 is public, class A is not public&quot;);
+    }
+}</pre>
+<p>Board lines:</p>
+<ul><li>If a member is declared public, then we can access that member from anywhere but the corresponding class should be visible.</li></ul>
+<ul><li>Before checking member visibility we have to check class visibility.</li></ul>
+<ul><li>In the above example, even though m1 is public, we can’t access from outside the package because corresponding class A is not public.</li></ul>
+<ul><li>If both class and method are public, then only we can access the method from outside the package.</li></ul>
+<p>Fixed version (both public):</p>
+<pre class='code'>package pack1;
+
+public class A {
+    public void m1() {
+        System.out.println(&quot;A class method&quot;);
+    }
+}
+package pack2;
+
+import pack1.A;
+
+class B {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();
+        // prints A class method
+    }
+}</pre>
+<h3>[34:00] Default members</h3>
+<p>If we are not declaring anything, it is default. A default member (variable or method) can be accessed only within the current package. That is why default access is also known as package-level access.</p>
+<p>He flips the previous twist: class is public, method is not public (default method).</p>
+<pre class='code'>package pack1;
+
+public class A {
+    void m1() {
+        System.out.println(&quot;A class default method&quot;);
+        // class public, method default
+    }
+}
+package pack2;
+
+import pack1.A;
+
+class B {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();
+        // CE: m1() in pack1.A is not public; cannot be accessed from outside package
+    }
+}
+package pack1;
+
+class SamePackage {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();
+        // prints A class default method  (same package — OK)
+    }
+}</pre>
+<p>Board: if a member is declared as default, then we can access that member only within the current package. From outside of the package we can’t access. Hence default access is also known as package-level access.</p>
+<h3>[36:41] Private members</h3>
+<p>If a member is private, we can access that member only within the class. From outside of the class we can’t access.</p>
+<pre class='code'>class A {
+    private void m1() {
+        System.out.println(&quot;private m1&quot;);
+    }
+
+    public void m2() {
+        m1(); // same class — OK
+    }
+
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();
+        // prints private m1
+        a.m2();
+        // prints private m1
+    }
+}
+
+class B {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1(); // CE: m1() has private access in A
+    }
+}</pre>
+<h3>[38:04] `private` + `abstract` is illegal for methods</h3>
+<p>Already: final + abstract illegal, strictfp + abstract illegal for methods. `private` + `abstract` is also illegal. Why?</p>
+<p>He writes class P with abstract void m1(). Where do we implement an abstract method? In the child class. So the abstract method should be available to the child classes to provide implementation.</p>
+<p>A private void m1() is not available to the child classes. Contradiction.</p>
+<pre class='code'>abstract class P {
+    abstract void m1(); // must be available to child to implement
+}
+
+class Child extends P {
+    public void m1() {
+        System.out.println(&quot;child implements m1&quot;);
+    }
+}
+abstract class P {
+    private abstract void m1();
+    // CE: illegal combination of modifiers: private and abstract
+    // private methods are not available to child classes
+}
+abstract class P {
+    private void m1() {
+        System.out.println(&quot;private concrete&quot;);
+        // private + body is fine — not abstract
+    }
+}</pre>
+<p>Board: abstract methods should be available to the child classes to provide implementation, whereas private methods are not available to the child classes; hence private abstract combination is illegal for methods.</p>
+<h3>[41:44] Protected members — “the most misunderstood modifier in Java”</h3>
+<p>If a member is protected:</p>
+<ul><li>Within the current package: anywhere (child or non-child).</li></ul>
+<ul><li>Outside the package: only in child classes.</li></ul>
+<p>He writes the slogan:</p>
+<p>`protected` = default + kids</p>
+<p>(kids = child classes)</p>
+<pre class='code'>// meaning of the slogan — not one file
+class Slogan {
+    // default: current package anywhere
+    // plus: outside package only in kids (child classes)
+}</pre>
+<h3>[45:28] Same package: parent reference **or** child reference — all valid</h3>
+<p>He writes A.java (class A is public, so the file must be A.java; main lives in class B in the same file).</p>
+<pre class='code'>package pack1;
+
+public class A {
+    protected void m1() {
+        System.out.println(&quot;the most misunderstood modifier&quot;);
+    }
+}
+
+class B extends A {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();              // parent ref, parent object — valid
+
+        B b = new B();
+        b.m1();              // child ref, child object — valid (inherited)
+
+        A a1 = new B();
+        a1.m1();             // parent ref holding child object — valid
+    }
+}</pre>
+<p>He compiles and runs:</p>
+<pre class='code'>class Pack1Run {
+    public static void main(String[] args) {
+        // javac -d . A.java
+        // java pack1.B
+        // prints three times:
+        // the most misunderstood modifier
+        System.out.println(&quot;the most misunderstood modifier&quot;);
+        System.out.println(&quot;the most misunderstood modifier&quot;);
+        System.out.println(&quot;the most misunderstood modifier&quot;);
+    }
+}</pre>
+<p>Within the current package we can access a protected member either by using parent reference or by using child reference. No problem.</p>
+<h3>[51:04] Outside package `pack2.C` — only **child reference** is valid</h3>
+<pre class='code'>package pack2;
+
+import pack1.A;
+
+class C extends A {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();              // 1 — CE
+
+        C c = new C();
+        c.m1();              // 2 — valid
+
+        A a1 = new C();
+        a1.m1();             // 3 — CE
+    }
+}</pre>
+<p>Classroom quiz: among these three, students first guess “two valid one invalid”, then he settles it: one valid, two invalid. The valid one is the second (c.m1()). First and third are compile-time errors.</p>
+<p>Similarity of 1 and 3: a is type A, a1 is type A — parent reference. Difference of 2: child reference.</p>
+<p>Rule he writes:</p>
+<ul><li>We can access protected members within the current package anywhere by using parent reference or child reference.</li></ul>
+<ul><li>Outside the package we can access protected members only in child classes and we should use child reference only.</li></ul>
+<ul><li>Parent reference cannot be used to access protected members from outside the package.</li></ul>
+<p>CE message:</p>
+<pre class='code'>class ProtectedCeMessage {
+    public static void main(String[] args) {
+        // m1 has protected access in pack1.A
+        System.out.println(&quot;m1 has protected access in pack1.A&quot;);
+    }
+}</pre>
+<p>He comments the invalid lines, compiles C.java, runs java pack2.C — prints the most misunderstood modifier. Then he uncomments a.m1() and a1.m1() and shows:</p>
+<p>m1 has protected access in pack1.A</p>
+<pre class='code'>package pack2;
+
+import pack1.A;
+
+class C extends A {
+    public static void main(String[] args) {
+        // A a = new A();
+        // a.m1();           // CE: m1 has protected access in pack1.A
+
+        C c = new C();
+        c.m1();
+        // prints the most misunderstood modifier
+
+        // A a1 = new C();
+        // a1.m1();          // CE: m1 has protected access in pack1.A
+    }
+}</pre>
+<h3>[1:04:05] More dangerous twist — `D extends C` (six cases, only one valid)</h3>
+<p>Hierarchy: A (pack1) ← C (pack2) ← D (pack2). main is in `D`.</p>
+<pre class='code'>package pack2;
+
+import pack1.A;
+
+class C extends A {
+}
+
+class D extends C {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();              // 1 CE
+
+        C c = new C();
+        c.m1();              // 2 CE  (students thought valid)
+
+        D d = new D();
+        d.m1();              // 3 valid — ONLY this one
+
+        A a1 = new C();
+        a1.m1();             // 4 CE
+
+        A a2 = new D();
+        a2.m1();             // 5 CE
+
+        C c1 = new D();
+        c1.m1();             // 6 CE  (students thought valid)
+    }
+}</pre>
+<p>Students: 1 invalid, 2 valid, 3 valid, 4 invalid, 5 invalid, 6 valid. He says: still you people have to learn something.</p>
+<p>Tighter rule:</p>
+<ul><li>From outside the package we can access protected members only in child classes.</li></ul>
+<ul><li>And we should use that particular child class reference only.</li></ul>
+<ul><li>Example: if we want to access from `D` class, we should use `D` reference only. If we want to access from C class, we should use C reference only.</li></ul>
+<p>main is in D, so only D d = new D(); d.m1(); is valid. The other five: `m1 has protected access in pack1.A`.</p>
+<pre class='code'>package pack2;
+
+import pack1.A;
+
+class C extends A {
+}
+
+class D extends C {
+    public static void main(String[] args) {
+        D d = new D();
+        d.m1();
+        // prints the most misunderstood modifier
+        // every other call from D using A or C reference is CE
+    }
+}</pre>
+<p>That is why the word misunderstood modifier.</p>
+<h3>[1:14:22] Summary table of `private` / default / `protected` / `public`</h3>
+<p>He writes heading summary table of private default protected public modifiers.</p>
+<p>Visibility:</p>
+<p>Tiny proofs matching the table (same ideas he already ran):</p>
+<pre class='code'>class SameClass {
+    private int a = 1;
+    int b = 2;
+    protected int c = 3;
+    public int d = 4;
+
+    void show() {
+        System.out.println(a + b + c + d);
+        // prints 10  — all four visible in the same class
+    }
+}
+package pack1;
+
+public class Parent {
+    private void priv() { }
+    void def() { }
+    protected void prot() { }
+    public void pub() { }
+}
+
+class ChildSamePack extends Parent {
+    public static void main(String[] args) {
+        Parent p = new Parent();
+        // p.priv(); // CE: private access
+        p.def();
+        p.prot();
+        p.pub();
+    }
+}
+
+class NonChildSamePack {
+    public static void main(String[] args) {
+        Parent p = new Parent();
+        // p.priv(); // CE
+        p.def();     // same package, child or non-child — default OK
+        p.prot();
+        p.pub();
+    }
+}
+package pack2;
+
+import pack1.Parent;
+
+class ChildOtherPack extends Parent {
+    public static void main(String[] args) {
+        Parent p = new Parent();
+        ChildOtherPack c = new ChildOtherPack();
+        // p.priv(); // CE
+        // p.def();  // CE: not public; cannot be accessed from outside package
+        // p.prot(); // CE: protected access — parent reference from outside package
+        c.prot();    // OK — child reference only
+        p.pub();     // public always OK
+        c.pub();
+    }
+}
+
+class NonChildOtherPack {
+    public static void main(String[] args) {
+        Parent p = new Parent();
+        // p.priv(); // CE
+        // p.def();  // CE
+        // p.prot(); // CE — not a child, outside package
+        p.pub();     // only public is visible
+    }
+}</pre>
+<h3>[1:21:55] Most restricted / most accessible / recommended modifiers</h3>
+<ul><li>The most restricted access modifier is `private`.</li></ul>
+<ul><li>The most accessible modifier is `public`.</li></ul>
+<ul><li>Ranking (lesser visibility to greater): `private` &lt; default &lt; `protected` &lt; `public`.</li></ul>
+<pre class='code'>class Ranking {
+    private int mostRestricted;
+    int packageLevel;
+    protected int kidsPlusPackage;
+    public int mostAccessible;
+}</pre>
+<ul><li>Recommended modifier for a data member (variable): `private` — data hiding (OOPS). In C the default for a variable is private; in Java we have default, but the recommended modifier for data is still private.</li></ul>
+<ul><li>Recommended modifier for methods: `public` — a method is a service; the service should be accessible for several people.</li></ul>
+<pre class='code'>class Recommended {
+    private int salary;          // data member — private
+
+    public int getSalary() {     // method / service — public
+        return salary;
+    }
+
+    public void setSalary(int salary) {
+        this.salary = salary;
+    }
+}</pre>
+<h3>[1:25:13] Close</h3>
+<p>This video is the access modifiers for members. Remaining member modifiers (static, synchronized, native, …) are a big discussion in the next stops.</p>
+<h2>Rules</h2>
+<ol><li>strictfp (1.2): classes and methods, not variables.</li></ol>
+<ol><li>strictfp method → IEEE 754 for every FP calculation in that method.</li></ol>
+<ol><li>strictfp class → IEEE 754 for every FP calculation in every concrete method.</li></ol>
+<ol><li>abstract strictfp is legal for classes, illegal for methods.</li></ol>
+<ol><li>final + abstract is illegal at both class and method level.</li></ol>
+<ol><li>Before member visibility, check class visibility. Public method in a non-public class cannot be used from outside the package.</li></ol>
+<ol><li>Default member = package-level access only.</li></ol>
+<ol><li>Private member = same class only. private abstract method is illegal.</li></ol>
+<ol><li>Protected = default plus kids. Same package: parent or child reference. Other package: that child class’s own reference only.</li></ol>
+<ol><li>private &lt; default &lt; protected &lt; public. Private for data, public for methods.</li></ol>
+<h2>Exam traps</h2>
+<ul><li>“Public method means I can call it from pack2” — false if class A is default. CE: pack1.A is not public in pack1; cannot be accessed from outside package.</li></ul>
+<ul><li>abstract strictfp void m1(); looks like the legal class combo — it is illegal.</li></ul>
+<ul><li>Outside package, A a1 = new C(); a1.m1(); on a protected m1 is CE even though C extends A. Parent reference is not allowed.</li></ul>
+<ul><li>From D (child of C of A), C c = new C(); c.m1(); and C c1 = new D(); c1.m1(); are still CE. Use `D` reference because you are accessing from D.</li></ul>
+<ul><li>protected is not “only children”. Same package, non-child can see it.</li></ul>
+<h2>Recap</h2>
+<p>He finishes class-level modifiers with `strictfp`, then starts member access. The public story is the class-visibility twist on pack1 / pack2. Default is package-only. Private is class-only and cannot sit on an abstract method. Protected is the long A / B / C / D demo: same package all three calls work; other package only the child-typed reference of the class you are standing in. Next lectures: static, synchronized, native, and (next video) final variables.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 36 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 7</td></tr>
+<tr><td>Topic</td><td>Class-level strictfp wrap-up, then member (method / variable) access: public, default, private, protected</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 25m 35s</td></tr>
+<tr><td>Video ID</td><td>hzJPP0SvKro</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=hzJPP0SvKro</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Captions</td><td>Real YouTube auto-captions (English). ASR says “strict F / strict fop” = strictfp, “I 754” = IEEE 754, “pack one” = pack1, “keep subing” = write the board heading.</td></tr>
+</table>
+<table>
+<tr><th>Access from</th><th>private</th><th>default</th><th>protected</th><th>public</th></tr>
+<tr><td>Within the same class</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>Child class of same package</td><td>no</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>Non-child class of same package</td><td>no</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>Child class of outside package</td><td>no</td><td>no</td><td>yes (child reference only)</td><td>yes</td></tr>
+<tr><td>Non-child class of outside package</td><td>no</td><td>no</td><td>no</td><td>yes</td></tr>
+</table>
+</body></html>

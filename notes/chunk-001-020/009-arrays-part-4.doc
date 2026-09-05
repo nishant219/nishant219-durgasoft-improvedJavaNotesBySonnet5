@@ -1,0 +1,209 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>009-arrays-part-4</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 009 — Arrays, part 4</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-9 || Arrays Part-4</p>
+<p>YouTube has captions disabled on this upload. Video 008 ends by summarizing array element assignments and writing the heading array variable assignments. This lecture is that next heading: when one array reference is assigned to another.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Element assignment vs variable assignment</li></ol>
+<ol><li>Assigning one array reference to another (same type, same dimension)</li></ol>
+<ol><li>What happens to the old object (GC)</li></ol>
+<ol><li>Dimension mismatch (int[] vs int[][])</li></ol>
+<ol><li>Child-type arrays assigned to parent-type arrays (String[] → Object[])</li></ol>
+<ol><li>Why char[] cannot be assigned to int[] (promotion is for elements, not for the array type)</li></ol>
+<ol><li>3-D / jagged leftovers and exam patterns</li></ol>
+<ol><li>Close of the arrays topic</li></ol>
+<h2>Detailed notes</h2>
+<h3>Two different “assignments”</h3>
+<p>Durga keeps these on two boards:</p>
+<p>Element rules (recap from 008, still in force):</p>
+<ul><li>Primitive array: any type that can be implicitly promoted to the declared element type (byte into int[], etc.).</li></ul>
+<ul><li>Object array: declared type or child objects.</li></ul>
+<ul><li>Abstract-class array: child objects (Number[] can hold Integer, Double, …).</li></ul>
+<ul><li>Interface array: implementation objects (Runnable[] can hold Thread).</li></ul>
+<p>This lecture is not “what goes in the slot.” It is “when can I write leftArray = rightArray?”</p>
+<h3>Same type, same dimension — always allowed</h3>
+<p>int[] a = {10, 20, 30, 40, 50};
+int[] b = {60, 70};
+a = b;</p>
+<p>Both are int[] (one-dimensional). Assignment is valid.</p>
+<p>After `a = b`:</p>
+<ul><li>a and b point to the same array object {60, 70}.</li></ul>
+<ul><li>a.length is now 2, not 5.</li></ul>
+<ul><li>The old {10, 20, 30, 40, 50} object has no reference → eligible for GC.</li></ul>
+<p>System.out.println(a[0]); // 60
+b[0] = 99;
+System.out.println(a[0]); // 99 — same object</p>
+<p>Sizes do not have to match. Only the type and dimension have to match. {10,20,30,40,50} and {60,70} have different lengths; assignment is still legal because both are int[].</p>
+<h3>Dimension must match</h3>
+<p>int[] a = new int[3];
+int[][] b = new int[2][3];
+
+a = b;      // CE: incompatible types — int[] vs int[][]
+b = a;      // CE
+a = b[0];   // valid — b[0] is int[]
+b[0] = a;   // valid</p>
+<p>How to see it: b is an array of int[]. So b[0] has type int[], which matches a.</p>
+<p>Three-dimensional:</p>
+<p>int[][][] x = new int[2][3][4];
+int[][] y;
+int[] z;
+
+y = x[0];   // valid — x[0] is int[][]
+z = x[0][0]; // valid — x[0][0] is int[]
+z = x[0];   // CE — int[] vs int[][]</p>
+<p>Exam pattern: “which assignments compile?” with a mix of a, a[0], a[0][0].</p>
+<h3>Element-level promotion does **not** apply to the array variable</h3>
+<p>This is the trap Durga builds toward.</p>
+<p>At element level, char promotes to int:</p>
+<p>int[] a = new int[3];
+a[0] = &#x27;a&#x27;;   // valid — char → int</p>
+<p>At variable level, char[] is not a subtype of int[]:</p>
+<p>char[] ch = {&#x27;a&#x27;, &#x27;b&#x27;, &#x27;c&#x27;};
+int[] i = {10, 20, 30};
+i = ch;   // CE: incompatible types
+ch = i;   // CE</p>
+<p>Why: an array’s type is char[] or int[]. Those are different objects in the type system. Promotion rules are for values, not for array types.</p>
+<p>Same idea:</p>
+<p>byte[] b = {10, 20};
+int[] i = {30, 40};
+i = b;    // CE</p>
+<p>Even though byte promotes to int.</p>
+<h3>Object arrays and children — variable assignment **is** allowed</h3>
+<p>Arrays are objects. For reference element types, Java allows:</p>
+<p>child-type array → parent-type array variable</p>
+<p>String[] s = {&quot;A&quot;, &quot;B&quot;, &quot;C&quot;};
+Object[] o = s;     // valid</p>
+<p>String is a child of Object, so String[] may be assigned to Object[].</p>
+<p>The reverse needs a cast and can blow up at runtime:</p>
+<p>Object[] o = new Object[]{&quot;A&quot;, &quot;B&quot;};
+String[] s = (String[]) o;  // compiles; OK here because elements are Strings
+
+Object[] o2 = new Object[]{new Object(), &quot;A&quot;};
+String[] s2 = (String[]) o2; // compiles; ClassCastException at runtime</p>
+<p>Without a cast:</p>
+<p>String[] s = o;  // CE</p>
+<p>More Durga examples:</p>
+<p>Runnable[] r = new Runnable[5];
+r[0] = new Thread();
+Object[] o = r;     // valid — Runnable[] to Object[]
+
+Number[] n = new Number[3];
+n[0] = new Integer(10);
+n[1] = new Double(10.5);
+Object[] o2 = n;    // valid</p>
+<p>Thread[] t = new Thread[5];
+Runnable[] r = t;   // valid — Thread implements Runnable
+t = r;              // CE without cast</p>
+<h3>After parent = child, be careful writing elements</h3>
+<p>String[] s = new String[3];
+Object[] o = s;
+o[0] = new Integer(10);  // compiles (Object slot) — ArrayStoreException at runtime</p>
+<p>Because the real object is still a String[]. The compiler only sees Object[]. JVM checks the actual component type on store.</p>
+<p>This is the array version of polymorphism + heap check. Durga uses it as an exam bomb.</p>
+<h3>Jagged leftovers</h3>
+<p>Still legal after assignment:</p>
+<p>int[][] a = new int[3][];
+a[0] = new int[2];
+a[1] = new int[4];
+a[0] = new int[]{10, 20, 30}; // replace entire row (anonymous array from part 3)</p>
+<p>a[0] is an int[] variable. Assigning another int[] to it is variable assignment at the row level.</p>
+<h3>`null` assignment</h3>
+<p>int[] a = {10, 20, 30};
+a = null;   // valid — a is a reference
+// a[0] = 10;  // NPE at runtime</p>
+<p>Primitive arrays are still objects. The name a can hold null. You cannot write int x = null.</p>
+<h3>What becomes eligible for GC</h3>
+<pre class='code'>int[] a = new int[3];
+int[] b = new int[4];
+a = b;</pre>
+<p>The new int[3] object is eligible for GC (unless some other name still points to it).</p>
+<pre class='code'>int[][] x = new int[2][3];
+x[0] = null;</pre>
+<p>Only that inner int[3] row is dropped, not the whole 2-D object.</p>
+<h3>Summary table Durga wants on one slide</h3>
+<h2>Code from the lecture</h2>
+<pre class='code'>class ArrayVarAssign {
+    public static void main(String[] args) {
+        int[] a = {10, 20, 30, 40, 50};
+        int[] b = {60, 70};
+        a = b;
+        System.out.println(a.length); // 2
+
+        int[][] m = new int[2][3];
+        a = m[0];                     // valid
+        // a = m;                     // CE
+
+        char[] ch = {&#x27;a&#x27;, &#x27;b&#x27;};
+        // a = ch;                    // CE
+
+        String[] s = {&quot;durga&quot;, &quot;soft&quot;};
+        Object[] o = s;               // valid
+        System.out.println(o[0]);     // durga
+        // o[0] = 10;                 // compiles, ArrayStoreException
+    }
+}</pre>
+<h2>Rules to memorize</h2>
+<ol><li>Array variable assignment requires matching type + dimension, not matching length.</li></ol>
+<ol><li>a = b makes both names point to the same object; old object may be GC’d.</li></ol>
+<ol><li>int[] and int[][] never assign to each other; use b[0] to drop one dimension.</li></ol>
+<ol><li>Primitive promotion (char → int) does not make char[] assignable to int[].</li></ol>
+<ol><li>Child[] is assignable to Parent[] (String[] → Object[], Thread[] → Runnable[]).</li></ol>
+<ol><li>Storing the wrong runtime element into that parent view → ArrayStoreException.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>Lengths 5 and 2: assignment still compiles.</li></ul>
+<ul><li>char[] to int[]: students say valid because char promotes. It is CE.</li></ul>
+<ul><li>String[] to Object[]: valid.</li></ul>
+<ul><li>o[0] = new Integer(10) after Object[] o = stringArray: compile OK, ArrayStoreException.</li></ul>
+<ul><li>a = b[0] vs a = b for 2-D b.</li></ul>
+<h2>Recap</h2>
+<p>Arrays topic in this series: declaration → creation → initialization → length vs length() → anonymous arrays → element assignments → variable assignments. Next: types of variables.</p>
+<p>Next video: 010-types-of-variables-part-1.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 9 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 9 of 16</td></tr>
+<tr><td>Topic</td><td>Arrays (part 4): array variable assignments</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>54m 23s (3263 seconds)</td></tr>
+<tr><td>Video ID</td><td>mkQsfdMITM8</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=mkQsfdMITM8</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Kind</th><th>Meaning</th><th>Example</th></tr>
+<tr><td>Element assignment (parts 3–4 start)</td><td>What may go inside a[i]</td><td>a[0] = 10; / a[0] = new Thread();</td></tr>
+<tr><td>Variable assignment (this lecture)</td><td>What may go into the array name itself</td><td>a = b;</td></tr>
+</table>
+<table>
+<tr><th>Left</th><th>Right</th><th>Result</th></tr>
+<tr><td>int[] a</td><td>int[] b</td><td>valid, even if lengths differ</td></tr>
+<tr><td>int[] a</td><td>int[][] b</td><td>CE</td></tr>
+<tr><td>int[] a</td><td>b[0] if b is int[][]</td><td>valid</td></tr>
+<tr><td>int[] a</td><td>char[] ch</td><td>CE</td></tr>
+<tr><td>int[] a</td><td>byte[] b</td><td>CE</td></tr>
+<tr><td>Object[] o</td><td>String[] s</td><td>valid</td></tr>
+<tr><td>String[] s</td><td>Object[] o</td><td>CE (cast possible, CCE risk)</td></tr>
+<tr><td>Runnable[] r</td><td>Thread[] t</td><td>valid</td></tr>
+<tr><td>int[] a</td><td>null</td><td>valid</td></tr>
+</table>
+</body></html>

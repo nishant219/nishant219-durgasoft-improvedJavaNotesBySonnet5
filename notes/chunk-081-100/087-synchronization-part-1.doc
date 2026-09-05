@@ -1,0 +1,338 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>087-synchronization-part-1</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 087 — Synchronization part-1</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-7 || synchronization part-1</p>
+<p>Source: real YouTube auto-captions (.transcripts/087-equLV2F0vLA.txt). ASR decoded in place: synchronizer / synchron = synchronized; threats = threads; Birani / birani = Biryani; D bin = dustbin; GBM / J = JVM; sync = synchronized; meod / me = method; weight = wait; Don / doni = Dhoni; Yas / youas / y = Yuvi; Ki / k / Koh = Kohli; Raina / Rina = Raina; ARR = Hyderabad / local; keep subing = keep writing; relig / religious / reles = releases; lack = lock; wid / wi / vo / void = void; SOP print = System.out.print; sleep MCS = milliseconds.</p>
+<p>This lecture introduces synchronization: need (data inconsistency), synchronized as modifier, object lock model, sync vs non-sync areas, then the big Display.wish demo with/without synchronized.</p>
+<h3>00:09 — Topic: synchronization (most valuable in multi-threading)</h3>
+<p>Next topic: synchronization — he calls it the most valuable concept in total multi-threading.</p>
+<p>Common student line: “I know multi-threading but I’m not perfect with synchronization.” One student that morning: started multi-threading Saturday/Sunday, asked if he can continue — dependency is there; asked specifically whether synchronization was completed — “that is the only concept I required.”</p>
+<p>He says sync is a nursery-standard concept (don’t panic). He will spend roughly 2½ to 3 hours so that after finishing, clarity is strong. Scope of postmortem: synchronized method, synchronized block, object-level lock, class-level lock — “whatever total C in synchronization.”</p>
+<h3>01:54 — Need / purpose; first rule: where `synchronized` applies</h3>
+<p>Basic idea: what is the need / purpose of synchronization?</p>
+<p>First point — `synchronized` is a modifier:</p>
+<ul><li>Can I declare a method as synchronized? Yes</li></ul>
+<ul><li>Can I declare a variable as synchronized? No — synchronized variables are not there</li></ul>
+<ul><li>Can I declare a class as synchronized? No — synchronized classes are not there</li></ul>
+<p>There is synchronized method and synchronized block.</p>
+<pre class='code'>// synchronized is a modifier applicable ONLY for methods and blocks
+// NOT for classes and variables
+
+class Demo {
+    // OK
+    public synchronized void m1() { }
+
+    // OK — synchronized block inside a method
+    public void m2() {
+        synchronized (this) { }
+    }
+
+    // NOT allowed: synchronized variable
+    // synchronized int x = 10; // CE
+
+    // NOT allowed: synchronized class
+    // synchronized class X { } // CE
+}</pre>
+<h3>03:00 — Biryani plate analogy → “Biryani inconsistency problem”</h3>
+<p>Sunday afternoon Biryani plate story (Hyderabad common food). He throws the plate to a roadside dustbin. One dog sees it, happy, thinking which side to start. Meanwhile another dog comes → fighting. Third dog → every dog fights every other. Fourth dog quietly starts eating from another side → the three fighting dogs feel fighting is useless → each pulls the plate → Biryani spills on earth and becomes useless.</p>
+<p>If multiple dogs operate simultaneously on the same Biryani object → Biryani inconsistency problem.</p>
+<p>Technical mapping:</p>
+<p>If multiple threads try to operate simultaneously on the same Java object, there may be a chance of data inconsistency problems (one adding, one getting, one replacing → abnormal results).</p>
+<h3>10:33 — Technical scenarios: reservation &amp; joint account</h3>
+<p>Online booking / Railway or bus reservation</p>
+<ul><li>System shows 4 seats available</li></ul>
+<ul><li>One user requests 3 tickets, another simultaneously requests 2 tickets</li></ul>
+<ul><li>If both process together → inconsistency (both may think seats are available)</li></ul>
+<p>Joint account (husband + wife)</p>
+<ul><li>Account has 10,000</li></ul>
+<ul><li>Husband online pays / withdraws 9,000</li></ul>
+<ul><li>Wife at mall pays ~7,000 with the same card</li></ul>
+<ul><li>Same account object; both operating simultaneously → chance of inconsistency</li></ul>
+<p>To overcome: synchronized keyword is required.</p>
+<p>Need of synchronized: to resolve data inconsistency problems.</p>
+<h3>14:01 — Security-person / one-by-one nature</h3>
+<p>On the Biryani object, dog can perform eat. He places a security person:</p>
+<ol><li>First dog asks security → no one eating → allowed → starts eating</li></ol>
+<ol><li>Second dog asks → already one eating → “please wait until first completes” → waiting state</li></ol>
+<ol><li>After first finishes → second gets chance → then third, and so on</li></ol>
+<p>One-by-one → no data inconsistency.</p>
+<p>If a method or block is declared synchronized, at a time only one thread is allowed to execute that method/block on the given object.</p>
+<pre class='code'>class JavaObject {
+    // at a time only ONE thread can execute this on a given object
+    public synchronized void m1() {
+        // critical section
+    }
+}</pre>
+<p>Biggest advantage of synchronized: resolve data inconsistency / get one-by-one nature.</p>
+<h3>16:45 — Board notes (dictation)</h3>
+<p>He dictates:</p>
+<ol><li>synchronized is a modifier applicable only for methods and blocks, not for classes and variables.</li></ol>
+<ol><li>If multiple threads try to operate simultaneously on the same Java object, there may be a chance of data inconsistency problem.</li></ol>
+<ol><li>To overcome → go for `synchronized` keyword.</li></ol>
+<ol><li>If a method or block is declared synchronized → at a time only one thread is allowed to execute that method/block on the given object → data inconsistency problem will be resolved.</li></ol>
+<h3>20:21 — Advantage vs disadvantage; “never for style”</h3>
+<p>Advantage: overcome / resolve data inconsistency problems.</p>
+<p>Disadvantage: threads execute one by one. In a web app with thousands of requests: until first completes, second waits; waiting time increases → performance problems.</p>
+<p>Hence: if there is no specific requirement, never recommended to use synchronized — not for style / fancy; harmful to the program.</p>
+<p>(java.util.concurrent has better solutions later — “hero becomes zero” later; for now treat synchronized as important.)</p>
+<pre class='code'>// Board summary style
+/*
+Main advantage of synchronized keyword:
+  we can resolve data inconsistency problems
+
+Main disadvantage of synchronized keyword:
+  it increases waiting time of threads
+  and creates performance problems
+
+Hence if there is no specific requirement
+  then it is not recommended to use synchronized keyword
+*/</pre>
+<h3>25:28 — Internal idea: public telephone booth (lock)</h3>
+<p>Best analogy for how synchronized is implemented: public telephone booth (cabin + lock).</p>
+<ol><li>First person gets the lock, starts calling</li></ol>
+<ol><li>Second person comes → lock already with first → wait</li></ol>
+<ol><li>First finishes → releases lock → owner hands lock to second</li></ol>
+<p>Every object in Java has a unique lock. Internally, synchronization is implemented using this lock concept.</p>
+<ul><li>If a thread wants to execute a synchronized method on an object → it must get lock of that object</li></ul>
+<ul><li>While T1 holds lock and runs sync method, T2 wanting same must wait until T1 releases</li></ul>
+<ul><li>Only when we use synchronized does lock concept come into picture for this purpose</li></ul>
+<ul><li>Acquiring and releasing lock: JVM takes care automatically; programmer is not responsible (no manual acquire/release code for synchronized)</li></ul>
+<pre class='code'>/*
+Internally synchronization concept is implemented by using lock.
+Every object in Java has a unique lock.
+Whenever we are using synchronized keyword,
+then only lock concept will come into the picture.
+
+If a thread wants to execute synchronized method on the given object:
+  first it has to get lock of that object
+  once thread got the lock → allowed to execute any synchronized method on that object
+  once method execution completes → automatically thread releases the lock
+
+Acquiring and releasing lock internally takes care by JVM
+and programmer not responsible for this activity
+*/</pre>
+<h3>35:16 — Critical misconception: lock is object-based, not method-based</h3>
+<p>Class X with:</p>
+<ul><li>m1 — synchronized</li></ul>
+<ul><li>m2 — synchronized</li></ul>
+<ul><li>m3 — normal (non-synchronized)</li></ul>
+<pre class='code'>class X {
+    public synchronized void m1() { /* ... */ }
+    public synchronized void m2() { /* ... */ }
+    public void m3() { /* ... */ } // normal
+}</pre>
+<p>Scenario on one X object:</p>
+<p>Many students wrongly think: “m2 is different method so T3 can run.” Wrong.</p>
+<p>Lock concept is implemented based on object, not based on method. Even a different synchronized method needs the same object’s lock.</p>
+<p>Rule he stresses:</p>
+<p>While a thread is executing a synchronized method on the given object, the remaining threads are not allowed to execute any synchronized method simultaneously on the same object — but remaining threads are allowed to execute non-synchronized methods simultaneously.</p>
+<pre class='code'>/*
+Lock concept is implemented based on object
+but not based on method.
+
+While a thread executing synchronized method on the given object:
+  remaining threads are NOT allowed to execute any synchronized method
+  simultaneously on the same object
+BUT
+  remaining threads ARE allowed to execute non-synchronized methods
+  simultaneously
+*/</pre>
+<h3>47:38 — Two areas on every object; when to sync</h3>
+<p>Doubt: object is “locked” by T1 — how can T4 run m3?</p>
+<p>For every object there are two areas:</p>
+<ol><li>Synchronized area — update operations (add / remove / delete / replace) where state of object changes → only one thread at a time</li></ol>
+<ol><li>Non-synchronized area — read operations where state won’t change → any number of threads simultaneously</li></ol>
+<p>If you perform updates in non-synchronized area → worst programming practice.</p>
+<p>Example — reservation system:</p>
+<pre class='code'>class ReservationSystem {
+    // read only — object state not changed
+    public void checkAvailabilityOfTickets() {
+        // non-synchronized
+    }
+
+    // update — state changes (book seat)
+    public synchronized void bookTicket() {
+        // synchronized
+    }
+}</pre>
+<ul><li>checkAvailability → non-synchronized (read)</li></ul>
+<ul><li>bookTicket / confirm seat → synchronized (update)</li></ul>
+<h3>53:46 — Diagram dictation (object areas)</h3>
+<pre class='code'>/*
+Java object
+  ├── synchronized area
+  │     accessed by only ONE thread at a time
+  │     wherever update operation (add/remove/delete/replace)
+  │     where state of object changing
+  └── non-synchronized area
+        accessed by ANY NUMBER of threads simultaneously
+        wherever object state won&#x27;t be changed
+        like read operation
+*/</pre>
+<h3>1:00:14 — Big example: `Display.wish` without / with synchronized</h3>
+<p>He builds the classic wish demo carefully.</p>
+<p>Class `Display` — `wish(String name)`</p>
+<pre class='code'>class Display {
+    public void wish(String name) {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.print(&quot;Good Morning: &quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
+            System.out.println(name);
+        }
+    }
+}</pre>
+<p>Behavior of one call with &quot;Dhoni&quot;: print Good Morning: , sleep 2s, print name, repeat 10 times.</p>
+<p>Class `MyThread`</p>
+<pre class='code'>class MyThread extends Thread {
+    Display d;
+    String name;
+
+    MyThread(Display d, String name) {
+        this.d = d;
+        this.name = name;
+    }
+
+    public void run() {
+        d.wish(name);
+    }
+}</pre>
+<p>Case 1 — one thread, one Display</p>
+<pre class='code'>class SynchronizedDemo {
+    public static void main(String[] args) {
+        Display d = new Display();
+        MyThread t1 = new MyThread(d, &quot;Dhoni&quot;);
+        t1.start();
+    }
+}</pre>
+<ul><li>One dog, one Biryani plate → synchronization not required</li></ul>
+<ul><li>Output: regular Good Morning: Dhoni × 10</li></ul>
+<p>Case 2 — two threads, same Display (no synchronized)</p>
+<pre class='code'>class SynchronizedDemo {
+    public static void main(String[] args) {
+        Display d = new Display();
+        MyThread t1 = new MyThread(d, &quot;Dhoni&quot;);
+        MyThread t2 = new MyThread(d, &quot;Yuvi&quot;);
+        t1.start();
+        t2.start();
+    }
+}</pre>
+<p>Both call wish simultaneously on same object → irregular / mixed output, e.g.:</p>
+<p>Good Morning: Good Morning: Dhoni
+Good Morning: Yuvi
+Good Morning: Yuvi
+Good Morning: Dhoni
+...</p>
+<p>Flow he narrates: T1 prints Good Morning → sleeps → T2 prints Good Morning → sleeps → T1 wakes and prints name, etc. → irregular.</p>
+<p>With four threads (Dhoni, Yuvi, Kohli, Raina) on same Display → even more irregularity.</p>
+<p>Case 3 — declare `wish` synchronized</p>
+<pre class='code'>class Display {
+    public synchronized void wish(String name) {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.print(&quot;Good Morning: &quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
+            System.out.println(name);
+        }
+    }
+}</pre>
+<p>At a time only one thread executes wish on that Display. Even while sleeping, JVM does not give the sync method to another thread on that object (“whether sleeping or dancing — not important”).</p>
+<p>→ Regular output: full 10 lines for one name, then full 10 for the other.</p>
+<p>Which thread runs first (Dhoni vs Yuvi) is not guaranteed — depends on thread scheduler. With four threads same: one-by-one guaranteed, order not guaranteed (Raina might finish before Yuvi, etc.).</p>
+<pre class='code'>class SynchronizedDemo {
+    public static void main(String[] args) {
+        Display d = new Display();
+        MyThread t1 = new MyThread(d, &quot;Dhoni&quot;);
+        MyThread t2 = new MyThread(d, &quot;Yuvi&quot;);
+        // optional four-thread demo:
+        // MyThread t3 = new MyThread(d, &quot;Kohli&quot;);
+        // MyThread t4 = new MyThread(d, &quot;Raina&quot;);
+        t1.start();
+        t2.start();
+        // t3.start(); t4.start();
+    }
+}</pre>
+<p>Without synchronized → irregular output. With synchronized → regular output.</p>
+<p>Sample irregular (no sync):</p>
+<p>Good Morning: Good Morning: Yuvi
+Good Morning: Dhoni
+Good Morning: Yuvi
+...</p>
+<p>Sample regular (with sync) — one possible run:</p>
+<p>Good Morning: Dhoni
+Good Morning: Dhoni
+... (10 times)
+Good Morning: Yuvi
+Good Morning: Yuvi
+... (10 times)</p>
+<h3>1:25:19 — `join` vs `synchronized` (different concepts)</h3>
+<p>Synchronization and join are completely different.</p>
+<ul><li>join: “I want to wait until some other thread completes” (often because I need that thread’s result / sequencing). Other threads may still run meanwhile depending on how you join.</li></ul>
+<ul><li>synchronized: requirement is at a time only one on the shared critical section — any order among waiters, but mutual exclusion.</li></ul>
+<p>Do not mix the two mental models.</p>
+<h3>1:29:07 — Closing diagram + final rule</h3>
+<p>Diagram:</p>
+<ul><li>One Display object</li></ul>
+<ul><li>T1 calls wish(&quot;Dhoni&quot;) on it</li></ul>
+<ul><li>T2 calls wish(&quot;Yuvi&quot;) on same Display</li></ul>
+<p>Board conclusion:</p>
+<pre class='code'>/*
+If we are NOT declaring wish method as synchronized:
+  then both threads will be executed simultaneously
+  and hence we will get irregular output
+
+If we declare wish method as synchronized:
+  then at a time only one thread is allowed to execute wish method
+  on the given Display object
+  hence we will get regular output
+*/</pre>
+<p>End of part-1 (~1:35:00): with vs without synchronized impact is clear; further sync topics continue in later parts.</p>
+<p>Java fenced blocks in this file: 15</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 87 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 7</td></tr>
+<tr><td>Topic</td><td>synchronization part-1</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 35m 15s</td></tr>
+<tr><td>Video ID</td><td>equLV2F0vLA</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=equLV2F0vLA</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Analogy</th><th>Java</th></tr>
+<tr><td>Biryani plate</td><td>one Java object</td></tr>
+<tr><td>each dog</td><td>one thread</td></tr>
+</table>
+<table>
+<tr><th>Thread</th><th>Wants</th><th>Result while T1 holds lock &amp; runs m1</th></tr>
+<tr><td>T1</td><td>execute m1</td><td>gets lock, runs m1</td></tr>
+<tr><td>T2</td><td>execute m1</td><td>waiting (needs same object lock)</td></tr>
+<tr><td>T3</td><td>execute m2</td><td>also waiting — different method, same object lock still required</td></tr>
+<tr><td>T4</td><td>execute m3</td><td>gets chance immediately — non-synchronized; no lock needed</td></tr>
+</table>
+</body></html>

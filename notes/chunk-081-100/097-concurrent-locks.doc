@@ -1,0 +1,363 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>097-concurrent-locks</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 097 — java.util.concurrent.locks (ReentrantLock)</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 3|| java.util.concurrent.locks</p>
+<p>ASR decode: concurrent.loss / loocks = locks; re-entrant / reenter / reentrance clock = ReentrantLock; holes / hold / personal count = hold count; religious lock = releases lock; fitness / fail / fair = fairness; ceued / Q = queued; get a Q length = getQueueLength; get ceued threads = getQueuedThreads; has ceued threads = hasQueuedThreads; is a fair = isFair; trilock / tryck = tryLock; synchronizer = synchronized; dhi / da / don / dhoni = Dhoni; your / yoras / yuvi / jas = Yuvi/Yuvraj; good morning jar = Good Morning; keep subing = keep writing; legend = listen.</p>
+<h3>00:05 — Recap: Lock interface five methods</h3>
+<p>Last session: Lock interface in java.util.concurrent.locks (1.5) because of synchronized problems (performance, deadlock, missing API).</p>
+<p>Five methods of Lock:</p>
+<ol><li>lock()</li></ol>
+<ol><li>tryLock()</li></ol>
+<ol><li>tryLock with time period</li></ol>
+<ol><li>lockInterruptibly()</li></ol>
+<ol><li>unlock()</li></ol>
+<h3>01:43 — Implementation class: ReentrantLock</h3>
+<p>Cannot do anything with the interface alone — need implementation. `ReentrantLock` implements Lock. Direct child of `Object`.</p>
+<pre class='code'>import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+// Board:
+// ReentrantLock is the implementation class of Lock interface
+// and it is the direct child class of Object</pre>
+<h3>02:12 — Why the word “reentrant”?</h3>
+<p>Not namesake. Meaning: again and again.</p>
+<p>Demo on board: same thread can call lock() multiple times on same lock object; JVM maintains a hold count.</p>
+<pre class='code'>import java.util.concurrent.locks.ReentrantLock;
+
+ReentrantLock l = new ReentrantLock();
+
+l.lock(); // hold count = 1 (was 0)
+l.lock(); // hold count = 2
+l.lock(); // hold count = 3
+
+l.unlock(); // hold count = 2  (lock NOT released yet)
+l.unlock(); // hold count = 1
+l.unlock(); // hold count = 0 → lock released</pre>
+<p>Same thread can hold multiple holds on the same lock. Lock is released only when hold count reaches zero. One unlock with hold count 3 does not release the lock.</p>
+<pre class='code'>// Board:
+// Reentrant means a thread can acquire same lock multiple times
+// without any issue
+// Internally ReentrantLock increments thread&#x27;s hold count
+// whenever we call lock()
+// and decrements count value whenever thread calls unlock()
+// and the lock will be released whenever count reaches zero</pre>
+<h3>09:07 — Constructors of ReentrantLock</h3>
+<p>1. No-arg:</p>
+<p>ReentrantLock l = new ReentrantLock();
+// creates an instance of ReentrantLock</p>
+<p>2. With fairness:</p>
+<p>ReentrantLock l = new ReentrantLock(boolean fairness);
+// creates a ReentrantLock with the given fairness policy</p>
+<p>Fairness = “be a bit fair / don’t be biased.” Allowed values: true / false.</p>
+<ul><li>If fairness = true → longest waiting thread can acquire the lock when available → first-come-first-serve (FCFS) policy.</li></ul>
+<ul><li>If fairness = false → which waiting thread gets the chance? We can’t expect.</li></ul>
+<p>Default fairness (no-arg constructor): `false`.</p>
+<pre class='code'>// Board:
+// If fairness is true → longest waiting thread can acquire the lock
+//   if it is available (follows first come first serve policy)
+// If fairness is false → which waiting thread will get the chance
+//   we can&#x27;t expect
+// Default value for fairness is false</pre>
+<h3>15:34 — Which declarations are equal?</h3>
+<p>ReentrantLock l1 = new ReentrantLock();
+ReentrantLock l2 = new ReentrantLock(true);
+ReentrantLock l3 = new ReentrantLock(false);
+// all the above?</p>
+<p>First and third are equal (default fairness is false).</p>
+<h3>17:20 — Important methods of ReentrantLock</h3>
+<p>Because ReentrantLock implements Lock, it has the five Lock methods:</p>
+<pre class='code'>void lock();
+boolean tryLock();
+boolean tryLock(long time, TimeUnit unit) throws InterruptedException;
+void lockInterruptibly() throws InterruptedException;
+void unlock();</pre>
+<p>Plus extra ReentrantLock methods:</p>
+<pre class='code'>int getHoldCount();
+boolean isHeldByCurrentThread();
+int getQueueLength();
+java.util.Collection&lt;Thread&gt; getQueuedThreads();
+boolean hasQueuedThreads();
+boolean isLocked();
+boolean isFair();
+Thread getOwner();</pre>
+<h3>21:56 — Board meanings of extra methods</h3>
+<pre class='code'>// getHoldCount()
+// returns number of holds on this lock by current thread
+
+// isHeldByCurrentThread()
+// returns true if and only if lock is held by current thread
+
+// getQueueLength()
+// returns number of threads waiting for the lock
+
+// getQueuedThreads()
+// returns a Collection of threads which are waiting to get the lock
+
+// hasQueuedThreads()
+// returns true if any thread waiting to get the lock
+
+// isLocked()
+// returns true if the lock is acquired by some thread
+// (same thread or another)
+
+// isFair()
+// returns true if the fairness policy is set with true value
+
+// getOwner()
+// returns the Thread which acquires the lock</pre>
+<h3>28:08 — Example 1: ReentrantLockDemo2 (method familiarity)</h3>
+<pre class='code'>import java.util.concurrent.locks.ReentrantLock;
+
+class ReentrantLockDemo2 {
+    public static void main(String[] args) {
+        ReentrantLock l = new ReentrantLock();
+
+        l.lock();
+        l.lock();
+        System.out.println(l.isLocked());              // prints true
+        System.out.println(l.isHeldByCurrentThread()); // prints true
+        System.out.println(l.getQueueLength());        // prints 0
+        System.out.println(l.getHoldCount());          // prints 2
+
+        l.unlock();
+        System.out.println(l.getHoldCount());          // prints 1
+        System.out.println(l.isLocked());              // prints true
+
+        l.unlock();
+        System.out.println(l.isLocked());              // prints false
+        System.out.println(l.isFair());                // prints false
+    }
+}</pre>
+<p>He compiles/runs: output sequence discussed as true true 2 0 1 true false (hold count 2 before first unlock; queue length 0). Beside each SOP, corresponding output on board.</p>
+<h3>36:48 — Example 2: replace synchronized with ReentrantLock (wish / Good Morning)</h3>
+<p>Classic multithreading sync demo: Display.wish(String name) prints Good Morning then sleeps 2s then prints name, loop 10 times. Two threads on same Display with names Dhoni and Yuvi → without sync = irregular/mixed output; with synchronized wish = regular output (one name completes before other).</p>
+<p>Without sync (irregular):</p>
+<pre class='code'>class Display {
+    public void wish(String name) {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.print(&quot;Good Morning: &quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
+            System.out.println(name);
+        }
+    }
+}
+
+class MyThread extends Thread {
+    Display d;
+    String name;
+
+    MyThread(Display d, String name) {
+        this.d = d;
+        this.name = name;
+    }
+
+    public void run() {
+        d.wish(name);
+    }
+}
+
+class SynchronizedDemo {
+    public static void main(String[] args) {
+        Display d = new Display();
+        MyThread t1 = new MyThread(d, &quot;Dhoni&quot;);
+        MyThread t2 = new MyThread(d, &quot;Yuvi&quot;);
+        t1.start();
+        t2.start();
+        // prints mixed / irregular &quot;Good Morning&quot; lines
+    }
+}</pre>
+<p>With synchronized method → regular:</p>
+<pre class='code'>class Display {
+    public synchronized void wish(String name) {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.print(&quot;Good Morning: &quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
+            System.out.println(name);
+        }
+    }
+}
+// prints regular: all Good Morning Dhoni then all Good Morning Yuvi (order of who wins first may vary)</pre>
+<h3>48:01 — Same example with ReentrantLock instead of synchronized</h3>
+<pre class='code'>import java.util.concurrent.locks.ReentrantLock;
+
+class Display {
+    ReentrantLock l = new ReentrantLock();
+
+    public void wish(String name) {
+        l.lock(); // line 1
+        try {
+            for (int i = 0; i &lt; 10; i++) {
+                System.out.print(&quot;Good Morning: &quot;);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                }
+                System.out.println(name);
+            }
+        } finally {
+            l.unlock(); // line 2
+        }
+    }
+}
+
+class MyThread extends Thread {
+    Display d;
+    String name;
+
+    MyThread(Display d, String name) {
+        this.d = d;
+        this.name = name;
+    }
+
+    public void run() {
+        d.wish(name);
+    }
+}
+
+class ReentrantLockDemo1 {
+    public static void main(String[] args) {
+        Display d = new Display();
+        MyThread t1 = new MyThread(d, &quot;Dhoni&quot;);
+        MyThread t2 = new MyThread(d, &quot;Yuvi&quot;);
+        t1.start();
+        t2.start();
+        // prints regular output (one thread at a time inside wish)
+    }
+}</pre>
+<p>Flow: Dhoni gets l.lock(), Yuvi waits; after Dhoni unlock, Yuvi proceeds. Same guarantee as synchronized for this example — but ReentrantLock is more powerful (tryLock etc. next).</p>
+<h3>59:51 — Comment line 1 and line 2</h3>
+<pre class='code'>// If we comment line 1 (lock) and line 2 (unlock):
+//   threads execute simultaneously → irregular output
+
+// If we are not commenting lines 1 and 2:
+//   threads execute one by one → regular output</pre>
+<h3>1:02:24 — Flexibility: tryLock without / with time</h3>
+<p>Synchronized cannot “try without waiting” or “wait max N time.” ReentrantLock can.</p>
+<h3>1:02:42 — Demo 3: `tryLock()` (ReentrantLockDemo3)</h3>
+<pre class='code'>import java.util.concurrent.locks.ReentrantLock;
+
+class MyThread extends Thread {
+    static ReentrantLock l = new ReentrantLock(); // one lock for all threads
+
+    MyThread(String name) {
+        super(name);
+    }
+
+    public void run() {
+        if (l.tryLock()) {
+            System.out.println(Thread.currentThread().getName()
+                    + &quot; got lock and performing safe operations&quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
+            l.unlock();
+        } else {
+            System.out.println(Thread.currentThread().getName()
+                    + &quot; unable to get lock and hence performing alternative operations&quot;);
+        }
+    }
+}
+
+class ReentrantLockDemo3 {
+    public static void main(String[] args) {
+        MyThread t1 = new MyThread(&quot;First Thread&quot;);
+        MyThread t2 = new MyThread(&quot;Second Thread&quot;);
+        t1.start();
+        t2.start();
+    }
+}</pre>
+<p>Typical run he shows:</p>
+<pre class='code'>// prints First Thread got lock and performing safe operations
+// prints Second Thread unable to get lock and hence performing alternative operations</pre>
+<p>(No guarantee which thread wins; with short code often first thread. Second never waits — tryLock returns false → else.)</p>
+<p>static lock: only one lock object even for multiple MyThread instances.</p>
+<p>Not possible with traditional synchronized: unavailable lock ⇒ wait until get.</p>
+<h3>1:16:54 — Demo 4: `tryLock` with time + do-while retry (ReentrantLockDemo4)</h3>
+<p>Special care: do-while infinite until break.</p>
+<pre class='code'>import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
+class MyThread extends Thread {
+    static ReentrantLock l = new ReentrantLock();
+
+    MyThread(String name) {
+        super(name);
+    }
+
+    public void run() {
+        do {
+            try {
+                if (l.tryLock(5000, TimeUnit.MILLISECONDS)) {
+                    System.out.println(Thread.currentThread().getName() + &quot; got lock&quot;);
+                    try {
+                        Thread.sleep(30000); // 30 seconds
+                    } catch (InterruptedException e) {
+                    }
+                    System.out.println(Thread.currentThread().getName() + &quot; releases lock&quot;);
+                    l.unlock();
+                    break;
+                } else {
+                    System.out.println(Thread.currentThread().getName()
+                            + &quot; unable to get lock and will try again&quot;);
+                }
+            } catch (InterruptedException e) {
+            }
+        } while (true);
+    }
+}
+
+class ReentrantLockDemo4 {
+    public static void main(String[] args) {
+        MyThread t1 = new MyThread(&quot;First Thread&quot;);
+        MyThread t2 = new MyThread(&quot;Second Thread&quot;);
+        t1.start();
+        t2.start();
+    }
+}</pre>
+<p>Behavior he narrates:</p>
+<ul><li>First thread gets lock, sleeps 30s.</li></ul>
+<ul><li>Second waits max 5s per tryLock; fails → “unable to get lock and will try again”; repeats (~6 times over 30s).</li></ul>
+<ul><li>When first releases, second gets lock, sleeps 30s, unlocks, breaks.</li></ul>
+<p>Imports: java.util.concurrent.locks.* and java.util.concurrent.* because TimeUnit is in concurrent package.</p>
+<h3>1:35:47 — Closing: prefer Lock over synchronized</h3>
+<p>After knowing Lock / ReentrantLock, usage of synchronized is never recommended — more flexibility (tryLock with/without time; deadlock less relevant with tryLock). Most people still habit-use synchronized only.</p>
+<p>` ```java ` block count: 17</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 97 of 203</td></tr>
+<tr><td>Series</td><td>Multithreading Enhancement · Part 3</td></tr>
+<tr><td>Topic</td><td>java.util.concurrent.locks · ReentrantLock</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 36m 50s</td></tr>
+<tr><td>Video ID</td><td>q8kaFJ8-zVo</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=q8kaFJ8-zVo</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

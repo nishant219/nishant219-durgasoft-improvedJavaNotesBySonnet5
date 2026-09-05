@@ -1,0 +1,511 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>139-arraylist</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 139 — ArrayList &amp; LinkedList (Collections Part-4)</h1>
+<h2>Video info</h2>
+<h3>00:05 — Session recap: ArrayList basics from previous lecture</h3>
+<p>In the last session, Durga Sir covered:</p>
+<ul><li>How to create an ArrayList</li></ul>
+<ul><li>A demo program for ArrayList</li></ul>
+<ul><li>Properties of ArrayList</li></ul>
+<p>This session continues with important conclusions related to ArrayList and concepts applicable to any collection class, then moves to the next level (LinkedList preview and demo).</p>
+<h3>00:29 — Why do we use Collections? (Container analogy)</h3>
+<p>Collection in Java is equivalent to container in C++.</p>
+<p>Primary purpose of a collection / container:</p>
+<ol><li>To hold objects (store data)</li></ol>
+<ol><li>To transfer objects from one location to another location</li></ol>
+<p>Real-world analogies Durga Sir uses:</p>
+<p>Key takeaway: Collections are not only for local storage — a very common requirement is to hold data and transfer data across locations (including across a network).</p>
+<h3>01:57 — Serializable: mandatory for network transfer</h3>
+<p>To send a Java object across a network, that object must be Serializable.</p>
+<p>Requirement: Transfer object across network
+         ↓
+Object must implement java.io.Serializable</p>
+<p>Why this matters for collections:</p>
+<ul><li>Usual requirement with collections = hold objects and transfer the whole collection</li></ul>
+<ul><li>To support this, every collection class by default implements `Serializable`</li></ul>
+<p>Quick exam drill — does each class implement Serializable?</p>
+<p>Scenario walk-through:</p>
+<ol><li>Person in Hyderabad sends a collection of Student objects over the network</li></ol>
+<ol><li>Person in London receives the collection object</li></ol>
+<ol><li>They perform operations on it</li></ol>
+<ol><li>If something goes wrong and the object gets disturbed, they need the original state back</li></ol>
+<p>Instead of requesting Hyderabad to resend, we can create a duplicate (clone) immediately after receiving and experiment on the clone.</p>
+<h3>03:31 — Cloneable: duplicate object for safe operations</h3>
+<p>To produce an exact duplicate (cloned) object, the object must implement `Cloneable`.</p>
+<p>Requirement: Create exact duplicate / backup copy
+         ↓
+Object must implement java.lang.Cloneable</p>
+<p>Advantage of cloning after network receive:</p>
+<ul><li>Perform any operation on the duplicate without fear</li></ul>
+<ul><li>If something goes wrong → recover using the original clone</li></ul>
+<ul><li>Can compare updated state vs original state at any point</li></ul>
+<p>Rule: Every collection class already implements `Cloneable` (in addition to Serializable).</p>
+<h3>05:00 — Board summary: hold, transfer, Serializable, Cloneable</h3>
+<p>Usual purpose of collections:</p>
+<p>To hold and transfer objects from one location to another location (container).</p>
+<p>To provide support for this requirement:</p>
+<p>Every collection class by default implements Serializable and Cloneable interfaces.</p>
+<p>This rule applies to every collection — not only ArrayList.</p>
+<h3>06:54 — RandomAccess: only ArrayList and Vector</h3>
+<p>Among all collection classes, only two implement the `RandomAccess` interface:</p>
+<ol><li>`ArrayList`</li></ol>
+<ol><li>`Vector`</li></ol>
+<p>What RandomAccess means (from interface documentation):</p>
+<p>We can access any random element with the same speed.</p>
+<p>Array-based intuition:</p>
+<p>Because ArrayList and Vector implement RandomAccess, any index can be reached in O(1) time via direct array indexing.</p>
+<p>Exam consequence:</p>
+<p>If your frequent operation is retrieval (get element by index), `ArrayList` (or Vector) is the best choice.</p>
+<p>Important: This ability is NOT available in every collection — only ArrayList and Vector.</p>
+<h3>10:48 — LinkedList does NOT implement RandomAccess</h3>
+<p>Observe the difference — LinkedList implements Serializable and Cloneable but not RandomAccess.</p>
+<h3>11:00 — RandomAccess interface details</h3>
+<p>Because it has no methods, it is a marker interface — it signals capability; the actual random-access behaviour is built into the ArrayList/Vector implementation internally.</p>
+<h3>13:13 — Exam-style `instanceof` question</h3>
+<pre class='code'>import java.util.ArrayList;
+import java.util.LinkedList;
+import java.io.Serializable;
+import java.lang.Cloneable;
+import java.util.RandomAccess;
+
+public class CollectionInstanceOfDemo {
+    public static void main(String[] args) {
+        ArrayList&lt;Object&gt; l1 = new ArrayList&lt;&gt;();
+        LinkedList&lt;Object&gt; l2 = new LinkedList&lt;&gt;();
+
+        System.out.println(l1 instanceof Serializable);   // true  — ArrayList implements Serializable
+        System.out.println(l2 instanceof Cloneable);        // true  — LinkedList implements Cloneable
+        System.out.println(l1 instanceof RandomAccess);     // true  — ArrayList implements RandomAccess
+        System.out.println(l2 instanceof RandomAccess);     // false — LinkedList does NOT implement RandomAccess
+    }
+}</pre>
+<p>Answer key:</p>
+<p>Must remember for exam:</p>
+<ul><li>ArrayList and Vector → implement RandomAccess</li></ul>
+<ul><li>LinkedList → does not implement RandomAccess</li></ul>
+<ul><li>Every collection class → implements Serializable and Cloneable</li></ul>
+<h3>14:52 — When is ArrayList the BEST choice?</h3>
+<p>Best choice when: frequent operation = retrieval (get by index)</p>
+<p>Examples:</p>
+<ul><li>&quot;What is the 1st element?&quot;</li></ul>
+<ul><li>&quot;What is the 10th element?&quot;</li></ul>
+<ul><li>&quot;What is the 11th element?&quot;</li></ul>
+<p>All answered instantly because of RandomAccess / array backing.</p>
+<h3>15:26 — When is ArrayList the WORST choice? (Insertion in middle)</h3>
+<p>Worst choice when: frequent operation = insertion in the middle (not insertion at last — that is fine)</p>
+<p>Example scenario:</p>
+<ul><li>ArrayList with 1 crore (10 million) elements: [A, B, C, D, ...]</li></ul>
+<ul><li>Requirement: insert M at index 1 (second position)</li></ul>
+<pre class='code'>import java.util.ArrayList;
+
+public class ArrayListMiddleInsertDemo {
+    public static void main(String[] args) {
+        ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();
+        // Imagine list already has 1 crore elements: A, B, C, D, ...
+
+        list.add(1, &quot;M&quot;);  // insert M at index 1
+        // Result: A, M, B, C, D, ...
+    }
+}</pre>
+<p>What happens internally:</p>
+<ol><li>Index 1 already has B</li></ol>
+<ol><li>To place M at index 1, `B` must shift to index 2</li></ol>
+<ol><li>`C` shifts to index 3, `D` shifts to index 4, … and so on</li></ol>
+<ol><li>1 crore shift operations required just to insert one element!</li></ol>
+<p>Durga Sir&#x27;s humorous remark: &quot;Maybe after 6 months it will tell successfully inserted.&quot;</p>
+<p>Conclusion: Insertion in the middle of a large ArrayList is extremely costly — not recommended.</p>
+<h3>17:18 — ArrayList worst for deletion in middle too</h3>
+<p>Removal at index 1:</p>
+<pre class='code'>import java.util.ArrayList;
+
+public class ArrayListMiddleRemoveDemo {
+    public static void main(String[] args) {
+        ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();
+        // Imagine 1 crore elements: A, B, C, D, ...
+
+        list.remove(1);  // remove element at index 1 (B)
+        // Result: A, C, D, ... (gap closed by shifting)
+    }
+}</pre>
+<p>What happens internally:</p>
+<ol><li>Element at index 1 (B) is removed → cell becomes vacant</li></ol>
+<ol><li>C moves to index 1, D moves to index 2, … 1 crore shifts</li></ol>
+<p>Board conclusions:</p>
+<h3>19:56 — If middle insert/delete is frequent → use LinkedList</h3>
+<p>When frequent operation = insertion or deletion in the middle:</p>
+<ul><li>`ArrayList` = worst choice</li></ul>
+<ul><li>`LinkedList` = highly recommended (best choice)</li></ul>
+<p>(Detailed LinkedList explanation follows later in this lecture.)</p>
+<h3>20:46 — ArrayList vs Vector: interview favourite</h3>
+<p>Very common interview question: &quot;What is the difference between ArrayList and Vector?&quot;</p>
+<p>Durga Sir says: attend 10 interviews → in 6 to 8 you will get this question.</p>
+<h4>Comparison table</h4>
+<h4>Thread safety detail</h4>
+<p>ArrayList:</p>
+<ul><li>Multiple threads (T1, T2, T3, …) can operate simultaneously</li></ul>
+<ul><li>Not thread-safe — data corruption possible</li></ul>
+<ul><li>Advantage: no waiting → better performance</li></ul>
+<p>Vector:</p>
+<ul><li>T1 operates → then T2 → then T3 (one at a time)</li></ul>
+<ul><li>Thread-safe</li></ul>
+<ul><li>Disadvantage: waiting increases → performance problems</li></ul>
+<h4>Version / legacy</h4>
+<h3>29:40 — Modern interview twist: synchronized ArrayList</h3>
+<p>Old question: difference between ArrayList and Vector.</p>
+<p>New question (these days): &quot;I want to use ArrayList only, but I need thread safety — how do I get a synchronized version of an ArrayList object?&quot;</p>
+<p>Answer: Use `Collections.synchronizedList()` from the `Collections` utility class.</p>
+<h4>Method signature (from board)</h4>
+<pre class='code'>public static &lt;T&gt; List&lt;T&gt; synchronizedList(List&lt;T&gt; list)</pre>
+<h4>Example</h4>
+<pre class='code'>import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class SynchronizedArrayListDemo {
+    public static void main(String[] args) {
+        ArrayList&lt;String&gt; l = new ArrayList&lt;&gt;();  // non-synchronized (default)
+        List&lt;String&gt; l1 = Collections.synchronizedList(l);  // synchronized wrapper
+
+        // l  → non-synchronized, not thread-safe, high performance
+        // l1 → synchronized, thread-safe, lower performance
+    }
+}</pre>
+<p>Board notes:</p>
+<p>By default, ArrayList is non-synchronized.</p>
+<p>But we can get synchronized version of ArrayList object by using `synchronizedList()` method of `Collections` class.</p>
+<h3>35:33 — Synchronized Set and Map (same pattern)</h3>
+<p>Similarly, Collections class provides:</p>
+<pre class='code'>import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+public class SynchronizedCollectionDemo {
+    public static void main(String[] args) {
+        Set&lt;String&gt; syncSet = Collections.synchronizedSet(new HashSet&lt;&gt;());
+        Map&lt;String, Integer&gt; syncMap = Collections.synchronizedMap(new HashMap&lt;&gt;());
+        // Use syncSet and syncMap for thread-safe operations
+    }
+}</pre>
+<h3>38:37 — LinkedList: best for middle insertion/deletion (memory structure)</h3>
+<p>When frequent operation = insertion/deletion in the middle → LinkedList is the best choice.</p>
+<h4>Why ArrayList is slow for middle ops</h4>
+<ul><li>Elements stored in consecutive memory locations (array)</li></ul>
+<ul><li>Insert/remove in middle → shift nearly all elements</li></ul>
+<h4>LinkedList memory structure</h4>
+<ul><li>Elements (nodes) stored in non-consecutive memory locations</li></ul>
+<ul><li>Example addresses (Durga Sir&#x27;s board): one node at C, next at K, next at Abids, next at KPHB, next at Uppal Nag — scattered across memory</li></ul>
+<ul><li>Each node stores:</li></ul>
+<ul><li>Data</li></ul>
+<ul><li>Next node address (singly linked) OR Previous + Next addresses (doubly linked)</li></ul>
+<p>Java&#x27;s `LinkedList` uses: Doubly linked list (double linked list) as underlying data structure.</p>
+<h4>Insertion in middle — only pointer changes</h4>
+<p>To insert M at index 1:</p>
+<pre class='code'>import java.util.LinkedList;
+
+public class LinkedListMiddleInsertDemo {
+    public static void main(String[] args) {
+        LinkedList&lt;String&gt; list = new LinkedList&lt;&gt;();
+        // Existing: A -&gt; B -&gt; C -&gt; D -&gt; ...
+
+        list.add(1, &quot;M&quot;);  // insert M at index 1
+        // Result: A -&gt; M -&gt; B -&gt; C -&gt; D -&gt; ...
+    }
+}</pre>
+<p>Internal steps (conceptual):</p>
+<ol><li>Create a new node with data M</li></ol>
+<ol><li>Reassign left pointer and right pointer of adjacent nodes</li></ol>
+<ol><li>No shift operations — just 2 or 4 pointer changes</li></ol>
+<p>Insertion in the middle = matter of 2 or 4 pointer changes only.</p>
+<h4>Deletion in middle — also easy</h4>
+<pre class='code'>import java.util.LinkedList;
+
+public class LinkedListMiddleRemoveDemo {
+    public static void main(String[] args) {
+        LinkedList&lt;String&gt; list = new LinkedList&lt;&gt;();
+        // Existing: A -&gt; B -&gt; C -&gt; D -&gt; ...
+
+        list.remove(2);  // remove 3rd element (C)
+        // Just remove pointers; orphaned node eligible for GC
+    }
+}</pre>
+<p>Steps: Remove pointers connecting the node → re-link previous to next → removed node becomes eligible for garbage collection.</p>
+<h3>42:53 — Every strength has a weakness (LinkedList trade-off)</h3>
+<p>Durga Sir&#x27;s philosophy note: if a data structure is strong in one area, it is weak in another.</p>
+<h3>45:28 — LinkedList WORST choice for retrieval</h3>
+<p>If frequent operation = retrieval → LinkedList is the worst choice.</p>
+<p>Why?</p>
+<p>To get the 1st element: direct — ~1 second.</p>
+<p>To get the 2nd element:</p>
+<ol><li>Ask 1st node for address of 2nd node</li></ol>
+<ol><li>Go to that address → read data</li></ol>
+<ol><li>Takes ~2 seconds</li></ol>
+<p>To get the 3rd element: traverse 1 → 2 → 3 → ~3 seconds.</p>
+<p>To get the 10th element: ~10 seconds (or &quot;after 10 years&quot; as Sir jokes for very large lists).</p>
+<p>No direct communication with arbitrary index — must traverse from head (or tail) via next/previous pointers.</p>
+<h3>47:24 — LinkedList properties (preview for next LinkedList lecture)</h3>
+<p>Durga Sir boards these properties (full LinkedList lecture continues next):</p>
+<h3>51:23 — LinkedList constructors (only TWO — no capacity)</h3>
+<p>Why no capacity constructor?</p>
+<ul><li>Capacity concept applies when objects stored in consecutive memory (arrays)</li></ul>
+<ul><li>LinkedList nodes are scattered — capacity terminology not applicable</li></ul>
+<p>ArrayList has 3 constructors (no-arg, initial capacity, collection conversion).</p>
+<p>LinkedList has only 2 constructors:</p>
+<h4>Constructor 1 — no-arg: empty LinkedList</h4>
+<p>LinkedList&lt;String&gt; l = new LinkedList&lt;&gt;();
+// Creates an empty LinkedList object</p>
+<h4>Constructor 2 — collection conversion</h4>
+<pre class='code'>import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
+
+public class LinkedListConstructorsDemo {
+    public static void main(String[] args) {
+        // Constructor 1: empty LinkedList
+        LinkedList&lt;String&gt; l = new LinkedList&lt;&gt;();
+
+        // Constructor 2: equivalent LinkedList from existing collection
+        Collection&lt;String&gt; c = Arrays.asList(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;);
+        LinkedList&lt;String&gt; l2 = new LinkedList&lt;&gt;(c);
+        // Creates equivalent LinkedList for the given collection
+    }
+}</pre>
+<h3>57:16 — LinkedList class-specific methods (Stack &amp; Queue support)</h3>
+<p>LinkedList is commonly used to implement Stack and Queue data structures.</p>
+<p>Six specific methods defined in LinkedList class:</p>
+<p>These methods can be applied only on LinkedList objects — not on other List implementations.</p>
+<p>Board note:</p>
+<p>Usually we can use LinkedList to develop stacks and queues.</p>
+<p>To provide support, LinkedList class defines the following specific methods.</p>
+<p>(Durga Sir also mentions CM data structures lab — linked-list-based stack/queue programs are common and worth keeping in &quot;slips&quot; for lab exams.)</p>
+<h3>01:01:41 — LinkedList demo program (full board example)</h3>
+<p>Durga Sir converts the discussion into a demo program:</p>
+<pre class='code'>import java.util.LinkedList;
+
+public class LinkedListDemo {
+    public static void main(String[] args) {
+        LinkedList&lt;Object&gt; l = new LinkedList&lt;&gt;();
+
+        l.add(&quot;D&quot;);           // [D]
+        l.add(30);            // [D, 30]           — heterogeneous allowed
+        l.add(null);          // [D, 30, null]     — null insertion allowed
+        l.add(&quot;D&quot;);           // [D, 30, null, D]  — duplicates allowed
+
+        // Content so far: D, 30, null, D
+        // Insertion order preserved
+
+        l.set(0, &quot;Software&quot;); // replace index 0: D → Software
+        // [Software, 30, null, D]
+
+        l.addFirst(&quot;CCC&quot;);    // add at beginning
+        // [CCC, Software, 30, null, D]
+
+        l.removeLast();       // remove last element (D)
+        // [CCC, Software, 30, null]
+
+        System.out.println(l);
+        // prints [CCC, Software, 30, null]
+    }
+}</pre>
+<h4>Step-by-step trace</h4>
+<p>Properties demonstrated in this demo:</p>
+<ul><li>Insertion order preserved</li></ul>
+<ul><li>Duplicates allowed (D added twice)</li></ul>
+<ul><li>Null insertion possible</li></ul>
+<ul><li>Heterogeneous objects allowed (String + Integer)</li></ul>
+<ul><li>set(index, element) for replacement</li></ul>
+<ul><li>addFirst() adds at beginning (LinkedList-specific)</li></ul>
+<ul><li>removeLast() removes last element (LinkedList-specific)</li></ul>
+<p>Expected output:</p>
+<p>[CCC, Software, 30, null]</p>
+<h2>Quick revision — exam checklist</h2>
+<h3>Every collection class</h3>
+<ul><li>Implements `Serializable` ✓</li></ul>
+<ul><li>Implements `Cloneable` ✓</li></ul>
+<h3>RandomAccess (marker interface, `java.util`, no methods)</h3>
+<ul><li>Only ArrayList and Vector implement it</li></ul>
+<ul><li>LinkedList does NOT</li></ul>
+<h3>When to use which</h3>
+<h3>ArrayList vs Vector</h3>
+<h3>Get synchronized ArrayList</h3>
+<pre class='code'>List&lt;String&gt; sync = Collections.synchronizedList(new ArrayList&lt;&gt;());</pre>
+<p>Also available: Collections.synchronizedSet(), Collections.synchronizedMap().</p>
+<h3>LinkedList</h3>
+<ul><li>Underlying structure: doubly linked list</li></ul>
+<ul><li>Constructors: 2 (no capacity constructor)</li></ul>
+<ul><li>Specific methods: addFirst, addLast, getFirst, getLast, removeFirst, removeLast</li></ul>
+<ul><li>Used for Stack and Queue implementations</li></ul>
+<h2>Session scope note</h2>
+<p>This lecture title says ArrayList Part-4, but the session also covers:</p>
+<ol><li>Collection-wide rules (Serializable, Cloneable, RandomAccess)</li></ol>
+<ol><li>ArrayList performance characteristics and vs Vector</li></ol>
+<ol><li>Synchronized collection wrappers</li></ol>
+<ol><li>LinkedList introduction, properties, constructors, specific methods, and demo</li></ol>
+<p>Full dedicated LinkedList deep-dive continues in the next session (Video 140 — difference between ArrayList and LinkedList).</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Position</td><td>139 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>Collections Part-4 — ArrayList (continued), ArrayList vs Vector, synchronized collections, LinkedList intro</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 06m 59s (4019 s)</td></tr>
+<tr><td>Video ID</td><td>LFri78r3zUQ</td></tr>
+<tr><td>Watch URL</td><td>https://www.youtube.com/watch?v=LFri78r3zUQ</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>YouTube auto-captions</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Container needed?</th></tr>
+<tr><td>Transport goods from Hyderabad to Bangalore</td><td>Yes — physical container</td></tr>
+<tr><td>Transfer 10,000 litres of petrol/diesel</td><td>Yes — tank/container</td></tr>
+<tr><td>Hold several Student objects in memory</td><td>Yes — collection object</td></tr>
+<tr><td>Send a collection object from Hyderabad to London over a network</td><td>Yes — the collection itself is the container being transferred</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Implements Serializable?</th></tr>
+<tr><td>ArrayList</td><td>Yes</td></tr>
+<tr><td>LinkedList</td><td>Yes</td></tr>
+<tr><td>HashSet</td><td>Yes</td></tr>
+<tr><td>TreeSet</td><td>Yes</td></tr>
+<tr><td>Any collection class</td><td>Yes (by default)</td></tr>
+</table>
+<table>
+<tr><th>Interface</th><th>Purpose</th><th>All collection classes?</th></tr>
+<tr><td>Serializable</td><td>Network transfer / persistence</td><td>Yes</td></tr>
+<tr><td>Cloneable</td><td>Exact duplicate copy</td><td>Yes</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>ArrayList time (conceptual)</th></tr>
+<tr><td>Get 1st element</td><td>~1 second (instant)</td></tr>
+<tr><td>Get 10th element</td><td>~1 second (same speed)</td></tr>
+<tr><td>Get 1,00,000th element</td><td>~1 second (same speed)</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Serializable</th><th>Cloneable</th><th>RandomAccess</th></tr>
+<tr><td>ArrayList</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Vector</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>LinkedList</td><td>Yes</td><td>Yes</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td>Package</td><td>java.util</td></tr>
+<tr><td>Methods</td><td>None (zero methods)</td></tr>
+<tr><td>Type</td><td>Marker interface</td></tr>
+<tr><td>Who provides ability?</td><td>JVM / internal implementation of ArrayList and Vector</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>Result</th><th>Reason</th></tr>
+<tr><td>l1 instanceof Serializable</td><td>true</td><td>ArrayList implements Serializable</td></tr>
+<tr><td>l2 instanceof Cloneable</td><td>true</td><td>LinkedList implements Cloneable</td></tr>
+<tr><td>l1 instanceof RandomAccess</td><td>true</td><td>ArrayList implements RandomAccess</td></tr>
+<tr><td>l2 instanceof RandomAccess</td><td>false</td><td>LinkedList does not implement RandomAccess</td></tr>
+</table>
+<table>
+<tr><th>Frequent operation</th><th>ArrayList</th></tr>
+<tr><td>Retrieval</td><td>Best choice (implements RandomAccess)</td></tr>
+<tr><td>Insertion in the middle</td><td>Worst choice (massive shift operations)</td></tr>
+<tr><td>Deletion in the middle</td><td>Worst choice (massive shift operations)</td></tr>
+<tr><td>Insertion at last</td><td>No problem</td></tr>
+<tr><td>Deletion at last</td><td>No problem</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>ArrayList</th><th>Vector</th></tr>
+<tr><td>1</td><td>Every method is non-synchronized</td><td>Most methods are synchronized</td></tr>
+<tr><td>2</td><td>Multiple threads allowed to operate simultaneously on same object → not thread-safe</td><td>Only one thread at a time → thread-safe</td></tr>
+<tr><td>3</td><td>Threads don&#x27;t wait → relatively high performance</td><td>Threads must wait → relatively low performance</td></tr>
+<tr><td>4</td><td>Introduced in Java 1.2</td><td>Introduced in Java 1.0</td></tr>
+<tr><td>5</td><td>Non-legacy class</td><td>Legacy class</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>JDK Version</th><th>Legacy?</th></tr>
+<tr><td>ArrayList</td><td>1.2</td><td>No (Collections Framework)</td></tr>
+<tr><td>Vector</td><td>1.0</td><td>Yes (pre-Collections Framework)</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Signature</th><th>Purpose</th></tr>
+<tr><td>synchronizedList</td><td>public static &lt;T&gt; List&lt;T&gt; synchronizedList(List&lt;T&gt; list)</td><td>Thread-safe List wrapper</td></tr>
+<tr><td>synchronizedSet</td><td>public static &lt;T&gt; Set&lt;T&gt; synchronizedSet(Set&lt;T&gt; s)</td><td>Thread-safe Set wrapper</td></tr>
+<tr><td>synchronizedMap</td><td>public static &lt;K,V&gt; Map&lt;K,V&gt; synchronizedMap(Map&lt;K,V&gt; m)</td><td>Thread-safe Map wrapper</td></tr>
+</table>
+<table>
+<tr><th>Data structure</th><th>Strong at</th><th>Weak at</th></tr>
+<tr><td>ArrayList</td><td>Retrieval (random access)</td><td>Middle insert/delete</td></tr>
+<tr><td>LinkedList</td><td>Middle insert/delete</td><td>Retrieval</td></tr>
+</table>
+<table>
+<tr><th>Frequent operation</th><th>Best</th><th>Worst</th></tr>
+<tr><td>Retrieval</td><td>ArrayList</td><td>LinkedList</td></tr>
+<tr><td>Insert/delete in middle</td><td>LinkedList</td><td>ArrayList</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Property</th><th>Value</th></tr>
+<tr><td>1</td><td>Underlying data structure</td><td>Doubly linked list</td></tr>
+<tr><td>2</td><td>Insertion order preserved?</td><td>Yes (List property)</td></tr>
+<tr><td>3</td><td>Duplicate objects allowed?</td><td>Yes</td></tr>
+<tr><td>4</td><td>Heterogeneous objects allowed?</td><td>Yes (except TreeSet and TreeMap — covered earlier)</td></tr>
+<tr><td>5</td><td>Null insertion possible?</td><td>Yes</td></tr>
+<tr><td>6</td><td>Implements Serializable &amp; Cloneable?</td><td>Yes</td></tr>
+<tr><td>7</td><td>Implements RandomAccess?</td><td>No</td></tr>
+<tr><td>8</td><td>Best choice when</td><td>Insertion/deletion in the middle</td></tr>
+<tr><td>9</td><td>Worst choice when</td><td>Retrieval operation</td></tr>
+</table>
+<table>
+<tr><th>Data structure</th><th>Principle</th><th>LinkedList role</th></tr>
+<tr><td>Stack</td><td>LIFO — Last In First Out</td><td>addLast, removeLast, getLast</td></tr>
+<tr><td>Queue</td><td>FIFO — First In First Out</td><td>addLast, removeFirst, getFirst</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Description</th></tr>
+<tr><td>void addFirst(E e)</td><td>Add element at the beginning</td></tr>
+<tr><td>void addLast(E e)</td><td>Add element at the end</td></tr>
+<tr><td>E getFirst()</td><td>Retrieve (peek) first element</td></tr>
+<tr><td>E getLast()</td><td>Retrieve (peek) last element</td></tr>
+<tr><td>E removeFirst()</td><td>Remove and return first element</td></tr>
+<tr><td>E removeLast()</td><td>Remove and return last element</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Code</th><th>List content after</th></tr>
+<tr><td>1</td><td>new LinkedList&lt;&gt;()</td><td>[]</td></tr>
+<tr><td>2</td><td>l.add(&quot;D&quot;)</td><td>[D]</td></tr>
+<tr><td>3</td><td>l.add(30)</td><td>[D, 30]</td></tr>
+<tr><td>4</td><td>l.add(null)</td><td>[D, 30, null]</td></tr>
+<tr><td>5</td><td>l.add(&quot;D&quot;)</td><td>[D, 30, null, D]</td></tr>
+<tr><td>6</td><td>l.set(0, &quot;Software&quot;)</td><td>[Software, 30, null, D]</td></tr>
+<tr><td>7</td><td>l.addFirst(&quot;CCC&quot;)</td><td>[CCC, Software, 30, null, D]</td></tr>
+<tr><td>8</td><td>l.removeLast()</td><td>[CCC, Software, 30, null]</td></tr>
+<tr><td>9</td><td>System.out.println(l)</td><td>`[CCC, Software, 30, null]`</td></tr>
+</table>
+<table>
+<tr><th>Frequent operation</th><th>Best choice</th><th>Worst choice</th></tr>
+<tr><td>Retrieval (get by index)</td><td>ArrayList</td><td>LinkedList</td></tr>
+<tr><td>Insertion/deletion in middle</td><td>LinkedList</td><td>ArrayList</td></tr>
+</table>
+<table>
+<tr><th></th><th>ArrayList</th><th>Vector</th></tr>
+<tr><td>Synchronized?</td><td>No</td><td>Yes</td></tr>
+<tr><td>Thread-safe?</td><td>No</td><td>Yes</td></tr>
+<tr><td>Performance</td><td>Higher</td><td>Lower</td></tr>
+<tr><td>JDK</td><td>1.2</td><td>1.0</td></tr>
+<tr><td>Legacy?</td><td>No</td><td>Yes</td></tr>
+</table>
+</body></html>

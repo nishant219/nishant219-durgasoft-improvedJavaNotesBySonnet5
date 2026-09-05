@@ -1,0 +1,343 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>158-concurrenthashmap-program-1</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 158 — Concurrent Collections Part-5: ConcurrentHashMap Program-1</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This is a short, hands-on demo lecture — the first program in the ConcurrentHashMap practical series. Sir does not introduce new theory here; he executes a single example end-to-end to show how the three special methods of `ConcurrentMap` behave when used through a `ConcurrentHashMap` instance.</p>
+<p>Prerequisites (covered in earlier videos in this module):</p>
+<p>What this video covers (~4½ minutes):</p>
+<ol><li>Recap reminder — ConcurrentMap defines three special methods beyond normal Map</li></ol>
+<ol><li>Package/import — java.util.concurrent</li></ol>
+<ol><li>Create ConcurrentHashMap referenced as ConcurrentMap</li></ol>
+<ol><li>Step-by-step demo: put, putIfAbsent, remove(key, value), replace(key, oldValue, newValue)</li></ol>
+<ol><li>Predict final map contents</li></ol>
+<ol><li>Live compile &amp; run — verify output matches prediction</li></ol>
+<ol><li>Important note — iteration order is not guaranteed (hash-based, not insertion order)</li></ol>
+<p>What this video does NOT cover: constructors, concurrency level, locking internals, multi-threaded scenarios — those were in Video 157; more programs likely follow in Video 159+.</p>
+<h2>00:16 — Recap: three special `ConcurrentMap` methods</h2>
+<p>Sir opens by connecting back to the `ConcurrentMap` interface discussion (Video 156):</p>
+<p>In ConcurrentHashMap, we already covered that there are three methods in the `ConcurrentMap` interface. You have remembered `putIfAbsent`, `remove`, and `replace`.</p>
+<h3>Hierarchy reminder</h3>
+<p>Map  (java.util)
+ └── ConcurrentMap  (java.util.concurrent)
+      └── ConcurrentHashMap  (implementation class)</p>
+<ul><li>`ConcurrentHashMap` implements `ConcurrentMap`.</li></ul>
+<ul><li>`ConcurrentMap` extends `Map`.</li></ul>
+<ul><li>All normal `Map` methods (put, get, remove(key), etc.) work on ConcurrentHashMap.</li></ul>
+<ul><li>`ConcurrentMap` adds three atomic, thread-safe conditional methods that behave differently from their Map counterparts.</li></ul>
+<h3>The three methods (quick reference)</h3>
+<p>These methods exist specifically for multi-threaded, lock-free-style conditional updates — a core OCJP/SCJP exam topic when comparing Map vs ConcurrentMap.</p>
+<h2>00:37 — Package and import</h2>
+<p>Sir writes:</p>
+<pre class='code'>import java.util.concurrent.*;</pre>
+<p>Why this package?</p>
+<ul><li>`ConcurrentHashMap` lives in `java.util.concurrent`, not java.util.</li></ul>
+<ul><li>The star import pulls in ConcurrentHashMap, ConcurrentMap, and other concurrent utilities.</li></ul>
+<p>Board note: All concurrent collections (ConcurrentHashMap, CopyOnWriteArrayList, BlockingQueue implementations, etc.) are in `java.util.concurrent`.</p>
+<h2>00:53 — Creating the map</h2>
+<pre class='code'>ConcurrentMap&lt;Integer, String&gt; m = new ConcurrentHashMap&lt;&gt;();</pre>
+<p>Key points Sir emphasizes:</p>
+<p>Using the `ConcurrentMap` interface type is valid because ConcurrentHashMap is its implementation class — same pattern as Map m = new HashMap().</p>
+<h2>01:01 — Step 1: `put(1, &quot;A&quot;)`</h2>
+<p>m.put(1, &quot;A&quot;);   // key 1 added</p>
+<p>Normal `Map.put` behavior — if key absent, add; if key present, replace old value and return old value.</p>
+<h2>01:04 — Step 2: `put(2, &quot;B&quot;)`</h2>
+<p>m.put(2, &quot;B&quot;);   // key 2 added</p>
+<p>Two entries now. Order in toString() output may vary — Sir repeats this later.</p>
+<h2>01:12 — Step 3: `putIfAbsent(3, &quot;C&quot;)`</h2>
+<p>m.putIfAbsent(3, &quot;C&quot;);</p>
+<h3>`putIfAbsent` behavior (from Video 156, applied here)</h3>
+<p>Analysis for this call:</p>
+<ul><li>Key 3 is not in the map yet.</li></ul>
+<ul><li>Therefore entry (3, &quot;C&quot;) is added.</li></ul>
+<h3>Contrast with `put`</h3>
+<p>If we had written m.put(3, &quot;C&quot;) instead — same result here because key 3 was absent. The difference shows up only when the key already exists (next step).</p>
+<h2>01:33 — Step 4: `putIfAbsent(1, &quot;D&quot;)` — key already present</h2>
+<p>m.putIfAbsent(1, &quot;D&quot;);</p>
+<p>Analysis:</p>
+<ul><li>Key 1 already exists with value &quot;A&quot;.</li></ul>
+<ul><li>putIfAbsent rule: key already available → don&#x27;t do anything.</li></ul>
+<ul><li>Value &quot;D&quot; is NOT added; &quot;A&quot; remains.</li></ul>
+<h3>`put` vs `putIfAbsent` side-by-side (exam favourite)</h3>
+<h2>01:47 — Step 5: `remove(1, &quot;D&quot;)` — conditional remove fails</h2>
+<p>m.remove(1, &quot;D&quot;);</p>
+<h3>Two overloads of `remove` — do not confuse</h3>
+<p>Analysis for `remove(1, &quot;D&quot;)`:</p>
+<ul><li>Key 1 is present ✓</li></ul>
+<ul><li>But associated value is `&quot;A&quot;`, not `&quot;D&quot;` ✗</li></ul>
+<ul><li>Key–value pair (1, &quot;D&quot;) does not exist in the map</li></ul>
+<ul><li>Therefore: nothing is removed</li></ul>
+<p>Return value: false (removal did not happen).</p>
+<h3>When would it succeed?</h3>
+<p>m.remove(1, &quot;A&quot;);   // key 1 present AND value is &quot;A&quot; → entry removed → returns true</p>
+<p>After that, map would be {2=B, 3=C}.</p>
+<h2>02:12 — Step 6: `replace(2, &quot;B&quot;, &quot;E&quot;)` — conditional replace succeeds</h2>
+<p>m.replace(2, &quot;B&quot;, &quot;E&quot;);</p>
+<h3>`replace` behavior (three-parameter form)</h3>
+<p>Analysis:</p>
+<ul><li>Is there an entry with key 2 and value &quot;B&quot;? Yes.</li></ul>
+<ul><li>Key matched ✓, value matched ✓</li></ul>
+<ul><li>Replace &quot;B&quot; with &quot;E&quot;</li></ul>
+<p>Return value: true.</p>
+<h3>Failed replace example (for contrast)</h3>
+<p>m.replace(2, &quot;B&quot;, &quot;E&quot;);   // AFTER B was already replaced → value is &quot;E&quot;, not &quot;B&quot; → false, no change
+m.replace(1, &quot;D&quot;, &quot;X&quot;);   // key 1 value is &quot;A&quot;, not &quot;D&quot; → false, no change</p>
+<h2>02:38 — Step 7: print the map</h2>
+<pre class='code'>System.out.println(m);</pre>
+<h3>Expected final contents (entries, not order)</h3>
+<p>Sir states the three entries that must be present:</p>
+<p>Logical contents: {1=A, 2=E, 3=C}</p>
+<h3>Order is NOT guaranteed</h3>
+<p>Sir explicitly warns (critical exam/interview point):</p>
+<p>Here it is ConcurrentHashMap, right? Order-wise we can&#x27;t give the guarantee because it is based on hash code of the keys. But entries — these three will be there.</p>
+<p>Sample possible outputs (all valid):</p>
+<pre class='code'>{1=A, 2=E, 3=C}
+{3=C, 1=A, 2=E}
+{2=E, 3=C, 1=A}</pre>
+<p>All three entries present; only order varies.</p>
+<h2>Complete demo program (as Sir writes on board)</h2>
+<pre class='code'>import java.util.concurrent.*;
+
+public class Test {
+    public static void main(String[] args) {
+        ConcurrentMap&lt;Integer, String&gt; m = new ConcurrentHashMap&lt;&gt;();
+
+        m.put(1, &quot;A&quot;);                    // add 1→A
+        m.put(2, &quot;B&quot;);                    // add 2→B
+
+        m.putIfAbsent(3, &quot;C&quot;);            // key 3 absent → add 3→C
+        m.putIfAbsent(1, &quot;D&quot;);            // key 1 present → no change
+
+        m.remove(1, &quot;D&quot;);                 // key 1 value is A, not D → no remove
+
+        m.replace(2, &quot;B&quot;, &quot;E&quot;);             // key 2 value B matched → B replaced with E
+
+        System.out.println(m);
+        // Entries: {1=A, 2=E, 3=C} — order not guaranteed
+    }
+}</pre>
+<h2>03:16 — Live execution</h2>
+<p>Sir switches to the IDE/terminal and runs the same program:</p>
+<p>javac Test.java
+java Test</p>
+<h3>Observed output (from live run)</h3>
+<p>Sir reads the console — entries match prediction:</p>
+<ul><li>1 → A</li></ul>
+<ul><li>2 → E (was B, replaced)</li></ul>
+<ul><li>3 → C</li></ul>
+<p>Example console line (order may differ):</p>
+<pre class='code'>{3=C, 2=E, 1=A}</pre>
+<p>Sir confirms:</p>
+<p>Same entries — 1=A, 2=E, 3=C. Order-wise we can&#x27;t give the guarantee, but all three entries are there. Key 2 associated value is E (not B anymore).</p>
+<p>Verification checklist:</p>
+<h2>Trace table — full program state after each line</h2>
+<h2>Method deep-dive summary (OCJP exam sheet)</h2>
+<h3>1. `putIfAbsent(K key, V value)`</h3>
+<p>V putIfAbsent(K key, V value);</p>
+<ul><li>Purpose: Atomically add entry only when key is missing — avoids &quot;check-then-act&quot; race in multi-threaded code.</li></ul>
+<ul><li>If key absent: inserts mapping, returns null.</li></ul>
+<ul><li>If key present: map unchanged, returns existing value.</li></ul>
+<ul><li>vs `put`: put always overwrites; putIfAbsent never overwrites.</li></ul>
+<h3>2. `boolean remove(Object key, Object value)`</h3>
+<pre class='code'>boolean remove(Object key, Object value);</pre>
+<ul><li>Purpose: Atomically remove only when both key and value match — safe conditional delete.</li></ul>
+<ul><li>Returns `true`: entry found with exact key–value pair and removed.</li></ul>
+<ul><li>Returns `false`: no such mapping (wrong key, wrong value, or both).</li></ul>
+<ul><li>vs `remove(key)`: single-arg remove deletes by key alone regardless of value.</li></ul>
+<h3>3. `boolean replace(K key, V oldValue, V newValue)`</h3>
+<pre class='code'>boolean replace(K key, V oldValue, V newValue);</pre>
+<ul><li>Purpose: Atomically swap value only when current value matches expected — compare-and-swap style update.</li></ul>
+<ul><li>Returns `true`: replacement happened.</li></ul>
+<ul><li>Returns `false`: key missing or value didn&#x27;t match.</li></ul>
+<ul><li>Note: ConcurrentMap also has replace(K key, V value) (two-arg) — replaces unconditionally if key exists; the demo uses the three-arg conditional form.</li></ul>
+<h2>Why these methods matter for `ConcurrentHashMap`</h2>
+<p>In a multi-threaded environment, this pattern is unsafe:</p>
+<pre class='code'>// NOT thread-safe &quot;check then act&quot;
+if (!map.containsKey(key)) {
+    map.put(key, value);
+}</pre>
+<p>Between containsKey and put, another thread can insert the same key → lost update or inconsistent state.</p>
+<p>`putIfAbsent` performs the check-and-insert as one atomic operation on ConcurrentHashMap — no external synchronization needed.</p>
+<p>Same logic applies to conditional `remove` and `replace` — they prevent removing/replacing the wrong state when another thread intervenes.</p>
+<h2>Common auto-caption / transcription corrections</h2>
+<p>YouTube auto-captions garbled several terms in this short video. Correct readings:</p>
+<h2>Key takeaways (copy for revision)</h2>
+<ol><li>`ConcurrentHashMap` is in `java.util.concurrent`; implement `ConcurrentMap`.</li></ol>
+<ol><li>`ConcurrentMap` adds exactly three special methods: `putIfAbsent`, `remove(key, value)`, `replace(key, oldValue, newValue)`.</li></ol>
+<ol><li>This demo uses all three conditionals in one program — trace each call against current map state.</li></ol>
+<ol><li>`putIfAbsent(1, &quot;D&quot;)` when key 1 exists → no change (unlike put).</li></ol>
+<ol><li>`remove(1, &quot;D&quot;)` when value is &quot;A&quot; → no removal (both key AND value must match).</li></ol>
+<ol><li>`replace(2, &quot;B&quot;, &quot;E&quot;)` when entry is 2=B → success → 2=E.</li></ol>
+<ol><li>Final map always has three entries: 1=A, 2=E, 3=C.</li></ol>
+<ol><li>`ConcurrentHashMap` does not preserve insertion order in toString() — hash-based bucket layout.</li></ol>
+<ol><li>Live compile/run confirms theory — entries match; order may shuffle.</li></ol>
+<ol><li>This is Program-1 — more ConcurrentHashMap programs follow in subsequent videos.</li></ol>
+<h2>OCJP / SCJP quick quiz (self-check)</h2>
+<p>Q1. After m.put(1,&quot;A&quot;); m.putIfAbsent(1,&quot;D&quot;); — what is m.get(1)?</p>
+<p>A: &quot;A&quot;</p>
+<p>Q2. After m.put(2,&quot;B&quot;); m.remove(2, &quot;X&quot;); — is key 2 still in map?</p>
+<p>A: Yes — value didn&#x27;t match &quot;X&quot;.</p>
+<p>Q3. After m.put(2,&quot;B&quot;); m.replace(2, &quot;B&quot;, &quot;E&quot;); — what is m.get(2)?</p>
+<p>A: &quot;E&quot;</p>
+<p>Q4. Can ConcurrentHashMap guarantee {1=A, 2=E, 3=C} print order every run?</p>
+<p>A: No — order depends on hash codes and internal table layout.</p>
+<p>Q5. Which interface defines putIfAbsent?</p>
+<p>A: ConcurrentMap (since Java 5 / 1.5).</p>
+<p>Q6. Does normal HashMap have putIfAbsent?</p>
+<p>A: Yes — putIfAbsent was added to `Map` itself in Java 8 as a default method. But the conditional remove/replace variants and their atomic thread-safe semantics on ConcurrentHashMap remain the exam focus in this Durga Sir module. (Sir teaches the Java 5 ConcurrentMap story where these three were special to concurrent maps.)</p>
+<h2>Connection to next videos</h2>
+<p>Sir closes with:</p>
+<p>This is the first example to demonstrate how we can use `ConcurrentMap` interface methods for `ConcurrentHashMap`. That&#x27;s all — this is the first example.</p>
+<p>Expect Program-2 and beyond (Video 159+) to cover additional scenarios — likely iterators, concurrent reads/writes, or more complex multi-threaded demos building on Video 157 theory.</p>
+<h2>One-page revision diagram</h2>
+<p>ConcurrentHashMap Demo Program-1 (Video 158)
+============================================
+import java.util.concurrent.*;
+
+ConcurrentMap m = new ConcurrentHashMap();
+
+  put(1,&quot;A&quot;)           →  {1=A}
+  put(2,&quot;B&quot;)           →  {1=A, 2=B}
+  putIfAbsent(3,&quot;C&quot;)   →  {1=A, 2=B, 3=C}     ← key 3 was free
+  putIfAbsent(1,&quot;D&quot;)   →  {1=A, 2=B, 3=C}     ← key 1 taken → skip
+  remove(1,&quot;D&quot;)        →  {1=A, 2=B, 3=C}     ← value A≠D → skip
+  replace(2,&quot;B&quot;,&quot;E&quot;)   →  {1=A, 2=E, 3=C}     ← match → replace
+
+println → three entries, order NOT guaranteed</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Playlist position</td><td>158 of 203</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Concurrent Collections Part-5 \</td><td>\</td><td>ConcurrentHashMap Program-1</td></tr>
+<tr><td>YouTube URL</td><td>https://www.youtube.com/watch?v=y52gqOfral0</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>y52gqOfral0</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>4m 34s</td><td></td><td></td></tr>
+<tr><td>Captions</td><td>English (YouTube auto-generated via yt-dlp)</td><td></td><td></td></tr>
+<tr><td>Output file</td><td>158-concurrenthashmap-program-1</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th></tr>
+<tr><td>156</td><td>ConcurrentMap interface — putIfAbsent, conditional remove, conditional replace</td></tr>
+<tr><td>157</td><td>ConcurrentHashMap internals — thread safety, segment/bucket locking, concurrency level, constructors</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Method signature</th><th>One-line behavior</th></tr>
+<tr><td>1</td><td>V putIfAbsent(K key, V value)</td><td>Add entry only if key is absent; if key exists, do nothing</td></tr>
+<tr><td>2</td><td>boolean remove(Object key, Object value)</td><td>Remove entry only if key exists AND value matches</td></tr>
+<tr><td>3</td><td>boolean replace(K key, V oldValue, V newValue)</td><td>Replace value only if key exists AND current value equals oldValue</td></tr>
+</table>
+<table>
+<tr><th>Point</th><th>Detail</th></tr>
+<tr><td>Reference type</td><td>ConcurrentMap (interface) — polymorphic reference</td></tr>
+<tr><td>Object type</td><td>ConcurrentHashMap (concrete implementation)</td></tr>
+<tr><td>Empty map</td><td>Default constructor → empty ConcurrentHashMap with default initial capacity 16, load factor 0.75, concurrency level 16 (from Video 157)</td></tr>
+<tr><td>Generics</td><td>Demo uses integer keys and string values (autocaptions garble types; code uses Integer/String)</td></tr>
+</table>
+<table>
+<tr><th>After this call</th><th>Map state</th></tr>
+<tr><td>Entries</td><td>{1=A}</td></tr>
+<tr><td>Return value</td><td>null (key was not previously present)</td></tr>
+</table>
+<table>
+<tr><th>After this call</th><th>Map state</th></tr>
+<tr><td>Entries</td><td>{1=A, 2=B}</td></tr>
+</table>
+<table>
+<tr><th>Condition</th><th>Action</th></tr>
+<tr><td>Key not already in map</td><td>Add (key, value) → returns null</td></tr>
+<tr><td>Key already in map</td><td>Do nothing → returns existing value</td></tr>
+</table>
+<table>
+<tr><th>After this call</th><th>Map state</th></tr>
+<tr><td>Entries</td><td>{1=A, 2=B, 3=C}</td></tr>
+</table>
+<table>
+<tr><th>After this call</th><th>Map state</th></tr>
+<tr><td>Entries</td><td>{1=A, 2=B, 3=C} — unchanged from previous step</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>put(1, &quot;D&quot;)</th><th>putIfAbsent(1, &quot;D&quot;)</th></tr>
+<tr><td>Key 1 absent</td><td>Adds 1=D, returns null</td><td>Adds 1=D, returns null</td></tr>
+<tr><td>Key 1 present with &quot;A&quot;</td><td>Replaces → 1=D, returns &quot;A&quot;</td><td>No change → stays 1=A, returns &quot;A&quot;</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Behavior</th></tr>
+<tr><td>remove(Object key)</td><td>Remove entry for key regardless of value (normal Map remove)</td></tr>
+<tr><td>remove(Object key, Object value)</td><td>Remove only if key exists AND associated value equals specified value (ConcurrentMap special method)</td></tr>
+</table>
+<table>
+<tr><th>After this call</th><th>Map state</th></tr>
+<tr><td>Entries</td><td>{1=A, 2=B, 3=C} — still unchanged</td></tr>
+</table>
+<table>
+<tr><th>Condition</th><th>Action</th><th>Return</th></tr>
+<tr><td>Key present AND current value == oldValue</td><td>Replace with newValue</td><td>true</td></tr>
+<tr><td>Key absent OR value mismatch</td><td>No change</td><td>false</td></tr>
+</table>
+<table>
+<tr><th>After this call</th><th>Map state</th></tr>
+<tr><td>Entries</td><td>{1=A, 2=E, 3=C}</td></tr>
+</table>
+<table>
+<tr><th>Key</th><th>Value</th><th>How it got there</th></tr>
+<tr><td>1</td><td>&quot;A&quot;</td><td>put(1, &quot;A&quot;); putIfAbsent(1,&quot;D&quot;) skipped; remove(1,&quot;D&quot;) failed</td></tr>
+<tr><td>2</td><td>&quot;E&quot;</td><td>put(2, &quot;B&quot;) then replace(2, &quot;B&quot;, &quot;E&quot;)</td></tr>
+<tr><td>3</td><td>&quot;C&quot;</td><td>putIfAbsent(3, &quot;C&quot;)</td></tr>
+</table>
+<table>
+<tr><th>Map type</th><th>Insertion order guaranteed?</th></tr>
+<tr><td>LinkedHashMap</td><td>Yes (insertion-order or access-order)</td></tr>
+<tr><td>TreeMap</td><td>Yes (sorted by key)</td></tr>
+<tr><td>HashMap</td><td>No</td></tr>
+<tr><td>ConcurrentHashMap</td><td>No (hash-table based, like HashMap)</td></tr>
+<tr><td>Hashtable</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>Check</th><th>Result</th></tr>
+<tr><td>Entry count = 3</td><td>✓</td></tr>
+<tr><td>Key 1 = &quot;A&quot; (not &quot;D&quot;)</td><td>✓ — putIfAbsent and conditional remove worked as expected</td></tr>
+<tr><td>Key 2 = &quot;E&quot; (not &quot;B&quot;)</td><td>✓ — replace succeeded</td></tr>
+<tr><td>Key 3 = &quot;C&quot;</td><td>✓ — putIfAbsent added new key</td></tr>
+<tr><td>Order matches insertion order</td><td>✗ — not expected for ConcurrentHashMap</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Code</th><th>Map contents {key=value}</th><th>Notes</th></tr>
+<tr><td>0</td><td>(new map)</td><td>{}</td><td>empty</td></tr>
+<tr><td>1</td><td>put(1, &quot;A&quot;)</td><td>{1=A}</td><td>normal put</td></tr>
+<tr><td>2</td><td>put(2, &quot;B&quot;)</td><td>{1=A, 2=B}</td><td>normal put</td></tr>
+<tr><td>3</td><td>putIfAbsent(3, &quot;C&quot;)</td><td>{1=A, 2=B, 3=C}</td><td>key 3 was absent</td></tr>
+<tr><td>4</td><td>putIfAbsent(1, &quot;D&quot;)</td><td>{1=A, 2=B, 3=C}</td><td>key 1 exists → skip</td></tr>
+<tr><td>5</td><td>remove(1, &quot;D&quot;)</td><td>{1=A, 2=B, 3=C}</td><td>value mismatch → skip</td></tr>
+<tr><td>6</td><td>replace(2, &quot;B&quot;, &quot;E&quot;)</td><td>{1=A, 2=E, 3=C}</td><td>match → replace</td></tr>
+<tr><td>7</td><td>println(m)</td><td>print {1=A, 2=E, 3=C}</td><td>order varies</td></tr>
+</table>
+<table>
+<tr><th>Caption heard</th><th>Intended</th></tr>
+<tr><td>&quot;puts in remove&quot;</td><td>putIfAbsent, remove, replace</td></tr>
+<tr><td>&quot;put if option&quot;</td><td>putIfAbsent</td></tr>
+<tr><td>&quot;java util concurrent start&quot;</td><td>java.util.concurrent.*</td></tr>
+<tr><td>&quot;1 or 2 B&quot;</td><td>key 2, value &quot;B&quot;</td></tr>
+<tr><td>&quot;1 or three&quot;</td><td>key 3</td></tr>
+<tr><td>&quot;one or two B&quot;</td><td>key 2, value &quot;B&quot;</td></tr>
+<tr><td>&quot;yda put if option of 1.1 comma d&quot;</td><td>putIfAbsent(1, &quot;D&quot;)</td></tr>
+<tr><td>&quot;ash concurrent map&quot;</td><td>ConcurrentMap</td></tr>
+<tr><td>&quot;concurrent Ash map&quot;</td><td>ConcurrentHashMap</td></tr>
+</table>
+</body></html>

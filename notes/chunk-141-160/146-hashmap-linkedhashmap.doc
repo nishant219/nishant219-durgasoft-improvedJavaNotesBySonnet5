@@ -1,0 +1,488 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>146-hashmap-linkedhashmap</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 146 — Collections Part-11: Map Introduction, HashMap &amp; HashMap vs Hashtable</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This session begins the Map module — the second half of the Collections Framework (first half = Collection; second half = Map). Sir states the full Map syllabus will take roughly 4–5 hours across multiple lectures.</p>
+<p>What this lecture actually covers (~84 minutes):</p>
+<ol><li>Recap: Comparable/Comparator is the most important Collections topic for interviews</li></ol>
+<ol><li>Full Map module agenda (roadmap for upcoming sessions)</li></ol>
+<ol><li>Introduction to Map — definition, keys/values, entries</li></ol>
+<ol><li>Map interface methods (put, putAll, get, remove, containsKey, containsValue, isEmpty, size, clear)</li></ol>
+<ol><li>Collection views of Map (keySet, values, entrySet)</li></ol>
+<ol><li>Map.Entry inner interface (getKey, getValue, setValue)</li></ol>
+<ol><li>HashMap — properties, four constructors, full demo program</li></ol>
+<ol><li>HashMap vs Hashtable — five differences (top interview question)</li></ol>
+<ol><li>How to get synchronized version of HashMap via Collections.synchronizedMap()</li></ol>
+<p>Scope note on LinkedHashMap: The video title and opening agenda list LinkedHashMap, but this session ends at HashMap vs Hashtable (~1:24:00). LinkedHashMap is not covered in this transcript — it is deferred to the next session along with IdentityHashMap, WeakHashMap, SortedMap, NavigableMap, and TreeMap.</p>
+<h2>00:04 — Recap: Comparable/Comparator is the crown jewel</h2>
+<p>Before starting Map, Sir reinforces:</p>
+<ul><li>In the entire Collection Framework, the most worthy concept is Comparable vs Comparator.</li></ul>
+<ul><li>Interview favourites:</li></ul>
+<ul><li>What is the difference between Comparable and Comparator?</li></ul>
+<ul><li>How to implement customized sorting using Comparator?</li></ul>
+<ul><li>TreeSet was covered; TreeMap (coming later) uses the same Comparable/Comparator terminology — copy-paste logic.</li></ul>
+<ul><li>Set-related terminology was completed in the previous session.</li></ul>
+<p>Exam mantra: If Comparable/Comparator is clear, TreeMap learning becomes very simple.</p>
+<h2>00:55 — Full Map module agenda (roadmap)</h2>
+<p>Sir writes the complete Map syllabus on the board. This is the master checklist for the next several videos:</p>
+<p>Version summary (board):</p>
+<ul><li>Map concept → 1.2</li></ul>
+<ul><li>LinkedHashMap, IdentityHashMap, WeakHashMap → 1.4</li></ul>
+<ul><li>NavigableMap → 1.6</li></ul>
+<ul><li>Dictionary, Hashtable, Properties → 1.0 legacy classes</li></ul>
+<p>Sir explicitly says: Dictionary is abstract — we won&#x27;t discuss it because abstract classes are not used directly.</p>
+<h2>05:33 — Introduction to Map</h2>
+<h3>Point 1: Map is NOT a child of Collection</h3>
+<p>This is the first and most important conclusion:</p>
+<p>Collection Framework
+├── First half  → Collection interface (List, Set, Queue)
+└── Second half → Map interface (completely separate branch)</p>
+<ul><li>Map is NOT a child interface of Collection.</li></ul>
+<ul><li>Map is nowhere related to Collection.</li></ul>
+<ul><li>Collection = group of individual objects.</li></ul>
+<ul><li>Map = group of objects as key–value pairs.</li></ul>
+<p>Underline on board: Map is not child interface of Collection.</p>
+<h3>Point 2: When should we go for Map?</h3>
+<p>Rule (board): If we want to represent a group of objects as key–value pairs, then we should go for Map.</p>
+<p>Real-world examples Sir gives:</p>
+<ul><li>Web form parameters are stored internally in Map style.</li></ul>
+<ul><li>Servlet attributes are stored internally in Map style.</li></ul>
+<ul><li>Wherever name–value pair or key–value pair exists → highly recommended to use Map.</li></ul>
+<h3>Point 3: Visual model — keys, values, entries</h3>
+<p>Map
+┌─────────────────────────────────────┐
+│  Key (101)  →  Value (Durga)        │  ← Entry 1
+│  Key (102)  →  Value (Ravi)         │  ← Entry 2
+│  Key (103)  →  Value (Shiva)        │  ← Entry 3
+│  Key (104)  →  Value (some name)    │  ← Entry 4
+└─────────────────────────────────────┘</p>
+<p>Board conclusions (copy exactly):</p>
+<ol><li>Both keys and values are objects only (even if you store numbers, they are Integer objects via autoboxing).</li></ol>
+<ol><li>Duplicate keys are NOT allowed. (Roll number can never duplicate.)</li></ol>
+<ol><li>Duplicate values ARE allowed. (Two students can have the same name.)</li></ol>
+<ol><li>Each key–value pair is called one Entry — this is a technical term, not oral English. An interface named Entry exists for this reason.</li></ol>
+<ol><li>Map is considered as a collection of Entry objects.</li></ol>
+<h2>13:41 — Map has its own methods (NOT Collection methods)</h2>
+<p>Because Map concept is different from Collection:</p>
+<p>Why Collection methods don&#x27;t apply:</p>
+<ul><li>Collection: group of individual objects → add(singleObject).</li></ul>
+<ul><li>Map: group of key–value pairs → must add key and value simultaneously → put(key, value).</li></ul>
+<p>Map contains its own specific methods. Collection methods cannot be applied to Map because concepts are different.</p>
+<h2>15:41 — Map interface methods (detailed)</h2>
+<h3>Method 1: `Object put(Object key, Object value)`</h3>
+<p>Purpose: To add one key–value pair to the map.</p>
+<p>The twist — return type is `Object`:</p>
+<p>Sir emphasizes: return type is NOT void, NOT boolean — it is Object. Why?</p>
+<p>Scenario walkthrough (board example):</p>
+<p>Map m = new HashMap();
+
+m.put(101, &quot;Durga&quot;);   // key 101 not present → adds entry → returns null
+m.put(102, &quot;Shiva&quot;);   // key 102 not present → adds entry → returns null
+m.put(101, &quot;Ravi&quot;);    // key 101 ALREADY present → REPLACES old value → returns OLD value &quot;Durga&quot;</p>
+<p>Rules for `put()`:</p>
+<p>Board wording:</p>
+<ul><li>If the key is already present → old value will be replaced with new value.</li></ul>
+<ul><li>Returns old value (so you know what got replaced).</li></ul>
+<p>Contrast with Set:</p>
+<ul><li>In HashSet, add() with duplicate element → returns false, element NOT added.</li></ul>
+<ul><li>In Map, duplicate key → old value replaced, new value stored, old value returned.</li></ul>
+<p>Example to print old value:</p>
+<p>System.out.println(m.put(&quot;Chiranjeevi&quot;, 1000));
+// If &quot;Chiranjeevi&quot; key existed with value 700 → prints 700 (old value)</p>
+<h3>Method 2: `void putAll(Map m)`</h3>
+<p>Purpose: To add a group of key–value pairs to the map.</p>
+<ul><li>A group of key–value pairs = another Map (small map).</li></ul>
+<ul><li>Pass the small map → all its entries are added to the big map.</li></ul>
+<p>Map bigMap = new HashMap();
+Map smallMap = new HashMap();
+smallMap.put(&quot;A&quot;, 1);
+smallMap.put(&quot;B&quot;, 2);
+
+bigMap.putAll(smallMap);  // both entries added to bigMap</p>
+<h3>Method 3: `Object get(Object key)`</h3>
+<p>Purpose: Returns the value associated with the specified key.</p>
+<ul><li>If key exists → returns corresponding value.</li></ul>
+<ul><li>If key does NOT exist → returns null.</li></ul>
+<p>Analogy: Like getting a servlet parameter — you know parameter name (key), you want parameter value.</p>
+<h3>Method 4: `Object remove(Object key)`</h3>
+<p>Purpose: Removes the entry associated with the specified key.</p>
+<ul><li>You specify only the key.</li></ul>
+<ul><li>The entire entry (key + value together) is removed.</li></ul>
+<ul><li>There is no concept of &quot;key removed but value remains&quot; — without key, value cannot exist in Map.</li></ul>
+<h3>Method 5: `boolean containsKey(Object key)`</h3>
+<p>Purpose: Check whether a particular key is available in the map.</p>
+<h3>Method 6: `boolean containsValue(Object value)`</h3>
+<p>Purpose: Check whether a particular value is available in the map.</p>
+<h3>Method 7: `boolean isEmpty()`</h3>
+<p>Purpose: Check whether the map is empty.</p>
+<h3>Method 8: `int size()`</h3>
+<p>Purpose: Returns the number of key–value pairs (entries) in the map.</p>
+<h3>Method 9: `void clear()`</h3>
+<p>Purpose: Removes all key–value pairs from the map.</p>
+<h3>Map methods summary table</h3>
+<h2>27:47 — Collection views of Map (three special methods)</h2>
+<p>Given a map with entries:</p>
+<p>Map: { 101→Durga, 102→Shiva, 103→Ravi, 104→some name }</p>
+<h3>Method 1: `Set keySet()`</h3>
+<p>Requirement: &quot;I want only keys.&quot;</p>
+<ul><li>Return type: Set (not Map, not Collection).</li></ul>
+<ul><li>Why Set? Because duplicate keys are not allowed in Map → keys are unique → Set is appropriate.</li></ul>
+<p>Set s = m.keySet();
+// Output style: [103, 102, 101, 104]  (square brackets — Set/Collection style)</p>
+<h3>Method 2: `Collection values()`</h3>
+<p>Requirement: &quot;I want only values.&quot;</p>
+<ul><li>Return type: Collection (generic word — not Set).</li></ul>
+<ul><li>Why Collection? Duplicate values allowed; order not important.</li></ul>
+<p>Collection c = m.values();
+// Output style: [500, 200, 800, 1000]  (square brackets)</p>
+<h3>Method 3: `Set entrySet()`</h3>
+<p>Requirement: &quot;Give me set of Entry objects.&quot;</p>
+<ul><li>Each key–value pair = one Entry object.</li></ul>
+<ul><li>Return type: Set of Entry objects.</li></ul>
+<p>Set s1 = m.entrySet();
+// Output style: [103=Ravi, 102=Shiva, 101=Durga, 104=...]
+// Each element is one Entry object printed as key=value</p>
+<h3>Why called &quot;Collection Views of Map&quot;</h3>
+<p>These three methods are applied on Map object, but return types use Collection terminology (Set, Collection):</p>
+<p>Board term: These three methods are called Collection Views of Map — we are viewing the map in the form of collections (keys only, values only, or entries only).</p>
+<h2>31:43 — Map.Entry inner interface</h2>
+<h3>Entry concept (reinforcement)</h3>
+<ul><li>Map = group of key–value pairs.</li></ul>
+<ul><li>Each key–value pair = one Entry.</li></ul>
+<ul><li>Map = collection of Entry objects.</li></ul>
+<h3>Critical question: Is Entry always part of Map?</h3>
+<p>Answer: Yes. Without an existing Map object, there is no chance of an Entry object existing.</p>
+<p>Therefore: Entry is an inner interface of Map interface.</p>
+<p>interface Map {
+    interface Entry {
+        Object getKey();
+        Object getValue();
+        Object setValue(Object value);
+    }
+    // ... other Map methods
+}</p>
+<h3>Entry interface methods (only three)</h3>
+<p>Board points:</p>
+<ul><li>Entry-specific methods — apply only on Entry object, not on Map directly.</li></ul>
+<ul><li>setValue() replaces current value with new value and returns old value (same pattern as put()).</li></ul>
+<h3>Iterating entries — full demo pattern</h3>
+<pre class='code'>import java.util.*;
+
+public class HashMapEntryDemo {
+    public static void main(String[] args) {
+        Map m = new HashMap();
+        m.put(&quot;Chiranjeevi&quot;, 700);
+        m.put(&quot;Balayya&quot;, 800);
+        m.put(&quot;Venkatesh&quot;, 200);
+        m.put(&quot;Nagarjuna&quot;, 500);
+
+        Set entrySet = m.entrySet();
+        Iterator it = entrySet.iterator();
+
+        while (it.hasNext()) {
+            Map.Entry me = (Map.Entry) it.next();  // inner interface → Map.Entry
+
+            System.out.println(me.getKey() + &quot; ====== &quot; + me.getValue());
+
+            // Conditional update via entry
+            if (me.getKey().equals(&quot;Nagarjuna&quot;)) {
+                me.setValue(10000);  // changes value in the actual map
+            }
+        }
+
+        System.out.println(m);  // Nagarjuna=10000 reflected here
+    }
+}</pre>
+<p>Important syntax note:</p>
+<ul><li>Entry is inner interface → use Map.Entry (outer.inner pattern).</li></ul>
+<ul><li>Cast iterator&#x27;s next element: (Map.Entry) it.next().</li></ul>
+<p>Timing trap Sir warns about:</p>
+<ul><li>If you print map before calling setValue() inside the loop, you still see old value (500).</li></ul>
+<ul><li>Change happens during iteration; final System.out.println(m) shows updated value (10000).</li></ul>
+<h2>39:16 — HashMap: first implementation class of Map</h2>
+<h3>HashMap properties (board — memorize all)</h3>
+<p>Board exact wording for null rules:</p>
+<ul><li>Null is allowed for key — (only once).</li></ul>
+<ul><li>Null is allowed for values — (any number of times).</li></ul>
+<h3>HashMap constructors (same pattern as HashSet — four constructors)</h3>
+<p>Sir notes: HashSet constructors = HashMap constructors = LinkedHashMap constructors (same four patterns).</p>
+<p>Constructor 1 board wording:</p>
+<p>Creates an empty HashMap object with the default initial capacity 16 and default load factor 0.75.</p>
+<p>Note: Map is NOT Collection → constructor 4 is HashMap(Map m), not HashMap(Collection c).</p>
+<h2>50:46 — HashMap demo program (HashMapDemo)</h2>
+<h3>Full program from the lecture</h3>
+<pre class='code'>import java.util.*;
+
+public class HashMapDemo {
+    public static void main(String[] args) {
+        HashMap m = new HashMap();
+
+        m.put(&quot;Chiranjeevi&quot;, 700);
+        m.put(&quot;Balayya&quot;, 800);
+        m.put(&quot;Venkatesh&quot;, 200);
+        m.put(&quot;Nagarjuna&quot;, 500);
+
+        System.out.println(m);
+        // HashMap → NOT insertion order
+        // Output: {Nagarjuna=500, Venkatesh=200, Balayya=800, Chiranjeevi=700}
+        // Curly braces { } — Map toString style
+
+        System.out.println(m.put(&quot;Chiranjeevi&quot;, 1000));
+        // Key &quot;Chiranjeevi&quot; already exists → returns old value 700
+
+        Set s = m.keySet();
+        System.out.println(s);
+        // [Nagarjuna, Venkatesh, Balayya, Chiranjeevi] — square brackets (Set)
+
+        Collection c = m.values();
+        System.out.println(c);
+        // [500, 200, 800, 1000] — square brackets (Collection)
+
+        Set s1 = m.entrySet();
+        System.out.println(s1);
+        // [Nagarjuna=500, Venkatesh=200, Balayya=800, Chiranjeevi=1000]
+
+        // Iterate entries and modify
+        Iterator it = s1.iterator();
+        while (it.hasNext()) {
+            Map.Entry me = (Map.Entry) it.next();
+            System.out.println(me.getKey() + &quot; ====== &quot; + me.getValue());
+
+            if (me.getKey().equals(&quot;Nagarjuna&quot;)) {
+                me.setValue(10000);
+            }
+        }
+
+        System.out.println(m);
+        // Nagarjuna value now 10000
+    }
+}</pre>
+<h3>Output style rules (exam favourite)</h3>
+<h3>HashMap insertion order</h3>
+<ul><li>Cannot guarantee insertion order in output.</li></ul>
+<ul><li>Order depends on hash code of keys — we don&#x27;t know hash codes, so cannot predict exact order.</li></ul>
+<ul><li>Do NOT call HashMap output &quot;insertion order.&quot;</li></ul>
+<h2>1:09:26 — HashMap vs Hashtable (TOP INTERVIEW QUESTION)</h2>
+<p>Sir calls this: &quot;Minimum one crore times asked question in the interview room.&quot;</p>
+<p>Analogy: Same differences as ArrayList vs Vector.</p>
+<h3>Five differences (board — left: HashMap, right: Hashtable)</h3>
+<h3>Detailed explanation per point</h3>
+<p>Point 1 — Synchronization:</p>
+<ul><li>HashMap methods = non-synchronized.</li></ul>
+<ul><li>Hashtable methods = synchronized (method-level locking).</li></ul>
+<p>Point 2 — Thread safety:</p>
+<ul><li>HashMap: multiple threads can operate on same HashMap object simultaneously → not thread-safe.</li></ul>
+<ul><li>Hashtable: at a time only one thread allowed → thread-safe.</li></ul>
+<p>Point 3 — Performance:</p>
+<ul><li>HashMap: no waiting → higher performance.</li></ul>
+<ul><li>Hashtable: threads wait for lock → lower performance.</li></ul>
+<p>Point 4 — Null (VERY IMPORTANT — many students miss this):</p>
+<p>HashMap:   null key ✓ (once)    null value ✓ (any number of times)
+Hashtable: null key ✗           null value ✗
+           → NullPointerException if you try</p>
+<p>Point 5 — Version / Legacy:</p>
+<ul><li>HashMap → Java 1.2, part of new Collections Framework, not legacy.</li></ul>
+<ul><li>Hashtable → Java 1.0, legacy class (like Vector, Stack).</li></ul>
+<h2>1:19:47 — How to get synchronized version of HashMap</h2>
+<p>By default HashMap is non-synchronized, but we can obtain a synchronized wrapper:</p>
+<p>HashMap m = new HashMap();                        // non-synchronized
+Map m1 = Collections.synchronizedMap(m);          // synchronized version</p>
+<ul><li>m → original, non-synchronized, not thread-safe.</li></ul>
+<ul><li>m1 → synchronized, thread-safe wrapper around m.</li></ul>
+<p>Board wording:</p>
+<p>By default HashMap is non-synchronized, but we can get synchronized version of HashMap by using synchronizedMap method of Collections class.</p>
+<p>Same pattern as:</p>
+<ul><li>Collections.synchronizedList() for ArrayList</li></ul>
+<ul><li>Collections.synchronizedSet() for HashSet</li></ul>
+<ul><li>Collections.synchronizedMap() for HashMap</li></ul>
+<h2>LinkedHashMap — deferred (not in this video)</h2>
+<p>The title mentions LinkedHashMap and the opening agenda lists it as topic #3, but this session ends before LinkedHashMap is taught. Expected in the next lecture:</p>
+<ul><li>LinkedHashMap = HashMap + insertion order preserved</li></ul>
+<ul><li>Same constructors as HashMap</li></ul>
+<ul><li>Child class of HashMap (1.4)</li></ul>
+<p>Do not confuse with this session&#x27;s content — everything above is what was actually covered on the board and in the demo.</p>
+<h2>Board summary — copy for revision</h2>
+<h3>Map introduction (5 points)</h3>
+<ol><li>Map is not child interface of Collection.</li></ol>
+<ol><li>Use Map to represent group of objects as key–value pairs.</li></ol>
+<ol><li>Both keys and values are objects.</li></ol>
+<ol><li>Duplicate keys not allowed; duplicate values allowed.</li></ol>
+<ol><li>Each key–value pair = one Entry; Map = collection of Entry objects.</li></ol>
+<h3>Map interface methods (9 + 3 views)</h3>
+<p>Core methods: put, putAll, get, remove, containsKey, containsValue, isEmpty, size, clear</p>
+<p>Collection views: keySet() → Set, values() → Collection, entrySet() → Set</p>
+<h3>Entry interface (inner of Map)</h3>
+<ul><li>getKey(), getValue(), setValue(Object)</li></ul>
+<ul><li>Apply only on Entry objects obtained via entrySet() iterator</li></ul>
+<h3>HashMap (11 properties)</h3>
+<p>Hash table | No insertion order | Hash code of keys | No duplicate keys | Duplicate values OK | Heterogeneous OK | Null key once | Null values any times | Serializable + Cloneable | Not RandomAccess | Best for search</p>
+<h3>HashMap vs Hashtable (5 differences)</h3>
+<p>Non-sync vs Sync | Not thread-safe vs Thread-safe | High perf vs Low perf | Null allowed vs Null NPE | 1.2 non-legacy vs 1.0 legacy</p>
+<h3>Synchronized HashMap</h3>
+<p>Collections.synchronizedMap(hashMapObject)</p>
+<h2>Quick reference — method return types</h2>
+<h2>Interview questions from this session</h2>
+<ol><li>Is Map a child interface of Collection? No — explain why.</li></ol>
+<ol><li>When should we go for Map? Key–value pair representation.</li></ol>
+<ol><li>What is an Entry? One key–value pair; Map.Entry inner interface.</li></ol>
+<ol><li>What does put() return when key already exists? Old value. When key is new? null.</li></ol>
+<ol><li>What are Collection Views of Map? keySet(), values(), entrySet().</li></ol>
+<ol><li>What methods does Entry interface define? getKey(), getValue(), setValue().</li></ol>
+<ol><li>What is the underlying data structure of HashMap? Hash table.</li></ol>
+<ol><li>Is insertion order preserved in HashMap? No — based on hash code of keys.</li></ol>
+<ol><li>Null rules for HashMap? Null key once; null values unlimited.</li></ol>
+<ol><li>HashMap vs Hashtable — five differences? Sync, thread-safe, performance, null, legacy.</li></ol>
+<ol><li>How to get synchronized HashMap? Collections.synchronizedMap(m).</li></ol>
+<ol><li>How many constructors in HashMap? Four — same pattern as HashSet.</li></ol>
+<ol><li>Default initial capacity and load factor? 16 and 0.75.</li></ol>
+<h2>What&#x27;s next (Video 147+)</h2>
+<p>Per the agenda written at session start:</p>
+<ul><li>LinkedHashMap</li></ul>
+<ul><li>IdentityHashMap</li></ul>
+<ul><li>WeakHashMap</li></ul>
+<ul><li>SortedMap interface</li></ul>
+<ul><li>NavigableMap (1.6)</li></ul>
+<ul><li>TreeMap (Comparable/Comparator applies here)</li></ul>
+<ul><li>Hashtable (legacy — detailed)</li></ul>
+<ul><li>Properties class</li></ul>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Collections Part-11 \</td><td>\</td><td>Map \</td><td>\</td><td>Hashmap \</td><td>\</td><td>linked Hashmap</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=pSGvbJ7GJ68</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>pSGvbJ7GJ68</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 24m 06s</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Position</td><td>Video 146 of 203 in the Durga Sir OCJP/SCJP playlist</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Source</td><td>YouTube auto-generated captions (yt-dlp)</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Prerequisite</td><td>Video 145 (Set terminology + Comparable/Comparator postmortem). TreeMap later reuses Comparable/Comparator — must be crystal clear before TreeMap.</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Topic</th><th>Java version</th><th>Notes</th></tr>
+<tr><td>1</td><td>Map (introduction)</td><td>1.2</td><td>Interface — not part of Collection</td></tr>
+<tr><td>2</td><td>HashMap</td><td>1.2</td><td>First implementation class</td></tr>
+<tr><td>3</td><td>LinkedHashMap</td><td>1.4</td><td>Preserves insertion order</td></tr>
+<tr><td>4</td><td>IdentityHashMap</td><td>1.4</td><td>Uses == not equals()</td></tr>
+<tr><td>5</td><td>WeakHashMap</td><td>1.4</td><td>Weak references for keys</td></tr>
+<tr><td>6</td><td>SortedMap</td><td>1.2</td><td>Interface for sorted maps</td></tr>
+<tr><td>7</td><td>NavigableMap</td><td>1.6</td><td>Enhanced navigation methods</td></tr>
+<tr><td>8</td><td>TreeMap</td><td>1.2</td><td>SortedMap implementation (Comparable/Comparator)</td></tr>
+<tr><td>9</td><td>Dictionary</td><td>1.0</td><td>Abstract legacy class — skip</td></tr>
+<tr><td>10</td><td>Hashtable</td><td>1.0</td><td>Legacy synchronized map</td></tr>
+<tr><td>11</td><td>Properties</td><td>1.0</td><td>Hashtable child for config files</td></tr>
+</table>
+<table>
+<tr><th>Key</th><th>Value</th></tr>
+<tr><td>Roll number</td><td>Name</td></tr>
+<tr><td>Mobile number</td><td>Address</td></tr>
+<tr><td>IP address</td><td>Domain name</td></tr>
+<tr><td>Attribute name</td><td>Attribute value</td></tr>
+<tr><td>Parameter name</td><td>Parameter value</td></tr>
+<tr><td>HTTP form parameter name</td><td>Parameter value</td></tr>
+</table>
+<table>
+<tr><th>Collection thinking</th><th>Map thinking</th></tr>
+<tr><td>Add one object</td><td>Add one key + value together</td></tr>
+<tr><td>add(Object o) — one argument</td><td>put(Object key, Object value) — two arguments</td></tr>
+<tr><td>Add group of objects</td><td>Add group of key–value pairs</td></tr>
+<tr><td>addAll(Collection c)</td><td>putAll(Map m)</td></tr>
+</table>
+<table>
+<tr><th>Situation</th><th>What happens</th><th>Return value</th></tr>
+<tr><td>Key is new (not in map)</td><td>Entry added</td><td>null</td></tr>
+<tr><td>Key already exists</td><td>Old value replaced with new value</td><td>Old value (the replaced one)</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Return type</th><th>Purpose</th></tr>
+<tr><td>put(Object key, Object value)</td><td>Object</td><td>Add one entry; returns old value if key existed, else null</td></tr>
+<tr><td>putAll(Map m)</td><td>void</td><td>Add all entries from another map</td></tr>
+<tr><td>get(Object key)</td><td>Object</td><td>Get value for key; null if absent</td></tr>
+<tr><td>remove(Object key)</td><td>Object</td><td>Remove entry by key</td></tr>
+<tr><td>containsKey(Object key)</td><td>boolean</td><td>Is key present?</td></tr>
+<tr><td>containsValue(Object value)</td><td>boolean</td><td>Is value present?</td></tr>
+<tr><td>isEmpty()</td><td>boolean</td><td>Is map empty?</td></tr>
+<tr><td>size()</td><td>int</td><td>Number of entries</td></tr>
+<tr><td>clear()</td><td>void</td><td>Remove all entries</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Return type</th><th>What you get</th></tr>
+<tr><td>keySet()</td><td>Set</td><td>Only keys</td></tr>
+<tr><td>values()</td><td>Collection</td><td>Only values</td></tr>
+<tr><td>entrySet()</td><td>Set</td><td>Set of Entry objects</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Return type</th><th>Purpose</th></tr>
+<tr><td>getKey()</td><td>Object</td><td>Returns the key of this entry</td></tr>
+<tr><td>getValue()</td><td>Object</td><td>Returns the value of this entry</td></tr>
+<tr><td>setValue(Object value)</td><td>Object</td><td>Replaces value; returns old value</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Property</th><th>Detail</th></tr>
+<tr><td>1</td><td>Underlying data structure</td><td>Hash table</td></tr>
+<tr><td>2</td><td>Insertion order</td><td>NOT preserved (hashing-based)</td></tr>
+<tr><td>3</td><td>Based on</td><td>Hash code of keys (NOT values)</td></tr>
+<tr><td>4</td><td>Duplicate keys</td><td>NOT allowed</td></tr>
+<tr><td>5</td><td>Duplicate values</td><td>Allowed</td></tr>
+<tr><td>6</td><td>Heterogeneous objects</td><td>Allowed for both key and value</td></tr>
+<tr><td>7</td><td>Null key</td><td>Allowed — only once (duplicate keys not allowed)</td></tr>
+<tr><td>8</td><td>Null values</td><td>Allowed — any number of times</td></tr>
+<tr><td>9</td><td>Interfaces implemented</td><td>Serializable and Cloneable</td></tr>
+<tr><td>10</td><td>RandomAccess</td><td>NOT RandomAccess</td></tr>
+<tr><td>11</td><td>Best choice when</td><td>Frequent operation is search (hashing = fast lookup)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Constructor</th><th>Creates</th></tr>
+<tr><td>1</td><td>HashMap()</td><td>Empty HashMap, default initial capacity 16, default load factor 0.75</td></tr>
+<tr><td>2</td><td>HashMap(int initialCapacity)</td><td>Empty HashMap with specified initial capacity; default load factor 0.75</td></tr>
+<tr><td>3</td><td>HashMap(int initialCapacity, float loadFactor)</td><td>Empty HashMap with specified capacity AND load factor</td></tr>
+<tr><td>4</td><td>HashMap(Map m)</td><td>Equivalent HashMap from any existing Map object (inter-map conversion; NOT Collection conversion)</td></tr>
+</table>
+<table>
+<tr><th>Object type</th><th>toString() style</th><th>Example</th></tr>
+<tr><td>Collection / Set / List</td><td>Square brackets [ ]</td><td>[A, B, C]</td></tr>
+<tr><td>Map</td><td>Curly braces { } with key=value</td><td>{1=Durga, 2=Ravi}</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>HashMap</th><th>Hashtable</th></tr>
+<tr><td>1</td><td>Every method is non-synchronized</td><td>Every method is synchronized</td></tr>
+<tr><td>2</td><td>Multiple threads allowed simultaneously → NOT thread-safe</td><td>Only one thread at a time → thread-safe</td></tr>
+<tr><td>3</td><td>Threads not required to wait → relatively high performance</td><td>Threads must wait → relatively low performance</td></tr>
+<tr><td>4</td><td>Null allowed for both key and value (key: once; value: any number of times)</td><td>Null NOT allowed for key or value → NullPointerException</td></tr>
+<tr><td>5</td><td>Introduced in 1.2 — NOT legacy</td><td>Introduced in 1.0 — legacy class</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Return type</th><th>Notes</th></tr>
+<tr><td>m.put(k, v)</td><td>Object</td><td>Old value or null</td></tr>
+<tr><td>m.putAll(map)</td><td>void</td><td>—</td></tr>
+<tr><td>m.get(k)</td><td>Object</td><td>Value or null</td></tr>
+<tr><td>m.remove(k)</td><td>Object</td><td>Removed value or null</td></tr>
+<tr><td>m.containsKey(k)</td><td>boolean</td><td>—</td></tr>
+<tr><td>m.containsValue(v)</td><td>boolean</td><td>—</td></tr>
+<tr><td>m.isEmpty()</td><td>boolean</td><td>—</td></tr>
+<tr><td>m.size()</td><td>int</td><td>Entry count</td></tr>
+<tr><td>m.clear()</td><td>void</td><td>—</td></tr>
+<tr><td>m.keySet()</td><td>Set</td><td>Collection view</td></tr>
+<tr><td>m.values()</td><td>Collection</td><td>Collection view</td></tr>
+<tr><td>m.entrySet()</td><td>Set</td><td>Collection view</td></tr>
+<tr><td>entry.getKey()</td><td>Object</td><td>Entry method</td></tr>
+<tr><td>entry.getValue()</td><td>Object</td><td>Entry method</td></tr>
+<tr><td>entry.setValue(v)</td><td>Object</td><td>Old value returned</td></tr>
+</table>
+</body></html>

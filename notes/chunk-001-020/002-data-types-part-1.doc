@@ -1,0 +1,404 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>002-data-types-part-1</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 002 — Data types part 1</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-2 || Data Types part-1</p>
+<h2>What this lecture covers</h2>
+<ol><li>Recap of identifiers / reserved words; start of data types</li></ol>
+<ol><li>Why Java is a strongly typed language (three board conclusions)</li></ol>
+<ol><li>Interview question: Is Java a pure object-oriented language? — both “yes” and “no” can be argued; recommended answer is no</li></ol>
+<ol><li>The eight primitive data types, split into numeric vs non-numeric, integral vs floating-point</li></ol>
+<ol><li>Signed data types: every numeric type except boolean and char</li></ol>
+<ol><li>`byte`: size, MSB/sign bit, range, two’s complement, valid/invalid assignments, compile-error messages, when byte is the best choice (streams)</li></ol>
+<ol><li>`short`: most rarely used type, size/range, the same assignment quizzes, why it exists (16-bit processors) and why it is “outdated”</li></ol>
+<ol><li>`int`: most commonly used type, size/range, integer number too large vs possible loss of precision, L suffix</li></ol>
+<p>long, float, double, boolean, and char are introduced in the classification here but are taught in detail in video 003.</p>
+<h2>Detailed notes</h2>
+<h3>[00:05] Recap and agenda</h3>
+<p>Last session: identifiers and reserved words.</p>
+<p>This session: data types. Durga’s phrase on the board: we have to perform a “postmortem” on data types — not a one-line definition, a full dissection.</p>
+<h3>[00:41] Why Java is strongly typed</h3>
+<p>Three conclusions, then the slogan.</p>
+<h4>Conclusion 1 — every variable has a type</h4>
+<p>In Java you cannot declare a variable without a type. Whatever name you pick (x, y, b, …) it must have a type.</p>
+<p>Examples he writes:</p>
+<pre class='code'>int x;
+boolean b;
+double y;</pre>
+<ul><li>x is int type</li></ul>
+<ul><li>b is boolean type</li></ul>
+<ul><li>y is double type</li></ul>
+<p>Without a type there is no chance of even a single variable existing.</p>
+<h4>Conclusion 2 — every expression has a type</h4>
+<p>Same rule for expressions. Example: a + b + c</p>
+<p>Every variable and every expression has some type. There is no untyped expression either.</p>
+<h4>Conclusion 3 — each type is strictly / clearly defined</h4>
+<p>Example: byte</p>
+<p>Size and range are not “implementation-defined” at the language level the way students remember from old C. Each Java type is clearly defined.</p>
+<h4>Conclusion 4 — every assignment is checked for type compatibility</h4>
+<p>The compiler checks provided value vs expected type.</p>
+<p>Both of those are valid in C / older languages. In Java both are compile errors.</p>
+<p>Because of all four points, the board conclusion is:</p>
+<p>Java is a strongly typed programming language.</p>
+<p>“Strongly typed” does not mean “you have to type on the keyboard very strongly.” It means type checking is strong: type is important, and the compiler enforces it.</p>
+<p>Board recap he dictates:</p>
+<ol><li>Every variable and every expression in Java has some type.</li></ol>
+<ol><li>Each and every data type is clearly defined.</li></ol>
+<ol><li>Every assignment should be checked by the compiler for type compatibility.</li></ol>
+<ol><li>Because of the above reasons, Java is a strongly typed programming language.</li></ol>
+<h3>[06:19] Is Java a pure object-oriented programming language?</h3>
+<p>This is the second big conclusion of the lecture. Durga spends a long time on it because both classroom answers are “correct” depending on the perspective.</p>
+<h4>The classroom split</h4>
+<p>Ask 100 students “Is Java a pure OOP language?”</p>
+<ul><li>Some say yes — their answer is correct in their perspective</li></ul>
+<ul><li>Some say no — their answer is also correct in their perspective</li></ul>
+<p>How can both be right? He uses a childhood analogy so you never mix relative comparison with considering Java alone.</p>
+<h4>[08:00] The “two extra marks vs Ravi” analogy</h4>
+<p>At LKG / UKG / school, parents obsess over marks and progress reports. At B.Tech / M.Tech / MCA they mostly do not.</p>
+<p>Story:</p>
+<ul><li>School-age Durga tells his father: “Dad, I am the too-intelligent person when compared with Ravi. I got two marks extra.”</li></ul>
+<ul><li>Father is happy: “Good, keep it up.”</li></ul>
+<ul><li>Five minutes later: “How many marks did Ravi get?”</li></ul>
+<ul><li>Ravi got 0 out of 100.</li></ul>
+<ul><li>Then Durga got 2 out of 100.</li></ul>
+<p>Now the question: when compared with Ravi, is Durga the intelligent person?</p>
+<ul><li>Relative comparison: yes (2 &gt; 0).</li></ul>
+<ul><li>Consider Durga alone: no (2/100 is not intelligence).</li></ul>
+<p>The answer flips when you stop doing relative comparison.</p>
+<h4>Apply the analogy to Java vs C++</h4>
+<ul><li>When compared with old languages like C++, Java has more object-oriented nature. In that relative perspective, many people say Java is a pure OOP language.</li></ul>
+<ul><li>Consider Java alone (do not perform relative comparison): Java does not support several OOP features. Then you cannot call it pure OOP.</li></ul>
+<p>Features he names as missing (board: “several OOP features are not satisfied by Java”):</p>
+<ul><li>operator overloading</li></ul>
+<ul><li>multiple inheritance</li></ul>
+<ul><li>etc.</li></ul>
+<h4>[13:22] Interview-room recommended answer</h4>
+<p>If the interviewer asks “Is Java a pure object-oriented programming language?” — yes or no?</p>
+<p>Pick the answer that will not create a problem for you.</p>
+<p>Reasons for no:</p>
+<ol><li>Several OOP features are not satisfied by Java (operator overloading, multiple inheritance, etc.).</li></ol>
+<ol><li>Moreover, we are depending on primitive data types, which are non-objects. Example: int x = 10;. In a pure OOP language everything would be talked about in terms of objects. Wrapper conversion is a different story — you are still depending on primitives.</li></ol>
+<p>Recommended interview answer: No. Java is not considered a pure object-oriented programming language.</p>
+<p>Board text:</p>
+<p>Java is not considered as a pure object-oriented programming language because several OOP features are not satisfied by Java (like operator overloading and multiple inheritance etc.). Moreover we are depending on primitive data types which are non-objects.</p>
+<p>Two conclusions so far:</p>
+<ol><li>Java is a strongly typed programming language.</li></ol>
+<ol><li>Java is not a pure object-oriented programming language.</li></ol>
+<h3>[17:27] How many primitive data types? Eight</h3>
+<p>Java has eight primitive data types.</p>
+<p>Split them the way the board splits them.</p>
+<h4>Numeric vs non-numeric</h4>
+<p>Some types talk about numbers → numeric data types.</p>
+<p>Some types do not talk about numbers → non-numeric data types.</p>
+<h4>Inside numeric: integral vs floating-point</h4>
+<p>A number with a decimal point (123.456) → floating-point.</p>
+<p>A number without a decimal point → integral.</p>
+<h4>The tree (memorize this picture)</h4>
+<p>primitive data types (8)
+├── numeric
+│   ├── integral          → byte, short, int, long
+│   └── floating-point    → float, double
+└── non-numeric
+    ├── char              → characters (not a number)
+    └── boolean           → boolean values</p>
+<p>Count: 4 + 2 + 2 = 8.</p>
+<h3>[21:42] Common point: signed data types</h3>
+<p>Check assignments like these:</p>
+<p>int x = +10;        // valid — positive 10
+int x = -10;        // valid — negative 10
+double d = -10.5;   // valid</p>
+<p>For numbers, positive and negative have meaning.</p>
+<p>Now try the non-numeric types:</p>
+<p>char ch = -&#x27;a&#x27;;           // no meaning — “negative character”
+boolean b = -false;       // no meaning — “minus false”</p>
+<p>Board rule:</p>
+<p>Except boolean and char, the remaining data types are considered as signed data types, because we can represent both positive and negative numbers.</p>
+<h3>[24:32] `byte` data type</h3>
+<p>First primitive discussed in detail.</p>
+<h4>Size</h4>
+<h4>Sign bit (MSB)</h4>
+<p>Draw 8 boxes (8 bits).</p>
+<ul><li>byte is a signed type.</li></ul>
+<ul><li>The first bit is the MSB — Most Significant Bit — and it acts as the sign bit.</li></ul>
+<ul><li>0 → positive number</li></ul>
+<ul><li>1 → negative number</li></ul>
+<ul><li>One bit is reserved for sign.</li></ul>
+<ul><li>The remaining 7 bits represent the value.</li></ul>
+<h4>Maximum value from 7 value bits</h4>
+<p>If all 7 value bits are 1:</p>
+<p>2^0 + 2^1 + 2^2 + 2^3 + 2^4 + 2^5 + 2^6
+= 1 + 2 + 4 + 8 + 16 + 32 + 64
+= 127</p>
+<p>Sign bit 0 (positive) → maximum = +127.</p>
+<h4>Minimum value / the “how is −128 possible?” doubt</h4>
+<p>Student doubt Durga raises: with 7 bits the max magnitude you can “see” as all-ones is 127. So how is −128 possible? If the remaining 7 bits are all 0, that is just 0, not 128.</p>
+<p>Answer (board):</p>
+<ul><li>Positive numbers are represented directly in memory.</li></ul>
+<ul><li>Negative numbers are represented in two’s complement form.</li></ul>
+<ul><li>In two’s complement, 7 bits are enough to represent 128 (so −128 fits). He says the exact bit pattern of two’s complement will be discussed later; for now memorize the range.</li></ul>
+<h4>Range (memorize)</h4>
+<p>Board theory under the bit diagram:</p>
+<ol><li>The most significant bit acts as the sign bit.</li></ol>
+<ol><li>0 means positive number; 1 means negative number.</li></ol>
+<ol><li>Positive numbers will be represented directly in memory.</li></ol>
+<ol><li>Negative numbers will be represented in two’s complement form.</li></ol>
+<h3>[33:26] `byte` — valid / invalid assignments (exam gold)</h3>
+<p>He drills these until you can recite both valid/invalid and the exact compile-error family.</p>
+<p>He compiles on Java 1.6 so the wording is the old message `possible loss of precision` (newer JDKs often say possible lossy conversion). Learn the idea; the 1.6 text is what he shows.</p>
+<p>Demo class shape:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 10;
+        System.out.println(b);
+    }
+}</pre>
+<p>javac Test.java then java Test → prints 10.</p>
+<h4>Table of every quiz he runs</h4>
+<h4>When do you get which error?</h4>
+<p>Two families. Memorize the distinction; he says you must know when it is “incompatible types” vs “possible loss of precision.”</p>
+<p>1. `possible loss of precision`</p>
+<p>There is numeric compatibility, but the value may not fit / may lose accuracy.</p>
+<ul><li>128 is still a number. Compatibility with byte as a numeric assignment is the idea, but 128 is outside the `byte` range (only up to 127). Not an “incompatible types” problem — a range / precision problem.</li></ul>
+<ul><li>By default every integral number (no decimal point) is int type. So: found int, required byte.</li></ul>
+<ul><li>10.5 by default is double. Found double, required byte.</li></ul>
+<p>2. `incompatible types`</p>
+<p>Completely different kinds. No numeric-range story.</p>
+<ul><li>true is boolean. byte is a number. Found boolean, required byte.</li></ul>
+<ul><li>&quot;durga&quot; is java.lang.String. Found String, required byte.</li></ul>
+<p>He also reminds: every assignment is checked by the compiler for type compatibility (the strongly-typed rule from the start of the lecture).</p>
+<h3>[43:03] When is `byte` the best choice?</h3>
+<p>Not “whenever the number is between −128 and +127.” Students offer that; he rejects it as the reason `byte` exists.</p>
+<p>Board:</p>
+<p>byte is the best choice if we want to handle data in terms of streams, either from the file or from the network.</p>
+<p>(File-supported form or network-supported form is byte.)</p>
+<p>There are two kinds of streams:</p>
+<ol><li>character streams</li></ol>
+<ol><li>byte streams</li></ol>
+<p>File / network supported form is byte, so if you handle data as streams you go for byte.</p>
+<p>API example he gives: FileOutputStream writes binary data to a file. It has a write method whose argument is a `byte[]` — not a short[]. Why always byte? A file or network is a sequence of bytes.</p>
+<pre class='code'>// idea of the API he names — write takes byte[]
+FileOutputStream fos = ...;
+byte[] data = ...;
+fos.write(data);</pre>
+<h3>[47:07] `short` data type</h3>
+<h4>First point (he repeats this as a joke)</h4>
+<p>`short` is the most rarely used data type in Java.</p>
+<ul><li>Student who has been learning Java for a year: “I never used short.”</li></ul>
+<ul><li>Person working in companies 7–8 years: “I never used it.”</li></ul>
+<ul><li>Even in his SCJP course (~2 months): he uses short in this class only. Out of two months he never otherwise says the word short.</li></ul>
+<h4>Size and range</h4>
+<p>Same sign-bit story as byte, scaled up: 1 bit for sign, 15 bits for value.</p>
+<p>2¹⁵ = 32,768.</p>
+<h4>`short` assignment quizzes (same pattern as `byte`)</h4>
+<p>He does not re-explain String here; the pattern is the same as byte.</p>
+<h3>[53:55] When is `short` the best choice?</h3>
+<p>Rarely used now, but there is a historical reason.</p>
+<ul><li>Java came in 1995.</li></ul>
+<ul><li>Popular processors then: 8085 / 8086 — 16-bit processors.</li></ul>
+<ul><li>Meaning of 16-bit processor: instruction length is 16 bits; data is represented in 16-bit form.</li></ul>
+<ul><li>short is 16 bits. Expected form and provided form match → read and write operations become very efficient.</li></ul>
+<p>Board:</p>
+<p>short data type is best suitable for 16-bit processors like 8085.</p>
+<p>But these processors are completely outdated.</p>
+<p>Hence the corresponding short data type is also an outdated data type.</p>
+<p>Today 32-bit and 64-bit processors are common. Nobody uses 16-bit processors, so short is almost outdated.</p>
+<h3>[57:39] `int` data type</h3>
+<h4>First point</h4>
+<p>`int` is the most commonly used data type in Java.</p>
+<p>Even to represent the value 10, the hand always goes to int x = 10; even though byte is enough for 10.</p>
+<h4>Size and range</h4>
+<p>He groups the digits the Indian way on the board: 2147483648 and 2147483647.</p>
+<h3>[1:00:31] `int` quizzes — a *new* compile error</h3>
+<p>Max int is 2147483647.</p>
+<p>int x = 2147483647;   // valid — the max value
+System.out.println(x); // 2147483647</p>
+<p>int x = 2147483648;   // invalid</p>
+<p>Students predict: possible loss of precision, found long, required int.</p>
+<p>Wrong. You do not get that message here.</p>
+<h4>Rule (very important)</h4>
+<p>Every integral number (number without a decimal point) is by default considered `int` type.</p>
+<p>The compiler requires that integral literal to be within the `int` range. If it is not in the int range:</p>
+<p>`integer number too large`</p>
+<p>2147483648 is still being treated as an int literal. It does not fit. Error: integer number too large.</p>
+<h4>How to make it a `long` literal: suffix `l` or `L`</h4>
+<p>Only when you suffix with small l or capital L is the literal treated as long.</p>
+<p>int x = 2147483648L;   // still invalid for int, but a *different* error</p>
+<p>Now the compiler sees a `long` value assigned to int:</p>
+<p>`possible loss of precision` — found: long, required: int</p>
+<p>He compiles live:</p>
+<ol><li>2147483647 → runs, prints the number.</li></ol>
+<ol><li>Change last digit to make 2147483648 → integer number too large.</li></ol>
+<ol><li>Add l / L → error changes to possible loss of precision found long required int.</li></ol>
+<p>You cannot “solve” storing that magnitude in an int — it exceeds the int range. The L suffix only changes how the compiler classifies the literal, not whether int can hold it.</p>
+<p>Default: every integral number is int unless suffixed with l/L.</p>
+<p>He ends: this is about the int data type — most commonly used; know size and range. `long` continues in the next lecture.</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // --- strongly typed: these do not compile in Java (they would in C) ---
+        // int x = 10.5;
+        // boolean b = 0;
+
+        // --- byte ---
+        byte b1 = 10;     // OK, prints 10
+        byte b2 = 127;    // OK, max byte
+        // byte b3 = 128;          // CE: possible loss of precision, found int, required byte
+        // byte b4 = 10.5;         // CE: possible loss of precision, found double, required byte
+        // byte b5 = true;         // CE: incompatible types, found boolean, required byte
+        // byte b6 = &quot;durga&quot;;      // CE: incompatible types, found java.lang.String, required byte
+
+        // --- short ---
+        short s1 = 32767; // OK, max short
+        // short s2 = 32768;       // CE: possible loss of precision, found int, required short
+        // short s3 = 10.5;        // CE: possible loss of precision, found double, required short
+        // short s4 = true;        // CE: incompatible types, found boolean, required short
+
+        // --- int ---
+        int x1 = 2147483647;       // OK, max int
+        // int x2 = 2147483648;    // CE: integer number too large
+        // int x3 = 2147483648L;   // CE: possible loss of precision, found long, required int
+        // int x4 = true;          // CE: incompatible types, found boolean, required int
+
+        System.out.println(b1);
+        System.out.println(s1);
+        System.out.println(x1);
+    }
+}</pre>
+<h2>Rules to memorize</h2>
+<ol><li>Every variable and every expression has a type. Every assignment is checked for type compatibility. → Java is strongly typed.</li></ol>
+<ol><li>Interview: Java is not a pure OOP language (missing OOP features + primitives are non-objects). Prefer no in the interview room.</li></ol>
+<ol><li>8 primitives: byte, short, int, long, float, double, boolean, char.</li></ol>
+<ol><li>Integral = byte short int long. Floating-point = float double. Non-numeric = boolean, char.</li></ol>
+<ol><li>Except boolean and char, remaining types are signed.</li></ol>
+<ol><li>`byte`: 1 byte / 8 bits; range −128 to +127; MSB is sign bit (0 = +, 1 = −); positives stored directly; negatives in two’s complement.</li></ol>
+<ol><li>Out of range number → `possible loss of precision`. Completely different type → `incompatible types`.</li></ol>
+<ol><li>Integral literals are `int` by default. 10.5 is `double` by default.</li></ol>
+<ol><li>`byte` best choice: stream data (file / network). FileOutputStream.write takes byte[].</li></ol>
+<ol><li>`short`: 2 bytes / 16 bits; −32,768 to 32,767; most rarely used; meant for 16-bit processors (8085); now outdated.</li></ol>
+<ol><li>`int`: 4 bytes / 32 bits; −2,147,483,648 to 2,147,483,647; most commonly used.</li></ol>
+<ol><li>An unsuffixed integral literal outside int range → `integer number too large` (not “found long”).</li></ol>
+<ol><li>Suffix l or L makes a `long` literal; assigning that to int → `possible loss of precision`, found long, required int.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>int x = 10.5; and boolean b = 0; are illegal in Java, legal in C. Classic “strongly typed” examples.</li></ul>
+<ul><li>“Strongly typed” ≠ typing hard on the keyboard.</li></ul>
+<ul><li>“Is Java pure OOP?” — both relative-yes and absolute-no are argued in class; recommended interview answer is no, with reasons ready.</li></ul>
+<ul><li>byte b = 128; is not incompatible types. It is `possible loss of precision` (found int).</li></ul>
+<ul><li>byte b = true; is incompatible types.</li></ul>
+<ul><li>byte b = &quot;durga&quot;; found type is `java.lang.String`, not some “string primitive.”</li></ul>
+<ul><li>“Use byte because the number is between −128 and 127” is not the best-choice answer he wants. Best choice = streams.</li></ul>
+<ul><li>Do not say you use short all the time. He wants: rarely used / outdated 16-bit type.</li></ul>
+<ul><li>int x = 2147483648; → `integer number too large`, not possible loss of precision.</li></ul>
+<ul><li>int x = 2147483648L; → `possible loss of precision`. The L is the whole difference.</li></ul>
+<ul><li>Prefer capital `L` in real code so it is not confused with digit 1 (he allows small l or capital L).</li></ul>
+<ul><li>He demonstrated errors on JDK 1.6; wording may differ on newer compilers (possible lossy conversion) but the found/required types stay the same.</li></ul>
+<h2>Recap</h2>
+<p>This lecture fixes the type system story (strong typing, not-pure-OOP, eight primitives, signed vs boolean/char) and then completes `byte`, `short`, and `int` with size, range, compile-error families, and “best choice” reasons. Next lecture continues with `long`, then floating-point, boolean, char, default values, and the summary table.</p>
+<p>Next video: 003-data-types-part-2.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 2 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 2 of 16</td></tr>
+<tr><td>Topic</td><td>Data types part 1 — strongly typed Java, eight primitives, signed types, byte, short, int</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 06m 48s (4008 seconds)</td></tr>
+<tr><td>Video ID</td><td>njy7NGYzsvM</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=njy7NGYzsvM</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>If a, b, c are</th><th>then a + b + c is</th></tr>
+<tr><td>String</td><td>String</td></tr>
+<tr><td>int</td><td>int</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td>Size</td><td>1 byte = 8 bits</td></tr>
+<tr><td>Range</td><td>−128 to +127</td></tr>
+</table>
+<table>
+<tr><th>Assignment</th><th>Valid in Java?</th><th>Note</th></tr>
+<tr><td>int x = 10.5;</td><td>invalid</td><td>10.5 is not an int</td></tr>
+<tr><td>boolean b = 0;</td><td>invalid</td><td>0 is not a boolean</td></tr>
+</table>
+<table>
+<tr><th>If you answer</th><th>The next question</th><th>Are you safe?</th></tr>
+<tr><td>Yes</td><td>“Several features are not supported by Java. How can you call it pure?”</td><td>Your face becomes a question mark. Bad.</td></tr>
+<tr><td>No</td><td>“Why not?”</td><td>You have reasons ready.</td></tr>
+</table>
+<table>
+<tr><th>Category</th><th>Types</th><th>Used to represent</th></tr>
+<tr><td>Integral</td><td>byte, short, int, long</td><td>numbers without a decimal point</td></tr>
+<tr><td>Floating-point</td><td>float, double</td><td>numbers with a decimal point</td></tr>
+<tr><td>Non-numeric</td><td>char, boolean</td><td>character; true/false</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>Signed?</th></tr>
+<tr><td>byte, short, int, long, float, double</td><td>yes — signed</td></tr>
+<tr><td>boolean, char</td><td>not in this “signed numeric” group</td></tr>
+</table>
+<table>
+<tr><th></th><th></th></tr>
+<tr><td>Size</td><td>1 byte (8 bits)</td></tr>
+</table>
+<table>
+<tr><th></th><th></th></tr>
+<tr><td>Size</td><td>1 byte (8 bits)</td></tr>
+<tr><td>Max value</td><td>+127</td></tr>
+<tr><td>Min value</td><td>−128</td></tr>
+<tr><td>Range</td><td>−128 to +127</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>Valid?</th><th>Compile error (Java 1.6 wording)</th></tr>
+<tr><td>byte b = 10;</td><td>valid</td><td>— prints 10</td></tr>
+<tr><td>byte b = 127;</td><td>valid</td><td>max byte; no problem</td></tr>
+<tr><td>byte b = 128;</td><td>invalid</td><td>possible loss of precision — found: int, required: byte</td></tr>
+<tr><td>byte b = 10.5;</td><td>invalid</td><td>possible loss of precision — found: double, required: byte</td></tr>
+<tr><td>byte b = true;</td><td>invalid</td><td>incompatible types — found: boolean, required: byte</td></tr>
+<tr><td>byte b = &quot;durga&quot;;</td><td>invalid</td><td>incompatible types — found: java.lang.String, required: byte</td></tr>
+</table>
+<table>
+<tr><th></th><th></th></tr>
+<tr><td>Size</td><td>2 bytes (16 bits)</td></tr>
+<tr><td>Range (formula)</td><td>−2¹⁵ to 2¹⁵ − 1</td></tr>
+<tr><td>Range (numbers)</td><td>−32,768 to 32,767</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>Valid?</th><th>Error</th></tr>
+<tr><td>short s = 32767;</td><td>valid</td><td>max short</td></tr>
+<tr><td>short s = 32768;</td><td>invalid</td><td>possible loss of precision — found int, required short</td></tr>
+<tr><td>short s = 10.5;</td><td>invalid</td><td>possible loss of precision — found double, required short</td></tr>
+<tr><td>short s = true;</td><td>invalid</td><td>incompatible types — found boolean, required short</td></tr>
+</table>
+<table>
+<tr><th></th><th></th></tr>
+<tr><td>Size</td><td>4 bytes (32 bits)</td></tr>
+<tr><td>Range (formula)</td><td>−2³¹ to 2³¹ − 1</td></tr>
+<tr><td>Range (numbers)</td><td>−2,147,483,648 to 2,147,483,647</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>Error</th></tr>
+<tr><td>int x = 2147483647;</td><td>none (valid)</td></tr>
+<tr><td>int x = 2147483648;</td><td>integer number too large</td></tr>
+<tr><td>int x = 2147483648L;</td><td>possible loss of precision, found long, required int</td></tr>
+<tr><td>int x = true;</td><td>incompatible types, found boolean, required int</td></tr>
+</table>
+</body></html>

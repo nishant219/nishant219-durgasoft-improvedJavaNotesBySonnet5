@@ -1,0 +1,380 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>155-concurrent-collections-diff</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 155 — Concurrent Collections Part-2: Diff Between Traditional &amp; Concurrent Collections</h1>
+<h2>Video info</h2>
+<p>ASR decode notes: threats = threads; multi Ed = multi-threaded; lcks = lakhs; concurrent H / concurrent Ash map = ConcurrentHashMap; copy on WR / copy on VAR = CopyOnWrite; interent = interview.</p>
+<h2>Session overview</h2>
+<p>This is a short bridge lecture (~7 minutes) between Part-1 (need for concurrent collections) and the deep-dive series on individual concurrent classes (Videos 156–159+).</p>
+<p>Prerequisite from previous session (Part-1 recap): Sir already explained why concurrent collections exist — three major problems with traditional (normal) collections. Video 155 does not re-derive those problems in full; it assumes you remember them and immediately maps each problem to how concurrent collections solve it.</p>
+<p>What this session covers:</p>
+<ol><li>Quick recap — three problems of traditional collections</li></ol>
+<ol><li>Problem 1 → Thread safety: traditional = mostly not thread-safe; concurrent = always thread-safe</li></ol>
+<ol><li>Problem 2 → Performance: legacy thread-safe classes (Vector, Hashtable) lock the entire collection; concurrent collections use segment/bucket-level locking → relatively higher performance</li></ol>
+<ol><li>Problem 3 → ConcurrentModificationException: traditional iterators fail when another thread modifies during iteration; concurrent collections allow safe concurrent modification and never throw CME</li></ol>
+<ol><li>Scalable multi-threaded applications — when to choose concurrent collections (lakhs of threads)</li></ol>
+<ol><li>Interview-style summary — &quot;Explain differences between normal and concurrent collections&quot;</li></ol>
+<ol><li>Roadmap — three most important concurrent collection classes to study next:</li></ol>
+<ul><li>ConcurrentHashMap</li></ul>
+<ul><li>CopyOnWriteArrayList</li></ul>
+<ul><li>CopyOnWriteArraySet</li></ul>
+<p>What this session does NOT cover (deferred):</p>
+<ul><li>Internal locking mechanism details (segment locking) → next videos</li></ul>
+<ul><li>Why the name CopyOnWrite instead of ConcurrentList → explained when covering CopyOnWriteArrayList</li></ul>
+<ul><li>ConcurrentMap interface methods → Video 156</li></ul>
+<ul><li>Programs and HashMap vs ConcurrentHashMap table → Videos 157–160</li></ul>
+<h2>00:19 — Recap: Why concurrent collections? (from Part-1)</h2>
+<h3>Board context</h3>
+<p>Sir opens by referencing the previous video where the need for concurrent collections was established.</p>
+<h3>Three major problems with traditional collections</h3>
+<h3>Sir&#x27;s conclusion from Part-1</h3>
+<p>To overcome these problems, we should go for concurrent collections.</p>
+<p>Video 155 now answers: &quot;Okay — for each problem, exactly how do concurrent collections differ from traditional ones?&quot;</p>
+<h2>00:55 — Problem 1: Thread safety</h2>
+<h3>Traditional collections</h3>
+<p>Board question: What is the first problem with traditional collection objects?</p>
+<p>Answer (classroom): Most of the traditional collections are not thread-safe.</p>
+<p>Examples (from prior collections lectures in this course):</p>
+<p>Key exam point: &quot;Most&quot; — not &quot;all&quot;. Legacy classes Vector and Hashtable are synchronized, but they suffer from Problem 2 (performance).</p>
+<h3>Concurrent collections</h3>
+<p>Board statement (copy exactly):</p>
+<p>Every concurrent collection is always thread-safe.</p>
+<p>Sir&#x27;s wording:</p>
+<ul><li>If you consider every concurrent collection → it is always thread-safe</li></ul>
+<ul><li>First problem is by default resolved — all concurrent collections are always thread-safe</li></ul>
+<h3>Difference #1 (summary row)</h3>
+<h2>01:38 — Problem 2: Performance of thread-safe collections</h2>
+<h3>Traditional thread-safe approach — total lock</h3>
+<p>Even though some thread-safe collections exist (Vector, Hashtable):</p>
+<p>Board note:</p>
+<p>Performance-wise not up to the mark — because for any operation, the total collection object will be locked by only one thread.</p>
+<p>Mechanism:</p>
+<ul><li>Entire collection gets one lock (synchronized methods on the whole object)</li></ul>
+<ul><li>Thread A doing vector.add() holds lock → Thread B cannot do anything on that Vector until A releases</li></ul>
+<ul><li>Under heavy multi-threaded load → threads wait → performance is low</li></ul>
+<h3>Concurrent collections — different locking mechanism</h3>
+<p>Board note:</p>
+<p>Performance-wise, relatively performance is high (compared to traditional thread-safe collections).</p>
+<p>Why:</p>
+<ul><li>Instead of locking the total collection, concurrent collections use a different locking mechanism</li></ul>
+<ul><li>A thread gets a lock on a particular block or particular segment — not the whole structure</li></ul>
+<ul><li>This is called:</li></ul>
+<ul><li>Segment locking, or</li></ul>
+<ul><li>Bucket-level locking</li></ul>
+<p>Sir explicitly defers detail:</p>
+<p>In the next videos I will explain in detail — not required to worry now.</p>
+<p>(Later videos cover ConcurrentHashMap&#x27;s segment/bucket model — default 16 segments, etc.)</p>
+<h3>Difference #2 (summary row)</h3>
+<h3>Illustrative analogy (for notes)</h3>
+<p>Think of a library:</p>
+<ul><li>Vector/Hashtable model: Only one person allowed inside the entire library at a time — even if they only want one shelf</li></ul>
+<ul><li>Concurrent collection model: Different people can use different sections/rooms simultaneously — less waiting</li></ul>
+<h2>02:53 — Problem 3: ConcurrentModificationException</h2>
+<h3>Traditional collections — strict iteration rule</h3>
+<p>Scenario:</p>
+<ul><li>Thread-1 is iterating over a collection (via Iterator / enhanced for-loop)</li></ul>
+<ul><li>Thread-2 tries to modify the underlying collection (add / remove / structural change)</li></ul>
+<p>Result:</p>
+<ul><li>ConcurrentModificationException at runtime</li></ul>
+<ul><li>This is the biggest headache with traditional collections in multi-threaded code</li></ul>
+<p>Why (conceptual — from Iterator fail-fast design):</p>
+<ul><li>Iterator tracks modCount (modification count) of the collection</li></ul>
+<ul><li>If collection is structurally modified outside Iterator&#x27;s own remove(), Iterator detects mismatch → throws CME</li></ul>
+<ul><li>Design intent: fail-fast — detect concurrent unsynchronized modification early</li></ul>
+<pre class='code'>import java.util.*;
+
+public class TraditionalCME_Demo {
+    public static void main(String[] args) {
+        List&lt;String&gt; list = new ArrayList&lt;&gt;();
+        list.add(&quot;A&quot;);
+        list.add(&quot;B&quot;);
+        list.add(&quot;C&quot;);
+
+        Iterator&lt;String&gt; it = list.iterator();
+        System.out.println(it.next()); // &quot;A&quot;
+
+        // Structural modification NOT via iterator.remove()
+        list.add(&quot;D&quot;);  // modCount changed
+
+        System.out.println(it.next()); // ConcurrentModificationException
+    }
+}</pre>
+<h3>Concurrent collections — safe concurrent modification</h3>
+<p>Board statement (copy exactly):</p>
+<p>While one thread is iterating the collection, the remaining threads are allowed to modify the underlying collection in a safe manner.</p>
+<p>And:</p>
+<p>Concurrent collections never throw ConcurrentModificationException.</p>
+<p>**Difference #3 (summary row):</p>
+<p>Important nuance (for exam depth):</p>
+<ul><li>&quot;Never CME&quot; applies to concurrent collection implementations designed for this (e.g. ConcurrentHashMap, CopyOnWriteArrayList)</li></ul>
+<ul><li>Fail-fast vs fail-safe iterators (covered in Video 160): HashMap iterator = fail-fast; ConcurrentHashMap iterator = fail-safe</li></ul>
+<h2>03:48 — Master comparison: Traditional vs Concurrent</h2>
+<h3>Sir&#x27;s synthesis</h3>
+<p>Whatever problems are there in traditional collections, we can overcome by using concurrent collections.</p>
+<h3>Full comparison table (exam-ready)</h3>
+<h2>03:56 — Scalable multi-threaded applications</h2>
+<h3>When traditional collections fail</h3>
+<p>Sir&#x27;s scenario:</p>
+<p>In my application lakhs of threads I&#x27;m going to use — thousands of threads — in such areas traditional collections are not going to work. Compulsory we should go for concurrent collections.</p>
+<p>Board conclusion:</p>
+<p>Concurrent collections are best suitable for scalable multi-threaded applications.</p>
+<h3>Decision guide</h3>
+<p>Interview one-liner:</p>
+<p>Normal collections for normal apps; concurrent collections when the app is multi-threaded and scalable (many threads operating on shared data structures).</p>
+<h2>04:14 — Interview question: Explain the differences</h2>
+<h3>Question format</h3>
+<p>Sir frames this as a likely interview / exam room question:</p>
+<p>Normal collection vs concurrent collection — can you please explain the differences?</p>
+<p>He says students should already be in a position to answer after this lecture.</p>
+<h3>Model answer (structured — 3 problems → 3 solutions)</h3>
+<p>1. Thread safety</p>
+<ul><li>Traditional: most collection classes (ArrayList, HashMap, HashSet, …) are not thread-safe</li></ul>
+<ul><li>Concurrent: every concurrent collection class is always thread-safe</li></ul>
+<p>2. Performance</p>
+<ul><li>Traditional thread-safe: Vector, Hashtable synchronize the entire object → one thread at a time → low performance</li></ul>
+<ul><li>Concurrent: use segment locking / bucket-level locking → multiple threads can proceed on different parts → relatively high performance</li></ul>
+<p>3. ConcurrentModificationException</p>
+<ul><li>Traditional: while one thread iterates, others cannot safely modify → CME</li></ul>
+<ul><li>Concurrent: other threads can modify safely during iteration → no CME</li></ul>
+<p>Closing line:</p>
+<p>Concurrent collections are the right choice for scalable multi-threaded applications where traditional collections fail.</p>
+<h2>04:25 — Roadmap: Important concurrent collection classes</h2>
+<h3>Sir&#x27;s next target</h3>
+<p>Total — what are various concurrent collections? What are various important concurrent collection classes?</p>
+<p>He narrows the syllabus to three classes for the first level of study:</p>
+<p>Sir on board: &quot;These three things we are going to discuss in detail.&quot;</p>
+<h3>Interview warm-up question</h3>
+<p>What are various concurrent collections you are aware of? Can you please explain?</p>
+<p>Immediate answer Sir expects:</p>
+<ol><li>ConcurrentHashMap</li></ol>
+<ol><li>CopyOnWriteArrayList</li></ol>
+<ol><li>CopyOnWriteArraySet</li></ol>
+<p>(Full `java.util.concurrent` package has more — `BlockingQueue`, `ConcurrentLinkedQueue`, `ConcurrentSkipListMap`, etc. — but Sir prioritizes these three for OCJP/SCJP depth in this module.)</p>
+<h2>05:12 — ConcurrentHashMap (preview)</h2>
+<h3>Spelling / naming</h3>
+<p>Sir drills the name for interviews:</p>
+<p>ConcurrentHashMap — can you spell out? Concurrent Hash Map</p>
+<h3>Role in the hierarchy</h3>
+<ul><li>Implements ConcurrentMap interface (Video 156)</li></ul>
+<ul><li>Thread-safe alternative to HashMap</li></ul>
+<ul><li>Detailed internals, methods, and programs → Videos 157–159</li></ul>
+<h3>Quick contrast (expanded from Video 160 — forward reference)</h3>
+<p>When you later study HashMap vs ConcurrentHashMap, the differences trace directly back to today&#x27;s three problems:</p>
+<h2>05:18 — CopyOnWriteArrayList (preview)</h2>
+<h3>Name</h3>
+<p>CopyOnWriteArrayList — Copy On Write Array List</p>
+<h3>Why not &quot;ConcurrentList&quot;?</h3>
+<p>Student question Sir anticipates:</p>
+<p>Why instead of concurrent list did they use the word CopyOnWrite?</p>
+<p>Answer (deferred):</p>
+<p>There is a big reason — the total behavior of this list is copy-on-write property only. What is that? We will discuss in detail.</p>
+<p>Conceptual preview (for study notes):</p>
+<ul><li>Copy-on-write (COW): On every mutating operation (add, set, remove), the underlying array is copied, modified, and swapped</li></ul>
+<ul><li>Iterators operate on a snapshot → no CME, safe for concurrent reads</li></ul>
+<ul><li>Trade-off: Writes are expensive; best when reads &gt;&gt; writes (e.g. listener lists, configuration caches)</li></ul>
+<pre class='code'>import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Iterator;
+
+public class CopyOnWritePreview {
+    public static void main(String[] args) {
+        CopyOnWriteArrayList&lt;String&gt; list = new CopyOnWriteArrayList&lt;&gt;();
+        list.add(&quot;A&quot;);
+        list.add(&quot;B&quot;);
+
+        Iterator&lt;String&gt; it = list.iterator();
+        System.out.println(it.next()); // &quot;A&quot;
+
+        list.add(&quot;C&quot;); // creates new backing array — iterator still sees old snapshot
+
+        System.out.println(it.next()); // &quot;B&quot; — no CME
+        // Iterator will NOT see &quot;C&quot; — it holds the snapshot from creation time
+    }
+}</pre>
+<h2>05:53 — CopyOnWriteArraySet (preview)</h2>
+<h3>Name</h3>
+<p>CopyOnWriteArraySet — third concurrent collection</p>
+<h3>Relationship to CopyOnWriteArrayList</h3>
+<ul><li>CopyOnWriteArraySet is backed internally by a CopyOnWriteArrayList</li></ul>
+<ul><li>Set semantics (no duplicates) + copy-on-write thread safety</li></ul>
+<ul><li>Same COW trade-offs apply</li></ul>
+<pre class='code'>import java.util.concurrent.CopyOnWriteArraySet;
+
+CopyOnWriteArraySet&lt;String&gt; set = new CopyOnWriteArraySet&lt;&gt;();
+set.add(&quot;X&quot;);
+set.add(&quot;X&quot;); // duplicate ignored
+// Thread-safe, iteration never throws CME</pre>
+<h2>06:07 — Session wrap-up checklist</h2>
+<p>Sir closes by confirming students should understand:</p>
+<p>Final board list:</p>
+<ol><li>ConcurrentHashMap</li></ol>
+<ol><li>CopyOnWriteArrayList</li></ol>
+<ol><li>CopyOnWriteArraySet</li></ol>
+<p>&quot;These three classes we have to discuss in detail — with respect to programs.&quot;</p>
+<h2>Deep dive supplements (exam enrichment)</h2>
+<h3>A. How to make traditional collections thread-safe (without concurrent classes)</h3>
+<p>From earlier collections lectures — for completeness:</p>
+<pre class='code'>List&lt;String&gt; syncList = Collections.synchronizedList(new ArrayList&lt;&gt;());
+Map&lt;String, Integer&gt; syncMap = Collections.synchronizedMap(new HashMap&lt;&gt;());
+Set&lt;String&gt; syncSet = Collections.synchronizedSet(new HashSet&lt;&gt;());</pre>
+<p>Sir&#x27;s implicit point: These wrappers still lock the whole structure (like Vector) and still have CME risk if you iterate without manual synchronization → concurrent collections are the better scalable choice.</p>
+<h3>B. Segment locking — mental model for ConcurrentHashMap</h3>
+<p>(Preview only — detailed in later videos)</p>
+<p>ConcurrentHashMap internal view (conceptual):
+
+[ Segment 0 ] [ Segment 1 ] ... [ Segment 15 ]   ← default 16 segments
+
+Thread-1 updates key hashing to segment 3  → locks only segment 3
+Thread-2 updates key hashing to segment 7  → locks only segment 7
+→ Both can proceed concurrently (unlike Vector&#x27;s single global lock)</p>
+<h3>C. Fail-fast vs fail-safe (iterator behavior)</h3>
+<h3>D. Other concurrent collections (awareness — not Sir&#x27;s focus in 155)</h3>
+<p>For OCJP/SCJP in this playlist, Sir prioritizes ConcurrentHashMap and CopyOnWrite variants first.</p>
+<h2>OCJP / SCJP exam checklist</h2>
+<ul><li>[ ] List three problems of traditional collections</li></ul>
+<ul><li>[ ] State: concurrent collections are always thread-safe</li></ul>
+<ul><li>[ ] Explain why Vector/Hashtable are slow ( whole-object lock )</li></ul>
+<ul><li>[ ] Name segment locking / bucket-level locking as concurrent collection advantage</li></ul>
+<ul><li>[ ] Explain ConcurrentModificationException and why concurrent collections avoid it</li></ul>
+<ul><li>[ ] Know when to use concurrent collections (scalable multi-threaded apps)</li></ul>
+<ul><li>[ ] Name three key classes: ConcurrentHashMap, CopyOnWriteArrayList, CopyOnWriteArraySet</li></ul>
+<ul><li>[ ] Spell ConcurrentHashMap correctly in interviews</li></ul>
+<ul><li>[ ] Know concurrent collections package: java.util.concurrent, version 1.5</li></ul>
+<h2>Interview Q&amp;A (rapid fire)</h2>
+<h2>Summary (one paragraph)</h2>
+<p>Video 155 is the comparison bridge in Durga Sir&#x27;s Concurrent Collections module. After Part-1 established three problems with traditional collections — (1) most are not thread-safe, (2) legacy thread-safe classes like Vector and Hashtable lock the entire object and perform poorly, and (3) ConcurrentModificationException when iterating while other threads modify — this session shows how concurrent collections resolve all three: they are always thread-safe, use segment/bucket-level locking for better performance, and never throw CME because concurrent modification during iteration is handled safely. Concurrent collections are therefore best suited for scalable multi-threaded applications with many threads. Sir then previews the three classes to study in depth: ConcurrentHashMap, CopyOnWriteArrayList, and CopyOnWriteArraySet, with programs and internals starting in Video 156.</p>
+<h2>What&#x27;s next</h2>
+<p>End of Video 155 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>155 of 203</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Concurrent Collections Part-2 \</td><td>\</td><td>Diff B/W Traditional &amp; Concurrent Collections</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=ev8zxzRdsFQ</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>7m 08s</td><td></td><td></td></tr>
+<tr><td>Source</td><td>YouTube auto-captions (yt-dlp + node PO token)</td><td></td><td></td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td><td></td></tr>
+<tr><td>Package</td><td>java.util.concurrent (introduced in Java 1.5)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Problem</th><th>One-line summary</th></tr>
+<tr><td>1</td><td>Not thread-safe</td><td>Most traditional collection classes are not thread-safe</td></tr>
+<tr><td>2</td><td>Poor performance of legacy thread-safe classes</td><td>Even where thread safety exists (Vector, Hashtable), performance is not up to the mark</td></tr>
+<tr><td>3</td><td>ConcurrentModificationException (CME)</td><td>The biggest headache — modifying a collection while another thread (or operation) is iterating causes runtime failure</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Thread-safe?</th></tr>
+<tr><td>ArrayList</td><td>No</td></tr>
+<tr><td>LinkedList</td><td>No</td></tr>
+<tr><td>HashSet</td><td>No</td></tr>
+<tr><td>HashMap</td><td>No</td></tr>
+<tr><td>TreeSet / TreeMap</td><td>No</td></tr>
+<tr><td>Vector</td><td>Yes (legacy)</td></tr>
+<tr><td>Hashtable</td><td>Yes (legacy)</td></tr>
+<tr><td>Stack</td><td>Yes (extends Vector)</td></tr>
+<tr><td>Properties</td><td>Yes (extends Hashtable)</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>Traditional collections</th><th>Concurrent collections</th></tr>
+<tr><td>Thread safety</td><td>Most are not thread-safe</td><td>Every concurrent collection is always thread-safe</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>Traditional thread-safe (Vector, Hashtable)</th><th>Concurrent collections</th></tr>
+<tr><td>Lock scope</td><td>Entire collection locked for any operation</td><td>Segment / bucket level locking</td></tr>
+<tr><td>Performance</td><td>Relatively low</td><td>Relatively high</td></tr>
+<tr><td>Reason</td><td>One thread blocks all others on that object</td><td>Multiple threads can work on different segments concurrently</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>Traditional collections</th><th>Concurrent collections</th></tr>
+<tr><td>Iterate + modify (other threads)</td><td>Other threads not allowed to modify safely → CME</td><td>Other threads allowed to modify in safe manner</td></tr>
+<tr><td>CME</td><td>Very common headache</td><td>Never get CME</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Property</th><th>Traditional / Normal collections</th><th>Concurrent collections</th></tr>
+<tr><td>1</td><td>Thread safety</td><td>Most are not thread-safe</td><td>Always thread-safe</td></tr>
+<tr><td>2</td><td>Performance (thread-safe case)</td><td>Vector/Hashtable: lock whole object → slow</td><td>Segment/bucket locking → relatively high performance</td></tr>
+<tr><td>3</td><td>ConcurrentModificationException</td><td>Common when iterate + modify</td><td>Never throws CME</td></tr>
+<tr><td>4</td><td>Best use case</td><td>Single-threaded or low concurrency</td><td>Scalable multi-threaded applications</td></tr>
+<tr><td>5</td><td>Java version</td><td>Core collections from 1.0 / 1.2</td><td>java.util.concurrent from 1.5</td></tr>
+</table>
+<table>
+<tr><th>Situation</th><th>Recommendation</th></tr>
+<tr><td>Single-threaded CLI / simple program</td><td>ArrayList, HashMap — fine</td></tr>
+<tr><td>Few threads + external synchronization</td><td>May use Collections.synchronizedList() — but performance hit</td></tr>
+<tr><td>High concurrency, many reader/writer threads</td><td>Concurrent collections (ConcurrentHashMap, CopyOnWriteArrayList, etc.)</td></tr>
+<tr><td>Legacy code on Vector/Hashtable</td><td>Consider migrating to concurrent alternatives for scale</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Class</th><th>Package</th></tr>
+<tr><td>1</td><td>ConcurrentHashMap</td><td>java.util.concurrent</td></tr>
+<tr><td>2</td><td>CopyOnWriteArrayList</td><td>java.util.concurrent</td></tr>
+<tr><td>3</td><td>CopyOnWriteArraySet</td><td>java.util.concurrent</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>HashMap</th><th>ConcurrentHashMap</th></tr>
+<tr><td>Thread-safe</td><td>No</td><td>Yes</td></tr>
+<tr><td>CME during iteration</td><td>Yes (fail-fast iterator)</td><td>No (fail-safe iterator)</td></tr>
+<tr><td>Performance under many threads</td><td>High for single-thread; unsafe for shared access</td><td>Threads may wait on segment locks (default 16 updaters) — trade safety for some wait</td></tr>
+<tr><td>null key/value</td><td>Allowed (one null key, many null values)</td><td>Not allowed</td></tr>
+<tr><td>Since</td><td>1.2</td><td>1.5</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Status after Video 155</th></tr>
+<tr><td>What is a traditional collection</td><td>✓ (prior course)</td></tr>
+<tr><td>What problems exist with traditional collections</td><td>✓ (3 problems)</td></tr>
+<tr><td>Why not suitable for scalable multi-threaded apps</td><td>✓</td></tr>
+<tr><td>How concurrent collections overcome each problem</td><td>✓ (this video)</td></tr>
+<tr><td>Why concurrent collections suit multi-threaded scalable apps</td><td>✓</td></tr>
+<tr><td>Three important concurrent collection classes</td><td>✓ — CHM, COWAL, COWAS</td></tr>
+<tr><td>Detailed programs &amp; internals</td><td>→ Videos 156+</td></tr>
+</table>
+<table>
+<tr><th>Iterator type</th><th>Behavior on concurrent modification</th><th>Example</th></tr>
+<tr><td>Fail-fast</td><td>Immediately throws CME</td><td>HashMap, ArrayList, HashSet iterators</td></tr>
+<tr><td>Fail-safe</td><td>Works on snapshot / weakly consistent view; no CME</td><td>ConcurrentHashMap, CopyOnWriteArrayList iterators</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Purpose</th></tr>
+<tr><td>ConcurrentLinkedQueue</td><td>Non-blocking thread-safe queue</td></tr>
+<tr><td>LinkedBlockingQueue</td><td>Blocking queue (producer-consumer)</td></tr>
+<tr><td>ArrayBlockingQueue</td><td>Bounded blocking queue</td></tr>
+<tr><td>ConcurrentSkipListMap / ConcurrentSkipListSet</td><td>Sorted concurrent map/set</td></tr>
+<tr><td>BlockingDeque implementations</td><td>Work stealing, thread pools</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>Difference between normal and concurrent collections?</td><td>Thread safety, performance (locking granularity), CME behavior — see master table</td></tr>
+<tr><td>Are all traditional collections thread-safe?</td><td>No — most are not; only legacy ones like Vector/Hashtable</td></tr>
+<tr><td>Are all concurrent collections thread-safe?</td><td>Yes — always</td></tr>
+<tr><td>Why is Vector slow in multi-threading?</td><td>Synchronizes entire collection for every operation</td></tr>
+<tr><td>What locking do concurrent collections use?</td><td>Segment / bucket-level locking (not whole collection)</td></tr>
+<tr><td>What is CME?</td><td>Runtime exception when collection structurally modified during iteration (outside iterator&#x27;s remove)</td></tr>
+<tr><td>Do concurrent collections throw CME?</td><td>No — never</td></tr>
+<tr><td>When must you use concurrent collections?</td><td>Scalable multi-threaded applications (many threads, shared data)</td></tr>
+<tr><td>Name three concurrent collection classes</td><td>ConcurrentHashMap, CopyOnWriteArrayList, CopyOnWriteArraySet</td></tr>
+<tr><td>Why CopyOnWrite instead of ConcurrentList?</td><td>Behavior is copy-on-write — explained in detail in CopyOnWriteArrayList lecture</td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th></tr>
+<tr><td>156</td><td>Concurrent Collections Part-3 — ConcurrentMap methods</td></tr>
+<tr><td>157</td><td>Part-4 — ConcurrentHashMap details</td></tr>
+<tr><td>158</td><td>Part-5 — ConcurrentHashMap Program-1</td></tr>
+<tr><td>159</td><td>Part-6 — ConcurrentHashMap Program-2</td></tr>
+<tr><td>160</td><td>Part-7 — HashMap vs ConcurrentHashMap (full comparison table + fail-fast/fail-safe)</td></tr>
+</table>
+</body></html>

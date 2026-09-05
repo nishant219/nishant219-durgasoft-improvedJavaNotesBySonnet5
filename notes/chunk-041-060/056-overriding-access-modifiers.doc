@@ -1,0 +1,980 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>056-overriding-access-modifiers</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 056 — Overriding and access modifiers</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-6 ||overriding ||access modifiers</p>
+<p>ASR decoded while reading the captions: exess modifier = access modifier; War / wide / vo / wi y1 / publicum on = void m1; overwrite / over ring / overwriting / me riding = overriding; Thum rule / minimum fun = thumb rule; compil method / compil meod / comper = compile-time error; virtual Mission error / VM error = VirtualMachineError; stack over error = StackOverflowError; Ser exception = ServletException; CBO / IBO = Exception / IOException; CF / e f / e of / EF = EOFException; cyber exception = IOException; keep subing / keep supporting / Legend / legion = keep writing / listen; methoding / meod hiding / method of hiding = method hiding; wear / where AR methods = var-arg methods; PKA = pakka (definite); JM = JVM; Java c p / Javas cp = javac P.java; Co variant = covariant; strict of = strictfp; postmart = postmortem (word-by-word).</p>
+<p>This video is OOPs Part 6. Last session already stated the access-modifier rule; this one explains why you cannot reduce scope, then the checked-exception overriding rule (seven board cases + live javac), recap of all overriding rules so far, then static methods: cannot mix static/non-static, both-static is method hiding, hiding vs overriding demo (parent child parent vs parent child child), comparison table, and the board-vs-chart story for the words overriding and hiding. Next heading at the end: overriding with respect to var-arg methods.</p>
+<h3>00:05 — Recap: last session ended on the access-modifier rule</h3>
+<p>Last session covered overriding rules. The last rule was modifiers.</p>
+<p>While overriding we cannot reduce the scope of the access modifier.</p>
+<p>If the parent class method is public, the child class method must be public only. He repeats that twice, then: some people will ask why this restriction is there. People who can think can analyse; otherwise just remember the rule. He spends the next few minutes on the internal reason.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    // child MUST stay public if this is an override
+    public void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class AccessRecapOk {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+        // prints child
+    }
+}</pre>
+<p>Reducing public to default is the illegal move he is about to motivate:</p>
+<pre class='code'>class P {
+    public void m1() { }
+}
+
+class C extends P {
+    void m1() { } // default — weaker than public
+}
+// CE: m1() in C cannot override m1() in P
+// attempting to assign weaker access privileges; was public</pre>
+<h3>01:00 — Internal reason: parent `public void m1()`, child does **not** override yet</h3>
+<p>Board:</p>
+<ul><li>class P with public void m1()</li></ul>
+<ul><li>class C extends P</li></ul>
+<ul><li>he did not override m1 in the child</li></ul>
+<p>Parent reference can hold a child object:</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    // did not override
+}
+
+class OutsideCaller {
+    public static void main(String[] args) {
+        P p = new C(); // parent reference, child object
+        p.m1();
+        // prints parent
+        // child did not override, so parent method executes
+    }
+}</pre>
+<p>m1 is public, so outside persons can call it — local people and people in other packages. He says almost around 100 outside people are accessing m1 in this style: parent reference, child object.</p>
+<h3>02:38 — Tomorrow you override and **reduce** the modifier to default</h3>
+<p>Those 100 people are already calling m1. Tomorrow you override in the child and drop public (default / package-level):</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    void m1() { // default — reduced
+        System.out.println(&quot;child&quot;);
+    }
+}
+// CE: m1() in C cannot override m1() in P
+// attempting to assign weaker access privileges; was public</pre>
+<p>If Java allowed this, from now on, for P p = new C(); p.m1();, child m1 would run (runtime object is C). The required method for those 100 callers is now the child method. That method is not public. Default means current package only; outside packages cannot call it. Those outside members get compile-time errors (or, as he also says, runtime exceptions while accessing). Because of our override, outside people are affected.</p>
+<p>Earlier they happily used parent public m1. After a default override they cannot. Our overriding should not affect outside people.</p>
+<p>Without override, several outside people accessed the method. After override, the same set of people must still be able to access it. More people can access (that is extra advantage). The people who were already accessing must not be broken.</p>
+<p>Minimum thumb rule: because of our overriding, outside people should not be affected.</p>
+<p>If parent is public and child is default, those people cannot access child m1 → override is invalid.</p>
+<h3>05:47 — Parent default: same default is OK; `public` (increase) is OK</h3>
+<p>If parent m1 is default, who can access? Same-package people.</p>
+<p>Child also default: same set of people can still access. No problem.</p>
+<p>Child public: people who already accessed still can, plus extra people (other packages). That is more advantage, not a problem.</p>
+<pre class='code'>class P {
+    void m1() { // default
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    void m1() { // same default — same callers still work
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class SamePackageOk {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+        // prints child
+    }
+}
+class P {
+    void m1() { // default
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1() { // increased to public — extra callers allowed
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class IncreaseScopeOk {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+        // prints child
+    }
+}</pre>
+<p>If you want you can increase the scope, but you cannot decrease the scope.</p>
+<p>Internal reason: reducing scope can affect outside people who were already calling through a parent-typed reference to a child object.</p>
+<p>That finishes the access-modifier rule.</p>
+<h3>07:01 — Next rule needs checked vs unchecked (he will not teach exceptions fully here)</h3>
+<p>Take very special care. He assumes you know checked exception vs unchecked exception. Interview-room question: difference between checked and unchecked. He will not explain that fully now — that is the exceptions chapter — but which are checked / which are unchecked you must have clear, because the next overriding rule uses it.</p>
+<h3>07:39 — Exception hierarchy on the board (root `Throwable`)</h3>
+<p>Root of all Java exception classes / exception hierarchy: `Throwable`.</p>
+<p>Throwable has two child classes: `Exception` and `Error`.</p>
+<p>Under Exception he names:</p>
+<ul><li>`RuntimeException`, then its children: NullPointerException, ClassCastException, ArithmeticException, …</li></ul>
+<ul><li>`IOException`, then its children: FileNotFoundException, EOFException, …</li></ul>
+<ul><li>`InterruptedException`</li></ul>
+<ul><li>`ServletException` (ASR: “Ser exception”)</li></ul>
+<ul><li>`RemoteException`</li></ul>
+<ul><li>several more</li></ul>
+<p>Under Error / `VirtualMachineError`: OutOfMemoryError, StackOverflowError, …</p>
+<p>He still does not define checked vs unchecked in depth. Only a thumb rule to identify them, because that is what the overriding rule needs.</p>
+<pre class='code'>class HierarchyHeDrew {
+    // Throwable
+    //   Exception
+    //     RuntimeException
+    //       NullPointerException
+    //       ClassCastException
+    //       ArithmeticException
+    //     IOException
+    //       FileNotFoundException
+    //       EOFException
+    //     InterruptedException
+    //     ServletException
+    //     RemoteException
+    //   Error
+    //     VirtualMachineError
+    //       OutOfMemoryError
+    //       StackOverflowError
+}</pre>
+<h3>09:57 — Thumb rule: what is unchecked; everything else is checked</h3>
+<p>Unchecked:</p>
+<ul><li>RuntimeException and its child classes</li></ul>
+<ul><li>Error and its child classes</li></ul>
+<p>Except these, the remaining are by default checked exceptions.</p>
+<p>He quizzes:</p>
+<p>Parent of EOFException / FileNotFoundException: `IOException`. Parent of InterruptedException: `Exception` (not IOException). He says you need this to conclude the next overriding rule.</p>
+<pre class='code'>class IdentifyChecked {
+    void checked() throws Throwable, Exception, java.io.IOException,
+            java.io.FileNotFoundException, java.io.EOFException,
+            InterruptedException { }
+
+    void unchecked() throws RuntimeException, ArithmeticException,
+            NullPointerException, ClassCastException, Error,
+            VirtualMachineError, OutOfMemoryError { }
+}</pre>
+<h3>12:11 — Seven board cases: you decide valid / invalid first</h3>
+<p>He will give multiple examples. You decide which overrides are valid. He has not stated the rule yet — he wants to check knowledge first.</p>
+<p>Parent/child methods are always public void m1() plus a throws clause that changes.</p>
+<h3>13:04 — Case 1: parent throws `Exception`, child throws nothing</h3>
+<pre class='code'>class P {
+    public void m1() throws Exception { }
+}
+
+class C extends P {
+    public void m1() { } // no throws
+}
+// valid</pre>
+<p>Parent throws Exception. Child does not throw any exception.</p>
+<h3>13:23 — Case 2: parent throws nothing, child throws `Exception`</h3>
+<pre class='code'>class P {
+    public void m1() { }
+}
+
+class C extends P {
+    public void m1() throws Exception { }
+}
+// CE: m1() in C cannot override m1() in P
+// overridden method does not throw java.lang.Exception</pre>
+<p>Parent does not throw. Child does throw Exception.</p>
+<h3>13:50 — Case 3: parent throws `Exception`, child throws `IOException`</h3>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1() throws Exception { }
+}
+
+class C extends P {
+    public void m1() throws IOException { }
+}
+// valid</pre>
+<h3>14:19 — Case 4: parent throws `IOException`, child throws `Exception`</h3>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws Exception { }
+}
+// CE: m1() in C cannot override m1() in P
+// overridden method does not throw java.lang.Exception</pre>
+<p>Parent throws IOException (child of Exception). Child throws Exception (the parent type). He reminds you of the diagram: IOException is the child; Exception is the parent.</p>
+<h3>14:52 — Case 5: parent throws `IOException`, child throws `FileNotFoundException, EOFException`</h3>
+<pre class='code'>import java.io.EOFException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws FileNotFoundException, EOFException { }
+}
+// valid — both are children of IOException</pre>
+<h3>15:50 — Case 6: parent throws `IOException`, child throws `EOFException, InterruptedException`</h3>
+<p>Take special care.</p>
+<pre class='code'>import java.io.EOFException;
+import java.io.IOException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws EOFException, InterruptedException { }
+}
+// CE: m1() in C cannot override m1() in P
+// overridden method does not throw java.lang.InterruptedException</pre>
+<p>EOFException sits under IOException. InterruptedException does not.</p>
+<h3>16:49 — Case 7: parent throws `IOException`, child throws three **unchecked** types</h3>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws ArithmeticException, NullPointerException, ClassCastException { }
+}
+// valid — unchecked; no comparison required</pre>
+<p>Seven cases total. Which are valid overriding, which are invalid?</p>
+<h3>17:32 — He writes: 1 valid, 2 invalid, 3 valid, 4 invalid, 5 valid, 6 invalid, 7 valid</h3>
+<p>He still has not given the rule. Think carefully. First one is pakka valid; if 1 is valid, 2 is invalid; if 2 is invalid, 3 is valid; … alternating through 7. If an 8th existed it would be invalid. There is no 8th.</p>
+<p>He asks whether any answer on the board needs changing. Students float: maybe 4 is valid but he kept invalid; maybe 7 is invalid but he kept valid. He says whatever answers he wrote on the board are perfectly correct. Sequence is valid / invalid / valid / invalid / valid / invalid / valid. All correct. Most people get confusion in this topic. Now he explains the rule.</p>
+<h3>20:55 — The rule (he repeats it many times so the notebook matches)</h3>
+<p>If the child class method throws any checked exception, compulsory the parent class method should throw the same checked exception or its parent. Otherwise compile-time error.</p>
+<p>If parent does not throw, but child still throws that checked exception → CE immediately.</p>
+<p>Unchecked exceptions: no restrictions. Parent can throw any number, child can throw any number. No comparison. The rule is only for checked exceptions.</p>
+<p>He has the class repeat the sentence, then he repeats it again himself.</p>
+<h3>24:22 — Apply the rule to all seven (now you know it)</h3>
+<p>Case 1: Child does not throw any checked exception. Not required to worry. Valid.</p>
+<p>Case 2: Child throws checked Exception. Parent must throw the same checked or its parent. Parent throws nothing. Invalid.</p>
+<p>Case 3: Child throws IOException. Parent throws Exception, which is the parent of IOException. Acceptable. Valid.</p>
+<p>Case 4: Child throws Exception. Parent throws IOException. Parent must throw the same or its parent, not its child. IOException is a child of Exception, not a parent. Invalid.</p>
+<p>Case 5: Child throws FileNotFoundException (and EOFException). Parent throws IOException, which is the parent. Valid.</p>
+<p>Case 6: Child throws EOFException — parent throws IOException — no problem for that one. Child also throws InterruptedException. Parent does not throw InterruptedException, and IOException is not a parent of InterruptedException. Invalid. CE.</p>
+<p>Case 7: Child throws ArithmeticException, NullPointerException, ClassCastException — all unchecked. Child does not throw any checked exception. Not required to worry. Valid.</p>
+<h3>27:01 — Live compile of case 6; exact compiler message</h3>
+<p>Students pick case 6 as the invalid one to execute. Reason: child throws InterruptedException; parent does not.</p>
+<p>Terminology he drills:</p>
+<ul><li>parent method = overridden method</li></ul>
+<ul><li>child method = overriding method</li></ul>
+<p>Exact CE he wants copied:</p>
+<p>m1() in C cannot override m1() in P</p>
+<p>overridden method does not throw java.lang.InterruptedException</p>
+<p>Parent method does not throw java.lang.InterruptedException, so this overriding is invalid.</p>
+<p>He types it: P with public void m1() throws IOException; C with throws EOFException, InterruptedException. EOFException is end-of-file exception. IOException / EOFException live in the IO package → import java.io.*. File P.java. javac P.java — compile error. Read it: same message as above.</p>
+<pre class='code'>import java.io.*;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws EOFException, InterruptedException { }
+}
+// CE: m1() in C cannot override m1() in P
+// overridden method does not throw java.lang.InterruptedException</pre>
+<h3>30:29 — Same case 6, three follow-up tweaks he compiles in words</h3>
+<p>Fix 1: parent also throws InterruptedException → valid.</p>
+<pre class='code'>import java.io.*;
+
+class P {
+    public void m1() throws IOException, InterruptedException { }
+}
+
+class C extends P {
+    public void m1() throws EOFException, InterruptedException { }
+}
+// valid</pre>
+<p>Fix 2: parent throws Exception (parent of both checked types) → valid.</p>
+<pre class='code'>import java.io.*;
+
+class P {
+    public void m1() throws Exception { }
+}
+
+class C extends P {
+    public void m1() throws EOFException, InterruptedException { }
+}
+// valid</pre>
+<p>Still invalid: parent throws nothing, child throws a checked exception.</p>
+<pre class='code'>import java.io.*;
+
+class P {
+    public void m1() { }
+}
+
+class C extends P {
+    public void m1() throws EOFException, InterruptedException { }
+}
+// CE: m1() in C cannot override m1() in P
+// overridden method does not throw java.io.EOFException</pre>
+<h3>31:18 — Coding example copied from the screen (case 6 + the CE)</h3>
+<p>He dictates the first coding example:</p>
+<pre class='code'>import java.io.*;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws EOFException, InterruptedException { }
+}
+// invalid</pre>
+<p>Add the compile error from the screen, word for word:</p>
+<pre class='code'>import java.io.*;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws EOFException, InterruptedException { }
+}
+// CE: m1() in C cannot override m1() in P
+// overridden method does not throw java.lang.InterruptedException</pre>
+<p>Then: take all seven options onto the notebook (1, 2, 3, …). Long copy stretch. He rewrites case 7 at the end:</p>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws ArithmeticException, NullPointerException, ClassCastException { }
+}
+// valid</pre>
+<p>That is the rule related to exceptions.</p>
+<h3>38:51 — Internal reason for the exception rule (thinkers only; others remember the rule)</h3>
+<p>Same style as the access-modifier story.</p>
+<p>Parent method:</p>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    // not overridden yet
+}</pre>
+<p>If a method throws a checked exception, the caller is responsible to handle it — try/catch or throws. Compulsory. If the caller does not handle, compile-time error.</p>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P { }
+
+class CallerHandlesIo {
+    public static void main(String[] args) {
+        P p = new C();
+        try {
+            p.m1();
+        } catch (IOException e) {
+            // thousands of outside people already catch IOException
+        }
+    }
+}</pre>
+<p>m1 is public. Thousands of outside people are accessing it. They are responsible to handle `IOException`. They wrote catch (IOException). Right now parent method executes.</p>
+<p>Tomorrow you override. If child also throws IOException, those people already handle IOException. No effect.</p>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws IOException { } // same checked — callers already catch IOException
+}
+
+class StillOk {
+    public static void main(String[] args) throws IOException {
+        P p = new C();
+        p.m1(); // callers who handled IOException still compile
+    }
+}</pre>
+<p>If instead child throws `Exception` (higher / broader checked type): now the method that actually runs for those thousand people is child m1, which throws Exception. They only catch IOException, not Exception. Compiler: you are calling m1, m1 throws Exception, you are handling only IOException. Code will not compile (or, as he also says, will not run). Our overriding affected outside people.</p>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws Exception { } // raised checked level
+}
+// CE: m1() in C cannot override m1() in P
+// overridden method does not throw java.lang.Exception</pre>
+<p>So if parent throws IOException, at child level you can take:</p>
+<ul><li>the same IOException</li></ul>
+<ul><li>or its child: EOFException or FileNotFoundException</li></ul>
+<ul><li>or no `throws` at all — caller is handling something you are not even throwing; they are fine</li></ul>
+<p>You cannot increase / raise the checked-exception level while overriding.</p>
+<pre class='code'>import java.io.EOFException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C1 extends P {
+    public void m1() throws IOException { } // same — OK
+}
+
+class C2 extends P {
+    public void m1() throws EOFException { } // child of IOException — OK
+}
+
+class C3 extends P {
+    public void m1() throws FileNotFoundException { } // child of IOException — OK
+}
+
+class C4 extends P {
+    public void m1() { } // no throws — OK
+}</pre>
+<p>Without override, callers handle up to that exception only. While overriding you cannot raise checked exception level; you may take child types.</p>
+<p>Conclusion (same rule): if child throws any checked exception, parent must throw the same checked exception or its parent. Otherwise CE. No restrictions for unchecked exceptions.</p>
+<h3>44:48 — Recap: all overriding rules covered so far (he asks the class to spell them)</h3>
+<p>Several rules related to overriding. Spell the first ones:</p>
+<p>1. Signatures must be same. While overriding, method names must be same, argument types must be same → method signatures must be same.</p>
+<pre class='code'>class P {
+    public void m1(int x) { }
+}
+
+class C extends P {
+    public void m1(int x) { } // same name + same args = override
+}
+
+class NotOverride {
+    public void m1(int x) { }
+}
+
+class OverloadInstead extends NotOverride {
+    public void m1(String s) { } // different args — overloading, not overriding
+}</pre>
+<p>2. Return types. In overriding, return types must be same — until 1.4. From 1.5 onwards, covariant return types are allowed.</p>
+<pre class='code'>class P {
+    public Object m1() {
+        return null;
+    }
+}
+
+class C extends P {
+    public String m1() { // covariant return (1.5+)
+        return &quot;child&quot;;
+    }
+}
+
+class CovariantDemo {
+    public static void main(String[] args) {
+        P p = new C();
+        System.out.println(p.m1());
+        // prints child
+    }
+}</pre>
+<p>3. Private methods. Parent class private methods are not visible to the child. Overriding is not applicable for private methods. If you define the same private method in the child, no compile-time error, but it is valid and not overriding.</p>
+<pre class='code'>class P {
+    private void m1() {
+        System.out.println(&quot;parent private&quot;);
+    }
+}
+
+class C extends P {
+    private void m1() { // not overriding — just another private method
+        System.out.println(&quot;child private&quot;);
+    }
+}
+
+class PrivateNotOverride {
+    public static void main(String[] args) {
+        C c = new C();
+        // c.m1();
+        // CE: m1() has private access in C
+    }
+}</pre>
+<p>4. `final` methods we cannot override.</p>
+<pre class='code'>class P {
+    public final void m1() { }
+}
+
+class C extends P {
+    public void m1() { }
+}
+// CE: m1() in C cannot override m1() in P
+// overridden method is final</pre>
+<p>5. Abstract methods we can override.</p>
+<pre class='code'>abstract class P {
+    public abstract void m1();
+}
+
+class C extends P {
+    public void m1() {
+        System.out.println(&quot;implemented&quot;);
+    }
+}
+
+class AbstractOverrideDemo {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+        // prints implemented
+    }
+}</pre>
+<p>6. `synchronized`, `strictfp`, `native` do not keep any restriction in overriding.</p>
+<pre class='code'>class P {
+    public synchronized void m1() { }
+}
+
+class C extends P {
+    public void m1() { } // synchronized not required on the child
+}
+
+class StrictFpOk {
+    public strictfp void m1() { }
+}
+
+class StrictFpChild extends StrictFpOk {
+    public void m1() { } // strictfp not required
+}</pre>
+<p>7. Access modifiers (this video’s first half). While overriding, the scope of the access modifier we cannot reduce. If you want you can increase. public → public; protected → protected or protected → public. Those are acceptable.</p>
+<pre class='code'>class P {
+    protected void m1() { }
+}
+
+class C extends P {
+    public void m1() { } // protected → public: increased — OK
+}
+
+class IncreaseProtected {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+    }
+}
+class P {
+    protected void m1() { }
+}
+
+class C extends P {
+    void m1() { } // protected → default: reduced
+}
+// CE: m1() in C cannot override m1() in P
+// attempting to assign weaker access privileges; was protected</pre>
+<p>8. Checked exceptions (this video). If child throws any checked exception, parent must throw the same checked exception or its parent. No restrictions for unchecked exceptions.</p>
+<p>These are the various rules you should be aware of.</p>
+<h3>46:39 — Next heading: overriding with respect to **static** methods</h3>
+<p>Keep writing: overriding with respect to static methods.</p>
+<p>Last class, somewhere, only the static modifier was missing, because there are big rules. Very important.</p>
+<h3>47:15 — Case 1: parent `static`, child tries non-static (invalid)</h3>
+<pre class='code'>class P {
+    public static void m1() { }
+}
+
+class C extends P {
+    public void m1() { } // static overridden as non-static
+}</pre>
+<p>Is it valid overriding? Parent is static; we are trying to override as non-static. Immediately compile-time error.</p>
+<p>Why: static method = class-level method. Instance method = object-level method. How can you override a class-level method with an object-level method?</p>
+<p>Faculty vs student analogy: one faculty got a better opportunity and wants to leave. You think about another faculty. A new student cannot fulfil a faculty requirement — student level and faculty level are different. If a student is leaving, recruiting a faculty for that seat is meaningless. Class-level method you cannot override with object-level method.</p>
+<p>We cannot override a static method as an instance method. By mistake if you try, CE.</p>
+<p>Compiler message:</p>
+<p>m1() in C cannot override m1() in P</p>
+<p>overridden method is static</p>
+<p>(Parent method is the overridden method; it is static; that is why you cannot override.)</p>
+<p>He types class P { public static void m1() } / class C extends P { public void m1() }, then javac P.java. Same error: overridden method is static. We cannot override a static method as non-static.</p>
+<p>Rule he dictates: we cannot override a static method as non-static, otherwise we will get compile-time error.</p>
+<pre class='code'>class P {
+    public static void m1() { }
+}
+
+class C extends P {
+    public void m1() { }
+}
+// CE: m1() in C cannot override m1() in P
+// overridden method is static</pre>
+<p>Copy that example plus the CE onto the board.</p>
+<h3>52:46 — Case 2: parent **non-static**, child **static** (also invalid)</h3>
+<p>Parent: public void m1(). Child: public static void m1().</p>
+<p>Valid or invalid? Same “different level” idea: instance = object level, static = class level. How can an object-level method be overridden with a class-level method? CE immediately.</p>
+<p>Message this time:</p>
+<p>m1() in C cannot override m1() in P</p>
+<p>overriding method is static</p>
+<p>Listen: parent is not static; child is static. Earlier CE was overridden method is static. Now overriding method is static.</p>
+<p>Similarly: we cannot override a non-static method as static.</p>
+<pre class='code'>class P {
+    public void m1() { }
+}
+
+class C extends P {
+    public static void m1() { }
+}
+// CE: m1() in C cannot override m1() in P
+// overriding method is static</pre>
+<p>He copies this example plus the CE. Last case: overridden method is static. This case: overriding method is static.</p>
+<h3>56:33 — Case 3: **both** static — compiles, but it is **method hiding**, not overriding</h3>
+<p>Parent static, child also static. public static void m1() in both.</p>
+<p>Can a static method be “overridden” with another static method? Will we get CE? Runtime exception?</p>
+<p>Both static: `javac P.java` — no compile-time error.</p>
+<p>It seems overriding is applicable for static methods. It is not overriding. It is method hiding. Even though there is no compile error, do not call it overriding.</p>
+<p>Immediate question: difference between method hiding and overriding — that is the next heading.</p>
+<p>Third point he writes: if both parent and child class methods are static, then we will not get any compile-time error. It seems overriding concept is applicable for static methods, but it is not overriding, it is method hiding.</p>
+<pre class='code'>class P {
+    public static void m1() { }
+}
+
+class C extends P {
+    public static void m1() { }
+}
+// compiles — method hiding, but not overriding</pre>
+<p>Comment on the board: it is method hiding but not overriding.</p>
+<h3>1:01:29 — Method hiding: all overriding rules apply, except one small difference</h3>
+<p>Keep writing: method hiding.</p>
+<p>Take special care. All rules of method hiding are exactly the same as overriding — method names must be same, arguments must be same, return types must be same, access-modifier scope you cannot reduce (ASR said “can reduce”; that is the established overriding rule he just said is identical). Whatever rules were discussed in overriding are the same for hiding, except a small difference.</p>
+<p>Demo both static, with prints:</p>
+<pre class='code'>class P {
+    public static void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public static void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+// method hiding, but not overriding</pre>
+<h3>1:03:34 — `Test.main`: three calls — parent/parent, child/child, parent-ref/child-object</h3>
+<pre class='code'>class P {
+    public static void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public static void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1();
+        // prints parent
+        // parent reference, parent object → parent method
+
+        C c = new C();
+        c.m1();
+        // prints child
+        // child reference, child object → child method (exact match)
+
+        P p1 = new C();
+        p1.m1();
+        // prints parent
+        // parent reference can hold child object
+    }
+}</pre>
+<p>First two: no doubt. Third is the difference.</p>
+<p>If this were overriding, p1.m1() would run the child method. In overriding, method resolution is always based on the runtime object. Compiler sees you calling m1 on p1; p1 is type P; P has m1 — OK. Runtime object is child; child has an override → child method.</p>
+<p>This is method hiding, not overriding. In method hiding, method resolution is always taken care of by the compiler based on reference type. Runtime object will not play any role. So p1 is a parent reference → parent method.</p>
+<p>Which reference: parent → parent method. Child reference → child method. Parent reference again → parent method.</p>
+<p>Small difference:</p>
+<ul><li>Method hiding: compiler, reference type</li></ul>
+<ul><li>Overriding: JVM, runtime object</li></ul>
+<h3>1:06:30 — He runs hiding, then removes `static` to show overriding output</h3>
+<p>Same example, both public static void m1, prints &quot;parent&quot; / &quot;child&quot;. Calls: p.m1(), c.m1(), p1.m1(). Both methods static → hiding. javac P.java, then java Test (main is in Test).</p>
+<p>Output he reads: parent, child, parent — resolution based on reference type.</p>
+<pre class='code'>class P {
+    public static void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public static void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1();
+        C c = new C();
+        c.m1();
+        P p1 = new C();
+        p1.m1();
+        // prints parent
+        // prints child
+        // prints parent
+    }
+}</pre>
+<p>Suppose both are not static → that is overriding. Resolution taken care of by JVM based on runtime object. Output becomes parent, child, child.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1();
+        C c = new C();
+        c.m1();
+        P p1 = new C();
+        p1.m1();
+        // prints parent
+        // prints child
+        // prints child
+    }
+}</pre>
+<p>That is the difference between overriding and method hiding. All rules same; only this resolution difference.</p>
+<h3>1:08:20 — Comparison table (he dictates; copy both columns)</h3>
+<p>Keep writing method hiding | overriding. All rules of method hiding are exactly same as overriding except the following differences.</p>
+<p>Difference 1 — static vs non-static</p>
+<ul><li>Hiding: both parent and child class methods should be static</li></ul>
+<ul><li>Overriding: both parent and child class methods should be non-static</li></ul>
+<p>Difference 2 — who resolves the call</p>
+<ul><li>Hiding: method resolution always taken care of by compiler based on reference type</li></ul>
+<ul><li>Overriding: method resolution always taken care of by JVM based on runtime object</li></ul>
+<p>Difference 3 — names of the polymorphism</p>
+<p>Because the compiler resolves hiding from the reference type, method hiding is also known as:</p>
+<ul><li>compile-time polymorphism</li></ul>
+<ul><li>static polymorphism</li></ul>
+<ul><li>early binding</li></ul>
+<p>Because the JVM resolves overriding from the runtime object, overriding is also known as:</p>
+<ul><li>runtime polymorphism</li></ul>
+<ul><li>dynamic polymorphism</li></ul>
+<ul><li>late binding</li></ul>
+<p>He says take the table first, then he will dictate the points. First point static / non-static. Second: compiler vs JVM. Third: the three names each.</p>
+<h3>1:13:53 — Same program again, with the comment; then the non-static twist</h3>
+<p>Take the program clearly, with the comment it is method hiding but not overriding. Parent method / child method. Output parent child parent.</p>
+<pre class='code'>class P {
+    public static void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public static void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1(); // parent
+        C c = new C();
+        c.m1(); // child
+        P p1 = new C();
+        p1.m1(); // parent — hiding uses reference type
+        // prints parent
+        // prints child
+        // prints parent
+    }
+}
+// both parent and child class methods are static
+// it is method hiding but not overriding</pre>
+<p>If both parent and child class methods are non-static, then it will become overriding. In that case output is parent, child, child.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1();
+        C c = new C();
+        c.m1();
+        P p1 = new C();
+        p1.m1();
+        // prints parent
+        // prints child
+        // prints child
+    }
+}
+// both non-static → overriding</pre>
+<p>Small concept, small variation with overriding: if both parent and child methods are static, what happens is method hiding.</p>
+<h3>1:17:40 — Why the *words* “overriding” and “hiding” (postmortem on the words)</h3>
+<p>A few minutes of internal talk. People who can think, listen; otherwise ignore.</p>
+<p>You have a child object. You can use a parent reference or a child reference.</p>
+<p>Why “overriding” vs “hiding”? He wants to perform postmortem on the words.</p>
+<p>Overriding (whiteboard): he wrote something on the board. He wants to write more. He rubs that and writes new data. That is overriding. In overriding, old data is not there — only new data is available.</p>
+<p>Hiding (chart): it is not marker-pen board; it is a chart. He pins a chart and explains. After that chart, he takes one more chart, pins the new chart on the old chart, and explains. Is that hiding or overriding? Hiding. A student says “explain the old chart once again” — he removes the new chart and explains the old one.</p>
+<p>In hiding, both copies are available — old copy and new copy. We just hide the old copy with the new copy. If you want, he can show the old copy also.</p>
+<p>In overriding, old copy is not available. Only new copy. Old copy already overwritten with new copy.</p>
+<h3>1:20:12 — Map the metaphor onto parent/child methods</h3>
+<p>Overriding: once you override m1 in the child, automatically the old copy is gone. Only the new / child copy is available for the child. Parent copy will not be available, because we redefined it. For the child object, whether you use parent reference or child reference, in both cases child class method comes into the picture.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class OverridingOnlyNewCopy {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+        // prints child — parent reference, child object
+
+        C c = new C();
+        c.m1();
+        // prints child — child reference, child object
+        // for the child object, parent method already gone
+    }
+}</pre>
+<p>Parent method already gone; we overrode parent method with child method. That is the word overriding.</p>
+<p>Hiding: both static. For the child, both methods are available — parent method is there, child method is there. For the child object, if you use a parent reference, parent method comes. If you use a child reference, child method comes.</p>
+<pre class='code'>class P {
+    public static void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public static void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class HidingBothCopies {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+        // prints parent — parent reference on child object
+
+        C c = new C();
+        c.m1();
+        // prints child — child reference on child object
+        // both methods still available; old copy is only hidden
+    }
+}</pre>
+<p>In hiding, both methods are available: parent reference → parent method, child reference → child method.</p>
+<p>In overriding, are both methods available, or only child method? Only child method. Old copy replaced with new copy; old copy gone.</p>
+<p>In hiding, old copy is just hidden with new copy. If you want, you can show both copies.</p>
+<p>That is why some people chose the words overriding and hiding: hiding = old is there and new is there; overriding = old gone, only new copy.</p>
+<p>That is the difference between method hiding and overriding.</p>
+<h3>1:23:05 — Next heading (video ends): overriding with respect to **var-arg** methods</h3>
+<p>Keep writing: overriding with respect to var-arg methods (ASR: “wear methods” / “where AR methods”). He only writes the heading. The special case itself is the next session.</p>
+<h2>Board recap (what he wanted in the notebook)</h2>
+<p>Access modifiers: while overriding you cannot reduce scope; you may increase. Internal reason: parent-ref + child-object callers who already used a wider modifier must not break. public child must stay public. Default → default OK; default → public OK.</p>
+<p>Checked exceptions: if child throws any checked exception, parent must throw the same checked exception or its parent; else CE. No restrictions for unchecked. Seven cases: valid / invalid / valid / invalid / valid / invalid / valid. Case 6 live CE: m1() in C cannot override m1() in P; overridden method does not throw java.lang.InterruptedException. Parent method = overridden; child method = overriding. Internal reason: callers already handle only the parent’s checked type; child must not raise the checked level. Child may use same, child types, or no throws.</p>
+<p>Rules so far: same signature; same return until 1.4 / covariant from 1.5; private not overriding; final cannot; abstract can; synchronized / strictfp / native unrestricted; cannot reduce access; checked-exception rule.</p>
+<p>Static: cannot override static as non-static (CE: overridden method is static). Cannot override non-static as static (CE: overriding method is static). Both static: compiles, method hiding not overriding.</p>
+<p>Hiding vs overriding: all other rules same. Hiding = both static, compiler, reference type, compile-time / static polymorphism / early binding, output parent child parent. Overriding = both non-static, JVM, runtime object, runtime / dynamic polymorphism / late binding, output parent child child. Word story: board-rub = only new copy; stacked charts = both copies, old hidden.</p>
+<p>Next: var-arg methods.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 56 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 6</td></tr>
+<tr><td>Topic</td><td>overriding, access modifiers</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 23m 45s</td></tr>
+<tr><td>Video ID</td><td>1By_hC3ONt8</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=1By_hC3ONt8</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>Checked or unchecked (his answers)</th></tr>
+<tr><td>Throwable</td><td>checked</td></tr>
+<tr><td>Exception</td><td>checked</td></tr>
+<tr><td>IOException</td><td>checked</td></tr>
+<tr><td>FileNotFoundException</td><td>checked</td></tr>
+<tr><td>EOFException</td><td>checked</td></tr>
+<tr><td>InterruptedException</td><td>checked (parent is Exception)</td></tr>
+<tr><td>ArithmeticException</td><td>unchecked</td></tr>
+<tr><td>NullPointerException</td><td>unchecked</td></tr>
+<tr><td>ClassCastException</td><td>unchecked</td></tr>
+<tr><td>RuntimeException</td><td>unchecked</td></tr>
+<tr><td>Error</td><td>unchecked</td></tr>
+<tr><td>VirtualMachineError</td><td>unchecked</td></tr>
+<tr><td>OutOfMemoryError</td><td>unchecked</td></tr>
+</table>
+<table>
+<tr><th>Case</th><th>Parent throws</th><th>Child throws</th><th>Valid?</th></tr>
+<tr><td>1</td><td>Exception</td><td>(none)</td><td>valid</td></tr>
+<tr><td>2</td><td>(none)</td><td>Exception</td><td>invalid</td></tr>
+<tr><td>3</td><td>Exception</td><td>IOException</td><td>valid</td></tr>
+<tr><td>4</td><td>IOException</td><td>Exception</td><td>invalid</td></tr>
+<tr><td>5</td><td>IOException</td><td>FileNotFoundException, EOFException</td><td>valid</td></tr>
+<tr><td>6</td><td>IOException</td><td>EOFException, InterruptedException</td><td>invalid</td></tr>
+<tr><td>7</td><td>IOException</td><td>ArithmeticException, NullPointerException, ClassCastException</td><td>valid</td></tr>
+</table>
+<table>
+<tr><th>Method hiding</th><th>Overriding</th></tr>
+<tr><td>Both parent and child class methods should be static</td><td>Both parent and child class methods should be non-static</td></tr>
+<tr><td>Compiler is responsible for method resolution based on reference type</td><td>JVM is always responsible for method resolution based on runtime object</td></tr>
+<tr><td>Also known as compile-time polymorphism or static polymorphism or early binding</td><td>Also known as runtime polymorphism or dynamic polymorphism or late binding</td></tr>
+</table>
+</body></html>

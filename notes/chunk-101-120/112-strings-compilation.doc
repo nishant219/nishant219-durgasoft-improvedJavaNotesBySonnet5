@@ -1,0 +1,287 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>112-strings-compilation</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 112 — String, StringBuffer &amp; StringBuilder compilation</h1>
+<h2>Video info</h2>
+<p>Title: String, StringBuffer &amp; StringBuilder for JAVA Certification &amp; Interviews || by Durga Sir</p>
+<h2>Important: this is a mega compilation, not a new lecture</h2>
+<p>This upload is a ~6.5-hour re-package of the individual java.lang lectures already in the same playlist (videos 105–111 and 113–119). It does not introduce new board material beyond those component videos.</p>
+<p>Captions: YouTube has no usable auto-captions for this mega upload (none that can drive timestamped board-level notes). Do not treat this file as a full transcript rewrite of the 6h video.</p>
+<p>Where the real notes live: Detailed caption-based lecture notes with Java board examples are in the component videos 105–111 and 113–119 under notes/chunk-101-120/. Study those files (and watch those shorter videos) for board timestamps, ASR-decoded board text, and full examples.</p>
+<p>This file is only an index + OCJP study checklist + exam-checklist snippets for the compilation entry at position 112.</p>
+<h2>Mapping: compilation topics → individual playlist videos</h2>
+<p>Watch URLs for component videos: https://www.youtube.com/watch?v=&lt;VideoID&gt; using IDs from notes/playlist.tsv (rows 105–111, 113–119).</p>
+<h2>OCJP study checklist (topics covered by this compilation)</h2>
+<p>Use this as a revision checklist; tick off after reading the matching component notes.</p>
+<ul><li>[ ] java.lang — no explicit import; contains Object, String, System, wrappers, etc.</li></ul>
+<ul><li>[ ] Object class — every class extends Object; 11 exam-count methods (12 including private registerNatives())</li></ul>
+<ul><li>[ ] toString() — default className@hexHash; override for meaningful output; already overridden in String, wrappers, collections</li></ul>
+<ul><li>[ ] hashCode() — identity-based in Object; content-based when overridden with equals()</li></ul>
+<ul><li>[ ] equals() — default reference comparison; override for content; relation rules with ==</li></ul>
+<ul><li>[ ] finalize(), getClass(), notify() / notifyAll() / wait() — know purpose and prototype</li></ul>
+<ul><li>[ ] String immutability — any change creates new object; SCP sharing is why immutability exists</li></ul>
+<ul><li>[ ] String Constant Pool (SCP) — literal reuse; new String(&quot;x&quot;) creates heap + SCP entry</li></ul>
+<ul><li>[ ] String constructors — heap object from literal, char array, StringBuffer, etc.</li></ul>
+<ul><li>[ ] String methods — length, charAt, substring, concat, equals, compareTo, etc.</li></ul>
+<ul><li>[ ] Compile-time vs runtime string + — constant folding vs heap concat at runtime</li></ul>
+<ul><li>[ ] StringBuffer — mutable; default capacity 16; growth (currentCapacity + 1) * 2; all methods synchronized</li></ul>
+<ul><li>[ ] StringBuilder — same API as StringBuffer; non-synchronized; prefer when thread safety not needed</li></ul>
+<ul><li>[ ] String vs StringBuffer vs StringBuilder — fixed content vs changing content vs thread safety</li></ul>
+<ul><li>[ ] Wrapper classes — 8 types; wrap primitive for collections/generics; utility methods</li></ul>
+<ul><li>[ ] Wrapper constructors — two-arg pattern (primitive + String); traps: Character (char only), Boolean String rules, Float (3 ctors)</li></ul>
+<ul><li>[ ] valueOf() / xxxValue() — preferred creation; unboxing uses intValue() etc.</li></ul>
+<ul><li>[ ] Autoboxing / autounboxing — compiler rewrites to valueOf / xxxValue; Java 1.5+</li></ul>
+<ul><li>[ ] Integer cache — -128 to +127 reused; new bypasses cache; == on wrappers compares references</li></ul>
+<ul><li>[ ] equals()–hashCode() contract — equal objects must share hash code; override both together</li></ul>
+<ul><li>[ ] == vs .equals() — incomparable types CE for ==; .equals() returns false safely</li></ul>
+<ul><li>[ ] intern() — heap reference → corresponding SCP reference (creates SCP entry if missing)</li></ul>
+<ul><li>[ ] clone() — protected Object clone() throws CloneNotSupportedException; class must implement Cloneable</li></ul>
+<h2>Exam-checklist snippets (not board timestamps from this mega video)</h2>
+<p>The following java blocks summarize key OCJP points from the component java.lang lectures (105–111, 113–119). They are exam-checklist snippets, not claimed board timestamps or a transcript of video P5tFJ9umhvk.</p>
+<h3>1) `java.lang` implicit + Object as root</h3>
+<pre class='code'>// No import java.lang.* required — String, System, Object are always available
+class Demo {
+    public static void main(String[] args) {
+        String s = &quot;durga&quot;;           // java.lang.String
+        System.out.println(s);        // java.lang.System
+        Demo d = new Demo();
+        System.out.println(d instanceof Object); // true — every class extends Object
+    }
+}</pre>
+<h3>2) Default vs overridden `toString()`</h3>
+<pre class='code'>class Student {
+    String name = &quot;Durga&quot;;
+    // no toString override → Object.toString() → Student@hex
+}
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student();
+        System.out.println(s);              // Student@... (default)
+
+        String str = new String(&quot;Durga&quot;);
+        System.out.println(str);            // Durga — String overrides toString
+
+        Integer i = Integer.valueOf(10);
+        System.out.println(i);              // 10 — wrapper overrides toString
+    }
+}</pre>
+<h3>3) `new String` vs literal — heap vs SCP</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s1 = new String(&quot;durga&quot;);  // heap object + SCP literal &quot;durga&quot;
+        String s2 = new String(&quot;durga&quot;);  // another heap object, same SCP literal
+        String s3 = &quot;durga&quot;;              // SCP only
+
+        System.out.println(s1 == s2);       // false — different heap objects
+        System.out.println(s1 == s3);       // false — heap vs SCP
+        System.out.println(s2 == s3);       // false — heap vs SCP
+        System.out.println(s1.equals(s3));  // true — content comparison
+    }
+}</pre>
+<h3>4) Compile-time vs runtime string concatenation</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s3 = &quot;you cannot change me&quot;;
+
+        String s5 = &quot;you cannot&quot; + &quot; change me&quot;;  // compile-time fold → SCP
+        System.out.println(s3 == s5);             // true
+
+        String s6 = &quot;you cannot&quot;;                 // normal variable
+        String s7 = s6 + &quot; change me&quot;;            // runtime concat → heap
+        System.out.println(s3 == s7);             // false
+
+        final String s8 = &quot;you cannot&quot;;
+        String s9 = s8 + &quot; change me&quot;;            // final → compile-time fold
+        System.out.println(s3 == s9);             // true
+    }
+}</pre>
+<h3>5) StringBuffer capacity — default 16 and `String` constructor rule</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        StringBuffer sb1 = new StringBuffer();
+        System.out.println(sb1.capacity());       // 16
+
+        StringBuffer sb2 = new StringBuffer(&quot;Durga&quot;);
+        System.out.println(sb2.length());         // 5
+        System.out.println(sb2.capacity());         // 21 → length + 16
+    }
+}</pre>
+<h3>6) StringBuffer growth formula</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(&quot;abcdefghijklmnop&quot;);   // 16 chars — capacity still 16
+        System.out.println(sb.capacity()); // 16
+
+        sb.append(&quot;q&quot;);                    // 17th char triggers resize
+        System.out.println(sb.capacity()); // 34 → (16 + 1) * 2
+    }
+}</pre>
+<h3>7) String vs StringBuffer vs StringBuilder</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // Fixed content, no frequent changes → String
+        String city = &quot;Hyderabad&quot;;
+
+        // Content changes, thread safety needed → StringBuffer (synchronized)
+        StringBuffer sb = new StringBuffer(&quot;Durga&quot;);
+        sb.append(&quot;soft&quot;);
+
+        // Content changes, single-threaded → StringBuilder (faster, not synchronized)
+        StringBuilder sbd = new StringBuilder(&quot;Durga&quot;);
+        sbd.append(&quot;soft&quot;);
+
+        System.out.println(city);
+        System.out.println(sb);    // Durgasoft
+        System.out.println(sbd);   // Durgasoft
+    }
+}</pre>
+<h3>8) Wrapper Boolean String constructor trap</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Boolean x = new Boolean(&quot;yes&quot;);
+        Boolean y = new Boolean(&quot;no&quot;);
+        System.out.println(x);              // false
+        System.out.println(y);              // false
+        System.out.println(x.equals(y));    // true — both stored as false internally
+        // String-arg rule: only case-insensitive &quot;true&quot; → true; everything else → false
+    }
+}</pre>
+<h3>9) Autoboxing cache — `==` on Integer (in range vs out of range)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Integer a = 127;
+        Integer b = 127;
+        System.out.println(a == b);         // true — cache -128..127
+
+        Integer c = 128;
+        Integer d = 128;
+        System.out.println(c == d);         // false — outside cache, two objects
+
+        Integer e = new Integer(10);
+        Integer f = 10;
+        System.out.println(e == f);         // false — new bypasses cache
+        System.out.println(e.equals(f));    // true — use equals for value
+    }
+}</pre>
+<h3>10) `==` vs `equals()` — String vs StringBuffer type rules</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s1 = new String(&quot;durga&quot;);
+        String s2 = new String(&quot;durga&quot;);
+        StringBuffer sb1 = new StringBuffer(&quot;durga&quot;);
+        StringBuffer sb2 = new StringBuffer(&quot;durga&quot;);
+
+        System.out.print(s1 == s2);         // false
+        System.out.print(s1.equals(s2));    // true — String overrides equals
+        System.out.print(sb1 == sb2);        // false
+        System.out.print(sb1.equals(sb2));  // false — StringBuffer does NOT override equals
+        // System.out.print(s1 == sb1);     // CE: incomparable types String and StringBuffer
+        System.out.print(s1.equals(sb1));    // false — no error, unrelated types
+    }
+}</pre>
+<h3>11) `equals()`–`hashCode()` contract — override together</h3>
+<pre class='code'>import java.util.*;
+
+class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Person p) {
+            return name.equals(p.name) &amp;&amp; age == p.age;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode() + age;  // same fields as equals()
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Person p1 = new Person(&quot;Shiva&quot;, 30);
+        Person p2 = new Person(&quot;Shiva&quot;, 30);
+        System.out.println(p1.equals(p2));           // true
+        System.out.println(p1.hashCode() == p2.hashCode()); // true — contract satisfied
+        Set&lt;Person&gt; set = new HashSet&lt;&gt;();
+        set.add(p1);
+        System.out.println(set.contains(p2));        // true — hash bucket works
+    }
+}</pre>
+<h3>12) `intern()` — move from heap reference to SCP</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s1 = new String(&quot;durga&quot;);   // s1 → heap; &quot;durga&quot; also in SCP
+        String s2 = s1.intern();           // s2 → SCP reference for &quot;durga&quot;
+        String s3 = &quot;durga&quot;;               // s3 → SCP
+
+        System.out.println(s1 == s2);        // false — heap vs SCP
+        System.out.println(s2 == s3);      // true — both SCP
+
+        String s4 = new String(&quot;durga&quot;).concat(&quot;soft&quot;); // runtime heap only
+        String s5 = s4.intern();           // creates &quot;durgasoft&quot; in SCP if missing
+        String s6 = &quot;durgasoft&quot;;
+        System.out.println(s4 == s5);      // false — heap vs SCP
+        System.out.println(s5 == s6);        // true
+    }
+}</pre>
+<h2>How to use this file</h2>
+<ol><li>Prefer videos 105–111 and 113–119 (and their note files) for board-level study.</li></ol>
+<ol><li>Use this file when you landed on the mega upload at position 112 and need a map + OCJP checklist.</li></ol>
+<ol><li>Do not expect a minute-by-minute transcript here — captions for P5tFJ9umhvk are not usable for that purpose.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 112 of 203</td></tr>
+<tr><td>Series</td><td>java.lang package (mega compilation)</td></tr>
+<tr><td>Topic</td><td>String, StringBuffer &amp; StringBuilder for JAVA Certification &amp; Interviews</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>6h 33m 07s (23587 seconds)</td></tr>
+<tr><td>Video ID</td><td>P5tFJ9umhvk</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=P5tFJ9umhvk</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Compilation topic (java.lang stretch)</th><th>Playlist #</th><th>Video ID</th><th>Individual title (short)</th><th>Detailed notes file</th></tr>
+<tr><td>java.lang intro; Object hierarchy; toString()</td><td>105</td><td>-qrKA1aWMZs</td><td>java.lang Part-1 — Introduction, Object, toString()</td><td>notes/chunk-101-120/105-java-lang-intro.doc / .docx</td></tr>
+<tr><td>Object class — hashCode()</td><td>106</td><td>r6G5Pz0yMH4</td><td>java.lang Part-2 — Object, Hashcode()</td><td>Component video 106 (same playlist); notes may be under chunk-101-120 when present</td></tr>
+<tr><td>Object class — equals(); overridden methods</td><td>107</td><td>izDt7L4009k</td><td>java.lang Part-3 — equals(), overridden methods</td><td>Component video 107 (same playlist)</td></tr>
+<tr><td>Object class — finalize(), getClass(), notify()</td><td>108</td><td>3gQdOltJ89k</td><td>java.lang Part-4 — finalize(), getClass(), notify()</td><td>Component video 108 (same playlist)</td></tr>
+<tr><td>String class — introduction &amp; immutability</td><td>109</td><td>cI2JVbEWGy8</td><td>java.lang Part-5 — Strings class</td><td>Component video 109 (same playlist)</td></tr>
+<tr><td>String class — constructors</td><td>110</td><td>7zeOxAl19bg</td><td>java.lang Part-6 — Strings class constructors</td><td>Component video 110 (same playlist)</td></tr>
+<tr><td>StringBuffer &amp; StringBuilder — constructors &amp; methods</td><td>111</td><td>JEaVfaRJiZw</td><td>java.lang Part-7 — StringBuffer constructors</td><td>notes/chunk-101-120/111-strings-constructor.doc / .docx</td></tr>
+<tr><td>Wrapper classes — objects, constructors, valueOf, xxxValue</td><td>113</td><td>UHq63fU4NVU</td><td>java.lang Part-8 — wrapper class, wrapper objects</td><td>notes/chunk-101-120/113-wrapper-classes.doc / .docx</td></tr>
+<tr><td>Wrapper classes — utility methods (parseXxx, static toString)</td><td>114</td><td>pmemJ6QfWjo</td><td>java.lang Part-9 — wrapper class utility methods</td><td>Component video 114 (same playlist)</td></tr>
+<tr><td>Autoboxing &amp; autounboxing — definitions, cache buffer</td><td>115</td><td>gk1bQSgiBpw</td><td>java.lang Part-10 — Autoboxing, Autounboxing-1</td><td>notes/chunk-101-120/115-autoboxing-unboxing.doc / .docx</td></tr>
+<tr><td>Autoboxing &amp; autounboxing — advanced traps</td><td>116</td><td>tcHVFR5OzD8</td><td>java.lang Part-11 — Autoboxing, Autounboxing-2</td><td>Component video 116 (same playlist)</td></tr>
+<tr><td>Object class — == vs equals(); equals()–hashCode() contract</td><td>117</td><td>wJgua6AobQU</td><td>java.lang Part-12 — equals(), Hashcode()</td><td>notes/chunk-101-120/117-object-class-part-12.doc / .docx</td></tr>
+<tr><td>Object class — clone() &amp; Cloneable</td><td>118</td><td>L-p-RGTNrZg</td><td>java.lang Part-13 — clone()</td><td>notes/chunk-101-120/118-object-class-part-13.doc / .docx</td></tr>
+<tr><td>String class — heap vs SCP, intern(), compile-time concat</td><td>119</td><td>oEAiBx_06SA</td><td>java.lang Part-14 — String class</td><td>notes/chunk-101-120/119-string-class-part-14.doc / .docx</td></tr>
+</table>
+</body></html>

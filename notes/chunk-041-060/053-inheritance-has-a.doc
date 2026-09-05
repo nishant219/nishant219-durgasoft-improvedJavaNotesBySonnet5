@@ -1,0 +1,812 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>053-inheritance-has-a</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 053 — Inheritance HAS-A relationship</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP:OOPs(Object Oriented Programming)Part-3 || Inheritance||has a relationship</p>
+<p>ASR decode key (Whisper): has-ge / has your / hazard / hasier / haze / as a / HAS A = HAS-A; easier / isier / EAS / is a = IS-A; Indian / Injana / Ingen / Injun / year in general = Engine; Neo-engine = new Engine(); irrigation = aggregation; deportment = department; provisor / proofy / provesor = professor; Yamannam / Yaman / young one / Yamana / Yamone = m1; why / voice / word / War = void; sop / system data = System.out.println; T-Shord = this word; bover rider = overriding; Polymer Belgium = polymorphism; keep sabading / keep supporting = board dictation; intra-year / entire year / entry room = interview room; anathema / atrimat = nothing but; re-eosability = reusability; Uchi Kivot = which keyword; Vithilna = within; Abjome = observe; ABS / A B S = abs (absolute value); LABS / L A B S = labs; FABS / F A B S = fabs; path of = part of.</p>
+<p>This is OOPs Part 3 after IS-A (Video 052). Board flow: HAS-A → composition vs aggregation → IS-A vs HAS-A → method signature → start of method overloading.</p>
+<h3>00:06 — Recap: last session was IS-A (inheritance)</h3>
+<p>Last session covered the IS-A relationship — the inheritance concept. Several important loopholes of IS-A were already covered.</p>
+<p>Next relationship to discuss: HAS-A. Very important for the interview room. Compulsory: clear clarity about HAS-A.</p>
+<p>What is HAS-A? Purpose? Advantage? These are the talking points.</p>
+<h3>00:44 — HAS-A is the most commonly used relation (often without noticing)</h3>
+<p>IS-A and HAS-A are both used. Most people fear HAS-A terminology — but of course IS-A is common; the most commonly used relationship in day-to-day coding is actually HAS-A. Unfortunately we often don’t name it; we just use it.</p>
+<h3>01:22 — Everyday example: Student has a name / roll number</h3>
+<p>Even in earlier classes this pattern appeared repeatedly:</p>
+<pre class='code'>class Student {
+    String name;
+    int rollno;
+}</pre>
+<p>What is the relation between Student and name? Student has-a name. Student has-a roll number.</p>
+<p>Is that IS-A or HAS-A? HAS-A — but we don’t always say the word; we are already using HAS-A. How many usages? HAS-A relationship only. Is it clear?</p>
+<h3>02:03 — Advantage of HAS-A: Car composed from many vendors</h3>
+<p>Biggest advantage story: suppose you want to build a car. Many cars exist (Honda City, etc.). To build a car, a number of components are required.</p>
+<p>Don’t feel every component of a Honda City is from Honda only. Wheels, engine, etc. may come from different vendors. Honda people compose / assemble those parts into one car object and release it to the market.</p>
+<p>Building a big object from several individual components = composition or aggregation.</p>
+<h3>03:19 — Engine class written once; Car holds Engine reference</h3>
+<p>For every car, engine functionality is required. Write Engine separately with engine-specific functionality. Wherever engine functionality is required: create an object and call that functionality. Happily available everywhere Engine is required.</p>
+<pre class='code'>class Engine {
+    void start() {
+        System.out.println(&quot;engine start&quot;);
+    }
+
+    void stop() {
+        System.out.println(&quot;engine stop&quot;);
+    }
+}</pre>
+<p>Car requires engine functionality → create Engine object:</p>
+<pre class='code'>class Car {
+    Engine e = new Engine(); // Car HAS-A Engine reference
+}</pre>
+<p>Relation between Car and Engine? Car has-a Engine reference. By using e we can call Engine methods — we are not required to redefine those functionalities. This relationship is composition / HAS-A.</p>
+<pre class='code'>class Engine {
+    void start() {
+        System.out.println(&quot;engine start&quot;);
+    }
+}
+
+class Car {
+    Engine e = new Engine();
+
+    void drive() {
+        e.start(); // reuse Engine functionality via HAS-A
+        System.out.println(&quot;car driving&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        new Car().drive();
+        // prints engine start
+        // prints car driving
+    }
+}</pre>
+<h3>05:28 — Point 1: HAS-A = composition or aggregation</h3>
+<p>First point about HAS-A relationship: it is also known as composition or aggregation. We are composing a car with several individual objects.</p>
+<h3>05:56 — Point 2: no specific keyword (mostly `new`)</h3>
+<p>Second: by using which keyword do we implement HAS-A? There is no specific keyword to implement HAS-A.</p>
+<ul><li>If it is an instance method / instance functionality: create an object (new) and make functionality available.</li></ul>
+<ul><li>If it is a static method: even object is not required.</li></ul>
+<p>Most of the time we depend on the `new` operator / keyword.</p>
+<pre class='code'>class Engine {
+    static void serviceTip() {
+        System.out.println(&quot;change oil&quot;);
+    }
+
+    void start() {
+        System.out.println(&quot;start&quot;);
+    }
+}
+
+class Car {
+    Engine e = new Engine(); // HAS-A via new (instance)
+
+    void demo() {
+        e.start();
+        Engine.serviceTip(); // static — object not required
+        // prints start
+        // prints change oil
+    }
+}</pre>
+<h3>06:31 — Point 3: biggest advantage = code reusability</h3>
+<p>Write engine functionality once. Wherever engine functionality is required: happily create an object and call that functionality. Write once, use many times — code reusability. Same advantage family as IS-A, but achieved via HAS-A.</p>
+<h3>07:09 — Summary of three HAS-A points (board)</h3>
+<ol><li>HAS-A is also known as composition or aggregation.</li></ol>
+<ol><li>No specific keyword to implement HAS-A; most of the time we depend on `new`.</li></ol>
+<ol><li>Main advantage of HAS-A: code reusability.</li></ol>
+<pre class='code'>class Engine {
+    void start() {
+        System.out.println(&quot;written once in Engine&quot;);
+    }
+}
+
+class Car {
+    Engine e = new Engine(); // HAS-A — composition / aggregation
+}
+
+class Bike {
+    Engine e = new Engine(); // reuse Engine again
+}
+
+class Test {
+    public static void main(String[] args) {
+        new Car().e.start();
+        new Bike().e.start();
+        // prints written once in Engine
+        // prints written once in Engine
+    }
+}</pre>
+<h3>09:46 — Board example again: Car has Engine reference</h3>
+<p>Take both classes. Class Car; Engine e = new Engine(); — Car has-a Engine reference. Make sure terminology is clear: Car has-a Engine reference. Relation between Car and Engine = HAS-A.</p>
+<pre class='code'>class Engine {
+}
+
+class Car {
+    Engine e = new Engine(); // Car HAS-A Engine reference
+}
+class Engine {
+    String type = &quot;petrol&quot;;
+}
+
+class Car {
+    Engine e = new Engine();
+}
+
+class Test {
+    public static void main(String[] args) {
+        Car c = new Car();
+        System.out.println(c.e.type);
+        // prints petrol
+    }
+}</pre>
+<h3>11:04 — Interview story: composition vs aggregation (SCJP vs interview)</h3>
+<p>For the SCJP/OCJP exam, up to the three points above is enough (composition/aggregation names, keyword, advantage).</p>
+<p>But a student went to an interview. Interviewer asked: explain IS-A and HAS-A. Student answered: IS-A is inheritance; HAS-A is also known as composition or aggregation — same board points.</p>
+<p>Then interviewer: What is the difference between composition and aggregation? Student said both are same / both are HAS-A — rejected / negative feeling. Student came back: “Sir, you taught both as HAS-A; today they rejected my answer. Tell me the difference.”</p>
+<p>Very important: both are HAS-A, but there is a small minor difference between composition and aggregation. One student missed a job over this half-point.</p>
+<h3>13:18 — Composition: University and Department (strong association)</h3>
+<p>Observe carefully. There is one University. Within the university there are several departments (CSE, ECE, Civil, Mechanical, …).</p>
+<p>Relation: University has-a department.</p>
+<ul><li>University = container object</li></ul>
+<ul><li>Department objects = contained objects</li></ul>
+<p>Suppose tomorrow the university is involved in illegal activity and government closes the university. If the university closes, automatically all departments close. Department is part of university. Without existing university, there is no chance of existing department.</p>
+<p>Without existing container object, if there is no chance of existing contained objects → container and contained are strongly associated. This strong association is nothing but composition.</p>
+<pre class='code'>class Department {
+    String name;
+
+    Department(String name) {
+        this.name = name;
+    }
+}
+
+class University {
+    // container holds contained objects directly
+    Department cse = new Department(&quot;CSE&quot;);
+    Department ece = new Department(&quot;ECE&quot;);
+    Department civil = new Department(&quot;Civil&quot;);
+    // without University, these departments do not exist as university departments
+}</pre>
+<p>Board line (dictated):</p>
+<p>Without existing container object, if there is no chance of existing contained objects, then container and contained objects are strongly associated. This strong association is nothing but composition.</p>
+<p>Example: University consists of several departments. Without existing university → no chance of existing department. Hence University and Department are strongly associated → composition.</p>
+<pre class='code'>class Department {
+    String name;
+
+    Department(String name) {
+        this.name = name;
+    }
+
+    void close() {
+        System.out.println(name + &quot; closed&quot;);
+    }
+}
+
+class University {
+    Department d1 = new Department(&quot;CSE&quot;);
+    Department d2 = new Department(&quot;ECE&quot;);
+
+    void shutDown() {
+        // closing container → contained go with it (composition story)
+        d1.close();
+        d2.close();
+        System.out.println(&quot;university closed&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        new University().shutDown();
+        // prints CSE closed
+        // prints ECE closed
+        // prints university closed
+    }
+}</pre>
+<h3>20:34 — Aggregation: Department and Professor (weak association)</h3>
+<p>Second part: aggregation.</p>
+<p>There is one Department. Within that department several professors work (P1, P2, … Pn).</p>
+<p>Suppose government / college decides to close the department (example: IT / MCA demand falls). If the department closes, do professors automatically “close”? No. University can transfer professors to another department, or release them so they join another university.</p>
+<p>Without existing department (container), there may still be a chance of existing professor objects (contained). Then container and contained are weakly associated. That weak association is nothing but aggregation.</p>
+<ul><li>Composition: objects strongly associated</li></ul>
+<ul><li>Aggregation: objects weakly associated</li></ul>
+<p>Department = container; Professor = contained. Without existing department, professors can still exist (other department / other university).</p>
+<pre class='code'>class Professor {
+    String name;
+
+    Professor(String name) {
+        this.name = name;
+    }
+
+    void teach() {
+        System.out.println(name + &quot; teaching&quot;);
+    }
+}
+
+class Department {
+    // container holds references — professors can live outside
+    Professor p1;
+    Professor p2;
+
+    Department(Professor p1, Professor p2) {
+        this.p1 = p1;
+        this.p2 = p2;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Professor a = new Professor(&quot;P1&quot;);
+        Professor b = new Professor(&quot;P2&quot;);
+        Department it = new Department(a, b);
+        // close department conceptually — professors still usable
+        it = null;
+        a.teach();
+        b.teach();
+        // prints P1 teaching
+        // prints P2 teaching
+    }
+}</pre>
+<p>Board line (dictated):</p>
+<p>Without existing container object, if there is a chance of existing contained objects, then container and contained objects are weakly associated. This weak association is nothing but aggregation.</p>
+<p>Example: Department consists of several professors. Without existing department, there may be a chance of existing professor objects. Hence Department and Professor are weakly associated → aggregation.</p>
+<pre class='code'>class Professor {
+    String name;
+
+    Professor(String name) {
+        this.name = name;
+    }
+}
+
+class Department {
+    Professor[] staff; // just holds references
+
+    Department(Professor[] staff) {
+        this.staff = staff;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Professor[] list = {
+            new Professor(&quot;P1&quot;),
+            new Professor(&quot;P2&quot;),
+            new Professor(&quot;Pn&quot;)
+        };
+        Department d = new Department(list);
+        System.out.println(d.staff[0].name);
+        // prints P1
+        // department can close; Professor objects can move elsewhere
+    }
+}</pre>
+<h3>28:36 — Note 1: strong vs weak</h3>
+<ul><li>In composition, objects are strongly associated.</li></ul>
+<ul><li>In aggregation, objects are weakly associated.</li></ul>
+<pre class='code'>// COMPOSITION — strong: contained dies with container (conceptual)
+class University {
+    private final Department dept = new Department(&quot;CSE&quot;);
+}
+
+// AGGREGATION — weak: container only uses contained
+class Department {
+    private Professor professor; // reference only; professor may outlive department
+
+    void assign(Professor p) {
+        this.professor = p;
+    }
+}</pre>
+<h3>29:55 — Note 2: holds object vs holds reference</h3>
+<p>Special care. Another difference:</p>
+<ul><li>In composition: contained objects are directly within the container (part of the whole).</li></ul>
+<ul><li>In aggregation: container object just holds the reference of contained objects.</li></ul>
+<p>Department should be there within the university. But a professor can provide service even from outside; after classes may leave; same person can work in this department and another department. Container just holds references.</p>
+<pre class='code'>class Engine {
+    // part of Car — composition style (owned)
+}
+
+class Car {
+    private Engine engine = new Engine(); // holds / owns contained object directly
+}
+
+class Professor {
+}
+
+class Department {
+    private Professor professor; // holds just a reference (aggregation)
+
+    void setProfessor(Professor p) {
+        this.professor = p;
+    }
+}</pre>
+<p>Board (dictated):</p>
+<p>In composition, container object holds directly the contained objects.</p>
+<p>Whereas in aggregation, container object holds just the references of contained objects.</p>
+<p>If anyone in interview asks difference between composition and aggregation — be in a position to answer.</p>
+<h3>33:00 — Purpose of IS-A; when IS-A vs when HAS-A</h3>
+<p>Main purpose of IS-A? Reusability of code.</p>
+<p>When should we go for IS-A and when for HAS-A?</p>
+<p>If total functionality of a class is required (and that functionality is part of my requirement) → go for IS-A.</p>
+<p>Example: total Person class functionality must be required for Student. Person functionality is part of Student → Student IS-A Person (extends). Complete Person functionality by default available to Student.</p>
+<pre class='code'>class Person {
+    String name;
+    int age;
+
+    void walk() {
+        System.out.println(&quot;person walk&quot;);
+    }
+
+    void talk() {
+        System.out.println(&quot;person talk&quot;);
+    }
+}
+
+class Student extends Person {
+    // total Person functionality by default available — IS-A
+    int rollno;
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student();
+        s.walk();
+        s.talk();
+        // prints person walk
+        // prints person talk
+    }
+}</pre>
+<p>If not total functionality — e.g. Test class contains 100 methods; Demo needs only 1 or 2 → create Test object and call required methods (t.m1(), …). That is HAS-A (part of functionality).</p>
+<pre class='code'>class Test {
+    void m1() {
+        System.out.println(&quot;m1&quot;);
+    }
+
+    void m2() {
+        System.out.println(&quot;m2&quot;);
+    }
+
+    // ... imagine ~100 methods
+    void m100() {
+        System.out.println(&quot;m100&quot;);
+    }
+}
+
+class Demo {
+    Test t = new Test(); // HAS-A — only need part of Test
+
+    void use() {
+        t.m1(); // only what we need
+        // prints m1
+        // do NOT inherit all 100 methods via extends
+    }
+}</pre>
+<p>Rule:</p>
+<ul><li>Want total functionality of a class automatically as part of my type → IS-A</li></ul>
+<ul><li>Want part of the functionality (call 1–2 methods) → HAS-A</li></ul>
+<p>Both concepts ultimately serve reusability (write once, use). Minor difference: people should be aware.</p>
+<h3>36:22 — Board: IS-A vs HAS-A</h3>
+<p>If we want the total functionality of a class automatically → go for IS-A.</p>
+<p>Example diagram: Person class functionality, total functionality required for Student → relation is IS-A.</p>
+<pre class='code'>class Person {
+    void eat() {
+        System.out.println(&quot;eat&quot;);
+    }
+}
+
+class Student extends Person {
+    // complete functionality of Person required for Student → IS-A
+}</pre>
+<p>If we want part of the functionality → go for HAS-A.</p>
+<p>Example: Test class contains 100 methods; within Demo I require 1 or 2 → create object of Test and call required methods, not total methods.</p>
+<pre class='code'>class Utility {
+    void m1() {
+        System.out.println(&quot;need this&quot;);
+    }
+
+    void m2() {
+        System.out.println(&quot;need this too&quot;);
+    }
+
+    void m3() { /* ... */ }
+    // ... many more not needed by client
+}
+
+class Client {
+    Utility u = new Utility(); // HAS-A — part of functionality
+
+    void run() {
+        u.m1();
+        u.m2();
+        // prints need this
+        // prints need this too
+    }
+}</pre>
+<ul><li>Total functionality automatically → IS-A</li></ul>
+<ul><li>Specific / part functionality only → HAS-A</li></ul>
+<p>That’s all about IS-A and HAS-A for this module.</p>
+<h3>39:39 — Bridge topic before overloading/overriding: method signature</h3>
+<p>Next major concepts will be overloading and overriding. Before that, one concept must be crystal clear because it will be used repeatedly: method signature.</p>
+<ul><li>In overloading, method signatures must be different.</li></ul>
+<ul><li>In overriding, method signatures must be same.</li></ul>
+<p>First: clear clarity what method signature is.</p>
+<h3>40:34 — What is method signature in Java?</h3>
+<p>Example method:</p>
+<pre class='code'>public static int m1(int i, float f) {
+    return 10;
+}</pre>
+<p>What is the signature? Do not say the whole declaration is the signature.</p>
+<p>Method declaration includes: modifiers, return type, method name, argument list, …</p>
+<p>Method signature consists of: method name followed by argument types.</p>
+<ul><li>Return type is not part of method signature in Java (in C/C++ return type is part of signature — Java differs).</li></ul>
+<ul><li>Modifiers are not part of method signature.</li></ul>
+<p>For the example above, signature is: `m1(int, float)`.</p>
+<pre class='code'>class Demo {
+    // declaration: modifiers + return type + name + args
+    public static int m1(int i, float f) {
+        return 10;
+    }
+    // signature in Java: m1(int, float)
+    // NOT part of signature: public, static, int (return type)
+}</pre>
+<h3>42:15 — Board: method signature definition</h3>
+<p>In Java, method signature consists of method name followed by argument types.</p>
+<pre class='code'>public static int m1(int i, float f) {
+    return 0;
+}
+// signature → m1(int, float)
+class Sample {
+    void process(String s, int n) {
+    }
+    // signature: process(String, int)
+}</pre>
+<h3>43:41 — Return type is not part of method signature in Java</h3>
+<p>Board point (repeated): Return type is not a part of method signature in Java.</p>
+<pre class='code'>class Check {
+    int calc(int x) {
+        return x;
+    }
+    // signature: calc(int) — return type int is NOT in the signature
+}</pre>
+<h3>44:24 — Who uses method signature? Compiler (method table)</h3>
+<p>Who is going to use the method signature? Where is it used?</p>
+<p>Example class Test with two methods:</p>
+<pre class='code'>class Test {
+    public void m1(int i) {
+    }
+
+    public void m2(String s) {
+    }
+}</pre>
+<p>How many methods? Two — m1(int) and m2(String).</p>
+<p>For every class, compiler maintains a method table. For class Test, signatures in the table:</p>
+<ul><li>m1(int)</li></ul>
+<ul><li>m2(String)</li></ul>
+<h3>45:52 — Resolving calls with the method table</h3>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        System.out.println(&quot;m1 int&quot;);
+    }
+
+    public void m2(String s) {
+        System.out.println(&quot;m2 String&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10);
+        // prints m1 int
+        t.m2(&quot;Durga&quot;);
+        // prints m2 String
+    }
+}</pre>
+<p>Compiler analysis for t.m1(10):</p>
+<ul><li>Calling m1 with int argument</li></ul>
+<ul><li>On t, which is Test type</li></ul>
+<ul><li>In Test’s method table: is there m1(int)? Yes → valid call</li></ul>
+<p>For t.m2(&quot;Durga&quot;):</p>
+<ul><li>Calling m2 with String</li></ul>
+<ul><li>Test method table has m2(String)? Yes → legal</li></ul>
+<h3>47:13 — Invalid call: cannot find symbol</h3>
+<pre class='code'>class Test {
+    public void m1(int i) {
+    }
+
+    public void m2(String s) {
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m3(10.5);
+        // CE: cannot find symbol
+        // symbol: method m3(double)
+        // location: class Test
+    }
+}</pre>
+<p>10.5 is double by default. Calling m3(double) on Test — method table has no such signature → compile error: cannot find symbol — method m3(double) in class Test.</p>
+<p>That missing thing is the method signature. Compiler uses method signatures while invoking / resolving method calls.</p>
+<h3>49:02 — Board conclusion: compiler resolves method calls via signature</h3>
+<p>Compiler will use method signature to resolve method calls.</p>
+<pre class='code'>class Test {
+    void m1(int i) {
+        System.out.println(&quot;int&quot;);
+    }
+
+    void m2(String s) {
+        System.out.println(&quot;String&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1(10);       // OK — signature m1(int) found
+        t.m2(&quot;Durga&quot;);  // OK — signature m2(String) found
+        // t.m3(10.5);  // CE: cannot find symbol — method m3(double)
+    }
+}</pre>
+<h3>51:55 — Important conclusion: same signature not allowed in one class</h3>
+<p>Related conclusion — observe carefully.</p>
+<pre class='code'>class Test {
+    public void m1(int i) {
+    }
+
+    public int m1(int x) {
+        return 10;
+    }
+}</pre>
+<p>Valid or invalid? Invalid.</p>
+<p>Signature of first method: m1(int). Signature of second: also m1(int) (return type ignored). If you create Test t = new Test(); and call t.m1(10) — which method should respond? Ambiguity. Compiler objects: m1(int) already declared / already defined in Test.</p>
+<p>Within a class, two methods with the same signature are not allowed — even though return types are different. Even if one is abstract and one is static — still not allowed for same signature.</p>
+<p>By mistake if you try:</p>
+<pre class='code'>class Test {
+    public void m1(int i) {
+    }
+
+    public int m1(int x) {
+        return 10;
+        // CE: method m1(int) is already defined in Test
+    }
+}</pre>
+<h3>55:45 — Same example rewritten on board</h3>
+<pre class='code'>class Test {
+    public void m1(int i) {
+        // signature: m1(int)
+    }
+
+    public int m1(int x) {
+        return 10;
+        // signature: m1(int) — same
+        // CE: m1(int) is already defined in Test
+        // return type is NOT part of method signature
+    }
+}</pre>
+<p>That’s what method signature is — needed repeatedly for overloading / overriding.</p>
+<h3>58:45 — Next major concept: method overloading</h3>
+<p>When do we say two methods are overloaded?</p>
+<p>Two methods are said to be overloaded if and only if both methods have the same name but different argument types.</p>
+<p>Example: m1(int i) and m1(double d) — overloaded? Yes.</p>
+<pre class='code'>class Demo {
+    void m1(int i) {
+        System.out.println(&quot;int version&quot;);
+    }
+
+    void m1(double d) {
+        System.out.println(&quot;double version&quot;);
+    }
+    // same name, different argument types → overloaded methods
+}</pre>
+<h3>1:01:01 — Why overloading matters: C vs Java (abs)</h3>
+<p>Is overloading there in C? No.</p>
+<p>Purpose of abs: absolute value (ignore sign; not round/floor/ceil). abs(10.5) and abs(-10.5) → both 10.5.</p>
+<p>In C, abs is typically for int only. For long → need `labs`. For float → need `fabs`. Why? In C, two methods with same name but different argument types are not allowed (no overloading). Change in argument type → compulsory new method name → complexity of programming increases. Lack of overloading in C increases complexity.</p>
+<p>In Java, same name abs can be used for int, long, float, … — same name, different argument types = overloaded methods. Easier for the programmer — remember one name.</p>
+<pre class='code'>// C-style naming forced by lack of overloading (conceptual contrast)
+class CStyleAbs {
+    int abs(int i) {
+        return i &lt; 0 ? -i : i;
+    }
+
+    long labs(long l) { // different name required in C
+        return l &lt; 0 ? -l : l;
+    }
+
+    float fabs(float f) { // different name required in C
+        return f &lt; 0 ? -f : f;
+    }
+}
+// Java: overloading — same name, different argument types
+class JavaAbs {
+    int abs(int i) {
+        return i &lt; 0 ? -i : i;
+    }
+
+    long abs(long l) {
+        return l &lt; 0 ? -l : l;
+    }
+
+    float abs(float f) {
+        return f &lt; 0 ? -f : f;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        JavaAbs a = new JavaAbs();
+        System.out.println(a.abs(-10));
+        System.out.println(a.abs(-10L));
+        System.out.println(a.abs(-10.5f));
+        // prints 10
+        // prints 10
+        // prints 10.5
+    }
+}</pre>
+<h3>1:06:17 — Board: C language — no overloading</h3>
+<p>In C language, method overloading concept is not available. Hence we can’t declare multiple methods with the same name but different argument types. If there is change in argument type, compulsory we should go for new method name, which increases / encourages complexity of programming.</p>
+<pre class='code'>// illustrative C naming pattern (not real C)
+class CAbsDemo {
+    int abs(int i) {
+        return Math.abs(i);
+    }
+
+    long labs(long l) {
+        return Math.abs(l);
+    }
+
+    float fabs(float f) {
+        return Math.abs(f);
+    }
+}</pre>
+<h3>1:09:11 — Board: Java — overloaded methods</h3>
+<p>But in Java we can declare multiple methods with the same name but different argument types. Such methods are called overloaded methods.</p>
+<pre class='code'>class MathStyle {
+    int abs(int i) {
+        return i &lt; 0 ? -i : i;
+    }
+
+    long abs(long l) {
+        return l &lt; 0 ? -l : l;
+    }
+
+    float abs(float f) {
+        return f &lt; 0 ? -f : f;
+    }
+    // overloaded methods
+}</pre>
+<p>Having overloading concept in Java reduces complexity of programming / gives more flexibility to the programmer.</p>
+<h3>1:11:40 — Live example: three overloaded m1 methods</h3>
+<pre class='code'>class Test {
+    public void m1() {
+        System.out.println(&quot;no-arg method&quot;);
+    }
+
+    public void m1(int i) {
+        System.out.println(&quot;int-arg method&quot;);
+    }
+
+    public void m1(double d) {
+        System.out.println(&quot;double-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1();
+        // prints no-arg method
+        t.m1(10);
+        // prints int-arg method
+        t.m1(10.5);
+        // prints double-arg method
+    }
+}</pre>
+<p>Total how many methods? Three — same name, different argument types → overloaded methods.</p>
+<ul><li>t.m1() → no-arg version</li></ul>
+<ul><li>t.m1(10) → int-arg version</li></ul>
+<ul><li>t.m1(10.5) → double-arg version (10.5 is double)</li></ul>
+<h3>1:15:00 — Method resolution in overloading (important conclusion)</h3>
+<p>Here t reference type is Test; underlying object is Test — same. Sometimes parent reference / child object will appear later.</p>
+<p>In overloading, method resolution is always taken care of by the compiler based on reference type.</p>
+<p>If parent and child both have overloaded-related methods, which gets chance is decided by compile-time reference type (detail clarified in later parent–child examples).</p>
+<p>Hence method overloading is also considered as:</p>
+<ul><li>Compile-time polymorphism</li></ul>
+<ul><li>Static polymorphism</li></ul>
+<ul><li>Early binding</li></ul>
+<p>(because method binding happens at compile time)</p>
+<pre class='code'>class Test {
+    public void m1() {
+        System.out.println(&quot;no-arg&quot;);
+    }
+
+    public void m1(int i) {
+        System.out.println(&quot;int-arg&quot;);
+    }
+
+    public void m1(double d) {
+        System.out.println(&quot;double-arg&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test(); // reference type Test
+        t.m1();      // compiler picks m1() by reference type + args
+        t.m1(10);    // compiler picks m1(int)
+        t.m1(10.5);  // compiler picks m1(double)
+        // prints no-arg
+        // prints int-arg
+        // prints double-arg
+        // these three are overloaded methods
+    }
+}</pre>
+<h3>1:18:51 — Star this theory point</h3>
+<p>In overloading, method resolution always takes care by compiler based on reference type.</p>
+<p>Hence overloading is also considered as compile-time polymorphism / static polymorphism / early binding.</p>
+<p>Meaning of method resolution: which method has to execute when multiple candidates exist (parent/child, multiple overloads).</p>
+<ul><li>Overloading → compiler responsible, based on reference type (don’t worry about runtime object for resolution)</li></ul>
+<ul><li>(Preview) Overriding → method resolution based on runtime object; reference becomes “dummy” in that story — explained in overriding sessions</li></ul>
+<pre class='code'>class Parent {
+    void m1(int i) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class Child extends Parent {
+    void m1(double d) {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Parent p = new Child(); // parent reference, child object
+        p.m1(10);
+        // prints parent
+        // overloading resolution: compiler uses reference type Parent
+        // (full parent/child overloading cases — next sessions)
+    }
+}</pre>
+<h3>1:21:32 — Closing: basic idea of overloading; cases next session</h3>
+<p>This is the basic idea of overloading. Almost five or six cases will be explained next — each case important for interview and exam. Those cases = next session (Video 054).</p>
+<h2>Quick revision card</h2>
+<p>```java block count: 39</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 53 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 3</td></tr>
+<tr><td>Topic</td><td>Inheritance, HAS-A relationship</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 21m 57s</td></tr>
+<tr><td>Video ID</td><td>2GM56vHVLzM</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=2GM56vHVLzM</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th></th><th>Composition</th><th>Aggregation</th></tr>
+<tr><td>Association</td><td>Strong</td><td>Weak</td></tr>
+<tr><td>Lifetime</td><td>Without container → no contained</td><td>Without container → contained may still exist</td></tr>
+<tr><td>Holding</td><td>Holds contained object directly (part of)</td><td>Holds just references</td></tr>
+<tr><td>Example</td><td>University–Department</td><td>Department–Professor</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Takeaway</th></tr>
+<tr><td>HAS-A</td><td>Also composition / aggregation; no keyword (mostly new); advantage = reusability</td></tr>
+<tr><td>Composition</td><td>Strong association; without container → no contained (University–Department)</td></tr>
+<tr><td>Aggregation</td><td>Weak association; without container → contained may exist (Department–Professor)</td></tr>
+<tr><td>IS-A vs HAS-A</td><td>Total functionality → IS-A; part of functionality → HAS-A</td></tr>
+<tr><td>Method signature (Java)</td><td>method name + argument types; not return type / modifiers</td></tr>
+<tr><td>Same signature in one class</td><td>Not allowed (even if return types differ)</td></tr>
+<tr><td>Overloading</td><td>Same name, different argument types</td></tr>
+<tr><td>Overloading resolution</td><td>Compiler, based on reference type → compile-time / static polymorphism / early binding</td></tr>
+</table>
+</body></html>

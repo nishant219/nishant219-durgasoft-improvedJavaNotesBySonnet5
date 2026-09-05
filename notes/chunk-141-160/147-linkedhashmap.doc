@@ -1,0 +1,466 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>147-linkedhashmap</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 147 — Collections Part-12: LinkedHashMap, IdentityHashMap &amp; WeakHashMap</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This lecture completes the three small variations of HashMap that Sir promised at the end of Video 146. All three are child/special-case implementations of HashMap — same API (methods + constructors), with one or two behavioral differences each.</p>
+<p>What this session covers (~62 minutes):</p>
+<ol><li>LinkedHashMap — insertion order preserved (parallel to LinkedHashSet)</li></ol>
+<ol><li>Prerequisite recap: `==` vs `equals()` — reference vs content comparison</li></ol>
+<ol><li>IdentityHashMap — uses == (not equals()) to detect duplicate keys</li></ol>
+<ol><li>Prerequisite recap: Garbage Collection + `finalize()`</li></ol>
+<ol><li>WeakHashMap — weak keys; GC can reclaim entries when no external references remain</li></ol>
+<p>Closing summary (Sir&#x27;s words): IdentityHashMap, normal HashMap, LinkedHashMap — all are exactly the same with small small differences. Master the difference table; that is the entire exam story.</p>
+<h2>00:05 — Roadmap: Three HashMap variations</h2>
+<p>After HashMap and HashMap-vs-Hashtable (Video 146), Sir moves to small variations of HashMap:</p>
+<p>Sir&#x27;s framing: &quot;These are exactly same as HashMap with small small differences.&quot;</p>
+<h2>00:30 — LinkedHashMap: The HashSet / LinkedHashSet analogy</h2>
+<h3>Parallel from Set hierarchy (critical memory hook)</h3>
+<p>Sir connects to prior HashSet session:</p>
+<p>Same pattern applies to Map:</p>
+<p>Exam mantra: If you know HashSet vs LinkedHashSet, you already know 80% of HashMap vs LinkedHashMap.</p>
+<h2>01:53 — LinkedHashMap: Core conclusions (copy to notes)</h2>
+<h3>Point 1: Inheritance</h3>
+<pre class='code'>// LinkedHashMap extends HashMap
+class LinkedHashMap extends HashMap { ... }</pre>
+<p>LinkedHashMap is the child class of HashMap.</p>
+<h3>Point 2: Same as HashMap except listed differences</h3>
+<p>It is exactly same as HashMap (including methods and constructors) except the following differences.</p>
+<p>All HashMap methods work identically: put, get, remove, keySet, entrySet, null key rules, load factor, etc. Only ordering and internal linking differ.</p>
+<h3>Point 3: The three differences (comparison table)</h3>
+<p>That&#x27;s all — Sir explicitly says no other differences between HashMap and LinkedHashMap.</p>
+<h3>How the hybrid structure works (conceptual)</h3>
+<p>Hash table (for O(1) lookup by hash code)
+    +
+Doubly-linked list (maintains insertion-order chain across buckets)
+
+Bucket[0] → entry A ←→ entry C ←→ entry B ←→ ...
+Bucket[1] → ...</p>
+<ul><li>Hash table gives fast get/put by key hash.</li></ul>
+<ul><li>Linked list thread maintains the order in which entries were inserted.</li></ul>
+<ul><li>When you iterate or print Map.toString(), LinkedHashMap walks the linked list — hence insertion order in output.</li></ul>
+<h2>07:18 — Demo 1: HashMap vs LinkedHashMap (insertion order)</h2>
+<p>Sir reuses the HashMap demo program from Video 146 notes. Only the map declaration changes.</p>
+<h3>Program skeleton</h3>
+<pre class='code'>import java.util.*;
+
+class LinkedHashMapDemo {
+    public static void main(String[] args) {
+        // Case 1: HashMap
+        Map m = new HashMap();
+        m.put(&quot;Chiranjeevi&quot;, 700);
+        m.put(&quot;Balakrishna&quot;, 800);
+        m.put(&quot;Venkatesh&quot;, 200);
+        m.put(&quot;Nagarjuna&quot;, 500);
+        System.out.println(m);
+
+        // Case 2: Replace HashMap with LinkedHashMap — ONLY THIS LINE CHANGES
+        // Map m = new LinkedHashMap();
+        // ... same put() calls ...
+        // System.out.println(m);
+    }
+}</pre>
+<h3>Insertion order (how keys were added)</h3>
+<ol><li>Chiranjeevi → 700</li></ol>
+<ol><li>Balakrishna → 800</li></ol>
+<ol><li>Venkatesh → 200</li></ol>
+<ol><li>Nagarjuna → 500</li></ol>
+<h3>Output comparison</h3>
+<p>HashMap output (NOT insertion order):</p>
+<pre class='code'>{Nagarjuna=500, Venkatesh=200, Balakrishna=800, Chiranjeevi=700}</pre>
+<p>Order depends on hash codes of key strings — not the order you called put().</p>
+<p>LinkedHashMap output (insertion order preserved):</p>
+<pre class='code'>{Chiranjeevi=700, Balakrishna=800, Venkatesh=200, Nagarjuna=500}</pre>
+<p>Exactly the order keys were inserted.</p>
+<h3>Board note (Sir dictates)</h3>
+<p>In the above HashMap program, if we replace HashMap with LinkedHashMap, then output is:</p>
+<pre class='code'>{Chiranjeevi=700, Balakrishna=800, Venkatesh=200, Nagarjuna=500}</pre>
+<p>— insertion order is preserved.</p>
+<h3>Key takeaways</h3>
+<h2>10:41 — LinkedHashMap application area: Cache-based applications</h2>
+<p>Sir connects to LinkedHashSet from an earlier session:</p>
+<p>LinkedHashSet and LinkedHashMap are commonly used for developing cache-based applications.</p>
+<h3>Why cache needs this combination</h3>
+<p>Real-world pattern: When you need a map that behaves like a cache — unique keys, fast access, and you care about which entry came first — LinkedHashMap (or LinkedHashSet for key-only caches) is the standard choice.</p>
+<h2>12:22 — Transition to IdentityHashMap: `==` vs `equals()` recap</h2>
+<p>Before IdentityHashMap, Sir must clarify reference vs content comparison. This is compulsory knowledge.</p>
+<h3>Difference table (board — copy exactly)</h3>
+<h3>Example (Sir&#x27;s standard Integer demo)</h3>
+<p>Integer i1 = new Integer(10);   // or Integer.valueOf(10)
+Integer i2 = new Integer(10);
+
+System.out.println(i1 == i2);      // false  — different objects, different addresses
+System.out.println(i1.equals(i2)); // true   — same content (both represent 10)</p>
+<p>Diagram:</p>
+<p>i1 ──→ [ Integer object @ addr1, value=10 ]
+i2 ──→ [ Integer object @ addr2, value=10 ]
+
+i1 == i2        → false  (different addresses)
+i1.equals(i2)   → true   (same integer value)</p>
+<p>Sir: If you are aware of this point, IdentityHashMap concept is very easy — because this concept only plays a very important role there.</p>
+<h2>17:47 — IdentityHashMap</h2>
+<h3>Class name rule</h3>
+<p>`IdentityHashMap` — single word, no space. Do not write &quot;Identity Hash Map&quot; in exam answers.</p>
+<h3>Core conclusion</h3>
+<p>IdentityHashMap is exactly same as HashMap (including methods and constructors) except the following difference:</p>
+<p>Everything else — hash table, null rules, methods — behaves like HashMap except how duplicate keys are decided.</p>
+<h3>Important clarification: hash code vs equals</h3>
+<p>Sir explicitly corrects a common mistake:</p>
+<ul><li>Hash code → used to identify bucket location (where to place the entry).</li></ul>
+<ul><li>`equals()` / `==` → used to decide whether a key is duplicate (whether to replace existing entry).</li></ul>
+<p>Hash code is going to be considered to place / identify the location.</p>
+<p>In HashMap, JVM will use equals method to identify duplicate keys.</p>
+<h2>18:20 — Demo 2: HashMap duplicate-key behavior (equals-based)</h2>
+<h3>Program</h3>
+<pre class='code'>import java.util.*;
+
+class IdentityHashMapDemo {
+    public static void main(String[] args) {
+        Map m = new HashMap();
+
+        Integer i1 = new Integer(10);
+        Integer i2 = new Integer(10);
+
+        m.put(i1, &quot;P&quot;);
+        m.put(i2, &quot;Kalyan&quot;);
+
+        System.out.println(m);
+    }
+}</pre>
+<h3>Step-by-step analysis (HashMap)</h3>
+<ol><li>m.put(i1, &quot;P&quot;) → map has one entry: 10=P (key is i1 object, prints as 10 via Integer.toString())</li></ol>
+<ol><li>m.put(i2, &quot;Kalyan&quot;) → JVM checks: is i2 a duplicate key?</li></ol>
+<ul><li>i2.equals(i1) → true (both Integer 10)</li></ul>
+<ul><li>Duplicate key → replace value: &quot;P&quot; replaced by &quot;Kalyan&quot;</li></ul>
+<ol><li>Only ONE entry in map (not two)</li></ol>
+<p>Output:</p>
+<pre class='code'>{10=Kalyan}</pre>
+<h3>Board theory beside code</h3>
+<p>i1 and i2 are duplicate keys because i1.equals(i2) returns true.</p>
+<h2>24:32 — Demo 2 continued: IdentityHashMap (== -based)</h2>
+<p>Replace only the map declaration:</p>
+<p>Map m = new IdentityHashMap();  // instead of HashMap</p>
+<p>Same i1, i2, same put calls.</p>
+<h3>Step-by-step analysis (IdentityHashMap)</h3>
+<ol><li>m.put(i1, &quot;P&quot;) → one entry</li></ol>
+<ol><li>m.put(i2, &quot;Kalyan&quot;) → JVM checks: is i2 duplicate?</li></ol>
+<ul><li>i2 == i1 → false (different objects)</li></ul>
+<ul><li>NOT duplicate → second entry added</li></ul>
+<ol><li>TWO entries in map</li></ol>
+<p>Output:</p>
+<pre class='code'>{10=P, 10=Kalyan}</pre>
+<p>(Both keys print as 10 because Integer.toString() shows value — but they are distinct key objects internally.)</p>
+<h3>Board theory</h3>
+<p>If we replace HashMap with IdentityHashMap:</p>
+<p>- i1 and i2 are NOT duplicate keys</p>
+<p>- because i1 == i2 returns false</p>
+<p>- Output: {10=P, 10=Kalyan} — both entries present</p>
+<h3>When to use IdentityHashMap</h3>
+<p>Use when you need reference identity as the key contract — not logical equality:</p>
+<ul><li>Interning / canonicalization maps</li></ul>
+<ul><li>Graph algorithms where object identity matters</li></ul>
+<ul><li>Avoiding equals() override side effects</li></ul>
+<ul><li>Not for normal business-key maps (use HashMap)</li></ul>
+<h2>32:31 — Transition to WeakHashMap: Garbage Collection recap</h2>
+<p>Sir asks: &quot;What is WeakHashMap?&quot;</p>
+<p>Student joke: &quot;The hash map which is very weak.&quot;</p>
+<p>Sir: Correct — after the demo you will accept the name.</p>
+<h3>GC story (Sir&#x27;s narrative — understand the analogy)</h3>
+<ol><li>Object with no references → eligible for GC.</li></ol>
+<ol><li>GC &quot;comes&quot; to destroy it.</li></ol>
+<ol><li>Before destruction, GC calls `finalize()` on the object (cleanup / last wish — close DB connection, network connection, etc.).</li></ol>
+<ol><li>After finalize() completes → object destroyed.</li></ol>
+<h3>Key GC facts for this lecture</h3>
+<h2>37:47 — WeakHashMap demo setup: Temp class</h2>
+<p>Sir creates a helper class to prove whether GC destroyed the key object.</p>
+<pre class='code'>class Temp {
+    public String toString() {
+        return &quot;temp&quot;;
+    }
+
+    protected void finalize() {
+        System.out.println(&quot;finalize method called&quot;);
+    }
+}</pre>
+<ul><li>`toString()` → map prints {temp=durga} style output.</li></ul>
+<ul><li>`finalize()` → if this prints, Temp object was destroyed by GC.</li></ul>
+<h2>39:51 — Demo 3: HashMap vs WeakHashMap (GC dominance)</h2>
+<h3>Program structure</h3>
+<pre class='code'>import java.util.*;
+
+class WeakHashMapDemo {
+    public static void main(String[] args) throws Exception {
+        Map m = new HashMap();          // Case 1 — change to WeakHashMap for Case 2
+
+        Temp t = new Temp();
+        m.put(t, &quot;durga&quot;);
+        System.out.println(m);          // 1st print
+
+        t = null;                       // external reference gone
+        System.gc();                    // suggest GC
+
+        Thread.sleep(5000);             // wait — did GC destroy key?
+
+        System.out.println(m);          // 2nd print
+    }
+}</pre>
+<h3>Memory picture after `m.put(t, &quot;durga&quot;)`</h3>
+<p>Reference variable t ──→ Temp object ←── also referenced as KEY inside HashMap
+Value in map: &quot;durga&quot;</p>
+<p>Map entry: {temp=durga}</p>
+<h3>After `t = null; System.gc();`</h3>
+<p>t = null  →  no external reference to Temp object
+BUT Temp object still referenced as KEY inside HashMap</p>
+<p>Sir&#x27;s story: GC comes to destroy the key object. Key &quot;cries.&quot; HashMap intervenes — &quot;This object is associated with me — how can you destroy it?&quot; HashMap is stronger than GC in this case. JVM tells GC: &quot;HashMap dominates — don&#x27;t go there again.&quot;</p>
+<h3>Case 1: HashMap result</h3>
+<p>Conclusion: Temp object NOT eligible for GC because it is associated with HashMap (strong reference from map to key).</p>
+<p>HashMap dominates Garbage Collector.</p>
+<h2>48:06 — Case 2: WeakHashMap — same program, one line change</h2>
+<p>Map m = new WeakHashMap();   // only change</p>
+<p>Same flow: create Temp, put, print, t=null, System.gc(), sleep, print again.</p>
+<h3>WeakHashMap behavior</h3>
+<ul><li>Keys are held by weak references internally.</li></ul>
+<ul><li>When no external strong references remain to the key object, GC can reclaim it.</li></ul>
+<ul><li>Sir&#x27;s story: GC tells WeakHashMap &quot;You are already weak — don&#x27;t open your mouth.&quot; GC dominates WeakHashMap.</li></ul>
+<h3>Case 2: WeakHashMap result</h3>
+<p>Sequence observed on console:</p>
+<pre class='code'>{temp=durga}
+finalize method called
+{}</pre>
+<p>When key object destroyed → entry removed from map → value &quot;durga&quot; also gone automatically.</p>
+<p>Garbage Collector dominates WeakHashMap.</p>
+<h2>52:27 — WeakHashMap: Core conclusions (copy to notes)</h2>
+<p>WeakHashMap is exactly same as HashMap except the following difference:</p>
+<h3>Board notes (Sir dictates for above example)</h3>
+<p>With HashMap:</p>
+<p>In the above example, temp object not eligible for GC because it is associated with HashMap.</p>
+<p>Output both times: {temp=durga}</p>
+<p>With WeakHashMap (replace HashMap):</p>
+<p>Then temp object eligible for GC.</p>
+<p>Output: first {temp=durga}, then finalize method called, then {}</p>
+<h3>Naming mnemonic (Sir-approved)</h3>
+<p>WeakHashMap = the HashMap which is very weak (compared to normal HashMap which is strong against GC).</p>
+<h2>Master comparison: All four Map implementations</h2>
+<h2>Hierarchy diagram (board)</h2>
+<p>Map (I)
+ └── HashMap (C)                    ← Java 1.2
+      ├── LinkedHashMap (C)         ← 1.4, insertion order
+      └── WeakHashMap (C)           ← 1.4, weak keys
+
+Map (I)
+ └── IdentityHashMap (C)            ← 1.4, == for keys (NOT a HashMap subclass)</p>
+<p>Note: In the API, IdentityHashMap implements Map directly (does not extend HashMap), but Sir teaches it alongside HashMap as &quot;same except one difference&quot; — same exam treatment.</p>
+<h2>OCJP / SCJP exam rapid-fire Q&amp;A</h2>
+<ol><li>LinkedHashMap is child of which class? → HashMap.</li></ol>
+<ol><li>Main difference HashMap vs LinkedHashMap? → Insertion order preserved in LinkedHashMap; hybrid linked list + hash table.</li></ol>
+<ol><li>LinkedHashMap introduced in which version? → 1.4.</li></ol>
+<ol><li>HashMap uses which method to detect duplicate keys? → equals().</li></ol>
+<ol><li>IdentityHashMap uses which operator? → == (reference comparison).</li></ol>
+<ol><li>i1 and i2 both `new Integer(10)` — how many entries in HashMap after put both? → One (equals true).</li></ol>
+<ol><li>Same i1, i2 in IdentityHashMap? → Two (== false).</li></ol>
+<ol><li>LinkedHashSet + LinkedHashMap common use? → Cache-based applications.</li></ol>
+<ol><li>WeakHashMap — who dominates, map or GC? → GC dominates WeakHashMap.</li></ol>
+<ol><li>HashMap — key in map, external ref null — eligible for GC? → No; HashMap dominates GC.</li></ol>
+<ol><li>WeakHashMap — same scenario? → Yes, eligible; entry removed when key collected.</li></ol>
+<ol><li>Who calls finalize()? → Garbage Collector, just before destroying object.</li></ol>
+<h2>Complete demo programs (copy-paste ready)</h2>
+<h3>LinkedHashMapDemo.java</h3>
+<pre class='code'>import java.util.*;
+
+class LinkedHashMapDemo {
+    public static void main(String[] args) {
+        Map m = new LinkedHashMap();
+        m.put(&quot;Chiranjeevi&quot;, 700);
+        m.put(&quot;Balakrishna&quot;, 800);
+        m.put(&quot;Venkatesh&quot;, 200);
+        m.put(&quot;Nagarjuna&quot;, 500);
+        System.out.println(m);
+        // {Chiranjeevi=700, Balakrishna=800, Venkatesh=200, Nagarjuna=500}
+    }
+}</pre>
+<h3>IdentityHashMapDemo.java</h3>
+<pre class='code'>import java.util.*;
+
+class IdentityHashMapDemo {
+    public static void main(String[] args) {
+        Map m = new IdentityHashMap();
+
+        Integer i1 = new Integer(10);
+        Integer i2 = new Integer(10);
+
+        m.put(i1, &quot;P&quot;);
+        m.put(i2, &quot;Kalyan&quot;);
+
+        System.out.println(m);
+        // HashMap:      {10=Kalyan}
+        // IdentityHashMap: {10=P, 10=Kalyan}
+    }
+}</pre>
+<h3>WeakHashMapDemo.java</h3>
+<pre class='code'>import java.util.*;
+
+class Temp {
+    public String toString() { return &quot;temp&quot;; }
+    protected void finalize() {
+        System.out.println(&quot;finalize method called&quot;);
+    }
+}
+
+class WeakHashMapDemo {
+    public static void main(String[] args) throws Exception {
+        Map m = new WeakHashMap();
+
+        Temp t = new Temp();
+        m.put(t, &quot;durga&quot;);
+        System.out.println(m);
+
+        t = null;
+        System.gc();
+        Thread.sleep(5000);
+
+        System.out.println(m);
+        // HashMap:     {temp=durga} then {temp=durga}
+        // WeakHashMap: {temp=durga} then finalize... then {}
+    }
+}</pre>
+<h2>Common mistakes (exam traps)</h2>
+<h2>What&#x27;s next (Video 148+)</h2>
+<p>Per Map module agenda from Video 146:</p>
+<ul><li>SortedMap interface</li></ul>
+<ul><li>NavigableMap (Java 1.6)</li></ul>
+<ul><li>TreeMap (Comparable / Comparator — same rules as TreeSet)</li></ul>
+<ul><li>Hashtable (legacy, detailed)</li></ul>
+<ul><li>Properties class</li></ul>
+<h2>One-page revision sheet</h2>
+<p>LINKEDHASHMAP     = HashMap + insertion order + linked list chain (1.4)
+IDENTITYHASHMAP   = HashMap but duplicate key = == not equals() (1.4)
+WEAKHASHMAP       = HashMap but weak keys; GC wins over map (1.4)
+
+HashMap:           equals() for dup keys | strong keys | GC loses
+LinkedHashMap:     + insertion order preserved
+IdentityHashMap:   == for dup keys
+WeakHashMap:       weak keys | GC wins | entry vanishes when key collected
+
+Cache apps → LinkedHashSet + LinkedHashMap
+Integer i1,i2 both 10 → HashMap:1 entry | IdentityHashMap:2 entries
+t=null; gc(); → HashMap still has entry | WeakHashMap → {}</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Collections Part-12 \</td><td>\</td><td>linked Hashmap</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=AVdD987trsc</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>AVdD987trsc</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 01m 42s</td><td></td><td></td></tr>
+<tr><td>Position</td><td>Video 147 of 203 in the Durga Sir OCJP/SCJP playlist</td><td></td><td></td></tr>
+<tr><td>Source</td><td>YouTube auto-generated captions (yt-dlp)</td><td></td><td></td></tr>
+<tr><td>Prerequisite</td><td>Video 146 (HashMap introduction, methods, HashMap vs Hashtable). Video 142 area (HashSet / LinkedHashSet) helps for the LinkedHashMap analogy. GC + finalize() from earlier Object-class sessions required for WeakHashMap.</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Class</th><th>Java version</th><th>One-line difference from HashMap</th></tr>
+<tr><td>1</td><td>LinkedHashMap</td><td>1.4</td><td>Preserves insertion order</td></tr>
+<tr><td>2</td><td>IdentityHashMap</td><td>1.4</td><td>Uses `==` (not equals()) for duplicate-key detection</td></tr>
+<tr><td>3</td><td>WeakHashMap</td><td>1.4</td><td>Weak keys — GC dominates over map when no external refs</td></tr>
+</table>
+<table>
+<tr><th></th><th>HashSet</th><th>LinkedHashSet</th></tr>
+<tr><td>Parent</td><td>Implements Set</td><td>Child class of HashSet</td></tr>
+<tr><td>Underlying DS</td><td>Hash table</td><td>Linked list + hash table (hybrid)</td></tr>
+<tr><td>Insertion order</td><td>Not preserved (based on hash code)</td><td>Preserved</td></tr>
+</table>
+<table>
+<tr><th></th><th>HashMap</th><th>LinkedHashMap</th></tr>
+<tr><td>Parent</td><td>Implements Map</td><td>Child class of HashMap</td></tr>
+<tr><td>Underlying DS</td><td>Hash table</td><td>Linked list + hash table (hybrid)</td></tr>
+<tr><td>Insertion order</td><td>Not preserved (based on hash code of keys)</td><td>Preserved</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>HashMap</th><th>LinkedHashMap</th></tr>
+<tr><td>1</td><td>Underlying data structure is hash table</td><td>Underlying data structure is a combination of linked list + hash table (hybrid / mixed data structure)</td></tr>
+<tr><td>2</td><td>Insertion order is not preserved; ordering based on hash code of keys</td><td>Insertion order is preserved</td></tr>
+<tr><td>3</td><td>Introduced in Java 1.2</td><td>Introduced in Java 1.4</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>HashMap</th><th>LinkedHashMap</th></tr>
+<tr><td>Is insertion order preserved?</td><td>No</td><td>Yes (by default)</td></tr>
+<tr><td>What determines iteration/print order?</td><td>Hash code of keys</td><td>Order of put() calls</td></tr>
+<tr><td>Code change needed?</td><td>—</td><td>Replace new HashMap() with new LinkedHashMap()</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>How LinkedHashMap satisfies it</th></tr>
+<tr><td>Fast lookup by key</td><td>Hash table backing (like HashMap)</td></tr>
+<tr><td>Duplicate keys not allowed</td><td>Map contract</td></tr>
+<tr><td>Predictable iteration order</td><td>Insertion order preserved</td></tr>
+<tr><td>LRU-style caches (advanced)</td><td>LinkedHashMap has access-order constructor (true flag) — Sir does not demo it here, but insertion-order is the foundation</td></tr>
+</table>
+<table>
+<tr><th></th><th>== (double equal operator)</th><th>equals() method</th></tr>
+<tr><td>Meant for</td><td>Reference comparison (address comparison)</td><td>Content comparison</td></tr>
+<tr><td>Returns true when</td><td>Both references point to the same object</td><td>Object contents are logically equal (per class definition)</td></tr>
+<tr><td>Default Object.equals()</td><td>Same as == unless overridden</td><td>—</td></tr>
+</table>
+<table>
+<tr><th></th><th>HashMap</th><th>IdentityHashMap</th></tr>
+<tr><td>Duplicate key detection</td><td>JVM uses `equals()` method → content comparison</td><td>JVM uses `==` (double equal operator) → reference comparison</td></tr>
+<tr><td>Introduced in</td><td>1.2</td><td>1.4</td></tr>
+</table>
+<table>
+<tr><th>Fact</th><th>Detail</th></tr>
+<tr><td>Who calls finalize()?</td><td>Garbage Collector</td></tr>
+<tr><td>When?</td><td>Just before destroying an object</td></tr>
+<tr><td>Purpose?</td><td>Perform cleanup activities</td></tr>
+<tr><td>Can you rely on it in production?</td><td>No (deprecated in Java 9+, removed in later JDKs — but exam still tests the concept)</td></tr>
+</table>
+<table>
+<tr><th>Print</th><th>Output</th><th>finalize() called?</th></tr>
+<tr><td>1st System.out.println(m)</td><td>{temp=durga}</td><td>No</td></tr>
+<tr><td>After t=null, gc(), sleep</td><td>{temp=durga}</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>Print</th><th>Output</th><th>finalize() called?</th></tr>
+<tr><td>1st print</td><td>{temp=durga}</td><td>No</td></tr>
+<tr><td>After gc + sleep</td><td>`{}` (empty map)</td><td>Yes — finalize method called</td></tr>
+</table>
+<table>
+<tr><th></th><th>HashMap</th><th>WeakHashMap</th></tr>
+<tr><td>Key reference strength</td><td>Strong — map holds key strongly</td><td>Weak — keys are weakly referenced</td></tr>
+<tr><td>Object with no external refs but key in map</td><td>NOT eligible for GC</td><td>Eligible for GC</td></tr>
+<tr><td>Who dominates?</td><td>HashMap dominates GC</td><td>GC dominates WeakHashMap</td></tr>
+<tr><td>Introduced in</td><td>1.2</td><td>1.4</td></tr>
+</table>
+<table>
+<tr><th>Feature</th><th>HashMap</th><th>LinkedHashMap</th><th>IdentityHashMap</th><th>WeakHashMap</th></tr>
+<tr><td>Parent / relation</td><td>Map impl</td><td>extends HashMap</td><td>Map impl (separate class)</td><td>extends HashMap</td></tr>
+<tr><td>Underlying DS</td><td>Hash table</td><td>Linked list + hash table</td><td>Hash table (identity buckets)</td><td>Hash table + weak refs</td></tr>
+<tr><td>Insertion order</td><td>No</td><td>Yes</td><td>No</td><td>No</td></tr>
+<tr><td>Duplicate key test</td><td>equals()</td><td>equals()</td><td>`==`</td><td>equals()</td></tr>
+<tr><td>GC vs map (key with no ext ref)</td><td>Map protects key</td><td>Map protects key</td><td>Map protects key</td><td>GC can collect key</td></tr>
+<tr><td>Java version</td><td>1.2</td><td>1.4</td><td>1.4</td><td>1.4</td></tr>
+<tr><td>Common use</td><td>General purpose</td><td>Caches, ordered maps</td><td>Identity-based keys</td><td>Caches, metadata maps, listeners</td></tr>
+</table>
+<table>
+<tr><th>Mistake</th><th>Truth</th></tr>
+<tr><td>&quot;Hash code decides duplicate keys&quot;</td><td>Hash code picks bucket; `equals()`/`==` decides duplicate</td></tr>
+<tr><td>&quot;IdentityHashMap extends HashMap&quot;</td><td>Separate class; same behavioral teaching, not inheritance</td></tr>
+<tr><td>&quot;WeakHashMap values are weak&quot;</td><td>Only keys are weak; Sir&#x27;s demo focuses on key GC</td></tr>
+<tr><td>&quot;System.gc() guarantees immediate collection&quot;</td><td>Only suggests GC; sleep() helps demo observe async behavior</td></tr>
+<tr><td>&quot;LinkedHashMap sorts keys&quot;</td><td>Preserves insertion order, not natural/comparator sorting (that&#x27;s TreeMap)</td></tr>
+<tr><td>Writing &quot;Identity Hash Map&quot; as class name</td><td>Wrong — `IdentityHashMap` one word</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,551 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>016-java-coding-standards</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 016 — Java coding standards</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-16 || Java Coding Standards</p>
+<p>This upload is one file, two classroom sittings: an interview-story introduction (~19 minutes), then a short recap and the per-component rules through listeners. Auto-captions say “Amirpet” for Ameerpet (Hyderabad training-institute area) and “Hi-Tech City” for the real-company style.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Why coding standards exist (readability + maintainability)</li></ol>
+<ol><li>Full interview story: 3.6 years “experience,” the two-integer-sum class, Ameerpet vs Hi-Tech City</li></ol>
+<ol><li>Package-first rule and reverse-domain package names</li></ol>
+<ol><li>Public class, static when no instance state, meaningful names</li></ol>
+<ol><li>Math.sqrt / Math.max as the payoff of meaningful names</li></ol>
+<ol><li>“Durga bar and restaurant” counterexample</li></ol>
+<ol><li>Board rules for classes, interfaces, methods, variables, constants</li></ol>
+<ol><li>How constants are declared (public static final)</li></ol>
+<ol><li>JavaBean definition, getter/setter syntax, “ends with Bean” is not official Sun</li></ol>
+<ol><li>Boolean property exam twist: getEmpty and isEmpty are both valid; is is recommended</li></ol>
+<ol><li>Listener coding standards: register with add, unregister with remove; argument type must match the name after the prefix</li></ol>
+<ol><li>End of Language Fundamentals</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:03] Next topic: Java coding standards</h3>
+<p>Whenever we write code — a class, a method, anything — we must follow some coding conventions. Then readability and maintainability of the code improve by default.</p>
+<p>He will explain what standards to follow and why, with a long interview story first (the “need”), then the official-style rules per component.</p>
+<h3>[00:33] Need — conventions are not decoration</h3>
+<p>If you write a class or a method, there are “certain rules and regulations.” Follow them so that anyone else (and future you) can read and maintain the code.</p>
+<h3>[01:05] Interview framing — they are checking your “original color”</h3>
+<p>You walk into the interview room with 2+ or 3+ years of experience. Assume 3.6 years.</p>
+<p>The interviewer may ask questions that feel irritating / silly, but those two minutes decide whether:</p>
+<ul><li>this person is coming from Ameerpet (institute / fake-project culture), or</li></ul>
+<ul><li>from another software company, or</li></ul>
+<ul><li>the experience is original or fake.</li></ul>
+<p>He says: take special care. These “silly” questions decide your original color.</p>
+<p>Script:</p>
+<ol><li>“How much experience do you have?” → “3.6 years.”</li></ol>
+<ol><li>“Is overall total experience Java experience?” → “Yes, total experience is Java-based only.”</li></ol>
+<ol><li>Then, to check the color: “Durga, you have 3.6 years of experience, right? Do you know how to write a Java program / how to write a Java class?”</li></ol>
+<p>You get a shock: why this stupid question after 3.6 years? You say “why not?”</p>
+<p>The requirement (tiny):</p>
+<ul><li>Write a class.</li></ul>
+<ul><li>Inside it, write a method.</li></ul>
+<ul><li>That method takes two `int` values as arguments.</li></ul>
+<ul><li>Returns their sum.</li></ul>
+<p>Not a big story. A simple Java class, one method, two ints, return sum. “Do you know how to write a Java program? Then write this code.”</p>
+<p>You are already irritated. You want to show caliber. In two or three seconds you slap something on the board and say “have a look.”</p>
+<h3>[03:14] What most people write (Ameerpet standard)</h3>
+<pre class='code'>class A {
+    public int m1(int x, int y) {
+        return x + y;
+    }
+}</pre>
+<p>Two seconds, maybe one minute. You show it: “this is your requirement, have a look.”</p>
+<p>Without waiting the next nanosecond, the interviewer says, very politely:</p>
+<p>Can you please go out? If there is a requirement, I will let you know.</p>
+<p>“Hey — just a matter of one minute — how did that person decide our original color?”</p>
+<p>Because a person with 3.6 years of real-time experience never writes code like this.</p>
+<p>Telugu proverb he uses: to check whether the rice is cooked (anna manta udikindo ledo chudali), you do not inspect the whole pot. One grain (`oka metuku`) is enough.</p>
+<p>Same here: to check your original color, they do not need a two-hour or three-hour interview. One minute is enough. After seeing this code they already identified the color: “we will intimate you; please go.”</p>
+<h3>[05:20] How a 3.6-year real-time person actually writes it</h3>
+<p>He now shows the real-time coding style, piece by piece. Every defect in class A { int m1(int x, int y) } is a separate red flag.</p>
+<h4>Flag 1 — no package statement</h4>
+<p>Every Java source file: compulsory, the first statement should be a `package` statement.</p>
+<p>Comments can appear anywhere. Other than comments, talk about real statements: first statement = package.</p>
+<p>In the Java API there are 5000+ classes. Can you show even one class without a package? You never can:</p>
+<p>Every class is part of some package. Your class also should be part of some package.</p>
+<p>If the candidate’s hand did not start with package, that one thing is enough: “this person is not having any real-time experience, I’m sure.”</p>
+<h4>Flag 2 — dummy package names</h4>
+<p>Most people, if they remember package at all, write pack1, pack2, packX, packY. That is also Ameerpet.</p>
+<p>Universally accepted naming convention for packages: use the client’s internet domain name, reversed, then the module name.</p>
+<p>Example he writes:</p>
+<p>com.durgasoft.scjp</p>
+<ul><li>com.durgasoft = reverse of the internet domain (durgasoft.com)</li></ul>
+<ul><li>scjp = module name (the SCJP course / module)</li></ul>
+<p>So: reverse domain + module.</p>
+<h4>Flag 3 — class not `public`</h4>
+<p>If you write something, it should be reachable to several people. Highly recommended: the class should be `public`. Then other people / other packages can access it.</p>
+<pre class='code'>class A without public is another Ameerpet color.</pre>
+<h4>Flag 4 — class name `A` / `B` / `X` / `Y`</h4>
+<p>He calls class A, class B, class X, class Y “Ameerpet colors.” Do not show these in the interview room.</p>
+<p>Rule: the name of the class should represent the purpose / functionality of this component.</p>
+<p>This class performs arithmetic operations → keep a meaningful name.</p>
+<p>He first says “Sum calculator / some calculator,” then settles on:</p>
+<pre class='code'>public class Calculator</pre>
+<p>Compare:</p>
+<ul><li>“Sir I have A class.”</li></ul>
+<ul><li>“Sir I have Calculator class.”</li></ul>
+<p>Which is more informative? Calculator — without telling anything else, the other person already knows this class can perform arithmetic operations. That extra information comes from the name.</p>
+<p>Meaningful names we have to keep.</p>
+<h4>Flag 5 — instance method that uses no instance variables</h4>
+<p>The method takes two ints and returns the sum. Does it use any instance variables? No.</p>
+<p>If we are not using any instance variable, what is the need of declaring this method as an instance method?</p>
+<p>If it is an instance method, how do you call it? Create an object, then call through the object. But this method is nowhere related to any object. Then why instance?</p>
+<p>Declare it `static`. Compulsory good programming practice: public static.</p>
+<h4>Flag 6 — method name `m1`</h4>
+<p>Return type int is fine. Name m1 is Ameerpet color again.</p>
+<p>The method returns a sum. You kept m1.</p>
+<p>Compare:</p>
+<ul><li>“Sir I have m1 method.”</li></ul>
+<ul><li>“Sir I have sum method.” / “Sir I have add method.”</li></ul>
+<p>Which is more meaningful? `add` or `sum`. Meaningful name compulsory.</p>
+<p>So: public static int add(...).</p>
+<h4>Flag 7 — parameter names `x`, `y`</h4>
+<p>Even x, y is not recommended. Complete names:</p>
+<ul><li>int number1, int number2</li></ul>
+<ul><li>or firstNumber, secondNumber</li></ul>
+<pre class='code'>return number1 + number2;</pre>
+<h3>[10:31] Side-by-side: Ameerpet standard vs Hi-Tech City standard</h3>
+<p>Same requirement, two codes. Observe the difference. Naming conventions.</p>
+<ul><li>“Sir I have Calculator class, sir I have add method” → meaningful.</li></ul>
+<ul><li>“Sir I have m1 method, I have class A” → Ameerpet standard.</li></ul>
+<p>Why Ameerpet writes `A` / `m1`: they are never going to deliver this code to any client. If they ever had to deliver, they would replace all these names with the proper style and deliver only that.</p>
+<p>Hi-Tech City standard = the style used where the software companies actually are (Hyderabad Hi-Tech City). If you must deliver to a client, you must change the code into this style.</p>
+<p>Whenever you write a Java class (or anything), compulsory: follow naming conventions. Always good programming practice.</p>
+<h3>[11:34] Advantage of this approach</h3>
+<p>Readability will be improved. Maintainability of the code will be improved.</p>
+<p>Best example: `java.lang.Math`.</p>
+<p>You want square root of 4. Which method?</p>
+<p>Math.sqrt(4);</p>
+<p>Have you ever opened the Math class to see how sqrt is implemented? Almost nobody. Still everyone in the classroom can tell: the purpose of sqrt is to find the square root of the given number.</p>
+<p>How did that easiness come? Because of the meaningful name.</p>
+<p>Second:</p>
+<p>Math.max(10, 20);</p>
+<p>Purpose of max? Find the maximum of the given numbers. Answer: 20. Everyone knows without opening Math.</p>
+<p>Counterfactual: suppose Sun had named them m1 (square root), m2 (max), m3 (random), m4 (sin), …</p>
+<p>Assume 1000 methods. Which method is square root? You cannot know. That is the difference between meaningful and non-meaningful names.</p>
+<p>Whenever we are writing any component, compulsory: meaningful names. This approach improves readability and maintainability.</p>
+<h3>[14:06] “Durga bar and restaurant” — names that do not match the product</h3>
+<p>He puts on the board (as a brand):</p>
+<p>Durga Software Solutions — best for our Java training.</p>
+<p>Meaningful: “software solutions” / “software training” — relevant names. Fine.</p>
+<p>Now imagine:</p>
+<p>Durga bar and restaurant — best for Java training.</p>
+<p>One peg this side, one peg that side… the people laugh. The same laugh people give when they see stupid code with names that do not match the component.</p>
+<p>Whenever we write Java code we should follow certain rules and regulations. Java coding standards are important.</p>
+<h3>[15:06] Board dictation (introduction, written slowly)</h3>
+<p>He repeats for students copying:</p>
+<p>Whenever we are writing Java code, it is highly recommended to follow coding standards.</p>
+<p>Whenever we are writing any component, its name should reflect the purpose of that component (functionality).</p>
+<p>The main advantage of this approach is: readability and maintainability of the code will be improved.</p>
+<h3>[17:07] The two programs, written on the board</h3>
+<p>Ameerpet standard (comment that: we are not delivering this code, so we never worry about conventions):</p>
+<pre class='code'>class A {
+    public int m1(int x, int y) {
+        return x + y;
+    }
+}</pre>
+<p>Hi-Tech City standard (where the software companies are):</p>
+<pre class='code'>package com.durgasoft.scjp;
+
+public class Calculator {
+    public static int add(int number1, int number2) {
+        return number1 + number2;
+    }
+}</pre>
+<p>(Captions later hear com.durgasoft.ejp — same example; he said scjp as the module.)</p>
+<h3>[18:30] Utility class — `main` is not compulsory on every class</h3>
+<p>This Calculator is a normal utility class.</p>
+<p>Do not feel that every Java class should contain main.</p>
+<ul><li>Servlet classes: we do not invoke them from the command prompt. The web container takes care. No main.</li></ul>
+<ul><li>EJB class: main not required.</li></ul>
+<ul><li>Standalone application that you execute from the command prompt: then keep main.</li></ul>
+<p>So the “proper” Calculator above has no `main`, and that is correct.</p>
+<p>He says: in the next sitting he will cover coding standards for classes, interfaces, etc. (the rest of this same video).</p>
+<h3>[19:21] Second sitting — recap, then per-component standards</h3>
+<p>Last session: started Java coding standards. Basic introduction: what they are, why they matter.</p>
+<p>Advantage if we follow them: readability and maintainability improve by default.</p>
+<p>Meaningful names for methods, classes, variables. Instead of class A → class Calculator. Instead of m1, m2, m3 → add, multiply, based on functionality.</p>
+<p>Now: individual component level. Keep a subheading for each.</p>
+<h3>[20:25] Coding standards for **classes**</h3>
+<p>He asks the class to spell out any class name — predefined or your own.</p>
+<p>Examples they give / he writes:</p>
+<ul><li>String</li></ul>
+<ul><li>StringBuffer</li></ul>
+<ul><li>Account</li></ul>
+<ul><li>Dog</li></ul>
+<p>In English, these are nouns.</p>
+<p>Rules for class names:</p>
+<ol><li>Usually, class names are nouns.</li></ol>
+<ol><li>Should start with an uppercase character.</li></ol>
+<ol><li>If it contains multiple words, every inner word should start with an uppercase character.</li></ol>
+<p>(That last rule is PascalCase / UpperCamelCase. He describes it; he does not call class names “camel case” — he reserves “camel case convention” for methods and variables that start lowercase.)</p>
+<p>Examples: String, StringBuffer, Account, Dog, …</p>
+<h3>[23:25] Coding standards for **interfaces**</h3>
+<p>Spell out interface names:</p>
+<ul><li>Runnable</li></ul>
+<ul><li>Serializable</li></ul>
+<ul><li>Comparable</li></ul>
+<ul><li>(later) RandomAccess — R capital, A capital</li></ul>
+<p>In English these are considered adjectives.</p>
+<p>He almost says “usually interface names are nouns,” then corrects himself: adjectives.</p>
+<p>Rules for interface names:</p>
+<ol><li>Usually, interface names are adjectives.</li></ol>
+<ol><li>Should start with an uppercase character.</li></ol>
+<ol><li>If it contains multiple words, every inner word should start with an uppercase character.</li></ol>
+<p>Examples: Runnable, Serializable, Comparable, RandomAccess, etc.</p>
+<p>Same capitalization pattern as classes (type names). The English part of speech is the extra rule: class = noun, interface = adjective.</p>
+<h3>[26:20] Coding standards for **methods**</h3>
+<p>Spell out method names from earlier classes:</p>
+<ul><li>print</li></ul>
+<ul><li>sleep (“our favorite”)</li></ul>
+<ul><li>run</li></ul>
+<ul><li>eat</li></ul>
+<ul><li>start</li></ul>
+<p>A method means some function, some activity. Usually method names are verbs, because they represent an action.</p>
+<p>Sometimes names look like getName, setSalary:</p>
+<ul><li>get is a verb, Name is a noun</li></ul>
+<ul><li>set is a verb, Salary is a noun</li></ul>
+<p>So method names are either verbs or verb–noun combination.</p>
+<p>Capitalization:</p>
+<ol><li>Should start with a lowercase alphabet.</li></ol>
+<ol><li>If multiple words, every inner word starts with uppercase.</li></ol>
+<p>He draws the up-and-down shape on the board: start lower, inner word upper, next inner word upper. This type of convention is camel case convention. (“Are you seeing camel on the board?”)</p>
+<p>Rules for method names (board):</p>
+<ol><li>Usually, method names are either verbs or verb–noun combination.</li></ol>
+<ol><li>Should start with a lowercase alphabet.</li></ol>
+<ol><li>If multiple words, every inner word starts with uppercase (camel case convention).</li></ol>
+<p>Examples:</p>
+<h3>[31:31] Coding standards for **variables**</h3>
+<p>Example variable names:</p>
+<ul><li>name (name of a person)</li></ul>
+<ul><li>age</li></ul>
+<ul><li>salary</li></ul>
+<ul><li>mobileNumber</li></ul>
+<p>In English these are nouns. Every variable has some value; they are nouns.</p>
+<p>Capitalization: same camel case as methods — start lowercase, every inner word uppercase.</p>
+<p>Rules for variable names (board):</p>
+<ol><li>Usually, variable names are nouns.</li></ol>
+<ol><li>Should start with a lowercase alphabet.</li></ol>
+<ol><li>If multiple words, every inner word starts with uppercase (camel case convention).</li></ol>
+<p>Examples: name, age, salary, mobileNumber, etc.</p>
+<h3>[34:44] Coding standards for **constants**</h3>
+<p>Example constant names (from the API):</p>
+<ul><li>MAX_VALUE / MIN_VALUE — in every numeric wrapper class</li></ul>
+<ul><li>In Thread: MAX_PRIORITY, NORMAL_PRIORITY, MIN_PRIORITY</li></ul>
+<ul><li>PI (Math / PI value)</li></ul>
+<p>A constant is just like a variable, but the value is fixed. We cannot change it.</p>
+<p>In English they are still nouns (they have a value). The difference from a normal variable is only: the value won’t change.</p>
+<p>Naming convention (different from variables):</p>
+<ol><li>Usually, constant names are nouns.</li></ol>
+<ol><li>Should contain only uppercase characters.</li></ol>
+<p>He first starts to write “should start with…” then stops: “I know there’s a mistake. Should contain, not starts.” Whole name is uppercase, not just the first letter.</p>
+<ol><li>If multiple words, those words are separated with underscore _.</li></ol>
+<p>Examples: MAX_VALUE, MAX_PRIORITY, NORMAL_PRIORITY, MIN_PRIORITY, PI.</p>
+<h3>[38:20] Note: how we declare constants</h3>
+<p>Usually we declare constants using `public static final` modifiers.</p>
+<p>Most of the time you will see:</p>
+<pre class='code'>public static final int MAX_VALUE = ...;</pre>
+<p>Board note:</p>
+<p>Usually we can declare constants with public, static and final modifiers.</p>
+<p>That is coding standards for constants.</p>
+<h3>[39:34] JavaBean coding standards</h3>
+<p>What is a JavaBean? (He mentions you will see Student Bean / Form Bean in Advanced Java.)</p>
+<p>Definition:</p>
+<p>A JavaBean is a simple Java class with private properties (private variables) and public getter and setter methods.</p>
+<p>Whenever we say Bean, only two words come into the picture:</p>
+<ol><li>Private variables</li></ol>
+<ol><li>Public getter and setter methods</li></ol>
+<p>Beyond that, nothing else required for the Bean idea. For every variable, maintain getter and setter.</p>
+<h4>Board example: `StudentBean`</h4>
+<pre class='code'>public class StudentBean {
+    private String name;
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+}</pre>
+<p>Setter: “boss, can you please set this name with this value?” Code is this.name = name;.</p>
+<p>Getter: no argument, returns name.</p>
+<p>Everything in this example is already a coding standard:</p>
+<ul><li>Every variable private</li></ul>
+<ul><li>For every variable, setter and getter compulsory</li></ul>
+<ul><li>Setter: public, return type always `void`, must take some argument</li></ul>
+<ul><li>Getter: public, no-argument method, return type should not be `void`</li></ul>
+<p>What is a JavaBean (recite): a simple Java class with private properties, and for every property getter and setter methods.</p>
+<h4>“Class name ends with Bean” is NOT official Sun</h4>
+<p>People use StudentBean, FormBean — class name ends with `Bean`.</p>
+<p>This is not an official convention from Sun Microsystems.</p>
+<p>It does not mean it is invalid. You can take that name, no problem. Sun people did not say a Bean class compulsory must end with the word Bean. No such rule. Except that, everything else in the example is valid Java coding standard.</p>
+<h4>Why IDEs can generate getters/setters</h4>
+<p>Because the syntax is fixed. Most of the time in IDEs we do not write setters and getters by hand: right-click → generate getter and setter. Automatically, for every property, getters and setters are generated.</p>
+<p>How can the IDE generate them? Fixed syntax.</p>
+<p>If he asks 100 people: “I have property String name, write getter and setter,” all 100 should write in the same style. If he gives it to 100 IDEs, every IDE generates the same style. That is the point of a coding standard.</p>
+<p>Board definition (dictation):</p>
+<p>A JavaBean is a simple Java class with private properties and public getter and setter methods.</p>
+<p>Board warning:</p>
+<p>Class name ends with Bean is not an official convention from Sun Microsystems.</p>
+<h3>[47:36] Syntax for **setter** method (fixed checklist)</h3>
+<p>He numbers the rules. Setter is not a “main method” — captions say “main method” once by mistake; he means the setter itself.</p>
+<ol><li>It should be a `public` method.</li></ol>
+<ol><li>The return type should be `void`.</li></ol>
+<p>Reason: “I’m updating name with this value. I’m not expecting any return.” So void.</p>
+<ol><li>Method name should be prefixed with `set`.</li></ol>
+<ol><li>It should take some argument.</li></ol>
+<p>“Boss, can you please set with this value?” We have to pass a value. It should not be a no-argument method.</p>
+<h3>[50:00] Syntax for **getter** method (fixed checklist)</h3>
+<p>Syntax is also fixed.</p>
+<ol><li>It should be a `public` method.</li></ol>
+<ol><li>The return type should not be `void`.</li></ol>
+<p>Reason: “I’m getting — I’m expecting something.”</p>
+<ol><li>Method name should be prefixed with `get`.</li></ol>
+<ol><li>It should not take any argument.</li></ol>
+<p>“I’m expecting something, I’m not providing anything.”</p>
+<p>You should be able to recite setter syntax and getter syntax.</p>
+<h3>[51:55] Exam twist: boolean property — `getXxx` **or** `isXxx`</h3>
+<p>Very important for the exam. Star this. Listen.</p>
+<p>Property:</p>
+<pre class='code'>private boolean empty;</pre>
+<p>According to the getter rules just discussed, the getter is:</p>
+<pre class='code'>public boolean getEmpty() {
+    return empty;
+}</pre>
+<p>100% valid. Do not keep any doubt. Valid.</p>
+<p>But for boolean properties, instead of getEmpty, the method name can be `isEmpty`.</p>
+<p>How many allowed values for empty? `true` or `false` — yes or no. So: is empty or not? Which is more meaningful, getEmpty or isEmpty? `isEmpty`.</p>
+<pre class='code'>public boolean isEmpty() {
+    return empty;
+}</pre>
+<p>Both approaches we have.</p>
+<p>Rule:</p>
+<p>For boolean properties, getter method name can be prefixed with either `get` or `is`.</p>
+<p>Recommended to use `is`.</p>
+<p>In collections, to ask whether the collection is empty: method is `isEmpty`, not getEmpty. More meaningful. That does not mean getEmpty is invalid — it is also valid.</p>
+<p>Exam pattern (compulsory-style question): for boolean property empty, which of the following is valid coding standard? Option 1 = getEmpty, option 2 = isEmpty. You have to select that both are valid. Recommended is isEmpty; both are legal.</p>
+<p>Board note (star):</p>
+<p>For boolean properties, getter method name can be prefixed with either get or is, but recommended to use is.</p>
+<pre class='code'>private boolean empty;
+
+public boolean getEmpty() {   // valid
+    return empty;
+}
+
+public boolean isEmpty() {    // valid and recommended
+    return empty;
+}</pre>
+<p>That closes Java coding standards related to beans.</p>
+<h3>[56:56] Coding standards for **listeners**</h3>
+<p>GUI / AWT event handling: you may have heard listener — MouseMotionListener, mouse-click listener, etc.</p>
+<p>Servlets also have listeners. He lists (and says there are eight servlet-related listeners):</p>
+<ul><li>Servlet request listener (ServletRequestListener)</li></ul>
+<ul><li>Servlet request attribute listener (ServletRequestAttributeListener)</li></ul>
+<ul><li>Servlet context listener (ServletContextListener)</li></ul>
+<ul><li>Servlet context attribute listener (ServletContextAttributeListener)</li></ul>
+<ul><li>HTTP session listener (HttpSessionListener)</li></ul>
+<ul><li>HTTP session activation listener (HttpSessionActivationListener)</li></ul>
+<ul><li>HTTP session binding listener (HttpSessionBindingListener)</li></ul>
+<p>(He says “eight eight listeners”; the list above is what he named aloud.)</p>
+<h4>What is a listener?</h4>
+<p>Students are listening. The person who listens is a listener. What do you listen? Events (not “SCJP”).</p>
+<p>Whenever a mouse click event happens, the mouse-click listener performs a certain action.</p>
+<p>Whenever a particular event occurs, automatically the corresponding listener performs a certain activity.</p>
+<p>Recite:</p>
+<p>A listener listens events and performs appropriate action whenever that event occurs.</p>
+<p>Classroom joke — “sleeping listener”: he wants to configure a listener at the door. That listener always monitors the class. If any person is sleeping, immediately this listener comes, gives left and right, until that person will not sleep again. Once it has that guarantee, it sits down. That listener is a sleeping listener; it listens to sleeping events.</p>
+<p>Whenever a particular event occurs and you want some activity performed automatically → listener.</p>
+<p>Now: how do you register a listener? How do you remove (unregister) a listener? Two cases, both exam-style valid/invalid method signatures.</p>
+<h3>[59:38] Case 1 — to **register** a listener</h3>
+<p>Coding standard:</p>
+<ul><li>Method should be `public void`</li></ul>
+<ul><li>Method name should be prefixed with `add`</li></ul>
+<ul><li>After add, the listener type in the name and the argument type must match</li></ul>
+<p>Valid:</p>
+<pre class='code'>public void addMyActionListener(MyActionListener l)</pre>
+<p>Prefix add. After add: MyActionListener. Argument: MyActionListener l. Both match. Perfectly valid.</p>
+<p>Invalid — prefix is `register`, not `add`:</p>
+<pre class='code'>public void registerMyActionListener(MyActionListener l)</pre>
+<p>Method name should be prefixed with `add`, not register. Invalid as a listener-registration coding standard.</p>
+<p>Invalid — name says `MyActionListener`, argument is `ActionListener`:</p>
+<pre class='code'>public void addMyActionListener(ActionListener l)</pre>
+<p>After add you wrote MyActionListener, but the argument is ActionListener. Mismatch. Not a valid Java coding standard (he also says compile-time error / not valid standard — the exam cares that it does not follow the listener naming standard).</p>
+<p>Board rule:</p>
+<p>To register a listener, method name should be prefixed with `add`.</p>
+<p>Three examples — only the first is valid; second and third are invalid.</p>
+<h3>[1:03:52] Case 2 — to **unregister** a listener</h3>
+<p>To register: prefix `add`.</p>
+<p>To unregister: prefix `remove`. (add’s counterpart is remove.)</p>
+<p>Same matching rule: after remove, the name and the argument type must be the same listener type. Method is `public void`.</p>
+<p>Valid:</p>
+<pre class='code'>public void removeMyActionListener(MyActionListener l)</pre>
+<p>Invalid — `unregister` instead of `remove`:</p>
+<pre class='code'>public void unregisterMyActionListener(MyActionListener l)</pre>
+<p>Invalid — type mismatch:</p>
+<pre class='code'>public void removeMyActionListener(ActionListener l)</pre>
+<p>remove is OK, but after remove you have MyActionListener while the argument is ActionListener. Compulsory: same type. Invalid.</p>
+<p>Invalid — `delete` instead of `remove`:</p>
+<pre class='code'>public void deleteMyActionListener(MyActionListener l)</pre>
+<p>He almost writes on the board “prefixed with delete,” then corrects: sorry — prefixed with `remove`. Compulsory prefix is `remove`, not delete.</p>
+<p>Only the first is valid. All the remaining are invalid.</p>
+<h3>[1:08:12] Close — Language Fundamentals completed</h3>
+<p>This is what you should be aware of for Java coding standards.</p>
+<p>With this, we completed Language Fundamentals.</p>
+<p>Next playlist block is Operators &amp; Assignments (video 017).</p>
+<h2>Naming-rules cheat sheet (everything he taught)</h2>
+<p>Also (source-file / design, from the interview half):</p>
+<ul><li>First real statement in a .java file: `package` (comments may appear anywhere).</li></ul>
+<ul><li>Class should be `public` if others must use it.</li></ul>
+<ul><li>If the method uses no instance variables, declare it `static`.</li></ul>
+<ul><li>Not every class needs main (servlets, EJBs, utility classes).</li></ul>
+<ul><li>Bean class ending with Bean is common but not official Sun.</li></ul>
+<ul><li>register / unregister / delete are not the listener prefixes. `add` / `remove` are.</li></ul>
+<h2>Code from the lecture</h2>
+<h3>Interview reject vs interview pass</h3>
+<pre class='code'>// Ameerpet — 3.6 years on paper, one minute in the room
+class A {
+    public int m1(int x, int y) {
+        return x + y;
+    }
+}
+
+// Hi-Tech City / real-time
+package com.durgasoft.scjp;
+
+public class Calculator {
+    public static int add(int number1, int number2) {
+        return number1 + number2;
+    }
+}</pre>
+<h3>Meaningful names in the JDK (he does not open Math; he only calls it)</h3>
+<p>Math.sqrt(4);
+Math.max(10, 20);   // 20</p>
+<h3>JavaBean</h3>
+<pre class='code'>public class StudentBean {           // &quot;...Bean&quot; is NOT official Sun
+    private String name;
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+}</pre>
+<h3>Boolean property — both getters legal</h3>
+<pre class='code'>private boolean empty;
+
+public boolean getEmpty() {
+    return empty;
+}
+
+public boolean isEmpty() {    // recommended; collections use isEmpty()
+    return empty;
+}</pre>
+<h3>Listeners — register / unregister</h3>
+<pre class='code'>// Case 1 — register: ONLY the first follows the standard
+public void addMyActionListener(MyActionListener l) { }           // valid
+public void registerMyActionListener(MyActionListener l) { }      // invalid
+public void addMyActionListener(ActionListener l) { }             // invalid
+
+// Case 2 — unregister: ONLY the first follows the standard
+public void removeMyActionListener(MyActionListener l) { }        // valid
+public void unregisterMyActionListener(MyActionListener l) { }    // invalid
+public void removeMyActionListener(ActionListener l) { }          // invalid
+public void deleteMyActionListener(MyActionListener l) { }        // invalid</pre>
+<h2>Exam / interview traps</h2>
+<ul><li>They may ask a “silly” write-a-class question to see package, public, meaningful names, static, camel case — not to test whether you can add two ints.</li></ul>
+<ul><li>class A / m1 / x,y / no package = Ameerpet color.</li></ul>
+<ul><li>Interface names are adjectives, not nouns (he misspeaks then corrects).</li></ul>
+<ul><li>Constants: all uppercase + underscore, not camel case. He explicitly corrects “starts with” → “contain only uppercase.”</li></ul>
+<ul><li>Constants: public static final.</li></ul>
+<ul><li>Bean ending with Bean: not Sun-official; still allowed.</li></ul>
+<ul><li>Setter: public, void, set, must have an argument.</li></ul>
+<ul><li>Getter: public, non-void, get, no argument.</li></ul>
+<ul><li>Boolean getter: both getEmpty and isEmpty valid; exam wants both; recommended is `is`.</li></ul>
+<ul><li>Listener register: `add`, not register. Types in the method name and the parameter must match.</li></ul>
+<ul><li>Listener unregister: `remove`, not unregister, not delete. Same type-match rule.</li></ul>
+<ul><li>main is not required on every class.</li></ul>
+<h2>Recap (as Durga wants you to recite)</h2>
+<ol><li>Highly recommended to follow coding standards whenever writing Java code.</li></ol>
+<ol><li>Any component’s name should reflect its purpose (functionality).</li></ol>
+<ol><li>Advantage: readability and maintainability improve.</li></ol>
+<ol><li>Classes: nouns, UpperCamel.</li></ol>
+<ol><li>Interfaces: adjectives, UpperCamel.</li></ol>
+<ol><li>Methods: verbs or verb+noun, lowerCamel.</li></ol>
+<ol><li>Variables: nouns, lowerCamel.</li></ol>
+<ol><li>Constants: nouns, ALL_CAPS, usually public static final.</li></ol>
+<ol><li>JavaBean: private properties + public getters/setters; get/set; boolean also is.</li></ol>
+<ol><li>Listeners: addXxxListener(XxxListener) and removeXxxListener(XxxListener).</li></ol>
+<ol><li>Language Fundamentals ends here.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 16 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 16 of 16 (this part closes Language Fundamentals)</td></tr>
+<tr><td>Topic</td><td>Java coding standards / naming conventions (classes, interfaces, methods, variables, constants, packages, JavaBeans getXxx/setXxx/isXxx, listeners addXxx/removeXxx) plus the interview-story framing</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 08m 38s (4118 seconds)</td></tr>
+<tr><td>Video ID</td><td>-w4QphWnlZo</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=-w4QphWnlZo</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Package</th></tr>
+<tr><td>String</td><td>java.lang</td></tr>
+<tr><td>File</td><td>java.io</td></tr>
+<tr><td>ArrayList</td><td>java.util</td></tr>
+</table>
+<table>
+<tr><th>Name</th><th>Kind</th></tr>
+<tr><td>print sleep run eat start</td><td>verbs</td></tr>
+<tr><td>getName setSalary</td><td>verb–noun combinations</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Valid?</th><th>Why</th></tr>
+<tr><td>public void addMyActionListener(MyActionListener l)</td><td>valid</td><td>add + matching type</td></tr>
+<tr><td>public void registerMyActionListener(MyActionListener l)</td><td>invalid</td><td>prefix must be add, not register</td></tr>
+<tr><td>public void addMyActionListener(ActionListener l)</td><td>invalid</td><td>type after add ≠ argument type</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Valid?</th><th>Why</th></tr>
+<tr><td>public void removeMyActionListener(MyActionListener l)</td><td>valid</td><td>remove + matching type</td></tr>
+<tr><td>public void unregisterMyActionListener(MyActionListener l)</td><td>invalid</td><td>not remove</td></tr>
+<tr><td>public void removeMyActionListener(ActionListener l)</td><td>invalid</td><td>type mismatch</td></tr>
+<tr><td>public void deleteMyActionListener(MyActionListener l)</td><td>invalid</td><td>not remove (not delete)</td></tr>
+</table>
+<table>
+<tr><th>Component</th><th>English</th><th>First letter</th><th>Multi-word</th><th>Examples</th></tr>
+<tr><td>Package</td><td>reverse of client internet domain + module</td><td>lowercase segments</td><td>dots: com.durgasoft.scjp</td><td>not pack1</td></tr>
+<tr><td>Class</td><td>noun</td><td>Upper</td><td>every inner word Upper</td><td>String, StringBuffer, Account, Dog, Calculator</td></tr>
+<tr><td>Interface</td><td>adjective</td><td>Upper</td><td>every inner word Upper</td><td>Runnable, Serializable, Comparable, RandomAccess</td></tr>
+<tr><td>Method</td><td>verb or verb+noun</td><td>lower</td><td>inner words Upper (camel case)</td><td>print, sleep, run, eat, start, getName, setSalary, add</td></tr>
+<tr><td>Variable</td><td>noun</td><td>lower</td><td>inner words Upper (camel case)</td><td>name, age, salary, mobileNumber</td></tr>
+<tr><td>Constant</td><td>noun</td><td>ALL CAPS (contain only uppercase)</td><td>words split by `_`</td><td>MAX_VALUE, MAX_PRIORITY, NORMAL_PRIORITY, MIN_PRIORITY, PI</td></tr>
+<tr><td>Constant modifiers</td><td>—</td><td>—</td><td>—</td><td>usually public static final</td></tr>
+<tr><td>Bean property</td><td>—</td><td>private field</td><td>camel case field</td><td>private String name;</td></tr>
+<tr><td>Setter</td><td>—</td><td>set + Property</td><td>public, void, has arg</td><td>setName(String name)</td></tr>
+<tr><td>Getter</td><td>—</td><td>get + Property</td><td>public, non-void, no arg</td><td>getName()</td></tr>
+<tr><td>Boolean getter</td><td>—</td><td>get or is</td><td>both valid; `is` recommended</td><td>getEmpty(), isEmpty()</td></tr>
+<tr><td>Register listener</td><td>—</td><td>prefix `add`</td><td>name type == param type</td><td>addMyActionListener(MyActionListener l)</td></tr>
+<tr><td>Unregister listener</td><td>—</td><td>prefix `remove`</td><td>name type == param type</td><td>removeMyActionListener(MyActionListener l)</td></tr>
+</table>
+</body></html>

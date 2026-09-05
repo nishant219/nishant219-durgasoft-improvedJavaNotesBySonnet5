@@ -1,0 +1,665 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>138-collections-list-set</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 138 — Collections Part-3: Collection Interface Methods, List &amp; ArrayList</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>Continuation of the Collections series (Part-1 = Video 136, Part-2 = Video 137). This session is the first deep dive into the `Collection` interface methods and then moves into `List` interface (index-based methods) and begins `ArrayList` (properties, constructors, growth formula, demo).</p>
+<p>What this lecture covers:</p>
+<ol><li>Recap of top interview FAQs from previous sessions</li></ol>
+<ol><li>When to use Collection and all generalized methods in Collection interface</li></ol>
+<ol><li>Important note: no concrete class implements `Collection` directly</li></ol>
+<ol><li>List interface — when to use, role of index, List-specific methods</li></ol>
+<ol><li>List implementation classes overview (ArrayList, LinkedList, Vector, Stack)</li></ol>
+<ol><li>ArrayList — underlying data structure, properties, three constructors, capacity growth formula</li></ol>
+<ol><li>Live demo program + generics warning (Java 1.5+)</li></ol>
+<p>What continues in next session (Video 139):</p>
+<ul><li>General ArrayList conclusions (Serializable, Cloneable, RandomAccess)</li></ul>
+<ul><li>ArrayList performance characteristics</li></ul>
+<ul><li>LinkedList introduction</li></ul>
+<p>Scope note: The video title mentions &quot;list &amp; set&quot;. Set interface rules were covered in Video 137 (Part-2). This session focuses heavily on Collection methods + List + ArrayList; Set is referenced only in recap/interview context.</p>
+<h2>00:05 — Recap: must-know interview questions</h2>
+<p>Before starting new content, Durga Sir revisits questions you must answer confidently for internal exams and interviews:</p>
+<p>These three differences are the minimum answerable level from prior lectures. Today&#x27;s session adds the method-level detail behind the Collection and List interfaces.</p>
+<h2>01:06 — Interface 1 revisited: `Collection` (I)</h2>
+<h3>When should we go for Collection?</h3>
+<p>Rule (board conclusion): If you want to represent a group of individual objects as a single entity, then we should go for Collection.</p>
+<ul><li>Individual objects have no dependency on each other (unlike Map&#x27;s key–value dependency).</li></ul>
+<ul><li>Example mental model: five separate objects (obj1, obj2, obj3, obj4, obj5) grouped together as one collection object.</li></ul>
+<h3>What does Collection interface define?</h3>
+<p>Rule: Collection interface defines the most common methods which are applicable for any collection object.</p>
+<p>Whether the concrete object is:</p>
+<ul><li>ArrayList</li></ul>
+<ul><li>LinkedList</li></ul>
+<ul><li>Stack</li></ul>
+<ul><li>TreeSet</li></ul>
+<ul><li>HashSet</li></ul>
+<p>…the common operations (add, remove, size, etc.) are declared once in Collection interface. Every child interface/class inherits or implements these generalized methods.</p>
+<h3>There is NO concrete class for Collection</h3>
+<p>Important exam note: There is no concrete class which implements Collection interface directly.</p>
+<p>Concrete classes always implement child interfaces (List, Set, Queue), never Collection itself.</p>
+<pre class='code'>import java.util.*;
+
+// CE: Collection is abstract; cannot be instantiated
+// Collection c = new Collection();
+
+// Valid — concrete classes implement child interfaces
+Collection&lt;String&gt; c1 = new ArrayList&lt;&gt;();   // via List
+Collection&lt;String&gt; c2 = new HashSet&lt;&gt;();     // via Set
+Collection&lt;String&gt; c3 = new LinkedList&lt;&gt;();  // via List</pre>
+<p>Board note to copy:</p>
+<ul><li>There is no concrete class which implements Collection interface directly.</li></ul>
+<ul><li>That is why we do not discuss any &quot;Collection class&quot; — only the Collection interface.</li></ul>
+<h2>01:44 — All methods in `Collection` interface (generalized methods)</h2>
+<p>Durga Sir stresses: You must have crystal-clear clarity on every method below. These are the generalized methods present inside Collection interface, applicable to any collection object (ArrayList, HashSet, Vector, etc.).</p>
+<h3>Category 1: Adding elements</h3>
+<p>Classroom analogy for `addAll`:</p>
+<ul><li>&quot;I don&#x27;t want to add one student — I want to add these 10 students (a whole batch) to my main collection.&quot;</li></ul>
+<ul><li>A group of objects is itself a Collection → pass it to addAll.</li></ul>
+<pre class='code'>import java.util.*;
+
+public class CollectionAddDemo {
+    public static void main(String[] args) {
+        Collection&lt;String&gt; main = new ArrayList&lt;&gt;();
+        main.add(&quot;Durga&quot;);           // add single object
+
+        Collection&lt;String&gt; batch = new ArrayList&lt;&gt;();
+        batch.add(&quot;Ravi&quot;);
+        batch.add(&quot;Shiva&quot;);
+        batch.add(&quot;Radha&quot;);
+
+        main.addAll(batch);          // add entire group
+        System.out.println(main);
+        // prints [Durga, Ravi, Shiva, Radha]
+    }
+}</pre>
+<h3>Category 2: Removing elements (four remove-related methods)</h3>
+<p>Durga Sir&#x27;s classroom analogies (memorize these):</p>
+<pre class='code'>import java.util.*;
+
+public class CollectionRemoveDemo {
+    public static void main(String[] args) {
+        Collection&lt;String&gt; classRoom = new ArrayList&lt;&gt;(
+            Arrays.asList(&quot;Morning-A&quot;, &quot;Morning-B&quot;, &quot;Evening-A&quot;, &quot;Evening-B&quot;, &quot;New-1&quot;, &quot;New-2&quot;)
+        );
+
+        Collection&lt;String&gt; eveningBatch = Arrays.asList(&quot;Evening-A&quot;, &quot;Evening-B&quot;);
+        classRoom.removeAll(eveningBatch);
+        System.out.println(&quot;After removeAll evening: &quot; + classRoom);
+        // prints After removeAll evening: [Morning-A, Morning-B, New-1, New-2]
+
+        Collection&lt;String&gt; newMembers = Arrays.asList(&quot;New-1&quot;, &quot;New-2&quot;);
+        classRoom.retainAll(newMembers);
+        System.out.println(&quot;After retainAll newMembers: &quot; + classRoom);
+        // prints After retainAll newMembers: [New-1, New-2]
+
+        classRoom.clear();
+        System.out.println(&quot;After clear, size: &quot; + classRoom.size());
+        // prints After clear, size: 0
+    }
+}</pre>
+<p>Exam point: There are four removal-related methods: remove, removeAll, clear, retainAll. Normal remove removes one object; retainAll is also for removal but keeps only the specified group.</p>
+<h3>Category 3: Checking / querying</h3>
+<pre class='code'>import java.util.*;
+
+public class CollectionQueryDemo {
+    public static void main(String[] args) {
+        Collection&lt;String&gt; c = new ArrayList&lt;&gt;(Arrays.asList(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;));
+
+        System.out.println(c.contains(&quot;B&quot;));      // true
+        System.out.println(c.contains(&quot;Z&quot;));      // false
+        System.out.println(c.isEmpty());            // false
+        System.out.println(c.size());               // 3
+
+        Collection&lt;String&gt; sub = Arrays.asList(&quot;A&quot;, &quot;B&quot;);
+        System.out.println(c.containsAll(sub));   // true
+    }
+}</pre>
+<h3>Category 4: Conversion and traversal</h3>
+<p>Why `toArray()`?</p>
+<ul><li>After all insertions/deletions are done, converting to array makes operations more efficient.</li></ul>
+<ul><li>Array operations are faster than collection operations in some scenarios.</li></ul>
+<p>Why `iterator()`?</p>
+<ul><li>Collection = group of objects. To access objects one by one, a cursor is required.</li></ul>
+<ul><li>`Iterator` is the universal cursor applicable for any collection object.</li></ul>
+<pre class='code'>import java.util.*;
+
+public class CollectionIteratorDemo {
+    public static void main(String[] args) {
+        Collection&lt;String&gt; c = new ArrayList&lt;&gt;(Arrays.asList(&quot;Durga&quot;, &quot;Java&quot;, &quot;OCJP&quot;));
+
+        // Universal cursor — works on ANY collection
+        Iterator&lt;String&gt; it = c.iterator();
+        while (it.hasNext()) {
+            System.out.println(it.next());
+        }
+        // prints Durga
+        // prints Java
+        // prints OCJP
+
+        Object[] arr = c.toArray();
+        System.out.println(arr.length); // 3
+    }
+}</pre>
+<h3>Complete Collection interface method summary (12 core methods)</h3>
+<p>Can we call these on LinkedList? On TreeSet? → Yes. Because Collection is the root (parent) of List/Set/Queue hierarchies. Any concrete collection object can use all 12 methods happily.</p>
+<h2>17:01 — Interface 2: `List` (I) — deep dive</h2>
+<h3>Hierarchy reminder</h3>
+<p>Collection (parent)
+    └── List (child)
+         ├── ArrayList
+         ├── LinkedList
+         ├── Vector   (legacy, 1.0)
+         └── Stack    (legacy, extends Vector)</p>
+<p>Rule: Collection is parent, List is child. All 12 Collection methods are automatically available on List. But List adds extra index-based methods on top.</p>
+<h3>When should we go for List?</h3>
+<p>Rule (board conclusion): If we want to represent a group of individual objects as a single entity where:</p>
+<p>1. Duplicates are allowed, AND</p>
+<p>2. Insertion order must be preserved</p>
+<p>→ then we should go for List.</p>
+<h3>How insertion order is preserved in List — INDEX is the key</h3>
+<p>Consider a List with index positions 0, 1, 2, 3, 4, 5…</p>
+<p>Point 1 — Insertion order preserved via index:</p>
+<ul><li>First inserted element → 0th index</li></ul>
+<ul><li>Second inserted element → 1st index</li></ul>
+<ul><li>Third inserted element → 2nd index</li></ul>
+<ul><li>Insertion order is preserved with respect to index.</li></ul>
+<p>Point 2 — Duplicates allowed; differentiated by index:</p>
+<ul><li>Two &quot;A&quot; objects can coexist at index 0 and index 15.</li></ul>
+<ul><li>We can differentiate duplicate objects by using index.</li></ul>
+<ul><li>Therefore: Index plays a very important role in List.</li></ul>
+<p>Board conclusion (copy exactly):</p>
+<p>- We can preserve insertion order via index.</p>
+<p>- We can differentiate duplicate objects by using index.</p>
+<p>- Index will play a very important role in List.</p>
+<h3>List-specific methods (all index-related)</h3>
+<p>Every List-specific method talks about index. Collection&#x27;s add(Object) always appends at end; List adds index-aware variants.</p>
+<p>No ready-made method for 2nd or 3rd occurrence — only first and last. For other occurrences, write explicit loop logic.</p>
+<h4>`add(int index, E e)` — shift behavior</h4>
+<pre class='code'>import java.util.*;
+
+public class ListAddAtIndexDemo {
+    public static void main(String[] args) {
+        List&lt;String&gt; list = new ArrayList&lt;&gt;(Arrays.asList(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;));
+        // indexes:                        0    1    2    3    4
+
+        list.add(3, &quot;X&quot;);  // insert X at index 3
+        // Before: A B C D E
+        // D was at index 3 → shifts to index 4
+        // Result: A B C X D E
+
+        System.out.println(list);
+        // prints [A, B, C, X, D, E]
+    }
+}</pre>
+<h4>`remove(int index)` vs `remove(Object o)`</h4>
+<pre class='code'>import java.util.*;
+
+public class ListRemoveIndexDemo {
+    public static void main(String[] args) {
+        List&lt;String&gt; list = new ArrayList&lt;&gt;(Arrays.asList(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;));
+
+        String removed = list.remove(2);  // remove by INDEX
+        System.out.println(&quot;Removed: &quot; + removed);  // Removed: C
+        System.out.println(list);                    // [A, B, D]
+
+        list.remove(&quot;A&quot;);  // remove by OBJECT (from Collection)
+        System.out.println(list);                    // [B, D]
+    }
+}</pre>
+<h4>`get`, `set`, `indexOf`, `lastIndexOf`</h4>
+<pre class='code'>import java.util.*;
+
+public class ListIndexMethodsDemo {
+    public static void main(String[] args) {
+        List&lt;String&gt; list = new ArrayList&lt;&gt;();
+        list.add(&quot;A&quot;);  // index 0
+        list.add(&quot;B&quot;);  // index 1
+        list.add(&quot;A&quot;);  // index 2 — duplicate
+        list.add(&quot;C&quot;);  // index 3
+
+        System.out.println(list.get(2));        // A (element at index 2)
+        list.set(2, &quot;Z&quot;);                        // replace index 2
+        System.out.println(list);                // [A, B, Z, C]
+
+        System.out.println(list.indexOf(&quot;A&quot;));     // 0 (first occurrence)
+        System.out.println(list.lastIndexOf(&quot;A&quot;)); // 0 (only one A left after set)
+    }
+}</pre>
+<h3>List-specific cursor: `ListIterator`</h3>
+<pre class='code'>import java.util.*;
+
+public class ListIteratorDemo {
+    public static void main(String[] args) {
+        List&lt;String&gt; list = new ArrayList&lt;&gt;(Arrays.asList(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;));
+
+        ListIterator&lt;String&gt; lit = list.listIterator();
+        while (lit.hasNext()) {
+            System.out.println(lit.next());
+        }
+        // prints A, B, C
+    }
+}</pre>
+<h3>Board summary — List interface defines</h3>
+<p>List interface defines methods to:</p>
+<ol><li>add(int index, E e) — add at specified index</li></ol>
+<ol><li>addAll(int index, Collection c) — add group from specified index</li></ol>
+<ol><li>remove(int index) — remove by index</li></ol>
+<ol><li>get(int index) — retrieve by index</li></ol>
+<ol><li>set(int index, E e) — replace at index</li></ol>
+<ol><li>indexOf(Object o) — first occurrence index</li></ol>
+<ol><li>lastIndexOf(Object o) — last occurrence index</li></ol>
+<ol><li>listIterator() — List-specific cursor</li></ol>
+<p>All 8 List-specific methods + 12 Collection methods = available on every List implementation class (ArrayList, LinkedList, Vector, Stack).</p>
+<h2>33:47 — List implementation classes (overview)</h2>
+<p>Hierarchy diagram (board):</p>
+<p>Collection
+    └── List
+         ├── ArrayList
+         ├── LinkedList
+         ├── Vector
+         └── Stack (extends Vector)</p>
+<p>This session begins deep coverage of ArrayList. LinkedList, Vector, Stack details continue in upcoming lectures.</p>
+<h2>35:27 — `ArrayList` class — properties (point by point)</h2>
+<h3>Point 1: Underlying data structure</h3>
+<p>The underlying data structure for ArrayList is resizable array (growable array).</p>
+<p>ArrayList is implemented using the resizable array concept in Java. Internally it maintains an Object array that grows when full.</p>
+<h3>Point 2: Duplicates allowed</h3>
+<p>ArrayList is under List → List allows duplicates → duplicates are allowed in ArrayList.</p>
+<h3>Point 3: Insertion order preserved</h3>
+<p>Objects appear in the same order they were added. Insertion order is preserved (via index, as explained above).</p>
+<h3>Point 4: Heterogeneous objects — allowed (with framework-wide exception)</h3>
+<p>ArrayList allows heterogeneous objects (different types in same list).</p>
+<p>Framework-wide rule (very important for exam):</p>
+<ul><li>In the entire Collection Framework, only two areas do NOT allow heterogeneous objects:</li></ul>
+<ol><li>TreeSet</li></ol>
+<ol><li>TreeMap</li></ol>
+<ul><li>Why? TreeSet/TreeMap insert objects according to sorting order → comparison is required → objects must be same type (Comparable or Comparator).</li></ul>
+<ul><li>In all other collections (including ArrayList), if comparison is not required, objects can be different types — no problem.</li></ul>
+<pre class='code'>import java.util.*;
+
+public class ArrayListHeterogeneousDemo {
+    public static void main(String[] args) {
+        ArrayList list = new ArrayList();  // raw type for demo
+        list.add(&quot;Durga&quot;);    // String
+        list.add(10);         // Integer (autoboxing)
+        list.add(null);       // null also OK
+        System.out.println(list);
+        // prints [Durga, 10, null]
+    }
+}</pre>
+<h3>Point 5: Null insertion — possible</h3>
+<p>Null insertion is possible in ArrayList.</p>
+<p>list.add(null) — no problem. Multiple nulls also allowed (duplicates allowed).</p>
+<h3>ArrayList properties — board checklist</h3>
+<h2>42:17 — ArrayList constructors (three constructors)</h2>
+<p>Almost every collection class follows this three-constructor pattern. Know all three for ArrayList.</p>
+<h3>Constructor 1: `ArrayList()` — default empty list</h3>
+<pre class='code'>ArrayList list = new ArrayList();</pre>
+<ul><li>Creates an empty ArrayList object.</li></ul>
+<ul><li>Default initial capacity = 10.</li></ul>
+<ul><li>You can add up to 10 elements before internal resize happens.</li></ul>
+<h3>What happens when 11th element is added? (Growth mechanism)</h3>
+<p>When ArrayList reaches max capacity (e.g., 10 elements filled) and you try to insert the 11th object:</p>
+<ol><li>A new, bigger ArrayList (internal array) object is created</li></ol>
+<ol><li>All existing elements are copied to the new array</li></ol>
+<ol><li>Reference variable is reassigned to the new object</li></ol>
+<ol><li>Old array object becomes eligible for garbage collection</li></ol>
+<p>This copy-on-grow pattern is why specifying initial capacity matters for performance.</p>
+<h3>Growth formula (OCJP exam favourite)</h3>
+<p>newCapacity = (currentCapacity * 3 / 2) + 1</p>
+<p>Worked example:</p>
+<p>Note: Integer division applies — 25 * 3 / 2 = 75 / 2 = 37 (not 37.5).</p>
+<p>NOT simply doubling (10 → 20). The formula is specifically `currentCapacity × 3/2 + 1`.</p>
+<h3>Constructor 2: `ArrayList(int initialCapacity)` — specify capacity upfront</h3>
+<pre class='code'>ArrayList list = new ArrayList(1000);</pre>
+<ul><li>Creates empty ArrayList with specified initial capacity (e.g., 1000).</li></ul>
+<ul><li>Avoids repeated create-copy-grow cycles if you know approximate size upfront.</li></ul>
+<ul><li>Performance tip: If you know you&#x27;ll store ~1000 elements, create with capacity 1000 at the beginning instead of default 10 → 16 → 25 → 38 → …</li></ul>
+<h3>Constructor 3: `ArrayList(Collection c)` — equivalent ArrayList from any collection</h3>
+<pre class='code'>ArrayList list = new ArrayList(linkedListObject);
+ArrayList list = new ArrayList(vectorObject);
+ArrayList list = new ArrayList(hashSetObject);</pre>
+<ul><li>Creates an equivalent ArrayList containing all elements from the given collection.</li></ul>
+<ul><li>Works with any collection object (LinkedList, Vector, Stack, HashSet, etc.).</li></ul>
+<ul><li>Used for inter-conversion between collection types.</li></ul>
+<pre class='code'>import java.util.*;
+
+public class ArrayListConstructorsDemo {
+    public static void main(String[] args) {
+        // Constructor 1: default capacity 10
+        ArrayList&lt;String&gt; a1 = new ArrayList&lt;&gt;();
+        System.out.println(&quot;a1 size: &quot; + a1.size()); // 0
+
+        // Constructor 2: specified capacity
+        ArrayList&lt;String&gt; a2 = new ArrayList&lt;&gt;(1000);
+
+        // Constructor 3: from another collection
+        LinkedList&lt;String&gt; ll = new LinkedList&lt;&gt;();
+        ll.add(&quot;A&quot;);
+        ll.add(&quot;B&quot;);
+        ArrayList&lt;String&gt; a3 = new ArrayList&lt;&gt;(ll);
+        System.out.println(a3); // [A, B]
+    }
+}</pre>
+<h3>Three constructors summary table</h3>
+<h2>53:43 — ArrayList demo program (board example)</h2>
+<pre class='code'>import java.util.*;
+
+public class ArrayListDemo {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+
+        l.add(10);       // Integer (autoboxing)
+        l.add(&quot;Durga&quot;);  // String — heterogeneous OK
+        l.add(10);       // duplicate OK
+        l.add(null);     // null OK
+
+        System.out.println(l);
+        // prints [10, Durga, 10, null]
+        // Collection toString: square brackets [ ]
+
+        l.remove(2);     // remove element at INDEX 2 (second 10)
+        // After remove: [10, Durga, null]
+
+        l.add(2, &quot;Software&quot;);  // insert at index 2
+        // D shifts: [10, Durga, Software, null]
+
+        l.add(&quot;M&quot;);      // add at end (no index specified)
+        // [10, Durga, Software, null, M]
+
+        System.out.println(l);
+    }
+}</pre>
+<h3>Properties demonstrated in demo</h3>
+<h3>Collection vs Map — toString format difference</h3>
+<h2>58:19 — Generics warning (Java 1.5+)</h2>
+<p>When compiling with raw types (no generics):</p>
+<p>Note: ArrayListDemo.java uses unchecked or unsafe operations.
+Recompile with -Xlint:unchecked for details.</p>
+<p>Why the warning?</p>
+<ul><li>From Java 1.5, Generics concept introduced.</li></ul>
+<ul><li>Highly recommended to use collections with generics for type safety.</li></ul>
+<ul><li>Raw type ArrayList l = new ArrayList() allows any object → compiler warns about unchecked operations.</li></ul>
+<p>Correct generic syntax:</p>
+<pre class='code'>ArrayList&lt;String&gt; l = new ArrayList&lt;String&gt;();
+// or (Java 7+ diamond)
+ArrayList&lt;String&gt; l = new ArrayList&lt;&gt;();</pre>
+<ul><li>With generics → no warning.</li></ul>
+<ul><li>Without generics → warning at compile time (still compiles and runs).</li></ul>
+<p>Generics deep-dive is a separate topic. For now: use generic syntax to avoid warnings and ensure type safety.</p>
+<h2>Quick revision — exam checklist</h2>
+<h3>Collection interface</h3>
+<ul><li>[ ] When to use: group of individual objects as single entity</li></ul>
+<ul><li>[ ] Defines 12 generalized methods (add, addAll, remove, removeAll, clear, retainAll, contains, containsAll, isEmpty, size, toArray, iterator)</li></ul>
+<ul><li>[ ] No concrete class implements Collection directly</li></ul>
+<ul><li>[ ] retainAll = keep specified group, remove everything else</li></ul>
+<ul><li>[ ] Iterator = universal cursor for any collection</li></ul>
+<h3>Collection vs Collections (interview)</h3>
+<ul><li>[ ] Collection = interface; Collections = utility class</li></ul>
+<ul><li>[ ] Collections.sort(list) for sorting a List</li></ul>
+<h3>List interface</h3>
+<ul><li>[ ] When to use: duplicates allowed + insertion order preserved</li></ul>
+<ul><li>[ ] Index preserves insertion order and differentiates duplicates</li></ul>
+<ul><li>[ ] 8 List-specific methods (all index-related)</li></ul>
+<ul><li>[ ] set(index, obj) — NOT replace</li></ul>
+<ul><li>[ ] indexOf = first occurrence; lastIndexOf = last occurrence</li></ul>
+<ul><li>[ ] ListIterator = List-specific cursor via listIterator()</li></ul>
+<h3>List vs Set (interview)</h3>
+<ul><li>[ ] List: duplicates YES, insertion order YES</li></ul>
+<ul><li>[ ] Set: duplicates NO, insertion order NOT required</li></ul>
+<h3>ArrayList</h3>
+<ul><li>[ ] Underlying DS: resizable/growable array</li></ul>
+<ul><li>[ ] Duplicates allowed, insertion order preserved</li></ul>
+<ul><li>[ ] Heterogeneous objects allowed</li></ul>
+<ul><li>[ ] Null insertion possible</li></ul>
+<ul><li>[ ] Default initial capacity: 10</li></ul>
+<ul><li>[ ] Growth formula: newCapacity = (currentCapacity × 3/2) + 1</li></ul>
+<ul><li>[ ] 3 constructors: (), (int capacity), (Collection c)</li></ul>
+<ul><li>[ ] Constructor 3 used for inter-conversion between collection types</li></ul>
+<ul><li>[ ] Only TreeSet and TreeMap disallow heterogeneous objects (framework-wide)</li></ul>
+<h3>Generics</h3>
+<ul><li>[ ] Raw types → unchecked warning</li></ul>
+<ul><li>[ ] Use ArrayList&lt;Type&gt; for type safety (Java 1.5+)</li></ul>
+<h2>Homework / self-test</h2>
+<ol><li>Write all 12 Collection interface methods from memory with one-line purpose each.</li></ol>
+<ol><li>Explain retainAll vs removeAll using Durga Sir&#x27;s classroom analogy.</li></ol>
+<ol><li>Calculate new ArrayList capacity after filling: 10 → ? → ? → ? (first four growth steps).</li></ol>
+<ol><li>Write a program that creates ArrayList from a HashSet using constructor 3 and prints elements.</li></ol>
+<ol><li>Demonstrate add(index, element) shift behavior with at least 5 elements.</li></ol>
+<ol><li>Convert raw-type demo to generic ArrayList&lt;String&gt; and confirm warning disappears.</li></ol>
+<pre class='code'>import java.util.*;
+
+public class SelfTest138 {
+    public static void main(String[] args) {
+        // Growth trace: 10 -&gt; 16 -&gt; 25 -&gt; 38
+        ArrayList&lt;Integer&gt; list = new ArrayList&lt;&gt;(10);
+        for (int i = 1; i &lt;= 26; i++) {
+            list.add(i);
+        }
+        System.out.println(&quot;Size after 26 adds: &quot; + list.size());
+        // prints Size after 26 adds: 26
+
+        // Inter-conversion: HashSet -&gt; ArrayList
+        HashSet&lt;String&gt; set = new HashSet&lt;&gt;(Arrays.asList(&quot;C&quot;, &quot;A&quot;, &quot;B&quot;));
+        ArrayList&lt;String&gt; fromSet = new ArrayList&lt;&gt;(set);
+        System.out.println(&quot;From HashSet: &quot; + fromSet);
+        // order not guaranteed for HashSet source
+
+        // List index methods
+        List&lt;String&gt; names = new ArrayList&lt;&gt;(Arrays.asList(&quot;A&quot;, &quot;B&quot;, &quot;A&quot;, &quot;C&quot;));
+        System.out.println(&quot;First A at: &quot; + names.indexOf(&quot;A&quot;));      // 0
+        System.out.println(&quot;Last A at: &quot; + names.lastIndexOf(&quot;A&quot;));  // 2
+        names.set(1, &quot;Z&quot;);
+        System.out.println(&quot;After set: &quot; + names);                   // [A, Z, A, C]
+    }
+}</pre>
+<h2>Session scope &amp; next lecture preview</h2>
+<p>Completed in Video 138:</p>
+<ul><li>Full Collection interface method catalog with analogies</li></ul>
+<ul><li>List interface index-based methods</li></ul>
+<ul><li>ArrayList properties, 3 constructors, growth formula</li></ul>
+<ul><li>Demo program + generics warning</li></ul>
+<p>Continues in Video 139:</p>
+<ul><li>General collection conclusions (Serializable, Cloneable, RandomAccess)</li></ul>
+<ul><li>ArrayList performance (best for retrieval, worst for middle insertion/deletion)</li></ul>
+<ul><li>ArrayList vs Vector comparison</li></ul>
+<ul><li>Synchronized collection wrappers</li></ul>
+<ul><li>LinkedList introduction</li></ul>
+<h2>Reference tables</h2>
+<h3>Collection interface — complete method reference</h3>
+<h3>List interface — additional methods beyond Collection</h3>
+<h3>ArrayList capacity growth worked examples</h3>
+<h3>Heterogeneous objects — framework rule</h3>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>138 of 203</td><td></td><td></td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Collections Part-3 \</td><td>collection &amp; collections \</td><td>list &amp; set</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 00m 55s</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>foi7_Zjbz5c</td><td></td><td></td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=foi7_Zjbz5c</td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Question</th><th>One-line answer</th></tr>
+<tr><td>1</td><td>What is the difference between Collection and Collections?</td><td>Collection = interface; Collections = utility class with static helper methods (sort, reverse, etc.)</td></tr>
+<tr><td>2</td><td>What is the difference between List and Set?</td><td>List → duplicates allowed + insertion order preserved; Set → duplicates NOT allowed + insertion order NOT required</td></tr>
+<tr><td>3</td><td>What is the difference between Collection and Map?</td><td>Collection = group of individual objects; Map = group of key–value pairs — completely separate hierarchies</td></tr>
+</table>
+<table>
+<tr><th>Requirement (plain English)</th><th>Method</th><th>Signature</th></tr>
+<tr><td>Add one object to the collection</td><td>add</td><td>boolean add(Object o) / boolean add(E e)</td></tr>
+<tr><td>Add a group of objects (another collection)</td><td>addAll</td><td>boolean addAll(Collection c)</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>Method</th><th>What happens</th></tr>
+<tr><td>Remove one particular object</td><td>remove(Object o)</td><td>That object removed from collection</td></tr>
+<tr><td>Remove a group of objects</td><td>removeAll(Collection c)</td><td>All objects present in c are removed from main collection</td></tr>
+<tr><td>Remove ALL objects (empty the collection)</td><td>clear()</td><td>Every object removed; size becomes 0</td></tr>
+<tr><td>Retain only a specified group; remove everything else</td><td>retainAll(Collection c)</td><td>Keep objects in c; all remaining objects removed</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Classroom story</th></tr>
+<tr><td>remove(&quot;Ravi&quot;)</td><td>&quot;If any person named Ravi is in class, please go out.&quot;</td></tr>
+<tr><td>removeAll(eveningBatch)</td><td>&quot;All evening SCJP batch people, please go out.&quot;</td></tr>
+<tr><td>clear()</td><td>&quot;Class completed for today — everyone please go out.&quot; After clear(), classroom is empty (size = 0).</td></tr>
+<tr><td>retainAll(newMembers)</td><td>&quot;Only the new members who came for Collections topic — accept these, all remaining please go out.&quot;</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>Method</th><th>Return</th></tr>
+<tr><td>Check if one particular object is present</td><td>contains(Object o)</td><td>boolean</td></tr>
+<tr><td>Check if all objects of another collection are present</td><td>containsAll(Collection c)</td><td>boolean</td></tr>
+<tr><td>Check if collection is empty</td><td>isEmpty()</td><td>boolean</td></tr>
+<tr><td>Get number of objects</td><td>size()</td><td>int</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>Method</th><th>Return type</th></tr>
+<tr><td>Convert collection to array (for faster operations)</td><td>toArray()</td><td>Object[]</td></tr>
+<tr><td>Get objects one by one (universal cursor)</td><td>iterator()</td><td>Iterator</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Method</th><th>Purpose</th></tr>
+<tr><td>1</td><td>add(E e)</td><td>Add single element</td></tr>
+<tr><td>2</td><td>addAll(Collection c)</td><td>Add all elements from another collection</td></tr>
+<tr><td>3</td><td>remove(Object o)</td><td>Remove single element</td></tr>
+<tr><td>4</td><td>removeAll(Collection c)</td><td>Remove all elements found in c</td></tr>
+<tr><td>5</td><td>clear()</td><td>Remove all elements</td></tr>
+<tr><td>6</td><td>retainAll(Collection c)</td><td>Keep only elements in c; remove rest</td></tr>
+<tr><td>7</td><td>contains(Object o)</td><td>Check single element presence</td></tr>
+<tr><td>8</td><td>containsAll(Collection c)</td><td>Check all elements of c are present</td></tr>
+<tr><td>9</td><td>isEmpty()</td><td>Check if size == 0</td></tr>
+<tr><td>10</td><td>size()</td><td>Return number of elements</td></tr>
+<tr><td>11</td><td>toArray()</td><td>Convert to Object array</td></tr>
+<tr><td>12</td><td>iterator()</td><td>Return Iterator for one-by-one access</td></tr>
+</table>
+<table>
+<tr><th>Insertion order</th><th>Element</th><th>Index</th></tr>
+<tr><td>1st inserted</td><td>A</td><td>0</td></tr>
+<tr><td>2nd inserted</td><td>B</td><td>1</td></tr>
+<tr><td>3rd inserted</td><td>C</td><td>2</td></tr>
+<tr><td>…</td><td>…</td><td>…</td></tr>
+<tr><td>16th inserted</td><td>A (duplicate)</td><td>15</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>Method</th><th>Notes</th></tr>
+<tr><td>Add at default (end/next available cell)</td><td>add(E e)</td><td>Inherited from Collection; appends at end</td></tr>
+<tr><td>Add at specified index</td><td>add(int index, E e)</td><td>Existing element at that index shifts right</td></tr>
+<tr><td>Add group starting at index</td><td>addAll(int index, Collection c)</td><td>Insert all elements of c starting from index</td></tr>
+<tr><td>Remove by index (not just by object)</td><td>remove(int index)</td><td>Returns removed element; shifts left</td></tr>
+<tr><td>Get object at index</td><td>get(int index)</td><td>Returns element at specified index</td></tr>
+<tr><td>Replace object at index</td><td>set(int index, E e)</td><td>Not replace — method name is `set`</td></tr>
+<tr><td>Find first occurrence index of object</td><td>indexOf(Object o)</td><td>Returns first occurrence index</td></tr>
+<tr><td>Find last occurrence index of object</td><td>lastIndexOf(Object o)</td><td>Returns last occurrence index</td></tr>
+</table>
+<table>
+<tr><th>Cursor</th><th>Applicable for</th><th>Method to obtain</th></tr>
+<tr><td>Iterator</td><td>Any Collection</td><td>iterator()</td></tr>
+<tr><td>ListIterator</td><td>List only</td><td>listIterator()</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Class</th><th>Underlying DS</th><th>Version</th><th>Notes</th></tr>
+<tr><td>1</td><td>ArrayList</td><td>Resizable / growable array</td><td>1.2</td><td>Most commonly used List</td></tr>
+<tr><td>2</td><td>LinkedList</td><td>Doubly linked list</td><td>1.2</td><td>Covered in detail later</td></tr>
+<tr><td>3</td><td>Vector</td><td>Resizable array (like ArrayList)</td><td>1.0 (legacy)</td><td>Re-engineered in 1.2 to implement List</td></tr>
+<tr><td>4</td><td>Stack</td><td>Extends Vector</td><td>1.0 (legacy)</td><td>LIFO stack; extends Vector</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Property</th><th>ArrayList behavior</th></tr>
+<tr><td>1</td><td>Underlying data structure</td><td>Resizable (growable) array</td></tr>
+<tr><td>2</td><td>Duplicates</td><td>Allowed</td></tr>
+<tr><td>3</td><td>Insertion order</td><td>Preserved</td></tr>
+<tr><td>4</td><td>Heterogeneous objects</td><td>Allowed</td></tr>
+<tr><td>5</td><td>Null insertion</td><td>Possible</td></tr>
+</table>
+<table>
+<tr><th>Event</th><th>Current capacity</th><th>Calculation</th><th>New capacity</th></tr>
+<tr><td>Initial create</td><td>—</td><td>default</td><td>10</td></tr>
+<tr><td>11th element added</td><td>10</td><td>(10 × 3/2) + 1 = 15 + 1</td><td>16</td></tr>
+<tr><td>17th element added</td><td>16</td><td>(16 × 3/2) + 1 = 24 + 1</td><td>25</td></tr>
+<tr><td>26th element added</td><td>25</td><td>(25 × 3/2) + 1 = 37 + 1</td><td>38</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Constructor</th><th>Creates</th></tr>
+<tr><td>1</td><td>ArrayList()</td><td>Empty ArrayList, default initial capacity 10</td></tr>
+<tr><td>2</td><td>ArrayList(int initialCapacity)</td><td>Empty ArrayList with specified initial capacity</td></tr>
+<tr><td>3</td><td>ArrayList(Collection c)</td><td>Equivalent ArrayList from any collection object</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>Evidence in demo</th></tr>
+<tr><td>Insertion order preserved</td><td>Elements appear in add order</td></tr>
+<tr><td>Duplicates allowed</td><td>Two 10 values coexist</td></tr>
+<tr><td>Null insertion possible</td><td>null added successfully</td></tr>
+<tr><td>Heterogeneous objects</td><td>Integer + String in same list</td></tr>
+<tr><td>Index-based remove</td><td>remove(2) removes by index</td></tr>
+<tr><td>Index-based add</td><td>add(2, &quot;Software&quot;) shifts existing elements</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>toString output style</th><th>Example</th></tr>
+<tr><td>Collection</td><td>Square brackets [ ]</td><td>[10, Durga, null]</td></tr>
+<tr><td>Map</td><td>Curly braces { } with key=value</td><td>{1=Durga, 2=Ravi, 3=Shiva}</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+<tr><td>boolean add(E e)</td><td>boolean</td><td>Adds single element</td></tr>
+<tr><td>boolean addAll(Collection&lt;? extends E&gt; c)</td><td>boolean</td><td>Adds all elements from c</td></tr>
+<tr><td>boolean remove(Object o)</td><td>boolean</td><td>Removes single element</td></tr>
+<tr><td>boolean removeAll(Collection&lt;?&gt; c)</td><td>boolean</td><td>Removes all elements in c from this collection</td></tr>
+<tr><td>void clear()</td><td>void</td><td>Removes all elements</td></tr>
+<tr><td>boolean retainAll(Collection&lt;?&gt; c)</td><td>boolean</td><td>Retains only elements in c</td></tr>
+<tr><td>boolean contains(Object o)</td><td>boolean</td><td>Checks if element present</td></tr>
+<tr><td>boolean containsAll(Collection&lt;?&gt; c)</td><td>boolean</td><td>Checks if all of c present</td></tr>
+<tr><td>boolean isEmpty()</td><td>boolean</td><td>true if size == 0</td></tr>
+<tr><td>int size()</td><td>int</td><td>Number of elements</td></tr>
+<tr><td>Object[] toArray()</td><td>Object[]</td><td>Converts to array</td></tr>
+<tr><td>Iterator&lt;E&gt; iterator()</td><td>Iterator</td><td>Returns iterator cursor</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+<tr><td>void add(int index, E e)</td><td>void</td><td>Insert at index; shifts right</td></tr>
+<tr><td>boolean addAll(int index, Collection&lt;? extends E&gt; c)</td><td>boolean</td><td>Insert all from c at index</td></tr>
+<tr><td>E remove(int index)</td><td>E</td><td>Remove and return element at index</td></tr>
+<tr><td>E get(int index)</td><td>E</td><td>Return element at index</td></tr>
+<tr><td>E set(int index, E e)</td><td>E</td><td>Replace element at index</td></tr>
+<tr><td>int indexOf(Object o)</td><td>int</td><td>First occurrence index (-1 if absent)</td></tr>
+<tr><td>int lastIndexOf(Object o)</td><td>int</td><td>Last occurrence index (-1 if absent)</td></tr>
+<tr><td>ListIterator&lt;E&gt; listIterator()</td><td>ListIterator</td><td>List-specific bidirectional cursor</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Current capacity</th><th>Elements stored</th><th>Action on next add</th></tr>
+<tr><td>Create</td><td>10</td><td>0</td><td>—</td></tr>
+<tr><td>Fill to 10</td><td>10</td><td>10</td><td>At capacity</td></tr>
+<tr><td>Add 11th</td><td>10 → 16</td><td>11</td><td>New array created, copy, reassign</td></tr>
+<tr><td>Fill to 16</td><td>16</td><td>16</td><td>At capacity</td></tr>
+<tr><td>Add 17th</td><td>16 → 25</td><td>17</td><td>Grow again</td></tr>
+<tr><td>Fill to 25</td><td>25</td><td>25</td><td>At capacity</td></tr>
+<tr><td>Add 26th</td><td>25 → 38</td><td>26</td><td>Grow again</td></tr>
+</table>
+<table>
+<tr><th>Collection / Map</th><th>Heterogeneous objects allowed?</th><th>Reason</th></tr>
+<tr><td>ArrayList</td><td>Yes</td><td>No comparison needed</td></tr>
+<tr><td>LinkedList</td><td>Yes</td><td>No comparison needed</td></tr>
+<tr><td>HashSet</td><td>Yes</td><td>No comparison needed</td></tr>
+<tr><td>HashMap</td><td>Yes</td><td>No comparison needed</td></tr>
+<tr><td>TreeSet</td><td>No</td><td>Sorting requires comparison → same type</td></tr>
+<tr><td>TreeMap</td><td>No</td><td>Sorting by key requires comparison → same type</td></tr>
+</table>
+</body></html>

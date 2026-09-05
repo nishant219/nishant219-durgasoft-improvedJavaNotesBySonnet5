@@ -1,0 +1,263 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>168-copyonwritearraylist-program-4</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 168 — Concurrent Collections Part-15: CopyOnWriteArrayList Program-4</h1>
+<h2>Video info</h2>
+<p>ASR decode notes: copy on writer list / copy and write list / copy on list / copy and grades = CopyOnWriteArrayList; co = CopyOnWriteArrayList (variable name in demo); operator = iterator; current modification exception = ConcurrentModificationException; normal list / normal error list = ArrayList.</p>
+<h2>Session overview</h2>
+<p>This is Program-4 — the certification-critical demo explaining why the class is named CopyOnWriteArrayList and what happens when you modify the list after obtaining an iterator.</p>
+<p>Prerequisites:</p>
+<p>What this session covers:</p>
+<ol><li>Conceptual walkthrough — list [A,B,C], open iterator, add D → new copy created, iterator still on old copy</li></ol>
+<ol><li>Certification importance — Kathy Sierra book has 3–4 questions on this exact point</li></ol>
+<ol><li>Full program — add ABC, get iterator, add D, iterate → output ABC only (not ABCD)</li></ol>
+<ol><li>Why iterator does not see D — clone-copy mechanism</li></ol>
+<ol><li>ArrayList replacement demo — same code throws CME instead</li></ol>
+<ol><li>Complete picture: CopyOnWrite behavior vs normal list behavior</li></ol>
+<p>What this session does NOT cover:</p>
+<ul><li>Vector / synchronizedList comparison (→ Video 170)</li></ul>
+<ul><li>Performance implications of frequent writes (→ Video 163 summary)</li></ul>
+<h2>00:19 — Why &quot;CopyOnWriteArrayList&quot;? The naming explained</h2>
+<h3>The central question</h3>
+<p>&quot;Why the word CopyOnWriteArrayList? What is the reason?&quot;</p>
+<p>Answer: Every update operation will be performed on a separate cloned copy.</p>
+<h3>Conceptual diagram (Sir&#x27;s board walkthrough)</h3>
+<p>Initial state:</p>
+<p>CopyOnWriteArrayList  →  internal array: [A, B, C]</p>
+<p>Step 1 — Open iterator:</p>
+<p>Iterator itr  →  points to snapshot: [A, B, C]
+List object   →  still: [A, B, C]</p>
+<p>Step 2 — Add D (update operation AFTER iterator obtained):</p>
+<p>List object   →  NEW cloned copy: [A, B, C, D]   ← list now references this
+Iterator itr  →  STILL points to OLD copy: [A, B, C]   ← unchanged</p>
+<h3>Conclusion (exam-critical)</h3>
+<p>&quot;After getting iterator, if you perform any update to the copy-on-write list, those updations are not available to the iterator.&quot;</p>
+<p>Read via iterator after adding D → you get A, B, C — but NOT D.</p>
+<h3>Why this matters for certification</h3>
+<p>Sir explicitly states:</p>
+<p>&quot;This is very important point for the certification exam — if you open Kathy Sierra&#x27;s book, three to four questions are based on this small point only.&quot;</p>
+<p>Memorize: Post-iterator updates are invisible to that iterator because they happen on a new clone.</p>
+<h2>02:43 — Full board program: Iterator snapshot demo</h2>
+<h3>Program structure</h3>
+<ol><li>Create CopyOnWriteArrayList</li></ol>
+<ol><li>Add A, B, C</li></ol>
+<ol><li>Obtain iterator before any further modification</li></ol>
+<ol><li>Add D after iterator obtained</li></ol>
+<ol><li>Iterate and print — expect ABC, not ABCD</li></ol>
+<pre class='code'>import java.util.*;
+import java.util.concurrent.*;
+
+public class Test {
+    public static void main(String[] args) {
+        CopyOnWriteArrayList&lt;String&gt; co = new CopyOnWriteArrayList&lt;&gt;();
+
+        co.add(&quot;A&quot;);
+        co.add(&quot;B&quot;);
+        co.add(&quot;C&quot;);           // list = [A, B, C]
+
+        Iterator&lt;String&gt; itr = co.iterator();   // snapshot taken: [A, B, C]
+
+        co.add(&quot;D&quot;);           // NEW clone [A,B,C,D] — itr still on old [A,B,C]
+
+        String s = &quot;&quot;;
+        while (itr.hasNext()) {
+            s = s + itr.next();
+        }
+        System.out.println(s);  // output: ABC (NOT ABCD)
+    }
+}</pre>
+<h3>Step-by-step execution trace</h3>
+<h3>Expected output</h3>
+<p>ABC</p>
+<p>NOT:</p>
+<p>ABCD    ← WRONG answer on exam if you forget snapshot behavior</p>
+<h3>Sir&#x27;s board confirmation</h3>
+<p>&quot;Compile is fine. But the answer by default we will get A B C only — but not A B C D. Clear.&quot;</p>
+<h2>04:16 — Certification exam traps and correct reasoning</h2>
+<h3>Common wrong answers on exam</h3>
+<h3>Correct exam logic chain</h3>
+<p>1. Iterator obtained        → snapshot frozen at [A,B,C]
+2. co.add(&quot;D&quot;)              → write creates new clone [A,B,C,D]
+3. Iterator not refreshed   → still reads old snapshot
+4. Loop consumes A, B, C    → s = &quot;ABC&quot;
+5. hasNext() false          → D never seen by this iterator</p>
+<h3>Related rule from Video 163</h3>
+<h2>04:22 — Student question: What if it were a normal ArrayList?</h2>
+<h3>Expected behavior with ArrayList</h3>
+<p>Sir asks students to guess:</p>
+<p>&quot;If it is the normal list, what will happen? After getting iterator, you are not allowed to modify. If you are trying to modify → immediately ConcurrentModificationException.&quot;</p>
+<h3>ArrayList version (same structure)</h3>
+<pre class='code'>import java.util.*;
+
+public class Test {
+    public static void main(String[] args) {
+        ArrayList&lt;String&gt; co = new ArrayList&lt;&gt;();   // ONLY CHANGE
+
+        co.add(&quot;A&quot;);
+        co.add(&quot;B&quot;);
+        co.add(&quot;C&quot;);
+
+        Iterator&lt;String&gt; itr = co.iterator();
+
+        co.add(&quot;D&quot;);    // structural modification after iterator → CME
+
+        String s = &quot;&quot;;
+        while (itr.hasNext()) {
+            s = s + itr.next();
+        }
+        System.out.println(s);
+    }
+}</pre>
+<h3>Observed result (ArrayList)</h3>
+<p>Exception in thread &quot;main&quot; java.util.ConcurrentModificationException</p>
+<ul><li>May not even reach System.out.println</li></ul>
+<ul><li>Fail-fast iterator detects modCount change at co.add(&quot;D&quot;) or on next itr.next()</li></ul>
+<h3>Three-way comparison for this exact program pattern</h3>
+<h2>05:13 — Complete CopyOnWriteArrayList behavior summary (Programs 1–4)</h2>
+<h3>What Program-4 adds to the series</h3>
+<h3>The &quot;CopyOnWrite&quot; contract (exam-ready)</h3>
+<h3>Iterator refresh rule</h3>
+<p>To see post-iterator updates, you must obtain a new iterator after the modifications.</p>
+<pre class='code'>Iterator&lt;String&gt; itr1 = co.iterator();
+co.add(&quot;D&quot;);
+Iterator&lt;String&gt; itr2 = co.iterator();   // new snapshot includes D
+while (itr2.hasNext()) {
+    System.out.print(itr2.next());       // ABCD
+}</pre>
+<h2>Memory model visualization</h2>
+<p>Time ──────────────────────────────────────────────────────────►
+
+co.add(&quot;A&quot;)  co.add(&quot;B&quot;)  co.add(&quot;C&quot;)  itr=iterator()  co.add(&quot;D&quot;)  itr.next()...
+     │            │            │              │              │            │
+     ▼            ▼            ▼              ▼              ▼            ▼
+   [A]         [A,B]       [A,B,C]    snapshot=[A,B,C]  NEW [A,B,C,D]  reads A,B,C
+                                              │              │
+                                              └──── itr still here (old copy)</p>
+<h2>OCJP / SCJP exam checklist</h2>
+<ul><li>[ ] Critical: After iterator obtained, updates to CopyOnWriteArrayList are NOT visible to that iterator</li></ul>
+<ul><li>[ ] Critical: Post-iterator add of D → iterate prints ABC, not ABCD</li></ul>
+<ul><li>[ ] Know why: every update creates separate cloned copy; iterator points to old copy</li></ul>
+<ul><li>[ ] Know Kathy Sierra book emphasizes this point (3–4 questions)</li></ul>
+<ul><li>[ ] ArrayList same code → ConcurrentModificationException (not ABC)</li></ul>
+<ul><li>[ ] CopyOnWriteArrayList same code → no CME, output ABC</li></ul>
+<ul><li>[ ] Distinguish Program-2 (concurrent threads) vs Program-4 (same thread, post-iterator add)</li></ul>
+<h2>Interview Q&amp;A (rapid fire)</h2>
+<h2>Practice exam questions (with answers)</h2>
+<h3>Q1</h3>
+<pre class='code'>CopyOnWriteArrayList&lt;String&gt; list = new CopyOnWriteArrayList&lt;&gt;();
+list.add(&quot;X&quot;);
+list.add(&quot;Y&quot;);
+Iterator&lt;String&gt; it = list.iterator();
+list.add(&quot;Z&quot;);
+System.out.println(it.next() + it.next());</pre>
+<p>Answer: XY (Z not visible to iterator)</p>
+<h3>Q2</h3>
+<p>Same as Q1 but ArrayList instead of CopyOnWriteArrayList.</p>
+<p>Answer: ConcurrentModificationException</p>
+<h3>Q3</h3>
+<pre class='code'>CopyOnWriteArrayList&lt;Integer&gt; list = new CopyOnWriteArrayList&lt;&gt;(Arrays.asList(1, 2, 3));
+Iterator&lt;Integer&gt; it = list.iterator();
+list.add(4);
+list.add(5);
+int sum = 0;
+while (it.hasNext()) sum += it.next();
+System.out.println(sum);</pre>
+<p>Answer: 6 (1+2+3 — 4 and 5 not in snapshot)</p>
+<h2>Related videos</h2>
+<h2>Summary (one paragraph)</h2>
+<p>Video 168 is Durga Sir&#x27;s fourth and most certification-critical CopyOnWriteArrayList program. It explains the naming: every update operation performs on a separate cloned copy. The demo adds A, B, C to a CopyOnWriteArrayList, obtains an iterator, then adds D — but when iterating via that iterator, the output is ABC only, not ABCD, because the iterator still points to the old snapshot array while D lives on the new clone. Sir emphasizes this exact point appears in three to four Kathy Sierra certification questions. Replacing CopyOnWriteArrayList with ArrayList in the identical program yields ConcurrentModificationException instead, completing the contrast between fail-safe and fail-fast behavior. Together with Programs 2 and 3, this gives the full programmatic picture of CopyOnWriteArrayList iterator semantics.</p>
+<p>End of Video 168 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th></tr>
+<tr><td>Position</td><td>168 of 203</td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Concurrent Collections Part-15 \</td><td>CopyOnWriteArrayList Program-4</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td></tr>
+<tr><td>Duration</td><td>5m 43s</td><td></td></tr>
+<tr><td>Video ID</td><td>xD9t3fHLjRQ</td><td></td></tr>
+<tr><td>Watch URL</td><td>https://www.youtube.com/watch?v=xD9t3fHLjRQ</td><td></td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td></tr>
+<tr><td>Notes source</td><td>YouTube auto-captions (yt-dlp + node PO token)</td><td></td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th></tr>
+<tr><td>163</td><td>Why &quot;CopyOnWrite&quot; — every update on separate cloned copy</td></tr>
+<tr><td>166</td><td>Program-2 — no CME when iterate + modify concurrently</td></tr>
+<tr><td>167</td><td>Program-3 — iterator cannot remove (UnsupportedOperationException)</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Code</th><th>Internal state</th></tr>
+<tr><td>1</td><td>co.add(&quot;A&quot;)</td><td>array = [A]</td></tr>
+<tr><td>2</td><td>co.add(&quot;B&quot;)</td><td>array = [A, B]</td></tr>
+<tr><td>3</td><td>co.add(&quot;C&quot;)</td><td>array = [A, B, C]</td></tr>
+<tr><td>4</td><td>itr = co.iterator()</td><td>itr → snapshot [A, B, C]</td></tr>
+<tr><td>5</td><td>co.add(&quot;D&quot;)</td><td>new clone [A,B,C,D]; itr still → [A,B,C]</td></tr>
+<tr><td>6</td><td>itr.next() × 3</td><td>reads A, B, C from snapshot</td></tr>
+<tr><td>7</td><td>System.out.println(s)</td><td>prints ABC</td></tr>
+</table>
+<table>
+<tr><th>Wrong thinking</th><th>Why wrong</th></tr>
+<tr><td>&quot;D was added before iteration finished, so ABCD&quot;</td><td>Iterator holds snapshot from step 4 — D added on new copy</td></tr>
+<tr><td>&quot;ConcurrentModificationException&quot;</td><td>CopyOnWriteArrayList is fail-safe — no CME</td></tr>
+<tr><td>&quot;Only AB printed&quot;</td><td>All three snapshot elements are still readable</td></tr>
+</table>
+<table>
+<tr><th>Iterator type</th><th>List</th><th>Post-creation modification visible?</th><th>CME?</th></tr>
+<tr><td>Fail-fast</td><td>ArrayList</td><td>N/A — throws before you can read</td><td>Yes</td></tr>
+<tr><td>Fail-safe</td><td>CopyOnWriteArrayList</td><td>No — snapshot isolation</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>List type</th><th>After co.add(&quot;D&quot;) post-iterator</th><th>Final output</th></tr>
+<tr><td>CopyOnWriteArrayList</td><td>No exception</td><td>ABC</td></tr>
+<tr><td>ArrayList</td><td>ConcurrentModificationException</td><td>No clean output</td></tr>
+<tr><td>Vector</td><td>ConcurrentModificationException</td><td>No clean output</td></tr>
+</table>
+<table>
+<tr><th>Program</th><th>Video</th><th>Proves</th></tr>
+<tr><td>Program-1</td><td>165</td><td>addIfAbsent, addAllAbsent basic operations</td></tr>
+<tr><td>Program-2</td><td>166</td><td>Concurrent iterate + modify → no CME</td></tr>
+<tr><td>Program-3</td><td>167</td><td>Iterator remove() → UnsupportedOperationException</td></tr>
+<tr><td>Program-4</td><td>168</td><td>Post-iterator add invisible to iterator → ABC not ABCD</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>Effect on list</th><th>Effect on existing iterator</th></tr>
+<tr><td>add() before iterator</td><td>New element in list</td><td>Iterator sees it (if created after add)</td></tr>
+<tr><td>add() after iterator</td><td>New cloned copy with element</td><td>Iterator sees old snapshot only</td></tr>
+<tr><td>remove() after iterator</td><td>New cloned copy without element</td><td>Iterator sees old snapshot only</td></tr>
+<tr><td>set() after iterator</td><td>New cloned copy with change</td><td>Iterator sees old snapshot only</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>Why named CopyOnWriteArrayList?</td><td>Every write/update creates a separate cloned copy of the underlying array</td></tr>
+<tr><td>Added D after getting iterator — what does iterator return?</td><td>A, B, C only — not D</td></tr>
+<tr><td>Why doesn&#x27;t iterator see D?</td><td>Iterator holds reference to snapshot array before D was added</td></tr>
+<tr><td>Does adding D after iterator cause CME?</td><td>No — fail-safe iterator on CopyOnWriteArrayList</td></tr>
+<tr><td>Same code with ArrayList?</td><td>ConcurrentModificationException</td></tr>
+<tr><td>How to make iterator see D?</td><td>Create a new iterator after adding D</td></tr>
+<tr><td>Is this point exam-important?</td><td>Yes — Sir says 3–4 Kathy Sierra questions on this</td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th></tr>
+<tr><td>163</td><td>Theory — copy-on-write mechanism, fail-safe iterator</td></tr>
+<tr><td>166</td><td>Program-2 — multi-thread iterate + modify, no CME</td></tr>
+<tr><td>167</td><td>Program-3 — iterator remove unsupported</td></tr>
+<tr><td>168</td><td>Program-4 — post-iterator update invisible (this video)</td></tr>
+<tr><td>170</td><td>CopyOnWriteArrayList vs synchronizedList vs Vector table</td></tr>
+</table>
+</body></html>

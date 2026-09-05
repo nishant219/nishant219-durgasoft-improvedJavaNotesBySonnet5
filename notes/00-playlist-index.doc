@@ -1,0 +1,246 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>00-playlist-index</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Durga Sir Core Java (OCJP/SCJP) — Playlist index</h1>
+<p>Playlist: java tutorial by durga sir</p>
+<ul><li>Instructor: Durga Sir (Durga Software Solutions)</li></ul>
+<ul><li>Videos: 203</li></ul>
+<ul><li>Total runtime: 234h 37m 13s</li></ul>
+<ul><li>Notes plan: 20-video chunks, one markdown file per video</li></ul>
+<h2>Chunks</h2>
+<ul><li>001–020 — Java Identifiers and Reserved Words … short-circuit,type cast operators</li></ul>
+<ul><li>021–040 — Assignment,conditional,new Operators … interfaces-1</li></ul>
+<ul><li>041–060 — interfaces-2 … static control flow</li></ul>
+<ul><li>061–080 — static block … by Durga Sir</li></ul>
+<ul><li>081–100 — Introduction … Introduction</li></ul>
+<ul><li>101–120 — regular innerclass … File</li></ul>
+<ul><li>121–140 — importent methods … Difference between Array list &amp; linked list</li></ul>
+<ul><li>141–160 — limitations of enumerations … HashMap&amp;ConcurrentHashMap</li></ul>
+<ul><li>161–180 — Hashtable … The methods for requesting  jvm to run GC</li></ul>
+<ul><li>181–200 — finalization-1 … method area</li></ul>
+<ul><li>201–203 — stack memory … complete jvm architecture</li></ul>
+<h2>All videos</h2>
+<table>
+<tr><th>#</th><th>Duration</th><th>Title</th><th>Link</th><th>Notes</th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
+<tr><td>001</td><td>1h 16m 59s</td><td>Core Java with OCJP/SCJP : Language Fundamentals Part-1 \</td><td>\</td><td>Java Identifiers and Reserved Words</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>002</td><td>1h 06m 48s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-2 \</td><td>\</td><td>Data Types part-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>003</td><td>55m 07s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part- 3 \</td><td>\</td><td>Data Types part-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>004</td><td>1h 22m 19s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-4 \</td><td>\</td><td>Literals Part-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>005</td><td>1h 05m 28s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-5 \</td><td>\</td><td>Literals part-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>006</td><td>1h 15m 24s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-6 \</td><td>\</td><td>Arrays Part-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>007</td><td>48m 20s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-7 \</td><td>\</td><td>Arrays part-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>008</td><td>1h 38m 56s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-8 \</td><td>\</td><td>Arrays Part-3</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>009</td><td>54m 23s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-9 \</td><td>\</td><td>Arrays Part-4</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>010</td><td>1h 08m 38s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-10 \</td><td>\</td><td>Types of Variables :  part-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>011</td><td>1h 27m 12s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-11 \</td><td>\</td><td>Types of Variables :part-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>012</td><td>1h 20m 36s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-12 \</td><td>\</td><td>var-arg methods</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>013</td><td>1h 06m 40s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-13 \</td><td>\</td><td>main() method part-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>014</td><td>42m 20s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-14 \</td><td>\</td><td>main() method part-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>015</td><td>38m 34s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-15\</td><td>\</td><td>Command Line Arguments</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>016</td><td>1h 08m 38s</td><td>Core Java with OCJP/SCJP: Language Fundamentals Part-16 \</td><td>\</td><td>Java Coding Standards</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>017</td><td>1h 37m 49s</td><td>Core Java with OCJP/SCJP: Operators &amp; Assignments Part-1  \</td><td>\</td><td>Increment &amp; Decrement , Arithmetic</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>018</td><td>1h 09m 31s</td><td>Core Java with OCJP/SCJP: Operators &amp; Assignments Part-2  \</td><td>\</td><td>Concatenation,Relational,equality</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>019</td><td>55m 14s</td><td>Core Java with OCJP/SCJP: Operators &amp; Assignments Part-3 \</td><td>\</td><td>instanceof, bitwise operator</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>020</td><td>1h 16m 01s</td><td>Core Java with OCJP/SCJP: Operators &amp; Assignments Part-4  \</td><td>\</td><td>short-circuit,type cast operators</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>021</td><td>48m 30s</td><td>Core Java with OCJP/SCJP: Operators &amp; Assignments Part-5  \</td><td>\</td><td>Assignment,conditional,new Operators</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>022</td><td>22m 52s</td><td>Core Java with OCJP/SCJP: Operators &amp; Assignments Part-6  \</td><td>\</td><td>operator  &amp; operand precedence</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>023</td><td>1h 25m 34s</td><td>Core Java with OCJP/SCJP: Operators &amp; Assignments Part-7  \</td><td>\</td><td>Interview FAQs</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>024</td><td>10m 25s</td><td>Core Java with OCJP/SCJP: Flow-Control Part-1  \</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>025</td><td>32m 21s</td><td>Core Java with OCJP/SCJP: Flow-Control Part-2  \</td><td>\</td><td>Selection Statements : if-else</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>026</td><td>1h 11m 30s</td><td>Core Java with OCJP/SCJP: Flow-Control Part-3  \</td><td>\</td><td>Selection Statements : switch</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>027</td><td>1h 12m 39s</td><td>Core Java with OCJP/SCJP: Flow-Control Part-4  \</td><td>\</td><td>Iterative Statements: while,do-while</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>028</td><td>1h 33m 09s</td><td>Core Java with OCJP/SCJP: Flow-Control Part-5  \</td><td>\</td><td>Iterative Statements : for, for-each Loops</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>029</td><td>50m 59s</td><td>Core Java with OCJP/SCJP: Flow-Control Part-6  \</td><td>\</td><td>Transfer statements : break and continue</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>030</td><td>1h 06m 36s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-1 \</td><td>\</td><td>Java Source File Structure</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>031</td><td>1h 39m 31s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-2 \</td><td>\</td><td>import and static import</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>032</td><td>1h 13m 21s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-3 \</td><td>\</td><td>static import</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>033</td><td>1h 10m 32s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-4 \</td><td>\</td><td>package statement</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>034</td><td>1h 12m 44s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-5 \</td><td>\</td><td>Class Level Modifiers: final</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>035</td><td>1h 19m 08s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-6\</td><td>\</td><td>Class Level Modifiers: abstract</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>036</td><td>1h 25m 35s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-7\</td><td>\</td><td>MemberLevel Modifiers</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>037</td><td>1h 28m 32s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-8\</td><td>\</td><td>final variables</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>038</td><td>1h 18m 34s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-9\</td><td>\</td><td>static modifier</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>039</td><td>1h 27m 49s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-10\</td><td>\</td><td>native,static,transient</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>040</td><td>1h 11m 33s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-11\</td><td>\</td><td>interfaces-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>041</td><td>1h 15m 27s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-12\</td><td>\</td><td>interfaces-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>042</td><td>1h 04m 31s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-13\</td><td>\</td><td>interfaces-3</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>043</td><td>1h 39m 46s</td><td>Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-14\</td><td>\</td><td>interfaces-4</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>044</td><td>15m 59s</td><td>Core Java With OCJP/SCJP: Interface  and Abstract class Loopholes Part-1 \</td><td>\</td><td>new vs Constructor</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>045</td><td>15m 43s</td><td>Java -  Interface  and Abstract class Loopholes Part-2 \</td><td>\</td><td>Child Object Vs Parent Constructor-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>046</td><td>14m 08s</td><td>Java -  Interface and Abstract class Loopholes Part-3 \</td><td>\</td><td>Child Object Vs Parent Constructor-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>047</td><td>28m 13s</td><td>Java - Interface and Abstract class Loopholes Part-4 \</td><td>\</td><td>Need of Abstract class constructor</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>048</td><td>10m 50s</td><td>Interface and Abstract class Loopholes Part-5 \</td><td>\</td><td>Abstract class vs Interface wrt constructor</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>049</td><td>19m 41s</td><td>Java -  Interface and Abstract class Loopholes Part-6 \</td><td>\</td><td>Abstract class Vs Interface</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>050</td><td>11m 12s</td><td>Java -  Interface  and Abstract class Loopholes Part-7 \</td><td>\</td><td>Interface, Abstract class, constructor</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>051</td><td>1h 26m 39s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming)Part-1\</td><td>\</td><td>Introduction\</td><td>\</td><td>data hiding</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>052</td><td>1h 18m 49s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-2 \</td><td>\</td><td>Inheritance\</td><td>\</td><td>is a relationship</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>053</td><td>1h 21m 57s</td><td>Core Java With OCJP/SCJP:OOPs(Object Oriented Programming)Part-3 \</td><td>\</td><td>Inheritance\</td><td>\</td><td>has a relationship</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>054</td><td>1h 07m 40s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming)Part-4 \</td><td>\</td><td>overloading</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>055</td><td>1h 22m 38s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-5 \</td><td>\</td><td>overriding</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>056</td><td>1h 23m 45s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-6 \</td><td>\</td><td>overriding \</td><td>\</td><td>access modifiers</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>057</td><td>1h 49m 12s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-7\</td><td>\</td><td>overriding \</td><td>\</td><td>varargs method</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>058</td><td>1h 33m 17s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-8\</td><td>\</td><td>coupling</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>059</td><td>41m 29s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-9\</td><td>\</td><td>type casting</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>060</td><td>48m 45s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-10 \</td><td>\</td><td>static control flow</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>061</td><td>1h 11m 00s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-11 \</td><td>\</td><td>static block</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>062</td><td>1h 06m 38s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-12 \</td><td>\</td><td>instance control flow</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>063</td><td>45m 29s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-13 \</td><td>\</td><td>instance, static control flow</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>064</td><td>1h 04m 57s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-14 \</td><td>\</td><td>constructors</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>065</td><td>48m 56s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-15 \</td><td>\</td><td>default constructor</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>066</td><td>1h 12m 01s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-16 \</td><td>\</td><td>overloaded constructor</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>067</td><td>35m 18s</td><td>Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-17 \</td><td>\</td><td>singleton class</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>068</td><td>10h 33m 31s</td><td>Object Oriented Programming (OOPs) Concepts In Java \</td><td>\</td><td>by Durga sir</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>069</td><td>2h 27m 05s</td><td>Constructors in java \</td><td>default constructor \</td><td>Constructor Overloading</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>070</td><td>54m 53s</td><td>Core Java with OCJP/SCJP: Exception Handling Part-1 \</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>071</td><td>1h 15m 44s</td><td>Core Java with OCJP/SCJP: Exception Handling Part-2 \</td><td>\</td><td>Default Exception Handling</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>072</td><td>1h 02m 44s</td><td>Core Java with OCJP/SCJP: Exception Handling Part-3A \</td><td>\</td><td>Checked vs Unchecked Exceptions</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>073</td><td>1h 14m 59s</td><td>Core Java with OCJP/SCJP: Exception Handling Part-3B\</td><td>\</td><td>Customized Exception Haning by try-catch</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>074</td><td>47m 40s</td><td>Core Java with OCJP/SCJP: Exception Handling Part-4 \</td><td>\</td><td>finally block</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>075</td><td>50m 13s</td><td>Core Java with OCJP/SCJP: Exception Handling Part-5 \</td><td>\</td><td>throw and throws</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>076</td><td>1h 39m 31s</td><td>Core Java with OCJP/SCJP: Exception Handling Part-6 \</td><td>\</td><td>throws keyword</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>077</td><td>1h 05m 45s</td><td>Core Java with OCJP/SCJP: Exception Handling Part-7 \</td><td>\</td><td>Customized Exceptions</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>078</td><td>52m 53s</td><td>Core Java with OCJP/SCJP: Exception Handling Part-8 \</td><td>\</td><td>Top-10 Exceptions in java</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>079</td><td>1h 51m 30s</td><td>Core Java with OCJP/SCJP: Exception Handling Part-9 \</td><td>\</td><td>try with resources and multi-catch block</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>080</td><td>10h 05m 19s</td><td>Java Exception Handling For  Certification &amp; Interviews \</td><td>\</td><td>Java Exception Handling \</td><td>\</td><td>by Durga Sir</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>081</td><td>1h 00m 20s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-1 \</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>082</td><td>1h 44m 56s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-2 \</td><td>\</td><td>The ways of defining a Thread Part-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>083</td><td>1h 18m 54s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-3 \</td><td>\</td><td>The ways of defining a Thread Part-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>084</td><td>58m 36s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-4 \</td><td>\</td><td>Thread Priorities</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>085</td><td>1h 49m 27s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-5 \</td><td>\</td><td>yield() \</td><td>\</td><td>join()</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>086</td><td>1h 46m 34s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-6 \</td><td>\</td><td>join() \</td><td>\</td><td>sleep() \</td><td>\</td><td>Thread Interruption</td><td>watch</td><td>notes</td><td></td><td></td></tr>
+<tr><td>087</td><td>1h 35m 15s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-7 \</td><td>\</td><td>synchronization part-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>088</td><td>53m 43s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-8 \</td><td>\</td><td>synchronization part-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>089</td><td>1h 12m 47s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-9 \</td><td>\</td><td>synchronized block</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>090</td><td>1h 18m 26s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-10 \</td><td>\</td><td>Inter Thread Communication Part-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>091</td><td>1h 24m 46s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-11 \</td><td>\</td><td>Inter Thread Communication Part-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>092</td><td>55m 06s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-12 \</td><td>\</td><td>DeadLock \</td><td>\</td><td>Starvation</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>093</td><td>50m 20s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-13 \</td><td>\</td><td>Daemon Threads</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>094</td><td>35m 56s</td><td>Core Java with OCJP/SCJP: Multi Threading Part-14 \</td><td>\</td><td>Green Thread,stop(),suspend(),resume()</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>095</td><td>1h 28m 54s</td><td>Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 1\</td><td>\</td><td>Introduction \</td><td>\</td><td>Thread Group</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>096</td><td>45m 55s</td><td>Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 2\</td><td>\</td><td>java.util.concurrent package</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>097</td><td>1h 36m 50s</td><td>Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 3\</td><td>\</td><td>java.util.concurrent.locks</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>098</td><td>1h 00m 27s</td><td>Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 4\</td><td>\</td><td>java thread pools</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>099</td><td>1h 11m 48s</td><td>Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 5\</td><td>\</td><td>java thread local</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>100</td><td>1h 21m 59s</td><td>Core Java With OCJP/SCJP: Innerclass  Part- 1\</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>101</td><td>1h 30m 11s</td><td>Core Java With OCJP/SCJP: Innerclass  Part- 2\</td><td>\</td><td>normal innerclass\</td><td>\</td><td>regular innerclass</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>102</td><td>1h 31m 18s</td><td>Core Java With OCJP/SCJP: Innerclass  Part- 3\</td><td>\</td><td>anonymous inner class</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>103</td><td>1h 13m 38s</td><td>Core Java With OCJP/SCJP: Innerclass  Part- 4\</td><td>\</td><td>normal java class Vs anonymous inner class</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>104</td><td>1h 00m 29s</td><td>Core Java With OCJP/SCJP: Innerclass  Part- 5\</td><td>\</td><td>nested classes and interfaces</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>105</td><td>1h 26m 52s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-1 \</td><td>\</td><td>Introduction\</td><td>\</td><td>object class\</td><td>\</td><td>toString()</td><td>watch</td><td>notes</td><td></td><td></td></tr>
+<tr><td>106</td><td>51m 49s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-2 \</td><td>\</td><td>object class\</td><td>\</td><td>Hashcode()</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>107</td><td>1h 28m 24s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-3 \</td><td>\</td><td>eqals()\</td><td>\</td><td>overridden methods of eqals</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>108</td><td>34m 29s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-4 \</td><td>\</td><td>object class\</td><td>\</td><td>finalize()\</td><td>\</td><td>getclass()\</td><td>\</td><td>notify()</td><td>watch</td><td>notes</td></tr>
+<tr><td>109</td><td>1h 16m 07s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-5 \</td><td>\</td><td>Strings class</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>110</td><td>1h 43m 17s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-6 \</td><td>\</td><td>Strings class \</td><td>\</td><td>Strings class constructor</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>111</td><td>1h 42m 01s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-7 \</td><td>\</td><td>Strings\</td><td>\</td><td>constructors of StringsBuffer</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>112</td><td>6h 33m 07s</td><td>String, StringBuffer &amp; StringBuilder for JAVA Certification &amp; Interviews</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>113</td><td>1h 43m 38s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-8 \</td><td>\</td><td>wrapper class\</td><td>\</td><td>wrapper objects</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>114</td><td>59m 51s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-9 \</td><td>\</td><td>wrapper class\</td><td>\</td><td>Utility methods</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>115</td><td>1h 17m 44s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-10 \</td><td>\</td><td>Autoboxing\</td><td>\</td><td>Autounboxing-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>116</td><td>46m 01s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-11 \</td><td>\</td><td>Autoboxing\</td><td>\</td><td>Autounboxing-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>117</td><td>1h 28m 45s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-12 \</td><td>\</td><td>object class \</td><td>\</td><td>equals() \</td><td>\</td><td>Hashcode()</td><td>watch</td><td>notes</td><td></td><td></td></tr>
+<tr><td>118</td><td>1h 29m 43s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-13 \</td><td>\</td><td>object class \</td><td>\</td><td>clone()</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>119</td><td>1h 33m 29s</td><td>Core Java With OCJP/SCJP: java.lang.package Part-14 \</td><td>\</td><td>String class</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>120</td><td>1h 12m 26s</td><td>Core Java With OCJP/SCJP: File I/O  Part-1\</td><td>\</td><td>Introduction \</td><td>\</td><td>File</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>121</td><td>46m 10s</td><td>Core Java With OCJP/SCJP: File I/O  Part-2\</td><td>\</td><td>Filewriter\</td><td>\</td><td>importent methods</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>122</td><td>1h 26m 19s</td><td>Core Java With OCJP/SCJP: File I/O  Part-3\</td><td>\</td><td>FileReader\</td><td>\</td><td>importent methods\</td><td>\</td><td>Bufferedwriter</td><td>watch</td><td>notes</td><td></td><td></td></tr>
+<tr><td>123</td><td>1h 08m 13s</td><td>Core Java With OCJP/SCJP: File I/O  Part- 4\</td><td>\</td><td>Printwriter</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>124</td><td>56m 51s</td><td>Core Java With OCJP/SCJP: File I/O  Part- 5\</td><td>\</td><td>Printwriter-Examples</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>125</td><td>1h 29m 26s</td><td>Core Java With OCJP/SCJP: Serialization  Part- 1 \</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>126</td><td>43m 46s</td><td>Core Java With OCJP/SCJP: Serialization  Part- 2\</td><td>\</td><td>Serialazation in the case of object graphs</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>127</td><td>1h 24m 57s</td><td>Core Java With OCJP/SCJP: Serialization  Part- 3\</td><td>\</td><td>Customized serialization - 1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>128</td><td>28m 27s</td><td>Core Java With OCJP/SCJP: Serialization  Part- 4\</td><td>\</td><td>Customized serialization - 2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>129</td><td>56m 02s</td><td>Core Java With OCJP/SCJP: Serialization  Part- 5\</td><td>\</td><td>Inheritance serialization</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>130</td><td>1h 29m 02s</td><td>Core Java With OCJP/SCJP: Serialization  Part- 6\</td><td>\</td><td>Externalization</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>131</td><td>1h 01m 39s</td><td>Core Java With OCJP/SCJP: Serialization  Part- 7\</td><td>\</td><td>SerialVersion UID</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>132</td><td>58m 18s</td><td>Core Java With OCJP/SCJP: RegularExpresions Part-1 \</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>133</td><td>1h 00m 27s</td><td>Core Java With OCJP/SCJP: RegularExpresions Part-2 \</td><td>\</td><td>character matching</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>134</td><td>1h 08m 58s</td><td>Core Java With OCJP/SCJP: RegularExpresions Part-3 \</td><td>\</td><td>pattern class</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>135</td><td>57m 48s</td><td>Core Java With OCJP/SCJP: RegularExpresions Part-4 \</td><td>\</td><td>How to use Regular Expresions</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>136</td><td>59m 24s</td><td>Core Java With OCJP/SCJP: Collections Part-1 \</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>137</td><td>1h 31m 50s</td><td>Core Java With OCJP/SCJP: Collections Part-2 \</td><td>\</td><td>9key interfaces</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>138</td><td>1h 00m 55s</td><td>Core Java With OCJP/SCJP: Collections Part-3 \</td><td>\</td><td>collection &amp; collections\</td><td>\</td><td>list &amp; set</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>139</td><td>1h 06m 59s</td><td>Core Java With OCJP/SCJP: Collections Part-4 \</td><td>\</td><td>Array list</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>140</td><td>1h 18m 37s</td><td>Core Java With OCJP/SCJP: Collections Part-5 \</td><td>\</td><td>Difference between Array list &amp; linked list</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>141</td><td>1h 15m 07s</td><td>Core Java With OCJP/SCJP: Collections Part-6 \</td><td>\</td><td>limitations of enumerations</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>142</td><td>1h 20m 55s</td><td>Core Java With OCJP/SCJP: Collections Part-7 \</td><td>\</td><td>Setinterface\</td><td>\</td><td>ShortedSet</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>143</td><td>1h 16m 30s</td><td>Core Java With OCJP/SCJP: Collections Part-8 \</td><td>\</td><td>TreeSet</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>144</td><td>1h 04m 58s</td><td>Core Java With OCJP/SCJP: Collections Part-9 \</td><td>\</td><td>comparator</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>145</td><td>1h 50m 08s</td><td>Core Java With OCJP/SCJP: Collections Part-10 \</td><td>\</td><td>string object in Treeset Example</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>146</td><td>1h 24m 06s</td><td>Core Java With OCJP/SCJP: Collections Part-11 \</td><td>\</td><td>Map \</td><td>\</td><td>Hashmap \</td><td>\</td><td>linked Hashmap</td><td>watch</td><td>notes</td><td></td><td></td></tr>
+<tr><td>147</td><td>1h 01m 42s</td><td>Core Java With OCJP/SCJP: Collections Part-12 \</td><td>\</td><td>linked Hashmap</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>148</td><td>42m 13s</td><td>Core Java With OCJP/SCJP: Collections Part-13 \</td><td>\</td><td>sortedmap</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>149</td><td>1h 36m 34s</td><td>Core Java With OCJP/SCJP: Collections Part-14 \</td><td>\</td><td>hashtable</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>150</td><td>57m 26s</td><td>Core Java With OCJP/SCJP: Collections Part-15 \</td><td>\</td><td>queue</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>151</td><td>1h 09m 43s</td><td>Core Java With OCJP/SCJP: Collections Part-16 \</td><td>\</td><td>Navigableset</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>152</td><td>59m 35s</td><td>Core Java With OCJP/SCJP: Collections Part-17 \</td><td>\</td><td>searching elements of list</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>153</td><td>1h 10m 35s</td><td>Core Java With OCJP/SCJP: Collections Part-18 \</td><td>\</td><td>Arrays</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>154</td><td>18m 15s</td><td>Core Java With OCJP/SCJP:  Concurrent Collections Part-1 \</td><td>\</td><td>Need of Concurrent Collections</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>155</td><td>7m 08s</td><td>Core Java With OCJP/SCJP: Concurrent Collections Part-2 \</td><td>\</td><td>Diff B/WTraditional&amp;Concurrent Collections</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>156</td><td>14m 44s</td><td>Core Java With OCJP/SCJP:  Concurrent Collections Part-3 \</td><td>\</td><td>ConcurrentMap Methods</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>157</td><td>19m 14s</td><td>Core Java With OCJP/SCJP:  Concurrent Collections Part-4 \</td><td>\</td><td>ConcurrentHashMap Details</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>158</td><td>4m 34s</td><td>Core Java With OCJP/SCJP:  Concurrent Collections Part-5 \</td><td>\</td><td>ConcurrentHashMap Program-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>159</td><td>11m 56s</td><td>Core Java With OCJP/SCJP:  Concurrent Collections Part-6 \</td><td>\</td><td>ConcurrentHashMap Program-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>160</td><td>8m 05s</td><td>CoreJava With OCJP/SCJP:ConcurrentCollectionsPart-7 \</td><td>\</td><td>HashMap&amp;ConcurrentHashMap</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>161</td><td>7m 55s</td><td>CoreJavaWithOCJP/SCJP:ConcurrentCollectionsPart-8\</td><td>\</td><td>ConcurrentHashMap\</td><td>\</td><td>synchronizedMap()\</td><td>\</td><td>Hashtable</td><td>watch</td><td>notes</td><td></td><td></td></tr>
+<tr><td>162</td><td>8m 44s</td><td>Core Java With OCJP/SCJP:Concurrent Collections Part-9\</td><td>\</td><td>CopyOnWriteArrayList Properties Part-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>163</td><td>12m 09s</td><td>Core Java With OCJP/SCJP:Concurrent Collections Part-10\</td><td>\</td><td>CopyOnWriteArrayList Properties Part-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>164</td><td>12m 08s</td><td>Core Java With OCJP/SCJP:ConcurrentCollections Part-11\</td><td>\</td><td>CopyOnWriteArrayList Constructors&amp;Methods</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>165</td><td>5m 06s</td><td>Core Java With OCJP/SCJP:Concurrent Collections Part-12\</td><td>\</td><td>CopyOnWriteArrayList Program-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>166</td><td>7m 07s</td><td>Core Java With OCJP/SCJP:Concurrent Collections Part-13\</td><td>\</td><td>CopyOnWriteArrayList Program-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>167</td><td>5m 24s</td><td>Core Java With OCJP/SCJP:Concurrent Collections Part-14\</td><td>\</td><td>CopyOnWriteArrayList Program-3</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>168</td><td>5m 43s</td><td>Core Java With OCJP/SCJP:Concurrent Collections Part-15\</td><td>\</td><td>CopyOnWriteArrayList Program-4</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>169</td><td>5m 02s</td><td>Core Java With OCJP/SCJP:Concurrent Collections Part-16\</td><td>\</td><td>ArrayList vs CopyOnWriteArrayList</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>170</td><td>8m 13s</td><td>CoreJavaWithOCJP/SCJP:Concurrent Collections Part-17\</td><td>\</td><td>CopyOnWriteArrayList,synchronizedList(),Vector</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>171</td><td>9m 55s</td><td>Core Java With OCJP/SCJP:Concurrent Collections Part-18\</td><td>\</td><td>CopyOnWriteArraySet</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>172</td><td>4m 53s</td><td>Core Java With OCJP/SCJP:Concurrent Collections Part-19\</td><td>\</td><td>CopyOnWriteArraySet vs synchronizedSet()</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>173</td><td>44m 31s</td><td>Core Java With OCJP/SCJP: Generics Part-1 \</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>174</td><td>1h 18m 49s</td><td>Core Java With OCJP/SCJP: Generics Part-2 \</td><td>\</td><td>time safety \</td><td>\</td><td>type casting</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>175</td><td>54m 19s</td><td>Core Java With OCJP/SCJP: Generics Part-3 \</td><td>\</td><td>time safety \</td><td>\</td><td>type casting Examples</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>176</td><td>57m 07s</td><td>Core Java With OCJP/SCJP: Generics Part-4 \</td><td>\</td><td>generics method \</td><td>\</td><td>generics wildcard characters(?)</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>177</td><td>1h 05m 52s</td><td>Core Java With OCJP/SCJP: Generics Part-5 \</td><td>\</td><td>generics method</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>178</td><td>28m 06s</td><td>Core Java With OCJP/SCJP:  Garbage collection Part-1 \</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>179</td><td>1h 05m 36s</td><td>Core Java With OCJP/SCJP:  Garbage collection Part-2 \</td><td>\</td><td>The ways to make object eligible for GC</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>180</td><td>56m 05s</td><td>Core Java With OCJP/SCJP: Garbage collection Part-3 \</td><td>\</td><td>The methods for requesting  jvm to run GC</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>181</td><td>50m 38s</td><td>Core Java With OCJP/SCJP: Garbage collection Part-4 \</td><td>\</td><td>finalization-1</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>182</td><td>56m 13s</td><td>Core Java With OCJP/SCJP: Garbage collection Part-5 \</td><td>\</td><td>finalization-2</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>183</td><td>14m 12s</td><td>Core Java With OCJP/SCJP:Internationalization [I18N]  Part- 1\</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>184</td><td>1h 22m 17s</td><td>Core Java With OCJP/SCJP:Internationalization [I18N]  Part- 2\</td><td>\</td><td>Local class</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>185</td><td>1h 11m 45s</td><td>Core Java With OCJP/SCJP:Internationalization [I18N] Part- 3\</td><td>\</td><td>NumberFormate class</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>186</td><td>1h 01m 28s</td><td>Core Java With OCJP/SCJP:ENUM  Part- 1\</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>187</td><td>1h 07m 26s</td><td>Core Java With OCJP/SCJP:ENUM  Part- 2\</td><td>\</td><td>enum vs inheritance</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>188</td><td>1h 16m 59s</td><td>Core Java With OCJP/SCJP:ENUM  Part- 3\</td><td>\</td><td>enum vs constructor</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>189</td><td>1h 39m 36s</td><td>Core Java With OCJP/SCJP:Devlopment  Part- 1\</td><td>\</td><td>Introduction</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>190</td><td>1h 05m 37s</td><td>Core Java With OCJP/SCJP:Devlopment  Part- 2\</td><td>\</td><td>Jar Files \</td><td>\</td><td>System Propertices</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>191</td><td>1h 45m 08s</td><td>Core Java With OCJP/SCJP:Devlopment  Part- 3\</td><td>\</td><td>Jar vs war vs var\</td><td>\</td><td>JDK vs JRE VS JVM</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>192</td><td>1h 09m 26s</td><td>Core Java With OCJP/SCJP: Assertions  Part- 1\</td><td>\</td><td>Introduction \</td><td>\</td><td>idenifier vs keywords</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>193</td><td>58m 09s</td><td>Core Java With OCJP/SCJP: Assertions  Part- 2\</td><td>\</td><td>Simpleassert \</td><td>\</td><td>augmented assert</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>194</td><td>1h 09m 05s</td><td>Core Java With OCJP/SCJP: Assertions  Part- 3\</td><td>\</td><td>various run time flags</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>195</td><td>33m 09s</td><td>Core Java With OCJP/SCJP: Assertions  Part- 4\</td><td>\</td><td>proper and improper use of assert</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>196</td><td>1h 29m 59s</td><td>Core Java With OCJP/SCJP:JVM Architecture  Part- 1\</td><td>\</td><td>Introduction \</td><td>\</td><td>class loading of system</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>197</td><td>54m 03s</td><td>Core Java With OCJP/SCJP:JVM Architecture  Part- 2\</td><td>\</td><td>Linking \</td><td>\</td><td>verfi\</td><td>\</td><td>prepare\</td><td>\</td><td>resolve</td><td>watch</td><td>notes</td></tr>
+<tr><td>198</td><td>47m 40s</td><td>Core Java With OCJP/SCJP:JVM Architecture  Part- 3\</td><td>\</td><td>how class loader works</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>199</td><td>1h 03m 31s</td><td>Core Java With OCJP/SCJP:JVM Architecture  Part- 4\</td><td>\</td><td>nead of customized classloader</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>200</td><td>41m 11s</td><td>Core Java With OCJP/SCJP:JVM Architecture  Part- 5\</td><td>\</td><td>heap area \</td><td>\</td><td>method area</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>201</td><td>1h 06m 42s</td><td>Core Java With OCJP/SCJP:JVM Architecture  Part- 6\</td><td>\</td><td>stack memory</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>202</td><td>36m 27s</td><td>Core Java With OCJP/SCJP:JVM Architecture  Part- 7\</td><td>\</td><td>jvm execution engine</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>203</td><td>1h 19m 16s</td><td>Core Java With OCJP/SCJP:JVM Architecture  Part- 8\</td><td>\</td><td>complete jvm architecture</td><td>watch</td><td>notes</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+</body></html>

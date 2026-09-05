@@ -1,0 +1,934 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>066-overloaded-constructor</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 066 — Overloaded constructors</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-16 || overloaded constructor</p>
+<p>Source: real YouTube auto-captions (.transcripts/066-9qA_MNNqkK0.txt). ASR decoded in place: keep supporting = keep writing (notes); no AR / no Arc = no-arg; in AR / inar / in I = int-arg / int i; double AR = double-arg; this of 10 = this(10); 10 L / 10l = 10L; obstructor = abstract; inace / interace = interface; CH class = child class; so / so far = super(); this that all = this(); Rec = recursive; I exception / CBO / IBO = IOException; throw keyboard = throws; TR catch = try-catch; color = caller; PKA = pakka (definitely); compar / compa me = compile-time error; stringer / string AR a = String[] args; vo / wide = void; sop / s4p = System.out.println; Mis perspection = misconception; overwriting = overriding; protector = protected; strict fop = strictfp (and the other illegal constructor modifiers); bit = quiz / which of the following.</p>
+<p>This is not a generic constructor-overloading intro. After the morning session on constructor rules and the default-constructor prototype (video 065), he (1) writes a three-constructor Test with this() chaining and automatic promotion, (2) motivates overload with a Person object that can be created from different amounts of data, (3) proves inheritance and overriding are not applicable to constructors, (4) shows abstract class can have a constructor and interface cannot, then (5) drills three exam cases: recursive constructor invocation, parent argument-constructor + child default super(), and parent constructor throws a checked exception.</p>
+<h3>00:04 — Recap: constructors, rules, default-constructor prototype</h3>
+<p>Caption opens mid-sentence. In the morning they covered constructors, the rules for constructors, and then the default constructor — including the prototype of the default constructor.</p>
+<p>That is video 065. He is not re-teaching those rules here. Next subtopic.</p>
+<h3>00:23 — Next subtopic: overloaded constructors</h3>
+<p>Board heading (ASR: keep supporting overloaded Constructors): overloaded constructors.</p>
+<p>He repeats the heading several times so they write it.</p>
+<p>Opening line: a class can contain any number of constructors.</p>
+<h3>00:57 — Board: class `Test` with three constructors and `this()` chaining</h3>
+<p>Best example. Class Test. No-arg constructor. Inside it, this(10) — that call goes to the int-arg constructor. Then print no-arg constructor.</p>
+<p>Int-arg constructor Test(int i). Inside it, this(10.5) — that call goes to the double-arg constructor. Then print int-arg constructor.</p>
+<p>Double-arg constructor Test(double d). Print double-arg constructor. No further this() call.</p>
+<pre class='code'>class Test {
+    Test() {
+        this(10);
+        System.out.println(&quot;no-arg constructor&quot;);
+    }
+
+    Test(int i) {
+        this(10.5);
+        System.out.println(&quot;int-arg constructor&quot;);
+    }
+
+    Test(double d) {
+        System.out.println(&quot;double-arg constructor&quot;);
+    }
+}</pre>
+<p>ASR mixes double AR onto the int constructor while he is calling the double constructor with this(10.5). He then corrects himself on the board: “this one is int-arg, this one is double-arg constructor.”</p>
+<h3>02:09 — Same name, different argument types → overloaded constructors</h3>
+<p>How many constructors inside Test? Three.</p>
+<p>All three have the same name (Test) but different argument types: no-arg, int-arg, double-arg.</p>
+<p>Same name + different type of arguments is the overloading concept. These constructors are by default considered overloaded constructors.</p>
+<h3>02:50 — `main`: take special care with `String[]`; `new Test()` output</h3>
+<pre class='code'>public static void main(String[] args) — “take very very special care.”
+class Test {
+    Test() {
+        this(10);
+        System.out.println(&quot;no-arg constructor&quot;);
+    }
+
+    Test(int i) {
+        this(10.5);
+        System.out.println(&quot;int-arg constructor&quot;);
+    }
+
+    Test(double d) {
+        System.out.println(&quot;double-arg constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        // prints double-arg constructor
+        // prints int-arg constructor
+        // prints no-arg constructor
+    }
+}</pre>
+<p>new Test() calls the no-arg constructor. That constructor internally calls the int-arg constructor (this(10)). The int-arg constructor internally calls the double-arg constructor (this(10.5)).</p>
+<p>So the prints happen on the way back out of the chain: double-arg, then int-arg, then no-arg.</p>
+<h3>03:51 — `new Test(10)` and `new Test(10.5)`</h3>
+<pre class='code'>class Test {
+    Test() {
+        this(10);
+        System.out.println(&quot;no-arg constructor&quot;);
+    }
+
+    Test(int i) {
+        this(10.5);
+        System.out.println(&quot;int-arg constructor&quot;);
+    }
+
+    Test(double d) {
+        System.out.println(&quot;double-arg constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t2 = new Test(10);
+        // prints double-arg constructor
+        // prints int-arg constructor
+    }
+}</pre>
+<p>Argument passed is int. Int-arg constructor is called. At the start of that constructor, this(10.5) still fires the double-arg constructor. Output: double-arg followed by int-arg. No-arg is not in this chain.</p>
+<pre class='code'>class Test {
+    Test() {
+        this(10);
+        System.out.println(&quot;no-arg constructor&quot;);
+    }
+
+    Test(int i) {
+        this(10.5);
+        System.out.println(&quot;int-arg constructor&quot;);
+    }
+
+    Test(double d) {
+        System.out.println(&quot;double-arg constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t3 = new Test(10.5);
+        // prints double-arg constructor
+    }
+}</pre>
+<p>10.5 is double. Directly the double-arg constructor. That is all.</p>
+<h3>04:41 — `new Test(10L)`: automatic promotion in overloading</h3>
+<pre class='code'>class Test {
+    Test() {
+        this(10);
+        System.out.println(&quot;no-arg constructor&quot;);
+    }
+
+    Test(int i) {
+        this(10.5);
+        System.out.println(&quot;int-arg constructor&quot;);
+    }
+
+    Test(double d) {
+        System.out.println(&quot;double-arg constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t4 = new Test(10L);
+        // prints double-arg constructor
+    }
+}</pre>
+<p>10L means long. Is there a constructor that can take long? No.</p>
+<p>Remember automatic promotion in overloading (video 054). Long is promoted to the next level: float. There is no float-arg constructor. Promoted again to double. Double-arg constructor is there. Output: double-arg constructor.</p>
+<p>End of main, end of the class.</p>
+<h3>05:28 — Overloading is applicable for constructors</h3>
+<p>Within a class we can take multiple constructors. No problem at all. All of them have the same name but different types of arguments. Hence overloading concept is applicable for constructors. Overloaded constructors are possible.</p>
+<h3>06:02 — Theory dictation (write this)</h3>
+<p>He dictates slowly, repeating each fragment:</p>
+<ul><li>Within a class we can declare multiple constructors.</li></ul>
+<ul><li>All these constructors have the same name but different type of arguments.</li></ul>
+<ul><li>Hence all these constructors are considered as overloaded constructors.</li></ul>
+<ul><li>Hence overloading concept is applicable for constructors.</li></ul>
+<h3>07:41 — Same `Test` example rewritten on the board</h3>
+<p>He writes the three constructors again (Test(), this(10), SOP no-arg) and the four object lines:</p>
+<pre class='code'>class Test {
+    Test() {
+        this(10);
+        System.out.println(&quot;no-arg constructor&quot;);
+    }
+
+    Test(int i) {
+        this(10.5);
+        System.out.println(&quot;int-arg constructor&quot;);
+    }
+
+    Test(double d) {
+        System.out.println(&quot;double-arg constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        Test t2 = new Test(10);
+        Test t3 = new Test(10.5);
+        Test t4 = new Test(10L);
+        // prints double-arg constructor
+        // prints int-arg constructor
+        // prints no-arg constructor
+        // prints double-arg constructor
+        // prints int-arg constructor
+        // prints double-arg constructor
+        // prints double-arg constructor
+    }
+}</pre>
+<p>He says take the entire output also, because sometimes based on the information we provide, the corresponding constructor will be invoked.</p>
+<h3>08:52 — Automatic promotion is applicable even for constructors</h3>
+<p>Even overloading automatic promotion is possible. No problem at all. Even for constructors it is applicable.</p>
+<p>He recaps the first object’s output once more: double-arg, int-arg, no-arg. Completed.</p>
+<h3>09:46 — Why we need this: create a `Person` from whatever data we have</h3>
+<p>Sometimes I want to create a person object. Sometimes I may pass only person name. Sometimes name and age. Sometimes name, age, height, weight. Based on the provided information, the corresponding constructor will execute.</p>
+<p>Within a class there may be a chance to have multiple constructors with the same name but different argument types.</p>
+<p>Can I use the term: overloading concept applicable for constructors? Yes.</p>
+<p>Where is this helpful? What is the use?</p>
+<h3>10:40 — `Person` has many properties</h3>
+<p>He has one Person class. Several properties: name, age, height, weight, father name, mother name.</p>
+<h3>11:03 — Object with only name: `new Person(&quot;Durga&quot;)`</h3>
+<p>Sometimes I want to create a person object but I know only name. Compulsory we require a constructor that can take only name.</p>
+<pre class='code'>class Person {
+    String name;
+    int age;
+    double height;
+    double weight;
+    String fatherName;
+    String motherName;
+
+    Person(String name) {
+        this.name = name;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Person p = new Person(&quot;Durga&quot;);
+    }
+}</pre>
+<p>All remaining properties keep default values, because he did not provide that information.</p>
+<h3>11:43 — Object with name and age: `new Person(&quot;Ravi&quot;, 30)`</h3>
+<p>Second person: name Ravi, age 30. The name-only constructor cannot be used. Compulsory one more constructor is required: String name, int age.</p>
+<pre class='code'>class Person {
+    String name;
+    int age;
+
+    Person(String name) {
+        this.name = name;
+    }
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Person p2 = new Person(&quot;Ravi&quot;, 30);
+    }
+}</pre>
+<h3>12:29 — Object with name, age, father name, mother name</h3>
+<p>Third person: Shiva, age 30, father name Ram, mother name some xyz. For that information another constructor is required.</p>
+<pre class='code'>class Person {
+    String name;
+    int age;
+    String fatherName;
+    String motherName;
+
+    Person(String name) {
+        this.name = name;
+    }
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    Person(String name, int age, String fatherName, String motherName) {
+        this.name = name;
+        this.age = age;
+        this.fatherName = fatherName;
+        this.motherName = motherName;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Person p3 = new Person(&quot;Shiva&quot;, 30, &quot;Ram&quot;, &quot;xyz&quot;);
+    }
+}</pre>
+<p>Within a class there may be a chance of multiple constructors. Based on our provided values, the corresponding constructor must execute. Overloaded constructors: is it possible? Is it required? Yes, required — sometimes only name, or name and age, or name, age, father name, mother name. If you want to create an object with those values, that constructor should be there.</p>
+<p>Same name, different argument types = overloaded constructors. Overloading concept applicable for constructors. No problem at all.</p>
+<h3>13:42 — Next: overriding and inheritance — are they applicable for constructors?</h3>
+<p>Can you tell: inheritance concept applicable for constructors or not? Parent class constructor by default available to the child class or not?</p>
+<p>Most people have a misconception on this point. First you should know what inheritance is, then whether it applies to constructors.</p>
+<h3>14:24 — Inheritance **is** applicable for methods: `P.m1`, `C extends P` with `m2`</h3>
+<p>Class P. Parent contains m1. Class C extends P. Child contains m2.</p>
+<p>Parent class contains how many methods? One: m1. Child class contains how many methods? Two: m1 (from parent) and m2.</p>
+<pre class='code'>class P {
+    public void m1() {
+    }
+}
+
+class C extends P {
+    public void m2() {
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        c.m1();
+        c.m2();
+    }
+}</pre>
+<p>On the child object can I call m1? Yes. Can I call m2? Yes. Parent class method is by default available to the child. We are not required to do anything. Whenever we keep the extends keyword, parent class methods are automatically available. Happily we can call parent class method on the child object.</p>
+<p>For methods, inheritance concept is applicable. Parent class method is available to the child without rewriting. Happily we can call. That is why inheritance is applicable for methods. No problem at all.</p>
+<h3>15:47 — Now constructors: parent no-arg, child int-arg — child has **one** constructor, not two</h3>
+<p>Take special care. Parent class contains a no-arg constructor. Class C extends P. Child class contains an int-arg constructor.</p>
+<pre class='code'>class P {
+    P() {
+    }
+}
+
+class C extends P {
+    C(int i) {
+    }
+}</pre>
+<p>Child class contains how many methods? Two (if we still think of the method example). Child class contains how many constructors? One constructor only, not two.</p>
+<p>You may feel parent class constructor is by default available to the child. If it were available, child would contain that constructor also.</p>
+<p>Create C c = new C(). Compiler will go left and right: where is the no-arg constructor in the child class? It is there in the parent. That is the parent class constructor, not the child class constructor.</p>
+<pre class='code'>class P {
+    P() {
+    }
+}
+
+class C extends P {
+    C(int i) {
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        // CE: cannot find symbol
+        //   symbol: constructor C()
+        //   location: class C
+    }
+}</pre>
+<p>Whatever methods are present in the parent are by default available to the child. That is why inheritance is applicable for methods.</p>
+<p>Whatever constructor is available in the parent is by default not available to the child. If you want, you can call it. Calling is not inheritance. You can call if you want, but by default it is not available to the child.</p>
+<p>Inheritance concept is not applicable for constructors.</p>
+<h3>17:28 — Overriding is also not applicable</h3>
+<p>If inheritance is not there — parent class constructor by default not available to the child — is overriding applicable or not?</p>
+<p>Overriding: if the parent class method is available to the child, and the child is not satisfied with that, the child is allowed to redefine. If it is not available, where is the question of overriding?</p>
+<p>Inheritance concept and overriding concept are not applicable for constructors.</p>
+<h3>18:02 — Board conclusion (dictation)</h3>
+<p>For constructors:</p>
+<ul><li>inheritance and overriding concepts are not applicable</li></ul>
+<ul><li>but overloading concept is applicable</li></ul>
+<p>This is what you people should remember well: inheritance, overriding, and so on.</p>
+<h3>19:11 — Every class including abstract can contain a constructor; interface cannot</h3>
+<p>Conclusion: every class in Java, including abstract class also, can contain a constructor. But interface doesn’t contain a constructor. Remember this.</p>
+<p>He dictates:</p>
+<ul><li>Every class in Java including abstract class can contain constructors.</li></ul>
+<ul><li>But interface cannot contain constructor.</li></ul>
+<h3>20:35 — Three examples: concrete class, abstract class, interface</h3>
+<pre class='code'>class Test {
+    Test() {
+    }
+}</pre>
+<p>Valid or not? Valid.</p>
+<p>abstract class Test {
+    Test() {
+    }
+}</p>
+<p>Valid or not? Yes, perfectly valid. Abstract class — we can’t create an object for abstract class (maybe last session, maybe next; he will discuss the reason abstract can still have a constructor). Still, abstract class can contain a constructor.</p>
+<p>interface Test {
+    Test();
+    // CE: &lt;identifier&gt; expected
+    //     (interface cannot contain a constructor)
+}</p>
+<p>Can I take a constructor inside interface? No. Immediately compile-time error.</p>
+<h3>21:38 — Why interface cannot have a constructor</h3>
+<p>Purpose of constructor: to perform initialization of an object — meaning initialization of instance variables.</p>
+<p>Every variable present inside interface is always a static variable. There is no chance of existing instance variable. If there is no chance of instance variable, where is the question of initialization? That’s why constructor is not required for interface.</p>
+<p>Why doesn’t interface contain a constructor? Because there is no chance of existing any instance variable.</p>
+<h3>22:21 — Same three examples rewritten</h3>
+<p>He writes them again on the board: class Test with constructor; abstract class Test with constructor; interface Test with constructor (illegal). Terminology is clear. He is ready to complete this point.</p>
+<h3>23:04 — Three important cases; every case is an important conclusion</h3>
+<p>There are three important cases. Every case itself is an important conclusion.</p>
+<h3>23:18 — Case 1: recursive `m1` ↔ `m2` without calling them — output is `hello`</h3>
+<p>Very important point. Take special care. Most people have the wrong misconception in this case.</p>
+<p>Class Test. m1 internally calls m2. m2 internally calls m1. main prints hello. He is not calling m1 or m2 from main.</p>
+<pre class='code'>class Test {
+    public static void m1() {
+        m2();
+    }
+
+    public static void m2() {
+        m1();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;hello&quot;);
+    }
+}</pre>
+<p>What is the answer? m1 calls m2, m2 calls m1. Some people feel `StackOverflowError` because of recursive call.</p>
+<h3>24:47 — Petrol tank and match box: someone must ignite</h3>
+<p>Analogy: petrol tank is there, match box is there. Keep them side by side — does fire happen automatically? No. Someone is required to ignite. Then only.</p>
+<p>m1 calls m2, m2 calls m1, but you are not calling any method. Am I calling m1 or m2? No. Where is the question of StackOverflowError?</p>
+<p>Happily the output is hello.</p>
+<pre class='code'>class Test {
+    public static void m1() {
+        m2();
+    }
+
+    public static void m2() {
+        m1();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;hello&quot;);
+        // prints hello
+    }
+}</pre>
+<h3>25:21 — Now call `m1()`: one runtime stack, then overflow</h3>
+<p>Now he calls m1() from main.</p>
+<p>For every thread — in this example how many threads? One thread: main thread. For every thread, JVM creates one runtime stack.</p>
+<p>First method executed by main thread: main. main internally calls m1. Every method call is stored on the stack. m1 calls m2, m2 calls m1, m1 calls m2, … At a certain point the stack overflows.</p>
+<pre class='code'>class Test {
+    public static void m1() {
+        m2();
+    }
+
+    public static void m2() {
+        m1();
+    }
+
+    public static void main(String[] args) {
+        m1();
+        System.out.println(&quot;hello&quot;);
+        // RE: Exception in thread &quot;main&quot; java.lang.StackOverflowError
+    }
+}</pre>
+<p>He states it as: recursive method call is a runtime exception saying `StackOverflowError`. (The actual type is java.lang.StackOverflowError, an Error. That is how he words it for the class.)</p>
+<p>hello never prints, because control never returns from m1().</p>
+<h3>26:31 — Why this point? It looks unrelated to constructors</h3>
+<p>You may have the doubt: this is nowhere related to constructors. First he wants to execute this, then apply the same idea to constructors.</p>
+<p>If he comments the m1() call, output becomes simple hello — m1 calls m2 and m2 calls m1, but they are not calling any method.</p>
+<h3>27:17 — Live: `Test.java` without `m1()` → `hello`</h3>
+<p>He types Test.java: m1 calls m2, m2 calls m1, SOP hello. Not calling any method.</p>
+<p>javac Test.java
+java Test</p>
+<p>Simple output is hello.</p>
+<h3>28:20 — Live: add `m1()` → `StackOverflowError`</h3>
+<p>He adds m1() in main. Compiles fine. Run: Exception in thread &quot;main&quot; — StackOverflowError.</p>
+<p>Recursive method call is a runtime exception saying StackOverflowError. Clear indication.</p>
+<p>Why don’t you apply this for constructors also? Recursion — yes we can.</p>
+<h3>28:52 — Same pattern with constructors: `this(10)` / `this()`</h3>
+<p>Class Test. No-arg constructor calls this(10) — another constructor whose argument is int. Int-arg constructor Test(int i) calls the no-arg constructor (this()).</p>
+<pre class='code'>class Test {
+    Test() {
+        this(10);
+    }
+
+    Test(int i) {
+        this();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;hello&quot;);
+    }
+}</pre>
+<p>First constructor calls second; second calls first. He is not creating an object. SOP hello.</p>
+<p>What is the answer? Don’t think too much. Most people feel StackOverflowError — yes or no?</p>
+<p>No. First constructor called second, second called first, but we are not calling any constructor because we are not creating an object — so people want to say hello.</p>
+<p>Compiler will go left and right. Remember: recursive constructor invocation. We are not required to call. If there is a possibility of recursive constructor invocation, that’s all — immediately compile-time error: recursive constructor invocation.</p>
+<p>Even first calls second and second calls first, and we are not calling any constructor: still CE, because of the possibility.</p>
+<h3>32:02 — Recursive method call vs recursive constructor invocation</h3>
+<p>Recursive method call is a runtime exception StackOverflowError.</p>
+<p>Recursive constructor invocation: possibility that’s all — not required to call. Then the code won’t compile. Compiler checks constructor recursion also. If there is a possibility, immediately CE saying recursive constructor invocation.</p>
+<h3>32:32 — Live compile of the constructor version</h3>
+<p>He types: Test() with this(10); Test(int i) with this(); main with SOP hello. Not creating an object.</p>
+<p>Code won’t compile. Compile error: recursive constructor invocation.</p>
+<p>Recursive method call is runtime exception. Recursive constructor invocation is a compile-time error.</p>
+<h3>33:29 — Case 1 dictation</h3>
+<ul><li>Recursive method call is a runtime exception saying StackOverflowError.</li></ul>
+<ul><li>But in our program, if there is a chance of recursive constructor invocation, then the code won’t compile and we will get compile-time error.</li></ul>
+<h3>35:07 — Both examples side by side on the board</h3>
+<p>Left: methods. m1 calls m2, m2 calls m1, main calls m1, SOP hello → StackOverflowError (runtime exception).</p>
+<pre class='code'>class Test {
+    public static void m1() {
+        m2();
+    }
+
+    public static void m2() {
+        m1();
+    }
+
+    public static void main(String[] args) {
+        m1();
+        System.out.println(&quot;hello&quot;);
+        // RE: java.lang.StackOverflowError
+    }
+}</pre>
+<p>Right: constructors. this(10) / this() / SOP hello → compile-time error saying recursive constructor invocation.</p>
+<pre class='code'>class Test {
+    Test() {
+        this(10);
+    }
+
+    Test(int i) {
+        this();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;hello&quot;);
+        // CE: recursive constructor invocation
+    }
+}</pre>
+<p>Case 1 is done.</p>
+<h3>37:22 — Case 2: three “innocent” parent–child programs</h3>
+<p>Very important case. Analyse properly.</p>
+<p>First: empty parent, empty child.</p>
+<pre class='code'>class P {
+}
+
+class C extends P {
+}</pre>
+<p>Second: parent with an explicit no-arg constructor; child empty (no constructor written).</p>
+<pre class='code'>class P {
+    P() {
+    }
+}
+
+class C extends P {
+}</pre>
+<p>Third: parent with an int-arg constructor; child empty.</p>
+<pre class='code'>class P {
+    P(int i) {
+    }
+}
+
+class C extends P {
+}</pre>
+<p>All valid or not? Seems to be very innocent code.</p>
+<p>First one valid or not? Valid. Second valid or not? Valid. If the first two are valid, automatically the third one…? 100% pakka the third one is invalid. Compile error. Then the doubt: why? I am not doing any mistake.</p>
+<h3>39:28 — Why 1 and 2 compile, and why 3 does not: compiler inserts `super()`</h3>
+<p>First program: am I writing any constructor? No. Compiler always generates a no-arg constructor with super(). Same in the child. Matching constructor is there. No problem.</p>
+<p>Compiler-generated equivalent of program 1:</p>
+<pre class='code'>class P {
+    P() {
+        super();
+    }
+}
+
+class C extends P {
+    C() {
+        super();
+    }
+}</pre>
+<p>Second program: compiler generates child no-arg with super(). Parent already has no-arg. No problem.</p>
+<pre class='code'>class P {
+    P() {
+        super();
+    }
+}
+
+class C extends P {
+    C() {
+        super();
+    }
+}</pre>
+<p>Third program: compiler still generates the child’s default constructor, and inside it places super(). That means calling parent class no-arg constructor. In the parent, no-arg constructor is there or not? Not there (because the programmer wrote P(int i), so compiler does not generate a default constructor for P). Matched constructor in the parent is not there. super() is no-arg, but parent has no no-arg.</p>
+<p>Immediately compile-time error: cannot find symbol — which symbol? constructor `P()` — location: class `P`.</p>
+<pre class='code'>class P {
+    P(int i) {
+    }
+}
+
+class C extends P {
+    // compiler generates:
+    // C() { super(); }
+    // CE: cannot find symbol
+    //   symbol: constructor P()
+    //   location: class P
+}</pre>
+<p>It is not the student’s mistake. Compiler generated some code; because of that generated code the problem came.</p>
+<p>There may be a chance of asking this type of possibility. Take it.</p>
+<h3>41:20 — If parent has an argument constructor, take special care in the child</h3>
+<p>Good programming practice / warning: if the parent class contains some constructor, while writing child classes compulsory we have to take special care with respect to constructors. If we are not taking care, there may be a chance of mismatch compile error.</p>
+<h3>41:54 — Highly recommended: if you write an argument constructor, write no-arg also</h3>
+<p>Whenever we are writing any argument constructor, it is highly recommended to write no-arg constructor also. If he wrote no-arg in the parent, this type of problem is not going to come.</p>
+<pre class='code'>class P {
+    P() {
+    }
+
+    P(int i) {
+    }
+}
+
+class C extends P {
+}</pre>
+<p>Now compiler-generated C() { super(); } finds P(). Compiles.</p>
+<h3>42:18 — Live compile of case 2</h3>
+<p>P.java: class P and class C extends P. javac P.java — valid, no problem.</p>
+<p>Then class P with P() — valid.</p>
+<p>Then P(int i) — invalid. Compile error: cannot find symbol, symbol constructor `P`, location class `P`.</p>
+<p>If the parent class contains any argument constructor, while writing child classes we have to take special care, because super() will be added automatically. Matched constructor should be required.</p>
+<p>First two valid. Last one invalid because matched constructor is not there in the parent class.</p>
+<h3>43:27 — Case 2 rewritten on the board</h3>
+<p>He writes the three programs again. First valid, second valid, third is the problem. CE: cannot find symbol, constructor P, location class P. Compile-time error.</p>
+<h3>45:35 — Two notes / conclusions for case 2</h3>
+<p>Note 1: If parent class contains any argument constructor, then while writing child classes we have to take special care with respect to constructors.</p>
+<p>Note 2 (most valuable): Whenever we are writing any argument constructor, it is highly recommended to write no-arg constructor also.</p>
+<p>If he writes no-arg in the parent as well, argument + no-arg, matched constructor will be there, no compile-time error.</p>
+<h3>48:20 — Case 3: checked exception and the caller (`m1` calls `m2`)</h3>
+<p>A bit important. Related to exception handling; he needs this point.</p>
+<p>m1 calls m2. Assume m2 throws IOException. Checked or unchecked? Checked — IOException is a checked exception.</p>
+<p>If a method throws a checked exception, the caller is responsible to handle that exception. Caller of m2 is m1. If the caller won’t handle, compile-time error.</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public void m1() {
+        m2();
+        // CE: unreported exception IOException; must be caught or declared to be thrown
+    }
+
+    public void m2() throws IOException {
+    }
+}</pre>
+<h3>50:02 — Two ways the caller can handle: try-catch or `throws`</h3>
+<p>How many ways can we handle? Two possibilities.</p>
+<p>Approach 1: keep the method call inside try-catch IOException.</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public void m1() {
+        try {
+            m2();
+        } catch (IOException e) {
+        }
+    }
+
+    public void m2() throws IOException {
+    }
+}</pre>
+<p>Approach 2: I don’t want try-catch; my caller is going to handle — throws IOException on m1.</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public void m1() throws IOException {
+        m2();
+    }
+
+    public void m2() throws IOException {
+    }
+}</pre>
+<p>If we are calling a method that throws a checked exception, caller is responsible. Two ways: try-catch, or throws keyword.</p>
+<p>Why don’t you apply this concept even for constructors? One constructor calling another constructor — caller concept is there.</p>
+<h3>51:03 — Parent constructor `throws IOException`; empty child will not compile</h3>
+<pre class='code'>import java.io.*;
+
+class P {
+    P() throws IOException {
+    }
+}
+
+class C extends P {
+}</pre>
+<p>Is the code going to compile or not? 100% pakka the code won’t compile. He is not doing any mistake, but still it won’t compile.</p>
+<p>Reason: compiler generates the default constructor. Default constructor contains one line: super(). super() means calling parent class constructor.</p>
+<p>From m1 he was calling m2, and m2 throws checked exception. Who is the caller of this parent constructor? Child constructor. Caller is responsible to handle that checked exception. They didn’t handle → immediately CE:</p>
+<p>unreported exception `java.io.IOException` in default constructor</p>
+<p>Who generated this constructor? Compiler. This constructor is called the default constructor.</p>
+<p>Compiler-generated child:</p>
+<pre class='code'>import java.io.*;
+
+class P {
+    P() throws IOException {
+    }
+}
+
+class C extends P {
+    C() {
+        super();
+        // CE: unreported exception java.io.IOException in default constructor
+    }
+}</pre>
+<h3>53:15 — Live compile of case 3</h3>
+<p>Parent constructor throws IOException. IOException is in the io package: import java.io.*.</p>
+<p>Parent constructor throws checked; child constructor doesn’t (compiler-generated default). Compile error: unreported exception `java.io.IOException` in default constructor.</p>
+<h3>54:06 — How to handle: two ways — but try-catch **will not work**</h3>
+<p>How many ways can we handle this problem? Two ways. First way try-catch, second way throws.</p>
+<p>He writes the child constructor explicitly. He wants to use try-catch only:</p>
+<pre class='code'>import java.io.*;
+
+class P {
+    P() throws IOException {
+    }
+}
+
+class C extends P {
+    C() {
+        try {
+            super();
+        } catch (IOException e) {
+        }
+        // CE: call to super must be first statement in constructor
+    }
+}</pre>
+<p>Compiler will go left and right. Reason: the first line inside every constructor should be `super` or `this`, but not a `try`. That’s why this approach won’t work. Try-catch approach won’t work.</p>
+<h3>55:18 — Compulsory: child constructor `throws` the same checked exception or its parent</h3>
+<p>Solve it with throws:</p>
+<pre class='code'>import java.io.*;
+
+class P {
+    P() throws IOException {
+    }
+}
+
+class C extends P {
+    C() throws IOException {
+        super();
+    }
+}</pre>
+<p>Child constructor is responsible to handle IOException. If you want to handle more than IOException, no problem: you should handle IO, and more than that if you want. You can take Exception. You can take Throwable also — Throwable means handling IO (as a parent type).</p>
+<p>Conclusion: if the parent class constructor throws some checked exception, compulsory child class constructor should throw the same checked exception or its parent. Rule is very strict.</p>
+<h3>56:12 — Live: `throws IOException` / `Exception` / `Throwable` all compile</h3>
+<p>If he is not writing a child constructor, compiler will place super(). With explicit child + throws IOException, the code compiles fine.</p>
+<p>Instead of IOException, Exception — valid or not? It’s parent. Child constructor responsible to handle IO; I want to handle Exception itself — no problem. Happily compiles.</p>
+<p>Don’t want Exception; take Throwable — no issue at all. Perfectly acceptable.</p>
+<pre class='code'>import java.io.*;
+
+class P {
+    P() throws IOException {
+    }
+}
+
+class C extends P {
+    C() throws Exception {
+        super();
+    }
+}
+import java.io.*;
+
+class P {
+    P() throws IOException {
+    }
+}
+
+class C extends P {
+    C() throws Throwable {
+        super();
+    }
+}</pre>
+<h3>57:21 — Case 3 on the board (invalid first program + the CE text)</h3>
+<p>First program (empty child) is the compile-error case. He writes the CE again: unreported exception java.io.IOException in default constructor. Class C extends P. Completed. This is the third case; a bit very important; you people should be aware.</p>
+<h3>59:24 — Case 3 theory dictation</h3>
+<p>Note / conclusion:</p>
+<p>If a parent class constructor throws any checked exception, compulsory child class constructor should throw the same checked exception or its parent. Otherwise the code won’t compile.</p>
+<p>These are the three important cases.</p>
+<h3>1:00:51 — Summarize total constructor concept: which of the following is valid</h3>
+<p>To summarize total constructor concept he frames one important bit (quiz). Which of the following is valid? He provides theoretical statements; they decide true/false or valid/invalid.</p>
+<h3>1:01:29 — Q1–Q2: purpose of constructor — create object vs initialize object</h3>
+<p>Q1. The main purpose of constructor is to create an object. Valid or invalid? Invalid.</p>
+<p>(new creates the object; constructor does not.)</p>
+<pre class='code'>class Student {
+    String name;
+
+    Student(String name) {
+        this.name = name; // initialization, not creation
+    }
+
+    public static void main(String[] args) {
+        Student s = new Student(&quot;Durga&quot;);
+        // `new` creates the object; constructor initializes `name`
+    }
+}</pre>
+<p>Q2. The main purpose of constructor is to perform initialization of an object. Correct or not? Valid.</p>
+<h3>1:02:29 — Q3: constructor name need not be same as class name</h3>
+<p>Q3. The name of the constructor need not be same as class name. Valid or invalid? Invalid.</p>
+<pre class='code'>class Test {
+    Demo() {
+        // CE: invalid method declaration; return type required
+        // (this is not a constructor of Test)
+    }
+}</pre>
+<h3>1:02:54 — Q4: return type applicable for constructors, but only `void`</h3>
+<p>Q4. Return type concept applicable for constructors, but only void. Valid or invalid? Invalid.</p>
+<p>If you write a return type, it becomes a method, not a constructor.</p>
+<pre class='code'>class Test {
+    void Test() {
+        // legal as a method, not a constructor
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test(); // compiler-generated default constructor, not void Test()
+    }
+}</pre>
+<h3>1:03:26 — Q5: we can apply any modifier for constructor</h3>
+<p>Q5. We can apply any modifier for constructor. Valid or invalid? Invalid.</p>
+<p>Which modifiers can we apply? public, private, protected, default. final, static, strictfp — such type of terminology is not applicable.</p>
+<pre class='code'>class Test {
+    public Test() {
+    }
+
+    private Test(int i) {
+    }
+
+    protected Test(double d) {
+    }
+
+    Test(String s) {
+    }
+}
+class Test {
+    static Test() {
+        // CE: modifier static not allowed here
+    }
+
+    final Test(int i) {
+        // CE: modifier final not allowed here
+    }
+}</pre>
+<h3>1:03:58 — Q6–Q9: who generates the default constructor, and when</h3>
+<p>Q6. Default constructor generated by JVM. True or false? False. Who is responsible to generate default constructor? Compiler, but not JVM.</p>
+<p>Q7. Compiler is responsible to generate default constructor. True or false? This one is correct / true.</p>
+<p>Q8. Compiler will always generate a default constructor. True or false? False. If our class doesn’t contain any constructor, then only compiler will generate default constructor. That’s why this statement is wrong.</p>
+<pre class='code'>class Test {
+    // compiler generates: Test() { super(); }
+}
+
+class Test2 {
+    Test2(int i) {
+    }
+    // compiler does NOT generate Test2()
+}</pre>
+<p>Q9. If we are not writing no-arg constructor, then compiler will generate default constructor. Valid or invalid? Invalid. If we are not writing any constructor, then compiler will generate. If we are not writing no-arg constructor (but we wrote some other constructor) — no.</p>
+<pre class='code'>class Test {
+    Test(int i) {
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        // CE: cannot find symbol
+        //   symbol: constructor Test()
+        //   location: class Test
+    }
+}</pre>
+<h3>1:05:59 — Q10–Q11: every no-arg is default? default is always no-arg?</h3>
+<p>Q10. Every no-arg constructor is always a default constructor. True or false? False. If I am writing no-arg constructor, then it’s not default constructor. Compiler-generated constructor is called default constructor. Observe the difference.</p>
+<pre class='code'>class Test {
+    Test() {
+        // programmer-written no-arg: NOT a default constructor
+    }
+}</pre>
+<p>Q11. Default constructor is always no-arg constructor. True or false? True. Have you observed: vice versa is not true. Default constructor is always no-arg, but every no-arg constructor is always default? No.</p>
+<h3>1:06:56 — Q12: first line `super()` or `this()`; compiler generates `this()`?</h3>
+<p>Q12. The first line inside every constructor should be either super() or this(). Continue: if we are not writing anything, then compiler will generate this(). True or valid or invalid? Invalid / false. Compiler will always place `super()`, not this().</p>
+<pre class='code'>class Test {
+    Test() {
+        // compiler inserts super();  NOT this();
+        System.out.println(&quot;hello&quot;);
+    }
+}
+class Test {
+    Test() {
+        this(10);
+        System.out.println(&quot;no-arg&quot;);
+    }
+
+    Test(int i) {
+        super(); // first line is super() or this(); here super() to Object
+        System.out.println(&quot;int-arg&quot;);
+    }
+}</pre>
+<h3>1:08:04 — Q13–Q14: overloading, overriding, inheritance for constructors</h3>
+<p>Q13. For constructors, both overloading and overriding concepts are applicable. True or false? False. Only overloading applicable, but not overriding.</p>
+<pre class='code'>class Test {
+    Test() {
+    }
+
+    Test(int i) {
+    }
+    // overloading: yes
+}</pre>
+<p>Q14. For constructors, inheritance concept applicable, but not overriding. True or false? False. (Inheritance is also not applicable — that was the P / C constructor demo at 15:47.)</p>
+<h3>1:09:03 — Q15–Q16: only concrete classes? interface can contain constructors?</h3>
+<p>Q15. Only concrete classes can contain constructor, but abstract classes cannot. Valid or invalid? Invalid. Abstract class also can contain constructor.</p>
+<p>abstract class Test {
+    Test() {
+        // legal
+    }
+}</p>
+<p>Q16. Interface can contain constructors. Valid or invalid? Invalid.</p>
+<p>interface Test {
+    Test();
+    // CE: interface cannot contain a constructor
+}</p>
+<h3>1:10:00 — Q17: recursive constructor invocation is a runtime exception?</h3>
+<p>Q17. Recursive constructor invocation is a runtime exception. Valid or invalid? Invalid. Because it’s a compile-time error.</p>
+<pre class='code'>class Test {
+    Test() {
+        this(10);
+    }
+
+    Test(int i) {
+        this();
+    }
+    // CE: recursive constructor invocation
+}</pre>
+<h3>1:10:30 — Q18: child must throw same checked exception **or its child**?</h3>
+<p>Q18. If a parent class constructor throws some checked exception, then compulsory child class constructor should throw the same checked exception or it’s a child. True or false? False.</p>
+<p>Child class constructor should throw the same checked exception or its parent. Actual answer is parent, but he wrote child in this statement — that’s why invalid.</p>
+<pre class='code'>import java.io.*;
+
+class P {
+    P() throws IOException {
+    }
+}
+
+class C extends P {
+    C() throws Exception { // parent of IOException: legal
+        super();
+    }
+}</pre>
+<p>Wrong statement would require throwing a child of IOException (for example only FileNotFoundException) as the allowed extra option. That is not the rule he taught. Same checked exception, or a parent type (Exception, Throwable).</p>
+<h3>1:11:37 — Close: constructors concept revised</h3>
+<p>Which of the following statement is true — they have observed; all the constructors concept just they revised. These are various important things they should be aware of related to constructors.</p>
+<p>End of video 066 (OOPs part 16). Next in the playlist is video 067 — singleton class.</p>
+<h2>Board conclusions (his wording)</h2>
+<ol><li>A class can contain any number of constructors. Same name, different argument types → overloaded constructors. Overloading is applicable for constructors (including automatic promotion).</li></ol>
+<ol><li>Inheritance and overriding are not applicable for constructors. Parent constructor is not inherited; you may call it (super(...)), but calling is not inheritance. Overriding does not arise.</li></ol>
+<ol><li>Every class in Java, including abstract class, can contain a constructor. Interface cannot (no instance variables to initialize).</li></ol>
+<ol><li>Case 1: recursive method call → runtime StackOverflowError (only if you actually call into the cycle). Recursive constructor invocation → CE even for the possibility, without creating an object.</li></ol>
+<ol><li>Case 2: if parent has only an argument constructor, compiler-generated child super() fails (cannot find symbol constructor P()). If parent has any argument constructor, take special care in the child. Highly recommended: write no-arg also whenever you write an argument constructor.</li></ol>
+<ol><li>Case 3: if parent constructor throws a checked exception, child constructor must throws the same checked exception or its parent. Try-catch around super() is illegal (first statement must be super or this). Otherwise: unreported exception in default constructor.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 66 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 16</td></tr>
+<tr><td>Topic</td><td>overloaded constructor</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 12m 01s</td></tr>
+<tr><td>Video ID</td><td>9qA_MNNqkK0</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=9qA_MNNqkK0</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

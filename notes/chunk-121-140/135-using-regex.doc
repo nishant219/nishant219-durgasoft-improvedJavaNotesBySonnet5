@@ -1,0 +1,410 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>135-using-regex</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 135 — Regular Expressions Part 4: How to Use Regular Expressions</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: RegularExpresions Part-4 || How to use Regular Expresions</p>
+<p>URL: https://www.youtube.com/watch?v=IZt3rF8YAEA</p>
+<p>Duration: ~57m 48s</p>
+<p>Position: Video 135 of 203 in the Durga Sir OCJP/SCJP playlist</p>
+<p>Prerequisite: Videos 132–134 covered Pattern/Matcher basics, character classes, quantifiers, Pattern.split(), and how to write regex for mobile numbers, email IDs, and Java identifiers. This lecture is entirely about how to use those regexes in real Java programs — validation and extraction.</p>
+<h2>00:04 — Recap &amp; today&#x27;s shift: from writing regex to using regex</h2>
+<p>Durga Sir opens by recapping the previous session&#x27;s writing exercises:</p>
+<ul><li>Write a regex to represent all mobile numbers</li></ul>
+<ul><li>Write a regex to represent all mail IDs</li></ul>
+<ul><li>Write a regex to represent all Java language identifiers</li></ul>
+<p>That was the &quot;how to write&quot; part. Today&#x27;s target:</p>
+<p>How to use these regular expressions inside Java programs — validation logic, file extraction, and directory filtering.</p>
+<p>Real-world connection: whenever you submit a form and see &quot;Please enter your valid mobile number&quot; or &quot;Please enter your valid mail ID&quot;, internally this type of Pattern/Matcher logic is running.</p>
+<h2>00:31 — Example 1 (board): Validate mobile number from command line</h2>
+<h3>Requirement (board wording)</h3>
+<p>Write a program to check whether the given number is a valid mobile number or not.</p>
+<ul><li>Input: a number passed from the command prompt (args[0])</li></ul>
+<ul><li>Output: print &quot;valid mobile number&quot; or &quot;invalid mobile number&quot;</li></ul>
+<h3>Mobile number rules (from Video 134 — Sir repeats here)</h3>
+<p>A valid mobile number has exactly one of these formats:</p>
+<p>Regex (from previous lecture):</p>
+<p>(0|91)?[789][0-9]{9}</p>
+<p>Breakdown:</p>
+<p>In Java source: &quot;(0|91)?[789][0-9]{9}&quot;</p>
+<h3>Test cases Sir walks through (before coding)</h3>
+<h2>03:03 — RegexDemo / LectureDemo: step-by-step validation program</h2>
+<h3>Standard two-step Pattern/Matcher workflow</h3>
+<p>Step 1 — Create a Pattern object representing the mobile-number regex:</p>
+<p>Pattern p = Pattern.compile(&quot;(0|91)?[789][0-9]{9}&quot;);</p>
+<p>Step 2 — Create a Matcher object to match that pattern against the command-line argument:</p>
+<p>Matcher m = p.matcher(args[0]);</p>
+<h3>How many matches in `args[0]`?</h3>
+<p>Sir emphasizes: for this validation program, at most one match exists in the input string — the entire input is the mobile number. You are not searching a long text for embedded numbers.</p>
+<ul><li>No `while (m.find())` loop needed here — a single if (m.find()) suffices.</li></ul>
+<ul><li>Contrast with the file-extraction example later, where multiple matches per line require a while loop.</li></ul>
+<h3>Complete board program — RegexDemo2 (mobile validation)</h3>
+<pre class='code'>import java.util.regex.*;
+
+class RegexDemo2 {
+    public static void main(String[] args) {
+        Pattern p = Pattern.compile(&quot;(0|91)?[789][0-9]{9}&quot;);
+        Matcher m = p.matcher(args[0]);
+        if (m.find() &amp;&amp; m.group().equals(args[0])) {
+            System.out.println(&quot;valid mobile number&quot;);
+        } else {
+            System.out.println(&quot;invalid mobile number&quot;);
+        }
+    }
+}</pre>
+<h3>THE CRITICAL TWIST — `m.find()` alone is NOT enough</h3>
+<p>Sir spends significant time on this — the most common mistake in validation programs.</p>
+<h4>Problem: partial (substring) match vs full-string match</h4>
+<p>m.find() searches for the pattern anywhere in the input. It returns true if any substring matches — even when the entire string is not a valid mobile number.</p>
+<p>Example that breaks naive code:</p>
+<p>Input: 9292929292929292   (16 digits — INVALID)</p>
+<p>Trace with regex (0|91)?[789][0-9]{9}:</p>
+<ul><li>m.find() → true — because substring 9292929292 (or similar 10–12 digit chunk starting with 9) matches the pattern internally</li></ul>
+<ul><li>But the full input is NOT a valid mobile number</li></ul>
+<h4>Solution — second condition: `m.group().equals(args[0])`</h4>
+<p>if (m.find() &amp;&amp; m.group().equals(args[0]))</p>
+<p>Sir&#x27;s board wording:</p>
+<p>&quot;Which thing got matched? And which thing was provided — both are equal or not?&quot;</p>
+<ul><li>Matched thing = m.group() — what the regex engine actually captured</li></ul>
+<ul><li>Provided thing = args[0] — what the user passed</li></ul>
+<ul><li>Both must be identical for validation to pass</li></ul>
+<h4>Truth table for all four test cases</h4>
+<h2>09:31 — Live demo: proving the bug without the second condition</h2>
+<p>Sir runs RegexDemo2 without the m.group().equals(args[0]) check — only if (m.find()).</p>
+<h3>Compile &amp; run commands</h3>
+<p>javac RegexDemo2.java
+java RegexDemo2 9848022338        → valid mobile number   ✅
+java RegexDemo2 09804802238       → valid mobile number   ✅
+java RegexDemo2 919293949596      → valid mobile number   ✅
+java RegexDemo2 9292929292929292  → valid mobile number   ❌ WRONG!</p>
+<p>Without the second condition, the last case incorrectly prints &quot;valid mobile number&quot; even though 16 digits is invalid.</p>
+<p>With both conditions, the last case correctly prints &quot;invalid mobile number&quot;.</p>
+<p>Exam trap: OCJP questions often test whether you know that find() alone validates a substring, not the whole string. Always pair find() with group().equals(fullInput) for exact validation.</p>
+<h2>14:01 — Validation framework connection</h2>
+<p>Sir connects this to web/form validation:</p>
+<ol><li>User enters mobile number in a form field</li></ol>
+<ol><li>On submit, server-side (or client-side) code runs Pattern/Matcher logic</li></ol>
+<ol><li>If validation fails → error message: &quot;Please enter your valid mobile number&quot;</li></ol>
+<p>The Java program you write today is the same logic used inside validation frameworks — just without the UI wrapper.</p>
+<p>Take the RegexDemo2 program as-is — it is the canonical validation template.</p>
+<h2>17:03 — Example 2: Validate email ID (same program, different regex)</h2>
+<h3>Requirement</h3>
+<p>Write a program to check whether the given mail ID is valid or not.</p>
+<p>Sir&#x27;s answer: &quot;The only difference — replace mobile number regular expression with mail ID regular expression.&quot;</p>
+<h3>Email regex (from Video 134)</h3>
+<p>[a-zA-Z0-9][a-zA-Z0-9_.]+@[a-zA-Z0-9]+(\.[a-zA-Z]+)+</p>
+<p>Breakdown:</p>
+<p>In Java: &quot;[a-zA-Z0-9][a-zA-Z0-9_.]+@[a-zA-Z0-9]+(\\.[a-zA-Z]+)+&quot;</p>
+<h3>Board program — RegexDemo (email validation)</h3>
+<pre class='code'>import java.util.regex.*;
+
+class RegexDemo {
+    public static void main(String[] args) {
+        Pattern p = Pattern.compile(
+            &quot;[a-zA-Z0-9][a-zA-Z0-9_.]+@[a-zA-Z0-9]+(\\.[a-zA-Z]+)+&quot;);
+        Matcher m = p.matcher(args[0]);
+        if (m.find() &amp;&amp; m.group().equals(args[0])) {
+            System.out.println(&quot;valid mail ID&quot;);
+        } else {
+            System.out.println(&quot;invalid mail ID&quot;);
+        }
+    }
+}</pre>
+<h3>Test cases Sir runs</h3>
+<p>Sir notes: no need to re-explain how to write the email regex — that was covered in detail in Video 134. Focus here is usage.</p>
+<h2>21:11 — Example 3: Extract all mobile numbers from an input file</h2>
+<h3>Requirement (board wording)</h3>
+<p>Write a program to read all mobile numbers present in the given input file, where mobile numbers are mixed with normal text data, and write them to a separate output file.</p>
+<h3>Real-world motivation</h3>
+<p>Suppose input.txt contains:</p>
+<p>This is Durga.
+This is Durga with mobile number 9848022338.
+This is Ravi with mobile number 809696...
+... some mail IDs and mobile numbers mixed in ...
+9123456781
+929292929292</p>
+<p>Manually copying each mobile number is tedious. A Java program can extract one lakh mobile numbers in one or two minutes and write them to output.txt — useful for bulk SMS campaigns, contact list building, etc.</p>
+<h3>I/O class choices (Sir&#x27;s recommendations)</h3>
+<p>Both were covered in the File I/O lectures (Videos 121–124).</p>
+<h3>Algorithm (board steps)</h3>
+<ol><li>Create PrintWriter for output.txt</li></ol>
+<ol><li>Create Pattern for mobile regex</li></ol>
+<ol><li>Create BufferedReader for input.txt</li></ol>
+<ol><li>Read line by line in a while (line != null) loop</li></ol>
+<ol><li>For each line, create Matcher and loop while (m.find()) — multiple matches per line possible</li></ol>
+<ol><li>For each match, pw.println(m.group()) — write matched mobile number to output</li></ol>
+<ol><li>After all lines, call pw.flush() and pw.close()</li></ol>
+<h3>Key difference from validation example</h3>
+<h3>Complete board program — MobileExtractor1.java</h3>
+<pre class='code'>import java.io.*;
+import java.util.regex.*;
+
+class MobileExtractor1 {
+    public static void main(String[] args) throws IOException {
+        PrintWriter out = new PrintWriter(&quot;output.txt&quot;);
+        Pattern p = Pattern.compile(&quot;(0|91)?[789][0-9]{9}&quot;);
+        BufferedReader br = new BufferedReader(
+            new FileReader(&quot;input.txt&quot;));
+        String line = br.readLine();
+        while (line != null) {
+            Matcher m = p.matcher(line);
+            while (m.find()) {
+                out.println(m.group());
+            }
+            line = br.readLine();
+        }
+        out.flush();
+        out.close();
+        br.close();
+    }
+}</pre>
+<h3>Nested loop structure explained</h3>
+<p>while (line != null) {          // outer: every line in input file
+    Matcher m = p.matcher(line);
+    while (m.find()) {          // inner: every mobile number in this line
+        out.println(m.group());
+    }
+    line = br.readLine();
+}</p>
+<p>Sir&#x27;s wording: &quot;This cycle by default will be repeated for every line present in the input file.&quot;</p>
+<h3>Live demo results</h3>
+<p>Sir&#x27;s input.txt contained 5 mobile numbers scattered across mixed text. After running:</p>
+<p>javac MobileExtractor1.java
+java MobileExtractor1</p>
+<p>Opening output.txt shows all 5 extracted numbers, one per line — including numbers embedded mid-sentence like &quot;mobile number 9848022338&quot;.</p>
+<h2>36:33 — Example 4: Extract all mail IDs from input file</h2>
+<h3>Requirement</h3>
+<p>Write a program to extract all mail IDs present in the given input file, where mail IDs are mixed with normal text.</p>
+<h3>Sir&#x27;s answer — one-line change</h3>
+<p>&quot;Program is the same. Only difference — replace mobile number regular expression with mail ID regular expression.&quot;</p>
+<p>Replace in MobileExtractor1:</p>
+<pre class='code'>// FROM:
+Pattern p = Pattern.compile(&quot;(0|91)?[789][0-9]{9}&quot;);
+
+// TO:
+Pattern p = Pattern.compile(
+    &quot;[a-zA-Z0-9][a-zA-Z0-9_.]+@[a-zA-Z0-9]+(\\.[a-zA-Z]+)+&quot;);</pre>
+<p>Everything else — PrintWriter, BufferedReader, nested while loops, flush(), close() — stays identical.</p>
+<h3>Live demo</h3>
+<p>Sir runs the modified program. output.txt now contains mail IDs like:</p>
+<ul><li>Durga@versi (example from input)</li></ul>
+<ul><li>Ravi.com (partial — depends on input data)</li></ul>
+<ul><li>Nagar.wara_Prasad123 (examples from Sir&#x27;s sample file)</li></ul>
+<p>Same automation benefit: extract all email addresses from a large document in seconds.</p>
+<h2>40:38 — Example 5: Display all `.txt` file names in a directory</h2>
+<h3>Requirement (board wording)</h3>
+<p>Write a program to display all `.txt` file names present in `C:\DurgaClasses`.</p>
+<p>Sir&#x27;s working directory is C:\DurgaClasses — it contains:</p>
+<ul><li>Several .java files</li></ul>
+<ul><li>Several .class files</li></ul>
+<ul><li>Several .txt files</li></ul>
+<ul><li>Some subdirectories</li></ul>
+<p>Goal: list only `.txt` files (not .java, not .class, not backup files).</p>
+<h3>Backup-file trap — why full match matters again</h3>
+<p>If you only check m.find(), abc.txt.bak would match because `abc.txt` is a substring. Same partial-match bug as mobile validation!</p>
+<h3>Regex for `.txt` file names</h3>
+<p>Allowed characters in file name (before .txt):</p>
+<ul><li>a-z, A-Z, 0-9, _, ., $ — any number of times, at least once</li></ul>
+<ul><li>Must end with literal .txt</li></ul>
+<p>[a-zA-Z0-9_.$]+\.txt</p>
+<p>Why dot inside `[ ]` or escaped?</p>
+<p>Sir asks: &quot;Why am I taking that within square bracket?&quot;</p>
+<ul><li>. outside brackets = any character (dangerous — Video 133)</li></ul>
+<ul><li>\. or [.] = literal dot symbol only</li></ul>
+<p>For .txt suffix, use \.txt in the regex (Java string: &quot;\\.txt&quot;).</p>
+<h3>Complete board program — FileNameExtractor.java</h3>
+<pre class='code'>import java.io.*;
+import java.util.regex.*;
+
+class FileNameExtractor {
+    public static void main(String[] args) {
+        int count = 0;
+        Pattern p = Pattern.compile(&quot;[a-zA-Z0-9_.$]+\\.txt&quot;);
+        File f = new File(&quot;C:\\DurgaClasses&quot;);
+        String[] s = f.list();
+        for (String s1 : s) {
+            Matcher m = p.matcher(s1);
+            if (m.find() &amp;&amp; m.group().equals(s1)) {
+                System.out.println(s1);
+                count++;
+            }
+        }
+        System.out.println(&quot;The total number :&quot; + count);
+    }
+}</pre>
+<h3>API walkthrough</h3>
+<h3>Live demo result</h3>
+<p>javac FileNameExtractor.java
+java FileNameExtractor</p>
+<p>Output: 116 .txt files listed, ending with:</p>
+<p>The total number :116</p>
+<p>Examples from output: output.txt, SIT.txt, SanRathi.txt, etc.</p>
+<h2>51:25 — Variations: `.java`, `.class`, and alternation `(java|class)`</h2>
+<p>Sir demonstrates the same program with small regex changes:</p>
+<h3>Variation A — `.java` files only</h3>
+<p>Change regex suffix:</p>
+<p>Pattern p = Pattern.compile(&quot;[a-zA-Z0-9_.$]+\\.java&quot;);</p>
+<p>Result: 360 .java files in C:\DurgaClasses.</p>
+<h3>Variation B — `.class` files only</h3>
+<p>Pattern p = Pattern.compile(&quot;[a-zA-Z0-9_.$]+\\.class&quot;);</p>
+<p>Result: 226 .class files.</p>
+<p>Sir notes: &quot;Don&#x27;t tell for every .java file one .class file — no guarantee.&quot; (Inner classes, compilation failures, etc. can cause mismatched counts.)</p>
+<h3>Variation C — `.java` OR `.class` (alternation)</h3>
+<p>Pattern p = Pattern.compile(&quot;[a-zA-Z0-9_.$]+\\.(java|class)&quot;);</p>
+<p>Board wording: &quot;File name ends with either `.java` or `.class`.&quot;</p>
+<ul><li>(java|class) — grouping with OR: match either literal java or literal class</li></ul>
+<ul><li>Total: 360 + 226 = 586 files</li></ul>
+<p>This introduces regex alternation in a practical context — the | inside (...) means OR.</p>
+<h2>55:09 — Lecture wrap-up &amp; exam guidance</h2>
+<h3>Application areas of regular expressions (summary)</h3>
+<h3>Exam expectations</h3>
+<p>*&quot;For the exams sake minimum two questions you can expect from this area — two bits you can expect from exam purpose.&quot;*</p>
+<p>Regular expressions is a special area — many candidates lack clarity. Sir urges:</p>
+<ul><li>Have special clarity on Pattern/Matcher workflow</li></ul>
+<ul><li>Know the `find()` vs full-match distinction (validation trap)</li></ul>
+<ul><li>Know when to use `if (find())` vs `while (find())`</li></ul>
+<ul><li>Know `Pattern.split()` vs `String.split()` (Video 134)</li></ul>
+<ul><li>Know practical regexes: mobile, email, filename patterns</li></ul>
+<p>This is the last example in the regular expressions series (Parts 1–4).</p>
+<h2>Master reference — regex patterns used in this lecture</h2>
+<h2>Decision guide — `if (find())` vs `while (find())`</h2>
+<h2>OCJP/SCJP checklist — Video 135</h2>
+<ul><li>[ ] Validation template: Pattern.compile → matcher(input) → if (find() &amp;&amp; group().equals(input))</li></ul>
+<ul><li>[ ] Know why find() alone gives false positives on long digit strings</li></ul>
+<ul><li>[ ] Extraction template: BufferedReader read lines → while (m.find()) → PrintWriter.println(group())</li></ul>
+<ul><li>[ ] Remember flush() and close() on PrintWriter</li></ul>
+<ul><li>[ ] Directory listing: File → list() → iterate → matcher per name</li></ul>
+<ul><li>[ ] Escape literal dot in regex: \\. or [.]</li></ul>
+<ul><li>[ ] Alternation for multiple extensions: \\.(java|class)</li></ul>
+<ul><li>[ ] Replace regex string to switch between mobile/email/file applications — program structure stays same</li></ul>
+<h2>Quick revision card</h2>
+<p>VALIDATE:  compile → matcher(input) → if(find &amp;&amp; group().equals(input))
+EXTRACT:   compile → read lines → while(find) → println(group())
+FILTER:    compile → File.list() → for each name → if(find &amp;&amp; group().equals(name))</p>
+<p>Golden rule: When the entire input must match, always add m.group().equals(fullInput).</p>
+<table>
+<tr><th>Format</th><th>Digits</th><th>Rule</th></tr>
+<tr><td>10-digit</td><td>10</td><td>First digit must be 7, 8, or 9</td></tr>
+<tr><td>11-digit</td><td>11</td><td>First digit must be 0, then 10-digit mobile</td></tr>
+<tr><td>12-digit</td><td>12</td><td>First two digits must be 91, then 10-digit mobile</td></tr>
+</table>
+<table>
+<tr><th>Fragment</th><th>Meaning</th><th></th></tr>
+<tr><td>`(0\</td><td>91)?`</td><td>Optional prefix: either 0 or 91, zero or one time</td></tr>
+<tr><td>[789]</td><td>First digit of the 10-digit core must be 7, 8, or 9</td><td></td></tr>
+<tr><td>[0-9]{9}</td><td>Remaining 9 digits (any digit 0–9)</td><td></td></tr>
+</table>
+<table>
+<tr><th>Input</th><th>Valid?</th><th>Why</th></tr>
+<tr><td>9804332238</td><td>✅ Yes</td><td>10 digits, starts with 9</td></tr>
+<tr><td>09804802238</td><td>✅ Yes</td><td>11 digits, leading 0</td></tr>
+<tr><td>919293949596</td><td>✅ Yes</td><td>12 digits, leading 91</td></tr>
+<tr><td>9292929292929292</td><td>❌ No</td><td>16 digits — too long; not 10/11/12</td></tr>
+</table>
+<table>
+<tr><th>Check</th><th>9292929292929292</th></tr>
+<tr><td>m.find()</td><td>✅ true (partial match found)</td></tr>
+<tr><td>Full string valid?</td><td>❌ No — 16 digits</td></tr>
+</table>
+<table>
+<tr><th>Condition</th><th>Meaning</th></tr>
+<tr><td>m.find()</td><td>At least one match exists in the input</td></tr>
+<tr><td>m.group().equals(args[0])</td><td>The matched substring equals the entire input — total thing matched, not just a part</td></tr>
+</table>
+<table>
+<tr><th>Input</th><th>m.find()</th><th>m.group().equals(args[0])</th><th>Result</th></tr>
+<tr><td>9804332238</td><td>true</td><td>true</td><td>valid mobile number</td></tr>
+<tr><td>09804802238</td><td>true</td><td>true</td><td>valid mobile number</td></tr>
+<tr><td>919293949596</td><td>true</td><td>true</td><td>valid mobile number</td></tr>
+<tr><td>9292929292929292</td><td>true</td><td>false</td><td>invalid mobile number</td></tr>
+</table>
+<table>
+<tr><th>Fragment</th><th>Meaning</th></tr>
+<tr><td>[a-zA-Z0-9]</td><td>First character must be alphanumeric</td></tr>
+<tr><td>[a-zA-Z0-9_.]+</td><td>Local part: letters, digits, _, . — one or more</td></tr>
+<tr><td>@</td><td>Literal at-sign</td></tr>
+<tr><td>[a-zA-Z0-9]+</td><td>Domain name (gmail, yahoo, etc.) — at least one char</td></tr>
+<tr><td>(\.[a-zA-Z]+)+</td><td>One or more dot-suffix groups (.com, .co.in, etc.)</td></tr>
+</table>
+<table>
+<tr><th>Input</th><th>Valid?</th><th>Why</th></tr>
+<tr><td>Durga123.ABC</td><td>❌ No</td><td>No @ and no domain</td></tr>
+<tr><td>cm@gmail</td><td>❌ No</td><td>Missing .com (or any TLD)</td></tr>
+<tr><td>cm@gmail.</td><td>❌ No</td><td>Dot at end with no TLD letters</td></tr>
+<tr><td>cm@gmail.com</td><td>✅ Yes</td><td>Complete local@domain.tld</td></tr>
+</table>
+<table>
+<tr><th>Task</th><th>Best class</th><th>Why</th></tr>
+<tr><td>Read from file</td><td>BufferedReader wrapping FileReader</td><td>Best reader for line-by-line file reading</td></tr>
+<tr><td>Write to file</td><td>PrintWriter</td><td>Best writer for writing data to a file</td></tr>
+</table>
+<table>
+<tr><th>Validation (Example 1)</th><th>Extraction (Example 3)</th></tr>
+<tr><td>Input = single command-line arg</td><td>Input = entire file, line by line</td></tr>
+<tr><td>At most one match</td><td>Multiple matches per line possible</td></tr>
+<tr><td>if (m.find()) once</td><td>while (m.find()) loop</td></tr>
+<tr><td>Must check full-string match</td><td>Write each m.group() — partial matches are desired</td></tr>
+</table>
+<table>
+<tr><th>File name</th><th>Should match?</th><th>Why</th></tr>
+<tr><td>abc.txt</td><td>✅ Yes</td><td>Normal text file</td></tr>
+<tr><td>123abc.txt</td><td>✅ Yes</td><td>Digits allowed in name</td></tr>
+<tr><td>abc.txt.bak</td><td>❌ No</td><td>Backup file — ends with .bak, not .txt</td></tr>
+<tr><td>abc.txt.backup</td><td>❌ No</td><td>Same reason</td></tr>
+</table>
+<table>
+<tr><th>Fragment</th><th>Meaning</th></tr>
+<tr><td>[a-zA-Z0-9_.$]+</td><td>One or more allowed filename characters</td></tr>
+<tr><td>\.txt</td><td>Literal dot + txt (escaped dot — not &quot;any character&quot;)</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Code</th><th>Purpose</th></tr>
+<tr><td>Create Pattern</td><td>Pattern.compile(&quot;[a-zA-Z0-9_.$]+\\.txt&quot;)</td><td>Regex for .txt filenames</td></tr>
+<tr><td>Create File object</td><td>new File(&quot;C:\\DurgaClasses&quot;)</td><td>Point to target folder</td></tr>
+<tr><td>List all names</td><td>f.list() → String[]</td><td>Returns every file and subdirectory name</td></tr>
+<tr><td>For each name</td><td>for (String s1 : s)</td><td>Iterate the array</td></tr>
+<tr><td>Match + validate</td><td>m.find() &amp;&amp; m.group().equals(s1)</td><td>Full filename must match — skip .txt.bak</td></tr>
+<tr><td>Count</td><td>count++ inside the if-block</td><td>Track total .txt files</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Application</th><th>Key API pattern</th></tr>
+<tr><td>1</td><td>Validate mobile number</td><td>Pattern.compile → matcher(args[0]) → find() + group().equals()</td></tr>
+<tr><td>2</td><td>Validate email ID</td><td>Same structure, different regex</td></tr>
+<tr><td>3</td><td>Extract mobile numbers from file</td><td>BufferedReader + while(find()) + PrintWriter</td></tr>
+<tr><td>4</td><td>Extract email IDs from file</td><td>Same structure, different regex</td></tr>
+<tr><td>5</td><td>Filter filenames in directory</td><td>File.list() + matcher(name) + find() + group().equals()</td></tr>
+</table>
+<table>
+<tr><th>Purpose</th><th>Regex</th><th>Java string literal</th><th></th><th></th></tr>
+<tr><td>Indian mobile (10/11/12 digit)</td><td>`(0\</td><td>91)?[789][0-9]{9}`</td><td>`&quot;(0</td><td>91)?[789][0-9]{9}&quot;`</td></tr>
+<tr><td>Email ID</td><td>[a-zA-Z0-9][a-zA-Z0-9_.]+@[a-zA-Z0-9]+(\.[a-zA-Z]+)+</td><td>&quot;[a-zA-Z0-9][a-zA-Z0-9_.]+@[a-zA-Z0-9]+(\\.[a-zA-Z]+)+&quot;</td><td></td><td></td></tr>
+<tr><td>.txt filename</td><td>[a-zA-Z0-9_.$]+\.txt</td><td>&quot;[a-zA-Z0-9_.$]+\\.txt&quot;</td><td></td><td></td></tr>
+<tr><td>.java filename</td><td>[a-zA-Z0-9_.$]+\.java</td><td>&quot;[a-zA-Z0-9_.$]+\\.java&quot;</td><td></td><td></td></tr>
+<tr><td>.class filename</td><td>[a-zA-Z0-9_.$]+\.class</td><td>&quot;[a-zA-Z0-9_.$]+\\.class&quot;</td><td></td><td></td></tr>
+<tr><td>.java or .class</td><td>`[a-zA-Z0-9_.$]+\.(java\</td><td>class)`</td><td>`&quot;[a-zA-Z0-9_.$]+\\.(java</td><td>class)&quot;`</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Loop type</th><th>Also need group().equals()?</th></tr>
+<tr><td>Validate entire command-line input</td><td>if (m.find())</td><td>Yes — must equal full input</td></tr>
+<tr><td>Validate entire filename</td><td>if (m.find())</td><td>Yes — skip .txt.bak</td></tr>
+<tr><td>Extract all matches from a line of text</td><td>while (m.find())</td><td>No — write each m.group()</td></tr>
+<tr><td>Search for literal substring in short text</td><td>while (m.find())</td><td>No</td></tr>
+</table>
+</body></html>

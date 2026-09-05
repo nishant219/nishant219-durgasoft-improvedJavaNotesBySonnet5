@@ -1,0 +1,469 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>075-throw-and-throws</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 075 — throw and throws</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Exception Handling Part-5 || throw and throws</p>
+<p>Source: real YouTube auto-captions (.transcripts/075-4BkGDX_BvDY.txt). ASR decoded in place: through / thr / thros / throw keyboard = throw keyword; throws is announced then not taught (that is video 076); keep subing = keep writing (board); throw class = throw clause; gvm / Jia / JM / JBM / j k = JVM; wir / wiid / wi / why / Bo / W = void; man / mean / domain = main; Artic / arthamatic / artha = ArithmeticException; colum = colon / constructor string; yet = at (stack frame); unlink code / unlink = handling code; default exception Ander / under / hand = default exception handler; exception in thread domain = Exception in thread &quot;main&quot;; Inception funds / insent / insucient = InsufficientFundsException; customizer = customized; rege = recharge; ENT = enter; compart / compor / compa = compiler / compile-time error; Len Len / legend = listen; s of / sop = System.out.println; Stringer AR / string ARR / string array a = String[] args.</p>
+<p>This video’s YouTube title says throw and throws. On the board he only finishes `throw`. Opening line: first throw, then we will go for throws. Closing line (~49:58): “that’s all … throw keyword.” Video 076 opens with “last session we covered throw; now throws.” So these notes do not invent a throws lecture.</p>
+<p>The 50 minutes are:</p>
+<ol><li>Ball-game picture: programmer throws an exception object; JVM catches it.</li></ol>
+<ol><li>Same result two ways: 10 / 0 (main creates the object internally) vs throw new ArithmeticException(...) (programmer creates it and hands it to the JVM).</li></ol>
+<ol><li>Why you would want to throw: ATM insufficient funds, recharge invalid PIN — best use of `throw` is user-defined / customized exceptions.</li></ol>
+<ol><li>Three throw cases: throw e when e is null → NullPointerException; statement after throw → CE unreachable; throw only for throwable types.</li></ol>
+<h3>00:06 — First throw, then throws</h3>
+<p>Next topic: `throw` statement, and after that `throws`. Write throw first; throws comes later.</p>
+<p>Among throw and throws, which is the dangerous / interview-heavy one? ASR collapses throws into throw. He immediately says throw is very easy — keep writing throw. (The hard keyword is throws; he never reaches it in this file.)</p>
+<h3>00:31 — Name it three ways</h3>
+<p>On the board you can call it:</p>
+<ul><li>throw keyword</li></ul>
+<ul><li>throw statement</li></ul>
+<ul><li>throw clause (ASR: “throw class”)</li></ul>
+<p>Same thing. Purpose next.</p>
+<h3>00:48 — Ball game (not Java yet)</h3>
+<p>Forget Java for a second. If he throws, someone catches. Simple ball game: first person throws, the other person catches.</p>
+<p>Map that onto Java:</p>
+<p>Sometimes the programmer creates an exception object and hands it over to the JVM. The keyword for that hand-over is `throw`.</p>
+<h3>02:35 — Board diagram: programmer vs JVM</h3>
+<p>Copy pause (“completed up to this”). Two boxes:</p>
+<ul><li>first person = programmer</li></ul>
+<ul><li>second person = JVM</li></ul>
+<p>Programmer throws an exception object; JVM catches that exception object.</p>
+<h3>03:18 — “Sometimes” we do this programmatically</h3>
+<p>Sometimes the programmer creates the exception object and hands it to the JVM programmatically. That is what throw is for. Example on the board.</p>
+<h3>03:41 — Program 1: `10 / 0` (creation happens internally)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 / 0);
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+//         at Test.main(Test.java:3)</pre>
+<p>Who is responsible to create the exception object? The method in which it is raised. That was default exception handling in the last classes: inside any method, if an exception is raised, that method creates the exception object and hands it to the JVM.</p>
+<p>Here that method is `main`. Main creates an ArithmeticException object and hands it to the JVM. This total thing happens internally / automatically. We do not write new or throw.</p>
+<p>JVM comes back: no corresponding handling code → hands over to the default exception handler. Default exception handler terminates the program abnormally and prints exception information to the console.</p>
+<p>He reads the default print as: exception in thread main, java.lang.ArithmeticException, division by zero, at Test.main. The JVM description string for 10 / 0 is / by zero; he says “division by zero” out loud.</p>
+<h3>06:00 — Same job, but we do it ourselves</h3>
+<p>“Whatever main method did, I want to do programmatically.” He does not want to give the chance to main’s internal creation. He wants to create the exception object explicitly and hand it to the JVM manually. How? Same program, but instead of everything happening internally, do it with throw.</p>
+<h3>06:22 — Program 2: `throw new ArithmeticException(...)`</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new ArithmeticException(&quot;division by zero&quot;);
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: division by zero
+//         at Test.main(Test.java:3)</pre>
+<p>ArithmeticException is a Java class. new ArithmeticException(&quot;division by zero&quot;) — with this line, what did we do? We created an ArithmeticException object. After creating it we have to hand it to the JVM. For that, `throw`.</p>
+<p>He splits the one line into two meanings:</p>
+<ol><li>new ArithmeticException(&quot;division by zero&quot;) → creation of ArithmeticException object explicitly.</li></ol>
+<ol><li>throw → hand over our created exception object to the JVM manually.</li></ol>
+<p>End of main, end of class. Rest of the story is the same as program 1: JVM came; no handling code; immediately hand over to default exception handler; terminate abnormally; print exception information to the console. We get the same kind of console output even in this case.</p>
+<h3>09:01 — Result same; only internal vs explicit</h3>
+<p>Result of these two programs is exactly the same. Where is the difference?</p>
+<ul><li>Program 1: creation of ArithmeticException object and hand-over to the JVM happened internally by the main method.</li></ul>
+<ul><li>Program 2: everything we did explicitly.</li></ul>
+<p>Except that hand-over story, remaining story is the same. No handling code either time, so default exception handler terminates and prints.</p>
+<p>Sometimes we can create an exception object explicitly and hand it over to the JVM manually. For that purpose we require the `throw` keyword.</p>
+<h3>10:21 — Student doubt (parked)</h3>
+<p>Someone may raise: an unwanted unexpected event that disturbs the normal flow of the program is the exception — then what is the need of creating an exception object? Why create the problem on our own? Why keep throw?</p>
+<p>Yes, there are requirements. He will give examples in a few minutes. First copy the definition.</p>
+<h3>10:46 — Board dictation: purpose of `throw`</h3>
+<p>Keep writing (he repeats this block many times):</p>
+<p>Sometimes we can create exception object explicitly and we can hand over to the JVM manually. For this we have to use `throw` keyword.</p>
+<p>Do not take the whole program for this line — take only:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new ArithmeticException(&quot;division by zero&quot;);
+        // creation of ArithmeticException object explicitly
+        // throw: hand over that object to the JVM manually
+    }
+}</pre>
+<h3>13:01 — One-line objective (copy this)</h3>
+<p>What is the purpose of throw keyword? To hand over our created exception object to the JVM manually.</p>
+<p>Hence the main objective of `throw` keyword is to hand over our created exception object to the JVM manually.</p>
+<p>Can we use the term: result of these two programs is exactly the same? Yes. Only difference: here exception-object creation and hand-over happened internally / automatically by main; there we are doing it explicitly. Except that, no difference.</p>
+<p>In the throw program we also get:</p>
+<p>Exception in thread &quot;main&quot; java.lang.ArithmeticException: division by zero
+        at Test.main(...)</p>
+<p>Same shape as the default 10 / 0 print. Now he executes both so the room can see it.</p>
+<h3>14:51 — Live run: `10 / 0`</h3>
+<p>He types and runs:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 / 0);
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+//         at Test.main(Test.java:3)</pre>
+<p>javac Test.java then java Test. Exception in thread main, ArithmeticException, division by zero / / by zero, at Test.main.</p>
+<h3>15:29 — Live run: same thing manually</h3>
+<p>Instead of 10 / 0, do it manually:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new ArithmeticException(&quot;division by zero&quot;);
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: division by zero
+//         at Test.main(Test.java:5)</pre>
+<p>Code compiles fine. He asks: read this output and that output — any difference? Exception in thread main, java.lang.ArithmeticException: division by zero, at Test.main, Test.java line number 5. Students may doubt he is showing the same output twice.</p>
+<h3>16:16 — Change the description so the doubt dies</h3>
+<p>Small change so it is obviously his object:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new ArithmeticException(&quot;division by zero explicitly&quot;);
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: division by zero explicitly
+//         at Test.main(Test.java:3)</pre>
+<p>Now the description string is different. That string is whatever we passed to the constructor. Compile again, run: ArithmeticException division by zero explicitly, at Test.main. Difference or not? Yes — the message is ours.</p>
+<p>He still wants the notebook line: hence the result of the following two programs is exactly the same (same exception type, same default-handler story, same at Test.main; the description follows the constructor argument).</p>
+<h3>17:10 — Side by side on the board</h3>
+<p>Take both side by side. He wants to add theory under each column.</p>
+<p>Left:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 / 0);
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+//         at Test.main(Test.java:3)</pre>
+<p>Right:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new ArithmeticException(&quot;division by zero&quot;);
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: division by zero
+//         at Test.main(Test.java:3)</pre>
+<p>Long copy / drawing silence (~17:21–19:00, ASR music). In both cases we get the same kind of result. Result-wise he says there is no single-character difference he wants you to fuss over for the default-handler story — same exception, same at Test.main.</p>
+<h3>19:16 — Caption under each column</h3>
+<p>Left (`10 / 0`): main method is responsible to create the exception object and hand over to the JVM.</p>
+<p>Right (`throw new ...`): programmer is creating the exception object explicitly and handing it over to the JVM manually.</p>
+<p>That is the difference. Result-wise they are the same.</p>
+<h3>20:56 — Then why create the problem on our own?</h3>
+<p>Big doubt again: unwanted unexpected event that disturbs normal flow is exception. Then what is the need of creating an exception object? Unnecessary — we are creating the problem on our own.</p>
+<p>No: sometimes we may require to create the exception object explicitly. Where? Best example from daily life.</p>
+<h3>21:29 — ATM: withdraw more than balance</h3>
+<p>Most people have this experience. ATM centre, swipe the card, withdraw. Common operation at ATM is withdraw.</p>
+<p>He knows the account has 10,000 rupees. Max he can withdraw is 10,000. What did he do? Swiped, entered a request to withdraw 20,000. Intention: by mistake that request may process, he may get 20,000, he can enjoy. Immediately: insufficient funds exception — this request cannot be processed.</p>
+<p>How is that implemented internally? withdraw method, double amount — how much you want to withdraw.</p>
+<pre class='code'>class InsufficientFundsException extends RuntimeException {
+}
+
+class Account {
+    double balance = 10000;
+
+    void withdraw(double amount) {
+        if (amount &gt; balance) {
+            throw new InsufficientFundsException();
+        }
+    }
+}</pre>
+<p>If amount is greater than balance → throw new InsufficientFundsException() and stop; cannot proceed the request. Is it a program requirement? Yes. Sometimes we must create the exception object explicitly and throw it. For this kind of thing, throw is the best choice.</p>
+<p>These exceptions are called user-defined exceptions or customized exceptions.</p>
+<h3>23:39 — Best use of `throw` (not for `ArithmeticException`)</h3>
+<p>Best use of `throw` is for user-defined / customized exceptions, not for predefined exceptions. In general we will not use throw for ArithmeticException. In general we will not use throw for NullPointerException. Where we do use throw: customized exceptions.</p>
+<p>Is creating an exception object and using throw recommended? Yes — recommended when the program requires it.</p>
+<h3>24:11 — Old recharge cards: invalid PIN</h3>
+<p>Second story. Earlier, mobile recharge cards: take a card, enter the number, mobile gets recharged. (Now easy recharge; still all software.)</p>
+<p>Big number, last digits ...1214. He has to enter a 16-digit or 20-digit PIN. He enters everything properly except the last digit: instead of 4 he enters 5. Immediately: invalid PIN number. Tries 6 — invalid. 7 — invalid. 8 — invalid. No use. Enters 4 — successfully entered.</p>
+<p>If the entered number is not in the database, we cannot proceed that request. On the board he only writes the throw:</p>
+<pre class='code'>class InvalidPinException extends RuntimeException {
+}
+
+class Recharge {
+    void enterPin() {
+        throw new InvalidPinException();
+    }
+}</pre>
+<p>There are cases where we require throw. Especially: best use of throw keyword is for customized / user-defined exceptions.</p>
+<h3>25:37 — Board note (copy slowly)</h3>
+<p>Keep writing:</p>
+<p>Best use of `throw` keyword is for user-defined exceptions or customized exceptions.</p>
+<p>Purpose of throw is done. There are three or four cases. Case one.</p>
+<h3>26:24 — Case 1: `throw e` when `e` already refers to an object</h3>
+<pre class='code'>class Test {
+    static ArithmeticException e = new ArithmeticException();
+
+    public static void main(String[] args) {
+        throw e;
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException
+//         at Test.main(Test.java:5)</pre>
+<p>Static variable e, type ArithmeticException, object created at the beginning. throw e — e is an ArithmeticException object.</p>
+<p>In ArithmeticException there are two constructors: one takes a String argument, the other takes no argument. Here no-arg, so the default print has no extra “division by zero” description — just ArithmeticException (he also says you may see it as a runtime exception saying ArithmeticException).</p>
+<p>Same example, small change: do not create the object at the beginning. Only declare the reference.</p>
+<h3>28:06 — Case 1 continued: `throw e` when `e` is null</h3>
+<pre class='code'>class Test {
+    static ArithmeticException e;
+
+    public static void main(String[] args) {
+        throw e;
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.NullPointerException
+//         at Test.main(Test.java:5)</pre>
+<p>Only a reference variable. Valid or invalid? Compile-time error or runtime exception?</p>
+<p>Compiler always checks only syntax. throw e — e is of type ArithmeticException. You are saying throw an ArithmeticException value. Whether a runtime object is there or not: that is not the compiler’s job. Code compiles fine. Do not keep any doubt.</p>
+<p>Are we going to get ArithmeticException? If you run this, definitely a runtime exception — but it is not ArithmeticException. It is `NullPointerException`.</p>
+<p>For a static variable the default value is `null`. Object not created. Reference is null. `throw null` → immediately `NullPointerException`.</p>
+<h3>29:47 — Case 1 rule (copy)</h3>
+<p>throw e;</p>
+<p>If `e` refers to null, then we will get `NullPointerException`.</p>
+<h3>30:12 — Live demo of case 1</h3>
+<p>He clears the previous program. Types:</p>
+<pre class='code'>class Test {
+    static ArithmeticException e = new ArithmeticException();
+
+    public static void main(String[] args) {
+        throw e;
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException
+//         at Test.main(Test.java:5)</pre>
+<p>Compiles fine, no compile error. Exception is ArithmeticException.</p>
+<p>Now he removes = new ArithmeticException():</p>
+<pre class='code'>class Test {
+    static ArithmeticException e;
+
+    public static void main(String[] args) {
+        throw e;
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.NullPointerException
+//         at Test.main(Test.java:5)</pre>
+<p>Still compiles fine. Exception in thread main: `NullPointerException`. If the exception object is not there, we get NPE, because throw e and e refers to null.</p>
+<h3>32:01 — Case 1 side by side</h3>
+<p>Take both examples side by side. First one ArithmeticException; second one NullPointerException.</p>
+<pre class='code'>class Test {
+    static ArithmeticException e = new ArithmeticException();
+
+    public static void main(String[] args) {
+        throw e;
+    }
+}
+// prints ArithmeticException
+class Test {
+    static ArithmeticException e;
+
+    public static void main(String[] args) {
+        throw e;
+    }
+}
+// prints NullPointerException</pre>
+<p>Copy silence (~32:40–33:11). Case one completed.</p>
+<h3>33:16 — Case 2: a bit dangerous — take special care</h3>
+<p>Listen. Case two. Two programs.</p>
+<h3>33:37 — Case 2 program A: `10 / 0` then `&quot;Hello&quot;`</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 / 0);
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+//         at Test.main(Test.java:3)</pre>
+<h3>34:11 — Case 2 program B: `throw` then `&quot;Hello&quot;`</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new ArithmeticException(&quot;division by zero&quot;);
+        System.out.println(&quot;Hello&quot;);
+        // CE: unreachable statement
+    }
+}</pre>
+<p>What is the difference? In both cases, same result or not? No.</p>
+<p>Some people say: first case runtime ArithmeticException, second case compile-time error. He plays with yes/no, then: observe.</p>
+<h3>35:39 — Why the compiler treats them differently</h3>
+<p>First case: System.out.println(10 / 0). Compiler does not know that at this line ArithmeticException will be raised. Compiler thinks it is a normal call / expression. Code compiles fine. At runtime we get ArithmeticException / by zero. &quot;Hello&quot; never prints — but that is a runtime fact. Compiler does not know &quot;Hello&quot; will not get a chance.</p>
+<p>Second case: which keyword? `throw`. Purpose of throw is to raise an exception. To the compiler you are raising an exception. If we are raising an exception, the program will be stopped here only. Then when will the next line get a chance? Never. Compiler is aware of that point.</p>
+<p>Even in the first program &quot;Hello&quot; never gets a chance — but the compiler does not know that. After sop(10/0) the compiler feels the next line will execute. After throw, exception is raised here; compiler knows this line never gets a chance; this line becomes unreachable.</p>
+<p>Compile-time error: unreachable statement.</p>
+<h3>37:23 — Live demo of case 2</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 / 0);
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+// compiles; prints ArithmeticException: / by zero (Hello never prints)</pre>
+<p>Instead of 10 / 0, throw new ArithmeticException(&quot;division by zero&quot;):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new ArithmeticException(&quot;division by zero&quot;);
+        System.out.println(&quot;Hello&quot;);
+        // CE: unreachable statement
+    }
+}</pre>
+<p>Code will not compile. Which statement is unreachable? `System.out.println(&quot;Hello&quot;)`.</p>
+<h3>38:27 — Directly vs indirectly after `throw`</h3>
+<p>Conclusion: after `throw` we are not allowed to write any statement directly. Indirectly we can write. Indirectly means a simple if: if condition satisfied, throw; else write some statement. If / else — indirectly we can write. Directly after throw is not possible.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        if (args.length == 0) {
+            throw new ArithmeticException(&quot;division by zero&quot;);
+        } else {
+            System.out.println(&quot;Hello&quot;);
+        }
+    }
+}</pre>
+<p>&quot;Hello&quot; is not a statement after throw in the same sequential block; it is in the else. That is the “indirect” writing he allows. This compiles.</p>
+<h3>38:52 — Case 2 board dictation (copy slowly)</h3>
+<p>After throw statement we are not allowed to write any statement directly. Otherwise we will get compile-time error saying unreachable statement.</p>
+<h3>39:59 — Case 2 side by side</h3>
+<p>First one is runtime exception; second one is compile-time error. Observe the difference.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 / 0);
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+// RE: ArithmeticException
+class Test {
+    public static void main(String[] args) {
+        throw new ArithmeticException(&quot;division by zero&quot;);
+        System.out.println(&quot;Hello&quot;);
+        // CE: unreachable statement
+    }
+}</pre>
+<p>One more case related to throw. Copy pause (~40:18–41:15, ASR music). Completed, he hopes terminology is clear.</p>
+<h3>41:24 — Case 3: we can throw only throwable types</h3>
+<p>Very simple; not required to keep much explanation. Listen.</p>
+<p>First fragment (forget the second for a moment):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new Test();
+        // CE: incompatible types
+        // found   : Test
+        // required: java.lang.Throwable
+    }
+}</pre>
+<p>throw new Test — valid or not?</p>
+<p>We can throw only exceptions and errors, not normal Java objects. Every object is not throwable. We can throw only throwable-type objects.</p>
+<p>Test is not throwable. Immediately compile-time error:</p>
+<p>incompatible types</p>
+<p>found: Test</p>
+<p>required: java.lang.Throwable</p>
+<p>If you write throw like this, compiler is ready to give left and right (the found / required pair). Reason: `throw` keyword can be used only for throwable types.</p>
+<p>Everyday picture: there is a ball — he can throw it. There is a bus — can he throw it? No. There is a hill — can he throw it? Normally no. We can throw only throwable types, not every type.</p>
+<p>By mistake if you use any other type, immediately CE: incompatible types, found Test, required java.lang.Throwable. Any exception, any error — no problem — but it should be a throwable type. That is the first half of case 3.</p>
+<h3>44:18 — Make `Test` throwable: `extends RuntimeException`</h3>
+<p>Small change:</p>
+<pre class='code'>class Test extends RuntimeException {
+    public static void main(String[] args) {
+        throw new Test();
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; Test
+//         at Test.main(Test.java:3)</pre>
+<p>If Test extends RuntimeException, Test becomes a throwable type. throw new Test() — valid or not? Yes. Test is under RuntimeException, so throwable. No syntactical mistake.</p>
+<p>We are throwing Test (like a Test exception). JVM: no handling code → runtime print:</p>
+<p>Exception in thread `&quot;main&quot;` `Test` — the name of the exception is `Test`. at `Test.main`.</p>
+<p>How to define our own exceptions? This is the style only: `extends RuntimeException`.</p>
+<p>Conclusion from here: we can use throw only for throwable types; otherwise compile error. For normal Java objects we cannot use throw.</p>
+<h3>45:56 — Live demo of case 3</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new Test();
+        // CE: incompatible types
+        // found   : Test
+        // required: java.lang.Throwable
+    }
+}</pre>
+<p>javac: incompatible types, found Test, required Throwable.</p>
+<p>Now:</p>
+<pre class='code'>class Test extends RuntimeException {
+    public static void main(String[] args) {
+        throw new Test();
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; Test
+//         at Test.main(Test.java:3)</pre>
+<p>No syntactical mistake. Syntactically correct, but at runtime we get that exception. Read: exception in thread main, name of the exception is `Test`, at which line — Test.main.</p>
+<h3>46:50 — Case 3 board dictation (copy slowly)</h3>
+<p>We can use `throw` keyword only for throwable types. If we are trying to use it for normal Java objects, we will get compile-time error saying incompatible types.</p>
+<h3>48:03 — Case 3 side by side</h3>
+<p>Take both examples side by side. Long copy silence (~48:03–49:17, ASR music / “completed” / “take clearly”).</p>
+<p>Left CE:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        throw new Test();
+        // CE: incompatible types
+        // found   : Test
+        // required: java.lang.Throwable
+    }
+}</pre>
+<p>Right RE (custom exception style he showed):</p>
+<pre class='code'>class Test extends RuntimeException {
+    public static void main(String[] args) {
+        throw new Test();
+    }
+}
+// prints:
+// Exception in thread &quot;main&quot; Test
+//         at Test.main(Test.java:3)</pre>
+<p>He re-dictates the CE text: incompatible types, found Test, required java.lang.Throwable. Then class Test extends RuntimeException, throw new Test(), exception in thread main, at Test.main. Completed. Clear for you people?</p>
+<h3>49:58 — Close: throw only (throws not in this video)</h3>
+<p>“That’s all … throw keyword.” Video ends ~50:11. He never opens throws, never compares throw vs throws, never writes public void m1() throws Exception. That is the next session (video 076).</p>
+<h2>Board recap he wants in the notebook</h2>
+<p>Objective: main objective of throw is to hand over our created exception object to the JVM manually.</p>
+<p>Two equivalent stories (result-wise same default-handler print):</p>
+<p>Why throw on purpose: ATM if (amount &gt; balance) throw new InsufficientFundsException(); recharge throw new InvalidPinException();. Best use of `throw` is for user-defined / customized exceptions, not for everyday ArithmeticException / NullPointerException.</p>
+<p>Case 1: throw e; if e refers to null → `NullPointerException` (compiles; static e default is null). If e = new ArithmeticException() → ArithmeticException.</p>
+<p>Case 2: after throw we are not allowed to write any statement directly → CE: unreachable statement. 10 / 0 then &quot;Hello&quot; still compiles (compiler does not know AE will be raised). Indirectly OK via if / else.</p>
+<p>Case 3: throw only for throwable types. Normal class → CE: incompatible types, found: Test, required: java.lang.Throwable. class Test extends RuntimeException then throw new Test() → valid; default handler prints exception name `Test`. That extend-RuntimeException style is how he introduces our own exceptions.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 75 of 203</td></tr>
+<tr><td>Series</td><td>Exception Handling · Part 5</td></tr>
+<tr><td>Topic</td><td>throw and throws</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>50m 13s</td></tr>
+<tr><td>Video ID</td><td>4BkGDX_BvDY</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=4BkGDX_BvDY</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Ball game</th><th>Java</th></tr>
+<tr><td>Person throwing</td><td>programmer</td></tr>
+<tr><td>Person catching</td><td>JVM</td></tr>
+<tr><td>The ball</td><td>exception object</td></tr>
+</table>
+<table>
+<tr><th>System.out.println(10 / 0)</th><th>throw new ArithmeticException(&quot;division by zero&quot;)</th></tr>
+<tr><td>main creates AE object and hands to JVM internally</td><td>programmer creates AE object explicitly and hands to JVM manually</td></tr>
+<tr><td>no handling code → default exception handler</td><td>same after the throw</td></tr>
+</table>
+</body></html>

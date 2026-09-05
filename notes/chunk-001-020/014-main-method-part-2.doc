@@ -1,0 +1,193 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>014-main-method-part-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 014 — main() method, part 2</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-14 || main() method part-2</p>
+<p>YouTube has captions disabled on this upload. Continues the two-session main postmortem announced at the end of video 012. Command-line values (java Test A B C) are the next video, not this one.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Overloading main</li></ol>
+<ol><li>Which main the JVM picks</li></ol>
+<ol><li>Inheritance / hiding of main in a child class</li></ol>
+<ol><li>Static block vs main execution order</li></ol>
+<ol><li>Class with static block but no main — Java 1.6 vs 1.7+ behaviour (Durga’s famous point)</li></ol>
+<ol><li>Calling main yourself like a normal method</li></ol>
+<h2>Detailed notes</h2>
+<h3>Overloading `main`</h3>
+<p>main is a method name. You can overload it like any other method.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;String[] main&quot;);
+    }
+
+    public static void main(int[] args) {
+        System.out.println(&quot;int[] main&quot;);
+    }
+
+    public static void main(double d) {
+        System.out.println(&quot;double main&quot;);
+    }
+}</pre>
+<p>`java Test` always calls `public static void main(String[] args)` (or the String... form). The other overloads are ordinary methods. They run only if you call them.</p>
+<pre class='code'>public static void main(String[] args) {
+    main(10.5);
+    main(new int[]{1, 2, 3});
+}</pre>
+<p>Exam wording: “Can we overload main?” Yes. “Will JVM call the overloaded versions automatically?” No.</p>
+<h3>Inheritance of `main`</h3>
+<p>static methods are inherited in the “available on child” sense, but what happens is hiding, not instance overriding.</p>
+<pre class='code'>class Parent {
+    public static void main(String[] args) {
+        System.out.println(&quot;Parent main&quot;);
+    }
+}
+
+class Child extends Parent {
+}</pre>
+<p>java Child</p>
+<p>Output: `Parent main`</p>
+<p>The child did not declare main, so JVM uses the inherited static main from Parent. Durga: you can run a child class that has no main written in its own file, if a parent provides the protocol method.</p>
+<p>If the child declares its own:</p>
+<pre class='code'>class Child extends Parent {
+    public static void main(String[] args) {
+        System.out.println(&quot;Child main&quot;);
+    }
+}</pre>
+<p>java Child   → Child main
+java Parent  → Parent main</p>
+<p>The child’s main hides the parent’s main. It is not override in the instance / @Override sense (static + main).</p>
+<h3>Static block vs `main`</h3>
+<p>Static blocks run when the class is initialized, which for java Test happens before main is invoked.</p>
+<pre class='code'>class Test {
+    static {
+        System.out.println(&quot;static block&quot;);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;main method&quot;);
+    }
+}</pre>
+<p>Output:</p>
+<p>static block
+main method</p>
+<p>Multiple static blocks: top to bottom, then main.</p>
+<pre class='code'>class Test {
+    static { System.out.println(&quot;block 1&quot;); }
+    static { System.out.println(&quot;block 2&quot;); }
+    public static void main(String[] args) {
+        System.out.println(&quot;main&quot;);
+    }
+}</pre>
+<p>Output: block 1, block 2, main.</p>
+<p>Static variable initializers are folded into the same class-init sequence (more in the OOPs static-control-flow videos later in the playlist).</p>
+<h3>Class **without** `main` — version split Durga always teaches</h3>
+<pre class='code'>class Test {
+    static {
+        System.out.println(&quot;static block&quot;);
+    }
+}</pre>
+<p>Java 1.6 and earlier: JVM initializes the class, static block runs, then:</p>
+<p>static block
+NoSuchMethodError: main</p>
+<p>Java 1.7 and later: JVM checks for main first. You get:</p>
+<p>Error: Main method not found in class Test, please define the main method as:
+   public static void main(String[] args)</p>
+<p>and the static block does not run.</p>
+<p>This is one of Durga’s highest-frequency interview points. Always state the version.</p>
+<h3>Calling `main` yourself</h3>
+<p>Nothing magical prevents:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;main&quot;);
+        if (args.length == 0) {
+            Test.main(new String[]{&quot;from code&quot;});
+        }
+    }
+}</pre>
+<p>That is a normal static call. Recursion without a guard → StackOverflowError.</p>
+<p>JVM’s launch is only the first call. After that, main is just a method.</p>
+<h3>`main` in an interface? in an enum?</h3>
+<p>Later Java versions allow public static void main on an interface (Java 8+ static methods) or on an enum. This OCJP-era lecture is about classes. Don’t drag Java 8 interface main into this video unless you mark it as a later language change.</p>
+<h3>Interaction with overloading + inheritance (exam combo)</h3>
+<pre class='code'>class P {
+    public static void main(String[] args) {
+        System.out.println(&quot;P&quot;);
+    }
+}
+
+class C extends P {
+    public static void main(int[] args) {
+        System.out.println(&quot;C int&quot;);
+    }
+}</pre>
+<p>java C → `P`</p>
+<p>Child’s main(int[]) does not hide main(String[]). Different signature. JVM still finds P.main(String[]).</p>
+<p>To hide, child must declare main(String[]) (or String...).</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Parent {
+    static {
+        System.out.println(&quot;Parent static&quot;);
+    }
+    public static void main(String[] args) {
+        System.out.println(&quot;Parent main&quot;);
+        main(100);
+    }
+    public static void main(int x) {
+        System.out.println(&quot;overloaded &quot; + x);
+    }
+}
+
+class Child extends Parent {
+    static {
+        System.out.println(&quot;Child static&quot;);
+    }
+    public static void main(String[] args) {
+        System.out.println(&quot;Child main&quot;);
+    }
+}</pre>
+<p>java Child (typical): child static init (which may init parent first), then Child main. Parent’s main is hidden, so overloaded 100 does not run unless Child.main calls super — and super.main is not valid for static in that form; you would call Parent.main(args).</p>
+<p>Parent init before child init is the static-control-flow rule (later videos). For this lecture, the takeaway is: the class you name on the command line is whose `String[] main` is searched, walking up the parent chain if missing.</p>
+<h2>Rules to memorize</h2>
+<ol><li>Overload main freely; JVM still only auto-calls String[] / String....</li></ol>
+<ol><li>Child without main can still run if a parent has the protocol main.</li></ol>
+<ol><li>Child main(String[]) hides parent main(String[]).</li></ol>
+<ol><li>Static blocks of the launched class run before main (when the class is initialized).</li></ol>
+<ol><li>No main at all: Java 6 runs static block then NoSuchMethodError; Java 7+ reports missing main and skips the static block.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>“We cannot overload main” — false.</li></ul>
+<ul><li>Child with only main(int[]) — java Child still runs parent’s String[] main.</li></ul>
+<ul><li>Static block without main — answer depends on Java version.</li></ul>
+<ul><li>Main in child does not hide main in parent (case).</li></ul>
+<h2>Recap</h2>
+<p>main is an ordinary static method that the JVM happens to look for. Next lecture: the values passed into String[] args.</p>
+<p>Next video: 015-command-line-arguments.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 14 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 14 of 16</td></tr>
+<tr><td>Topic</td><td>main() method (part 2): overloading, inheritance, static block vs main</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>42m 20s (2540 seconds)</td></tr>
+<tr><td>Video ID</td><td>l3s_6gbNFTg</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=l3s_6gbNFTg</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,339 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>028-for-foreach</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 028 — for, for-each</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Flow-Control Part-5  || Iterative Statements : for, for-each Loops</p>
+<p>Source: real YouTube auto-captions (028-ZfpvcmdOLOA.txt). ASR noise is decoded in place — keep subing / keep sing = board heading, sop = System.out.println, bullan = boolean, Carly = curly braces, itable / erable / doable = Iterable, Itor = Iterator, G = array, inace = interface, handed for Loop = enhanced for loop.</p>
+<h2>What this lecture covers</h2>
+<ol><li>for — most commonly used loop in Java; best if we know the iteration count in advance</li></ol>
+<ol><li>Syntax and life-cycle (init once → condition → body → increment → condition → …)</li></ol>
+<ol><li>Curly braces optional (same one-statement / not-declarative rule)</li></ol>
+<ol><li>Initialization section — executed once; any number of locals of the same type; any valid Java statement including SOP</li></ol>
+<ol><li>Conditional check — any boolean expression; optional (compiler places true)</li></ol>
+<ol><li>Increment/decrement section — any valid Java statement including SOP</li></ol>
+<ol><li>All three parts independent and optional (for (;;) is an infinite loop)</li></ol>
+<ol><li>Unreachability — seven for cases; only two compile</li></ol>
+<ol><li>For-each / enhanced for (Java 1.5) — retrieve elements of arrays and collections</li></ol>
+<ol><li>1-D, 2-D, 3-D array examples vs traditional for</li></ol>
+<ol><li>Limitations: not a general-purpose loop; original order only, not reverse</li></ol>
+<ol><li>Target must be an Iterable object; java.lang.Iterable; interview table Iterator vs Iterable</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:07] `for` — most commonly used loop</h3>
+<p>Board heading: for loop.</p>
+<p>The most commonly used loop in Java — “our hand is always going for for.” Even last class: `for` is the best choice if we know the number of iterations in advance (exactly 10 times, exactly 20 times).</p>
+<pre class='code'>for (int i = 0; i &lt; 10; i++) {
+    System.out.println(&quot;hello&quot;);
+}</pre>
+<p>hello printed 10 times.</p>
+<p>Four parts he names on this example:</p>
+<h3>[01:52] Life cycle — which executes first?</h3>
+<p>Classroom drill:</p>
+<ol><li>Initialization section (first, and only once)</li></ol>
+<ol><li>Conditional check</li></ol>
+<ol><li>If true → loop body</li></ol>
+<ol><li>Increment or decrement</li></ol>
+<ol><li>Conditional check again → body → increment → …</li></ol>
+<p>Initialization is not repeated. After that the cycle is: condition → body → increment → condition → body → …</p>
+<p>Any pre-increment or post-increment is fine.</p>
+<h3>[04:31] Board points + syntax</h3>
+<p>1. For loop is the most commonly used loop in Java.</p>
+<p>2. If we know number of iterations in advance, then for loop is the best choice.</p>
+<p>Syntax on the board (three slots inside for ( ; ; ), then the body):</p>
+<pre class='code'>for (initialization; conditional_check; increment_or_decrement) {
+    // loop body
+}</pre>
+<h3>[06:56] Curly braces optional</h3>
+<p>Same as while / do-while. Curly braces optional. Without braces: only one statement, which should not be declarative.</p>
+<p>for (int i = 0; true; i++)
+    System.out.println(&quot;hello&quot;); // valid</p>
+<p>for (int i = 0; i &lt; 10; i++)
+    ; // valid — semicolon is a valid Java statement</p>
+<p>for (int i = 0; i &lt; 10; i++)
+    int x = 10; // CE: without curly braces we can&#x27;t take a declarative statement</p>
+<p>Board:</p>
+<p>Curly braces are optional. Without curly braces we can take only one statement under for loop, which should not be declarative statement.</p>
+<h3>[10:57] Initialization section</h3>
+<p>Board heading: initialization section.</p>
+<p>This part executes only once in the for-loop life cycle.</p>
+<p>Usual activity: declare and initialize local variables of the for loop (the counter).</p>
+<p>Can we declare multiple variables? Yes, same type:</p>
+<pre class='code'>for (int i = 0, j = 0; i &lt; 10; i++) {
+    // valid — multiple variables, same type
+}</pre>
+<p>One `int` and one `String` in the init slot?</p>
+<p>for (int i = 0, String s = &quot;durga&quot;; ; ) {
+} // CE: different types in initialization section</p>
+<p>If you put a semicolon to “separate” the types, that semicolon starts the conditional check — you cannot declare two different types in init.</p>
+<p>Repeating the type is also invalid:</p>
+<p>for (int i = 0, int j = 0; ; ) {
+} // CE: second `int` would require a semicolon, which would become the condition slot</p>
+<p>Board points:</p>
+<ol><li>This part will be executed only once in loop life cycle.</li></ol>
+<ol><li>Here we can declare and initialize local variables of for loop.</li></ol>
+<ol><li>We can declare any number of variables, but they should be of the same type. Different data-type variables → compile time error.</li></ol>
+<p>for (int i = 0, j = 0; ; ) { } // valid</p>
+<p>for (int i = 0, String s = &quot;durga&quot;; ; ) { } // CE</p>
+<p>for (int i = 0, int j = 0; ; ) { } // CE</p>
+<h3>[17:31] Init slot can hold any valid Java statement — including SOP</h3>
+<p>He writes (counter declared outside, so the init slot is free for a statement):</p>
+<pre class='code'>int i = 0;
+for (System.out.println(&quot;hello boss you are sleeping&quot;); i &lt; 3; i++) {
+    System.out.println(&quot;no boss you only sleeping&quot;);
+}</pre>
+<p>Valid. In the initialization section we can take any valid Java statement including SOP.</p>
+<p>Execution:</p>
+<ol><li>Init once → print hello boss you are sleeping, i is already 0</li></ol>
+<ol><li>0 &lt; 3 → print no boss you only sleeping → i++ → 1</li></ol>
+<ol><li>1 &lt; 3 → print again → i++ → 2</li></ol>
+<ol><li>2 &lt; 3 → print again → i++ → 3</li></ol>
+<ol><li>3 &lt; 3 false → stop</li></ol>
+<p>Output:</p>
+<p>hello boss you are sleeping
+no boss you only sleeping
+no boss you only sleeping
+no boss you only sleeping</p>
+<p>He compiles Test — fine — and runs that output.</p>
+<p>Board:</p>
+<p>In the initialization section we can take any valid Java statement including SOP.</p>
+<p>Student: can we put return / break there? return is only inside a method and would stop the method; statements after return / break become unreachable → maybe CE. Those other rules dominate.</p>
+<p>He also hits cannot find symbol: i when someone leaves i as an uninitialized local. JVM provides default values only for instance and static variables, not for locals. He moved the declaration outside specifically so the init slot could be an SOP.</p>
+<h3>[24:41] Conditional check</h3>
+<p>Board heading: conditional check.</p>
+<pre class='code'>for (int i = 0; i &lt; 3; i++) {
+    // this slot: i &lt; 3
+}</pre>
+<p>Point 1. We can take any valid Java expression, but it must be boolean type. a &lt; b &amp;&amp; b &gt; 30 || k &lt; l — anything — as long as the end type is boolean.</p>
+<p>Point 2. This part is optional. If we take nothing, the compiler always places `true`.</p>
+<p>He removes the condition from the sleeping example:</p>
+<pre class='code'>int i = 0;
+for (System.out.println(&quot;hello you are sleeping&quot;); ; i++) {
+    System.out.println(&quot;no boss you only sleeping&quot;);
+    System.out.println(i);
+}</pre>
+<p>Init prints hello, condition is compiler’s true, body runs, increment, true again → infinite. hello once, then body forever.</p>
+<p>Board:</p>
+<p>Here we can take any valid Java expression but should be of the type boolean. This part is optional. If we are not taking anything then compiler will always place true.</p>
+<h3>[28:58] Increment or decrement section</h3>
+<p>Board heading: increment or decrement section.</p>
+<p>Not compulsory to write i++ / i--. Any valid Java statement including SOP.</p>
+<pre class='code'>int i = 0;
+for (System.out.println(&quot;hello&quot;); i &lt; 3; System.out.println(&quot;hi&quot;))
+    i++;</pre>
+<p>Trace:</p>
+<ol><li>Init: print hello, i == 0</li></ol>
+<ol><li>0 &lt; 3 true → body i++ → 1 → increment prints hi</li></ol>
+<ol><li>1 &lt; 3 true → body i++ → 2 → print hi</li></ol>
+<ol><li>2 &lt; 3 true → body i++ → 3 → print hi</li></ol>
+<ol><li>3 &lt; 3 false → stop</li></ol>
+<p>Output: `hello` then `hi` `hi` `hi` (three times).</p>
+<p>He compiles and runs: hello hi hi hi.</p>
+<p>Board:</p>
+<p>In the increment or decrement section we can take any valid Java statement including SOP.</p>
+<h3>[33:40] All three parts independent and optional</h3>
+<p>The three expressions inside for ( ; ; ) have no dependency on each other. Init can be SOP, condition any boolean, increment SOP — independent statements.</p>
+<p>All three parts are optional.</p>
+<p>for (;;) {
+    System.out.println(&quot;hello&quot;);
+} // valid infinite loop — hello forever</p>
+<p>for (;;)
+    ; // valid infinite loop — semicolon body, no output</p>
+<p>Empty condition → compiler places true → infinite. Second loop produces nothing as output, but it is still an infinite loop. Highlight both as infinite loops.</p>
+<p>Board:</p>
+<p>All three parts of for loop are independent of each other and optional.</p>
+<h3>[37:06] Unreachability — seven `for` cases</h3>
+<p>Same loophole as while. Seven cases. Only two compile.</p>
+<p>Case 1 — condition `true`</p>
+<p>for (int i = 0; true; i++) {
+    System.out.println(&quot;hello&quot;);
+}
+System.out.println(&quot;hi&quot;); // CE: unreachable statement</p>
+<p>true → keep executing → hi never runs.</p>
+<p>Case 2 — condition `false`</p>
+<pre class='code'>for (int i = 0; false; i++) {
+    System.out.println(&quot;hello&quot;);
+} // CE: unreachable statement (loop body / opening brace)
+System.out.println(&quot;hi&quot;);</pre>
+<p>false → total loop body unreachable.</p>
+<p>Case 3 — empty condition (compiler places `true`)</p>
+<p>for (int i = 0; ; i++) {
+    System.out.println(&quot;hello&quot;);
+}
+System.out.println(&quot;hi&quot;); // CE: unreachable statement</p>
+<p>Same as true. Conditional expression is optional; compiler places true.</p>
+<p>Case 4 — normal variables, `a &lt; b`</p>
+<pre class='code'>int a = 10, b = 20;
+for (int i = 0; a &lt; b; i++) {
+    System.out.println(&quot;hello&quot;);
+}
+System.out.println(&quot;hi&quot;);</pre>
+<p>Valid. Compiler does not know the values. Runtime true → infinite `hello`.</p>
+<p>Case 5 — normal variables, `a &gt; b`</p>
+<pre class='code'>int a = 10, b = 20;
+for (int i = 0; a &gt; b; i++) {
+    System.out.println(&quot;hello&quot;);
+}
+System.out.println(&quot;hi&quot;);</pre>
+<p>Valid. Runtime false → output: `hi`.</p>
+<p>Case 6 — `final` `a &lt; b`</p>
+<p>final int a = 10, b = 20;
+for (int i = 0; a &lt; b; i++) {
+    System.out.println(&quot;hello&quot;);
+}
+System.out.println(&quot;hi&quot;); // CE: unreachable statement</p>
+<p>Compiler knows true → hi unreachable.</p>
+<p>Case 7 — `final` `a &gt; b`</p>
+<pre class='code'>final int a = 10, b = 20;
+for (int i = 0; a &gt; b; i++) {
+    System.out.println(&quot;hello&quot;);
+} // CE: unreachable statement (opening brace)
+System.out.println(&quot;hi&quot;);</pre>
+<p>Compiler knows false → body unreachable.</p>
+<p>He compiles all seven. Unreachable hi vs unreachable curly-brace open, same as last class.</p>
+<p>Only two cases valid — the two with normal variables. Unreachability is a big problem in every loop.</p>
+<h3>[47:11] For-each / enhanced `for`</h3>
+<p>Board heading: for each loop.</p>
+<p>Also known as enhanced for loop. Introduced in 1.5 version.</p>
+<p>Specially designed loop to retrieve elements of arrays and collections. Array = group of elements; collection = group of objects. To get them one by one, best suitable loop is for-each.</p>
+<p>Board:</p>
+<p>Introduced in 1.5 version. It is a specially designed loop to retrieve elements of arrays and collections.</p>
+<h3>[50:04] Example 1 — print elements of a 1-D array</h3>
+<p>int[] x = {10, 20, 30, 40};</p>
+<p>Normal `for`:</p>
+<pre class='code'>for (int i = 0; i &lt; x.length; i++) {
+    System.out.println(x[i]);
+}</pre>
+<p>We are advertised with this from childhood. Once you know for-each, using the index form feels stupid.</p>
+<p>x is an int array — it contains int values 10, 20, 30, 40. English: for each int value `x1` in `x`, print `x1`.</p>
+<p>Enhanced `for`:</p>
+<pre class='code'>for (int x1 : x) {
+    System.out.println(x1);
+}</pre>
+<p>First value 10, then 20, 30, 40. For-each is the easy one. Wherever array / collection — highly recommended; don&#x27;t use the traditional for.</p>
+<h3>[55:03] Example 2 — print elements of a 2-D array</h3>
+<p>int[][] x = {{10, 20, 30}, {40, 50}};</p>
+<p>Base size 2 (two 1-D arrays). First 1-D size: 10, 20, 30. Second: 40, 50.</p>
+<p>Normal `for`:</p>
+<pre class='code'>for (int i = 0; i &lt; x.length; i++) {
+    for (int j = 0; j &lt; x[i].length; j++) {
+        System.out.println(x[i][j]);
+    }
+}</pre>
+<p>x is a 2-D array → contains 1-D arrays → each 1-D contains int values.</p>
+<p>English: for each 1-D x1 in x; for each int x2 in x1; print x2.</p>
+<p>Enhanced `for`:</p>
+<pre class='code'>for (int[] x1 : x) {
+    for (int x2 : x1) {
+        System.out.println(x2);
+    }
+}</pre>
+<p>Take the diagram of the 2-D array as well.</p>
+<h3>[1:01:08] Example 3 — print elements of a 3-D array</h3>
+<p>Compulsory to take the diagram. He skips traditional for (“unnecessary waste”) and goes straight to for-each.</p>
+<p>Size 2 at the outer level. Values he writes: 10, 20 / 30, 40 and 50, 60, 70 / 80, 90.</p>
+<p>int[][][] x = {{{10, 20}, {30, 40}}, {{50, 60, 70}, {80, 90}}};</p>
+<p>x is 3-D → contains 2-D arrays → each 2-D contains 1-D arrays → each 1-D contains int values.</p>
+<pre class='code'>for (int[][] x1 : x) {          // each 2-D array in x
+    for (int[] x2 : x1) {       // each 1-D array in that 2-D
+        for (int x3 : x2) {     // each int in that 1-D
+            System.out.println(x3);
+        }
+    }
+}</pre>
+<p>If for-each were not there and we had to print a 3-D array with normal for, “our life will become very horrible.” This loop came in 1.5 — enhanced for loop.</p>
+<h3>[1:05:37] Limitation 1 — not a general-purpose loop</h3>
+<p>“For-each is the best choice — don&#x27;t change your answer.” Then he traps the class:</p>
+<pre class='code'>for (int i = 0; i &lt; 10; i++) {
+    System.out.println(&quot;hello&quot;);
+}</pre>
+<p>hello 10 times. Write an equivalent for-each for this. Classroom guesses (for each int i : 10, …) fail.</p>
+<p>Not possible. For-each is the best choice to retrieve elements of arrays and collections. Limitation: applicable only for arrays and collections. No array, no collection → cannot use for-each. It is not a general-purpose loop.</p>
+<p>for (int i = 0; i &lt; 10; i++) {
+    System.out.println(&quot;hello&quot;);
+}
+// we can&#x27;t write an equivalent for-each loop directly</p>
+<p>Board:</p>
+<p>For each loop is the best choice to retrieve elements of arrays and collections, but its limitation is it is applicable only for arrays and collections and it&#x27;s not a general purpose loop.</p>
+<h3>[1:10:04] Limitation 2 — reverse order</h3>
+<pre class='code'>int[] x = {10, 20, 30, 40, 50};
+for (int i = x.length - 1; i &gt;= 0; i--) {
+    System.out.println(x[i]);
+}</pre>
+<p>x.length is 5; i starts at 4. Prints x[4], x[3], … → 50 40 30 20 10.</p>
+<p>Equivalent for-each for reverse? No way. Cannot write it directly.</p>
+<p>Board:</p>
+<p>By using normal for loop we can print array elements either in original order or in reverse order. But by using for each loop we can print array elements only in original order but not in reverse order.</p>
+<h3>[1:14:33] Iterable — intern / interview topic</h3>
+<p>Not a new concept “only for for-each,” but related. Syntax:</p>
+<pre class='code'>for (Item x : target) {
+    // for every element x in this array / collection
+}</pre>
+<p>target can be either array or collection. The target in a for-each loop should be an Iterable object.</p>
+<p>An object is said to be Iterable if and only if the corresponding class implements `java.lang.Iterable`.</p>
+<p>Being a programmer we should aware this point; we are not required to do anything: all array-related types and every Collection implemented class already implement it.</p>
+<p>Collection framework sketch: Collection is the root interface → List, Set, Queue. From 1.5, `Collection` is a child interface of `Iterable`. So every Collection implementation is already Iterable.</p>
+<p>Iterable came in 1.5 (same version as for-each). It contains only one method: iterator().</p>
+<p>Full signature he wants on the board:</p>
+<pre class='code'>public Iterator iterator();</pre>
+<p>Return type Iterator, method name iterator.</p>
+<p>Board recap:</p>
+<p>The target element in for each loop should be Iterable object. An object is said to be Iterable iff corresponding class implements java.lang.Iterable interface. Iterable interface introduced in 1.5 version and it contains only one method iterator. All array related classes and Collection implemented classes already implement Iterable interface. Being a programmer we are not required to do anything — just we should aware the point.</p>
+<h3>[1:24:24] Differences between Iterator and Iterable</h3>
+<p>Board heading: differences between iterator and iterable. Similarity in the words → interview question.</p>
+<p>hasNext — is the next element there? next — give that element. remove — this current element is not good, remove it. Full treatment in collections; remember the three names.</p>
+<p>If anyone asks the difference: Iterator → collection framework cursor; Iterable → for-each target type. java.util vs java.lang. Three methods vs one.</p>
+<p>That&#x27;s all with for-each and the related Iterable concepts.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 28 of 203</td></tr>
+<tr><td>Series</td><td>Flow-Control · Part 5</td></tr>
+<tr><td>Topic</td><td>Iterative statements: for, for-each (enhanced for)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 33m 09s</td></tr>
+<tr><td>Video ID</td><td>ZfpvcmdOLOA</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=ZfpvcmdOLOA</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Part</th><th>Name</th></tr>
+<tr><td>int i = 0</td><td>initialization section</td></tr>
+<tr><td>i &lt; 10</td><td>condition check / conditional check</td></tr>
+<tr><td>i++</td><td>increment or decrement section</td></tr>
+<tr><td>System.out.println(&quot;hello&quot;)</td><td>loop body / action</td></tr>
+</table>
+<table>
+<tr><th>Case</th><th>Compile</th><th>If valid</th></tr>
+<tr><td>true + hi after</td><td>CE</td><td>—</td></tr>
+<tr><td>false</td><td>CE</td><td>—</td></tr>
+<tr><td>empty condition</td><td>CE</td><td>—</td></tr>
+<tr><td>normal a &lt; b</td><td>valid</td><td>infinite hello</td></tr>
+<tr><td>normal a &gt; b</td><td>valid</td><td>hi</td></tr>
+<tr><td>final a &lt; b</td><td>CE</td><td>—</td></tr>
+<tr><td>final a &gt; b</td><td>CE</td><td>—</td></tr>
+</table>
+<table>
+<tr><th></th><th>Iterator</th><th>Iterable</th></tr>
+<tr><td>Related to</td><td>collections (cursor)</td><td>for-each loop</td></tr>
+<tr><td>Purpose</td><td>retrieve elements of a collection one by one (cursor: Enumeration, Iterator, ListIterator)</td><td>the target in for-each should be Iterable</td></tr>
+<tr><td>Package</td><td>java.util</td><td>java.lang</td></tr>
+<tr><td>Methods</td><td>three: hasNext(), next(), remove()</td><td>one: iterator()</td></tr>
+</table>
+</body></html>

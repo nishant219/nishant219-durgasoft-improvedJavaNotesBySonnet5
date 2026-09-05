@@ -1,0 +1,338 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>116-autoboxing-unboxing-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 116 — Autoboxing &amp; autounboxing part 2 (overloading)</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: java.lang.package Part-11 || Autoboxing||Autounboxing-2</p>
+<h3>00:05 — Session focus: overloading + autoboxing climax</h3>
+<p>This video completes the autoboxing/autounboxing topic. Autoboxing was covered in video 115 — definitions, valueOf, cache buffer, == traps are assumed known here.</p>
+<p>New focus: How autoboxing interacts with method overloading, together with:</p>
+<ul><li>Widening — primitive promotion (smaller type → bigger type); exists since Java 1.0</li></ul>
+<ul><li>Varargs (int...) — variable-argument methods; introduced in Java 1.5 (same release as autoboxing)</li></ul>
+<p>SCJP/OCJP relevance: Compiler resolution order among overloaded methods is a frequent exam trap.</p>
+<p>Prerequisites recap:</p>
+<p>Widening chain (primitives only):</p>
+<p>byte → short → int → long → float → double
+char → int → long → float → double</p>
+<h3>02:39 — Baseline: calling `m1(int)` with varargs</h3>
+<p>Before the fight cases, establish that m1(int... x) accepts any number of int arguments including zero:</p>
+<pre class='code'>class Test {
+    static void m1(int... x) { }
+
+    public static void main(String[] args) {
+        m1();           // valid — zero arguments
+        m1(10);         // valid
+        m1(10, 20);     // valid
+        m1(10, 20, 30, 40);  // valid
+    }
+}</pre>
+<h3>04:37 — Case 1: Autoboxing vs widening</h3>
+<p>Two overloaded methods — one takes Integer, one takes long:</p>
+<pre class='code'>class Test {
+    static void m1(Integer i) {
+        System.out.println(&quot;autoboxing&quot;);
+    }
+
+    static void m1(long l) {
+        System.out.println(&quot;widening&quot;);
+    }
+
+    public static void main(String[] args) {
+        int x = 10;
+        m1(x);
+    }
+}</pre>
+<p>Argument: int x = 10 passed to m1(x).</p>
+<p>Two possible conversions:</p>
+<ol><li>int → Integer via autoboxing → matches m1(Integer)</li></ol>
+<ol><li>int → long via widening → matches m1(long)</li></ol>
+<p>Question: Which method is invoked?</p>
+<p>Answer: `m1(long)` — widening wins.</p>
+<p>Why? When both an old concept (widening, Java 1.0) and a new concept (autoboxing, Java 1.5) compete, the compiler gives priority to the older mechanism for backward compatibility with pre-1.5 code. Metaphor: &quot;19+ years experience vs fresher&quot; — experience (widening) wins.</p>
+<pre class='code'>// prints: widening</pre>
+<p>Rule — Case 1: Widening dominates autoboxing.</p>
+<h3>11:25 — Case 2: Widening vs varargs</h3>
+<p>Same pattern, but second method uses varargs:</p>
+<pre class='code'>class Test {
+    static void m1(int... x) {
+        System.out.println(&quot;varargs&quot;);
+    }
+
+    static void m1(long l) {
+        System.out.println(&quot;widening&quot;);
+    }
+
+    public static void main(String[] args) {
+        int x = 10;
+        m1(x);
+    }
+}</pre>
+<p>Conversions available:</p>
+<ol><li>int → long widening → m1(long)</li></ol>
+<ol><li>int → varargs (int...) — wraps single int in array</li></ol>
+<p>Answer: `m1(long)` — widening again.</p>
+<p>Even when varargs is present, widening still beats varargs.</p>
+<pre class='code'>// prints: widening</pre>
+<p>Rule — Case 2: Widening dominates varargs.</p>
+<h3>14:30 — Case 3: Autoboxing vs varargs</h3>
+<pre class='code'>class Test {
+    static void m1(int... x) {
+        System.out.println(&quot;varargs&quot;);
+    }
+
+    static void m1(Integer i) {
+        System.out.println(&quot;autoboxing&quot;);
+    }
+
+    public static void main(String[] args) {
+        int x = 10;
+        m1(x);
+    }
+}</pre>
+<p>Both concepts are Java 1.5 — no &quot;old vs new&quot; tie-breaker.</p>
+<p>Key rule from prior lectures: Varargs has the least priority among overload resolution strategies — analogous to `default` in a `switch`: it runs only when no other case matches.</p>
+<p>Here m1(Integer) already matches via autoboxing, so varargs is not chosen.</p>
+<pre class='code'>// prints: autoboxing</pre>
+<p>Rule — Case 3: Autoboxing dominates varargs.</p>
+<p>Varargs least-priority rule (general):</p>
+<p>If any other overload matches without needing varargs, the varargs method is not selected. Only when no other method matches does the varargs overload get the call — exactly like default in switch.</p>
+<h3>19:30 — Master priority order (★ exam note)</h3>
+<p>While resolving overloaded methods, the compiler gives precedence in this order:</p>
+<p>Mnemonic: W → A → V (Widening, Autoboxing, Varargs)</p>
+<p>Walk-through example with all three present:</p>
+<pre class='code'>class Test {
+    static void m1(long l)       { System.out.println(&quot;widening&quot;); }
+    static void m1(Integer i)    { System.out.println(&quot;autoboxing&quot;); }
+    static void m1(int... x)     { System.out.println(&quot;varargs&quot;); }
+
+    public static void main(String[] args) {
+        int x = 10;
+        m1(x);  // widening wins
+    }
+}</pre>
+<p>Remove widening:</p>
+<pre class='code'>class Test {
+    static void m1(Integer i)  { System.out.println(&quot;autoboxing&quot;); }
+    static void m1(int... x)   { System.out.println(&quot;varargs&quot;); }
+
+    public static void main(String[] args) {
+        int x = 10;
+        m1(x);  // autoboxing wins
+    }
+}</pre>
+<p>Only varargs left:</p>
+<pre class='code'>class Test {
+    static void m1(int... x) { System.out.println(&quot;varargs&quot;); }
+
+    public static void main(String[] args) {
+        int x = 10;
+        m1(x);  // varargs — only option
+    }
+}</pre>
+<h3>23:10 — Case 4: `int` to `Long` (wrapper) — chained conversions</h3>
+<p>Trap question: Can int be passed to m1(Long L) where L is `java.lang.Long` (wrapper)?</p>
+<pre class='code'>class Test {
+    static void m1(Long L) {
+        System.out.println(&quot;Long wrapper&quot;);
+    }
+
+    public static void main(String[] args) {
+        int x = 10;
+        m1(x);  // CE — does NOT compile
+    }
+}</pre>
+<p>Students often propose two conversion paths:</p>
+<p>Path A (invalid):</p>
+<p>int → Integer (autoboxing) → Long (???)</p>
+<p>Integer and Long are sibling wrapper classes under Number. There is no widening or inheritance link from `Integer` to `Long`. This path does not work.</p>
+<p>Path B (also invalid in Java):</p>
+<p>int → long (widening) → Long (autoboxing)</p>
+<p>Logically: primitive widen first, then box. But Java does NOT implement widening followed by autoboxing.</p>
+<p>Compile error:</p>
+<pre class='code'>// CE: incompatible types: int cannot be converted to java.lang.Long</pre>
+<p>Critical chained-conversion rules:</p>
+<p>Memory aid: After W then A → invalid. After A then W → valid.</p>
+<p>Related assignment examples:</p>
+<pre class='code'>// CE — int cannot assign to Long wrapper directly
+Long L = 10;
+
+// CE — same reason
+Long L = 10L;  // long literal, still primitive long → Long needs boxing of long, but int literal 10 to Long also fails for int arg
+
+// Valid — primitive widening only
+long l = 10;   // int → long widening
+
+// Valid — widening then nothing else needed
+Long L2 = 10L; // long literal 10L → autobox to Long</pre>
+<p>Clarification on long L = 10:</p>
+<p>long L = 10;   // valid — int literal → long variable (widening)</p>
+<p>Clarification on Long L = 10:</p>
+<p>Long L = 10;   // CE: incompatible types found: int required: Long</p>
+<h3>31:08 — Theory summary: chained conversion policy</h3>
+<p>Widening followed by autoboxing  →  NOT allowed in Java
+Autoboxing followed by widening  →  ALLOWED</p>
+<p>Diagram (conceptual):</p>
+<p>int ──widening──► long ──autobox──► Long     ✗ NOT supported as a chain for overload/assignment
+
+int ──autobox──► Integer ──???──► Long       ✗ No conversion between wrapper siblings
+
+int ──autobox──► Integer ──widening──► Object ✓ Allowed (child → parent reference)</p>
+<h3>35:28 — Case 5: Autoboxing followed by widening (`int` → `Object`)</h3>
+<pre class='code'>class Test {
+    static void m1(Object o) {
+        System.out.println(&quot;object version&quot;);
+    }
+
+    public static void main(String[] args) {
+        int x = 10;
+        m1(x);
+    }
+}</pre>
+<p>Conversion chain:</p>
+<ol><li>int → Integer (autoboxing)</li></ol>
+<ol><li>Integer → Object (widening — subclass reference to superclass reference; Integer extends Number extends Object)</li></ol>
+<p>A then W is allowed → method call succeeds.</p>
+<pre class='code'>// prints: object version</pre>
+<p>Equivalent valid assignments (same A→W pattern):</p>
+<p>Object o = 10;        // valid — autoboxing + widening to Object
+Number n = 10;        // valid — autoboxing + widening to Number</p>
+<h3>40:02 — Assignment validity quiz (10 options)</h3>
+<p>Decide valid/invalid and name the concept or compile error.</p>
+<p>Error messages:</p>
+<p>int i = 10L;
+// CE: possible loss of precision
+// found: long, required: int
+
+Long L = 10;
+// CE: incompatible types
+// found: int, required: java.lang.Long
+
+Double D = 10;
+// CE: incompatible types
+// found: int, required: java.lang.Double</p>
+<p>Full quiz program:</p>
+<pre class='code'>class AssignmentQuiz {
+    public static void main(String[] args) {
+        int i = 10;           // ✓ normal
+        Integer I = 10;       // ✓ autoboxing
+        // int j = 10L;       // ✗ possible loss of precision
+        Long L1 = 10L;        // ✓ autoboxing
+        // Long L2 = 10;      // ✗ incompatible types
+        long l = 10;          // ✓ widening
+        Object o = 10;        // ✓ autoboxing + widening
+        double d = 10;        // ✓ widening
+        // Double D = 10;     // ✗ incompatible types
+        Number n = 10;        // ✓ autoboxing + widening
+    }
+}</pre>
+<h3>45:31 — Session wrap-up</h3>
+<p>java.lang package topics covered across Parts 1–11:</p>
+<ul><li>Object class hierarchy</li></ul>
+<ul><li>toString(), hashCode(), equals()</li></ul>
+<ul><li>String, StringBuffer, StringBuilder</li></ul>
+<ul><li>Wrapper classes</li></ul>
+<ul><li>Autoboxing &amp; autounboxing (Parts 10–11)</li></ul>
+<p>Part 11 key takeaways:</p>
+<ol><li>Overload resolution priority: Widening &gt; Autoboxing &gt; Varargs</li></ol>
+<ol><li>Old concept (widening) beats new (autoboxing) when both match</li></ol>
+<ol><li>Varargs = lowest priority (like switch default)</li></ol>
+<ol><li>Widening → Autoboxing chain: not allowed</li></ol>
+<ol><li>Autoboxing → Widening chain: allowed (e.g. int → Integer → Object)</li></ol>
+<ol><li>No direct conversion between sibling wrappers (Integer → Long)</li></ol>
+<ol><li>Long L = 10 fails; long l = 10 and Long L = 10L work</li></ol>
+<p>Next: Object class deep dive continues in video 117 (equals(), hashCode() contract).</p>
+<h2>ASR decode notes</h2>
+<p>Java code block count: 14</p>
+<h3>Overload resolution cheat sheet</h3>
+<h3>Chained conversion reference</h3>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 116 of 203</td></tr>
+<tr><td>Series</td><td>java.lang.package · Part 11</td></tr>
+<tr><td>Topic</td><td>Overloading with autoboxing, widening, and varargs</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>46m 01s</td></tr>
+<tr><td>Video ID</td><td>tcHVFR5OzD8</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=tcHVFR5OzD8</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (no YouTube auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Concept</th><th>Meaning</th><th>Since</th></tr>
+<tr><td>Widening</td><td>Assign smaller primitive to larger primitive variable (e.g. byte → short → int → long → float → double)</td><td>Java 1.0</td></tr>
+<tr><td>Autoboxing</td><td>Primitive → wrapper object (int → Integer)</td><td>Java 1.5</td></tr>
+<tr><td>Varargs</td><td>Method accepts zero or more arguments of a type (m1(int... x))</td><td>Java 1.5</td></tr>
+</table>
+<table>
+<tr><th>Priority</th><th>Mechanism</th><th>Notes</th></tr>
+<tr><td>1 (highest)</td><td>Widening</td><td>Primitive promotion</td></tr>
+<tr><td>2</td><td>Autoboxing</td><td>Primitive → wrapper</td></tr>
+<tr><td>3 (lowest)</td><td>Varargs</td><td>Last resort; like switch default</td></tr>
+</table>
+<table>
+<tr><th>Chain</th><th>Allowed?</th></tr>
+<tr><td>Widening → Autoboxing (W then A)</td><td>NO — not implemented</td></tr>
+<tr><td>Autoboxing → Widening (A then W)</td><td>YES — allowed</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Statement</th><th>Valid?</th><th>Concept / Error</th></tr>
+<tr><td>1</td><td>int i = 10;</td><td>✓</td><td>Normal int assignment</td></tr>
+<tr><td>2</td><td>Integer I = 10;</td><td>✓</td><td>Autoboxing</td></tr>
+<tr><td>3</td><td>int i = 10L;</td><td>✗</td><td>long → int narrowing — possible loss of precision</td></tr>
+<tr><td>4</td><td>Long L = 10L;</td><td>✓</td><td>Autoboxing (long → Long)</td></tr>
+<tr><td>5</td><td>Long L = 10;</td><td>✗</td><td>Incompatible types — int cannot convert to Long</td></tr>
+<tr><td>6</td><td>long l = 10;</td><td>✓</td><td>Widening (int literal → long)</td></tr>
+<tr><td>7</td><td>Object o = 10;</td><td>✓</td><td>Autoboxing followed by widening</td></tr>
+<tr><td>8</td><td>double d = 10;</td><td>✓</td><td>Widening (int → double)</td></tr>
+<tr><td>9</td><td>Double D = 10;</td><td>✗</td><td>Incompatible types — int cannot convert to Double</td></tr>
+<tr><td>10</td><td>Number n = 10;</td><td>✓</td><td>Autoboxing followed by widening</td></tr>
+</table>
+<table>
+<tr><th>Heard (Whisper)</th><th>Intended</th></tr>
+<tr><td>over loading / we are loading</td><td>overloading</td></tr>
+<tr><td>wearer / where are the methods</td><td>varargs</td></tr>
+<tr><td>Vyrrach / Virarke / Verarca</td><td>varargs</td></tr>
+<tr><td>why the name / why dening / why the new</td><td>widening</td></tr>
+<tr><td>Dominate Sato boxing</td><td>dominates autoboxing</td></tr>
+<tr><td>out of boxing</td><td>autoboxing</td></tr>
+<tr><td>compelte / compultimate</td><td>compile</td></tr>
+<tr><td>chavada blank dot long</td><td>java.lang.Long</td></tr>
+<tr><td>pen (integer to object)</td><td>hierarchy (Integer is child of Object)</td></tr>
+<tr><td>possible loss of precision found the long</td><td>possible loss of precision: found long, required int</td></tr>
+</table>
+<table>
+<tr><th>Case</th><th>Methods</th><th>Winner</th></tr>
+<tr><td>1</td><td>m1(Integer) vs m1(long) + int arg</td><td>Widening (long)</td></tr>
+<tr><td>2</td><td>m1(int...) vs m1(long) + int arg</td><td>Widening (long)</td></tr>
+<tr><td>3</td><td>m1(int...) vs m1(Integer) + int arg</td><td>Autoboxing (Integer)</td></tr>
+<tr><td>4</td><td>m1(Long) + int arg</td><td>Compile error</td></tr>
+<tr><td>5</td><td>m1(Object) + int arg</td><td>Autoboxing → Widening</td></tr>
+</table>
+<table>
+<tr><th>From</th><th>To</th><th>Steps</th><th>Valid?</th></tr>
+<tr><td>int</td><td>long</td><td>Widening</td><td>✓</td></tr>
+<tr><td>int</td><td>Integer</td><td>Autoboxing</td><td>✓</td></tr>
+<tr><td>int</td><td>Long</td><td>W→A or A→sibling</td><td>✗</td></tr>
+<tr><td>int</td><td>Object</td><td>A→W</td><td>✓</td></tr>
+<tr><td>int</td><td>Number</td><td>A→W</td><td>✓</td></tr>
+<tr><td>long</td><td>int</td><td>Narrowing</td><td>✗ (loss of precision)</td></tr>
+</table>
+</body></html>

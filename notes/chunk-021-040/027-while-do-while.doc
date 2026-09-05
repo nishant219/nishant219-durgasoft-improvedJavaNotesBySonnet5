@@ -1,0 +1,316 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>027-while-do-while</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 027 — while, do-while</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Flow-Control Part-4  || Iterative Statements: while,do-while</p>
+<p>Source: real YouTube auto-captions (027-dd9Epay1y6g.txt). ASR noise is decoded in place — keep subing = board heading he is writing, why / erative = while / iterative, Len = listen, RS = ResultSet, e = Enumeration, it = Iterator, bullan / buian = boolean, sop = System.out.println, Carly / cly bra = curly braces, Paka = pakka / definitely valid.</p>
+<h2>What this lecture covers</h2>
+<p>Board heading: iterative statements.</p>
+<ol><li>while — when to use it vs for</li></ol>
+<ol><li>while syntax — argument must be boolean</li></ol>
+<ol><li>Curly braces optional (same rule as if)</li></ol>
+<ol><li>Unreachability loophole — six while cases (true / false / normal vars / final vars)</li></ol>
+<ol><li>Two compile-time notes: every final variable is replaced by its value at compile time; if every argument is a compile-time constant, the operation happens at compile time</li></ol>
+<ol><li>do-while — execute the body at least once; trailing semicolon is mandatory in Java</li></ol>
+<ol><li>Curly braces between do and while</li></ol>
+<ol><li>The “99% think CE” nested do / while (true) / while (false) case — it is valid</li></ol>
+<ol><li>Unreachability again for do-while — six cases; do { } while (false) is valid (unlike while (false))</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:07] Iterative statements — when `while` vs `for`</h3>
+<p>Board heading: iterative statements. First one: while statement.</p>
+<p>He starts from a for he already used:</p>
+<pre class='code'>for (int i = 0; i &lt; 10; i++) {
+    System.out.println(&quot;hello&quot;);
+}</pre>
+<p>hello is printed 10 times. If we know the number of iterations in advance (exactly 10, exactly 20, …) then `for` is the best choice.</p>
+<p>Sometimes we do not know the count in advance:</p>
+<ul><li>for every record in a ResultSet, do something — how many records? unknown at the beginning</li></ul>
+<ul><li>for every object in a collection, do something — how many objects? unknown</li></ul>
+<p>If we don&#x27;t know the number of iterations in advance, the best suitable loop is `while`.</p>
+<p>Board sentence he writes:</p>
+<p>If we don&#x27;t know number of iterations in advance then we should go for while loop.</p>
+<h3>[02:21] Real places his hand goes to `while`</h3>
+<p>JDBC — retrieve every record from a ResultSet. How many rows? unknown. Hand goes to while:</p>
+<p>while (rs.next()) {
+    // for every record present in the ResultSet, do some activity
+}</p>
+<p>Collections cursor — Enumeration:</p>
+<p>while (e.hasMoreElements()) {
+    // for every element present inside the Enumeration, do certain activity
+}</p>
+<p>Iterator:</p>
+<p>while (it.hasNext()) {
+    // for every next object present inside the Iterator, do some activity
+}</p>
+<p>These are the common places for while. If the count is known in advance → for. If not → while.</p>
+<h3>[05:55] `while` syntax — argument must be boolean</h3>
+<p>Board heading: syntax.</p>
+<p>while (b) {
+    // action / loop body
+}</p>
+<p>b compulsory should be boolean type. The body executes as long as b is true. If b is false, the loop stops.</p>
+<p>Board:</p>
+<p>The argument should be boolean type. If we are trying to provide any other type then we will get compile time error.</p>
+<h3>[08:06] `while (1)` — C/C++ habit, Java CE</h3>
+<p>while (1) {
+    System.out.println(&quot;hello&quot;);
+} // CE: incompatible types, found: int, required: boolean</p>
+<p>Classroom: how many times will hello be printed? In C / C++ — infinite, because 1 means true. In Java no such terminology. In the place of boolean we cannot provide int. Compiler:</p>
+<p>incompatible types
+found   : int
+required: boolean</p>
+<h3>[09:45] Curly braces are optional</h3>
+<p>Same rule as if / else. Curly braces are optional. Without braces we can write only one statement, and that statement should not be a declarative statement.</p>
+<p>while (true)
+    System.out.println(&quot;hello&quot;); // valid</p>
+<p>while (true)
+    ; // valid — semicolon is a valid Java statement</p>
+<p>while (true)
+    int x = 10; // CE: without curly braces we can&#x27;t take a declarative statement</p>
+<p>while (true) {
+    int x = 10;
+} // valid — with braces, a declarative statement is fine</p>
+<p>Board:</p>
+<p>Curly braces are optional. Without curly braces we can take only one statement under while, which should not be declarative statement.</p>
+<p>Four board examples: 1 valid, 2 valid, 3 invalid, 4 valid.</p>
+<h3>[13:08] Unreachability loophole — six `while` cases</h3>
+<p>Related to loops there is a very important loophole. It applies to for, for-each, everywhere. Take special care.</p>
+<p>Six cases on the board. Classroom guess “all valid”? If all were valid he would not write this many. Some valid, some invalid. His answers (he says they are perfectly correct):</p>
+<p>Pattern he drills: first two invalid → next two valid → last two invalid.</p>
+<h3>[18:46] Case 1 — `while (true)` then `hi`</h3>
+<p>while (true) {
+    System.out.println(&quot;hello&quot;);
+}
+System.out.println(&quot;hi&quot;); // CE: unreachable statement</p>
+<p>If the condition is true, hello keeps executing. When will hi get the chance? Never. Unreachable statements are not allowed in Java. Compiler already knows it is true.</p>
+<p>He compiles: CE on System.out.println(&quot;hi&quot;) — unreachable statement.</p>
+<h3>[19:42] Case 2 — `while (false)`</h3>
+<pre class='code'>while (false) {
+    System.out.println(&quot;hello&quot;);
+} // CE: unreachable statement (loop body / opening curly brace)
+System.out.println(&quot;hi&quot;);</pre>
+<p>It is false → the loop body never gets the chance → the total loop body is unreachable. Compiler points at the opening curly brace.</p>
+<h3>[20:35] Case 3 — normal variables, `a &lt; b`</h3>
+<pre class='code'>int a = 10, b = 20;
+while (a &lt; b) {
+    System.out.println(&quot;hello&quot;);
+}
+System.out.println(&quot;hi&quot;);</pre>
+<p>Valid. a &lt; b is true at runtime, so infinite `hello`. Why no CE?</p>
+<p>a and b are normal variables. Their values may change later (five more lines of code could change them). Compiler never considers their values. It only checks: a &lt; b is a valid boolean expression. True or false is decided at runtime.</p>
+<p>Who checks unreachability? Compiler. JVM job is only to execute.</p>
+<p>Class analogy: InCharge checks ID cards at the door. Once you are in, Durga Sir’s job is just to continue from last class — he will not check whether you paid the fee. If InCharge was sleeping, an invalid student still sits in class; Sir still teaches. Same: if the compiler cannot prove unreachability, JVM will not refuse at runtime — it just runs. Here compiler cannot see true/false, so it compiles. JVM prints hello forever.</p>
+<h3>[24:12] Case 4 — normal variables, `a &gt; b`</h3>
+<pre class='code'>int a = 10, b = 20;
+while (a &gt; b) {
+    System.out.println(&quot;hello&quot;);
+}
+System.out.println(&quot;hi&quot;);</pre>
+<p>Valid. Compiler still does not know the values. At runtime a &gt; b is false → skip the body → output: `hi`.</p>
+<p>He runs it: hi.</p>
+<h3>[24:56] Case 5 — `final` variables, `a &lt; b`</h3>
+<p>final int a = 10, b = 20;
+while (a &lt; b) {
+    System.out.println(&quot;hello&quot;);
+}
+System.out.println(&quot;hi&quot;); // CE: unreachable statement</p>
+<p>a is always 10, b is always 20. Compiler considers the values. 10 &lt; 20 is true. Body keeps executing → hi never runs → CE unreachable.</p>
+<h3>[26:29] Case 6 — `final` variables, `a &gt; b`</h3>
+<pre class='code'>final int a = 10, b = 20;
+while (a &gt; b) {
+    System.out.println(&quot;hello&quot;);
+} // CE: unreachable statement (loop body / opening curly brace)
+System.out.println(&quot;hi&quot;);</pre>
+<p>Compiler: 10 &gt; 20 is false. Loop body never gets the chance. Why write such a while? CE unreachable on the curly brace.</p>
+<p>He compiles all six. Summary:</p>
+<p>Same unreachability problem for every loop. Take all six.</p>
+<h3>[33:26] Note 1 — every `final` variable is replaced at compile time</h3>
+<p>Board heading: note.</p>
+<p>Every final variable will be replaced by the value at compile time only.</p>
+<pre class='code'>final int a = 10;
+int b = 20;
+System.out.println(a);
+System.out.println(b);</pre>
+<p>a is always 10 — no change at runtime — why wait until runtime? After compilation those two lines become:</p>
+<pre class='code'>System.out.println(10);
+System.out.println(b);</pre>
+<p>b is a normal variable. Its value is not always 20. Compiler does not know b’s value, so b stays as b until runtime.</p>
+<p>Board:</p>
+<p>If it is a normal variable, its value will be considered only at run time. If it is a final variable, its value will be considered at compile time.</p>
+<h3>[35:48] Note 2 — compile-time constant operations</h3>
+<p>If every argument is a final variable (compile-time constant), then that operation should be performed at compile time only.</p>
+<pre class='code'>final int a = 10, b = 20;
+int c = 20;
+System.out.println(a + b);
+System.out.println(a + c);
+System.out.println(a &lt; b);
+System.out.println(a &lt; c);</pre>
+<p>After compilation:</p>
+<pre class='code'>System.out.println(30);
+System.out.println(10 + c);
+System.out.println(true);
+System.out.println(10 &lt; c);</pre>
+<ul><li>a + b — both final, values fixed → 30 at compile time. No need to wait for runtime.</li></ul>
+<ul><li>a + c — a becomes 10, but c is normal → 10 + c stays for runtime.</li></ul>
+<ul><li>a &lt; b — both final → 10 &lt; 20 → true at compile time.</li></ul>
+<ul><li>a &lt; c — c not replaced → 10 &lt; c.</li></ul>
+<p>This is why final int a = 10, b = 20; while (a &lt; b) is treated as while (true).</p>
+<h3>[43:37] `do-while` — body at least once</h3>
+<p>Board heading: do while.</p>
+<p>Do not say “do is the difference.” Real difference:</p>
+<p>In a normal while, the body may execute zero times. Sometimes the requirement is: body must execute at least once. Then go for `do-while`.</p>
+<p>Syntax — first execute the body, then check the condition:</p>
+<p>do {
+    // loop body
+} while (b);</p>
+<p>b should be boolean type. The semicolon after `while (b)` is mandatory in Java. In C++ he says the semicolon is optional; in Java it is mandatory.</p>
+<p>Flow: execute body → check b → if true, execute again → if false, stop. In any case the body runs at least once.</p>
+<p>Board:</p>
+<p>If we want to execute loop body at least once then we should go for do-while.</p>
+<h3>[47:48] `do-while` curly braces</h3>
+<p>Curly braces are optional everywhere except `switch`. Without braces, between do and while we can take only one statement, which should not be declarative.</p>
+<p>do
+    System.out.println(&quot;hello&quot;);
+while (true); // valid — one non-declarative statement</p>
+<p>do
+    ;
+while (true); // valid — semicolon is a valid Java statement</p>
+<p>do
+    int x = 10;
+while (true); // CE: declarative statement without curly braces</p>
+<p>do {
+    int x = 10;
+} while (true); // valid</p>
+<p>do
+while (true); // CE: between do and while, body is missing</p>
+<p>Loop means the body is required to execute multiple times. If there is nobody, what is the need of taking the loop? At least a semicolon is required as the body.</p>
+<p>Board:</p>
+<p>Curly braces are optional. Without curly braces we can take only one statement between do and while, which should not be declarative statement.</p>
+<h3>[53:03] The case 99% of people call invalid — it is valid</h3>
+<p>He writes this (multiple “mistakes” people think they see):</p>
+<pre class='code'>do
+    while (true)
+        System.out.println(&quot;hello&quot;);
+while (false);</pre>
+<p>Classroom: invalid? Yes they say invalid. Alleged mistakes:</p>
+<ol><li>Between do and while we must take one statement — they think there is no statement.</li></ol>
+<ol><li>After while, semicolon is mandatory — they think the inner while (true) is missing it.</li></ol>
+<p>Pakka valid. Don&#x27;t keep any doubt. He rewrites the same code with line breaks:</p>
+<pre class='code'>do
+    while (true)
+        System.out.println(&quot;hello&quot;);
+while (false);</pre>
+<p>“Between do and while only one statement is allowed but you are taking two statements?” Physically it looks like two lines. Logically it is a single `while` statement.</p>
+<p>try / catch / finally analogy: one lakh lines in try, one lakh in catch, one lakh in finally — physically three lakh lines, logically one try-catch-finally statement. Java counts logical statements, not physical lines.</p>
+<p>Here the statement between do and the outer while is one while statement (while (true) System.out.println(&quot;hello&quot;);). SOP is part of that while. You can even write it in a single line.</p>
+<p>Second doubt: while (true) runs infinite times, so the outer while (false) becomes unreachable?</p>
+<p>No. You have already entered the do. First half of do-while is reachable, so the total syntax is reachable. Compiler does not split “first half reachable / second half not.” Statement-level check: we entered do already → no CE.</p>
+<p>He compiles Test.java — compiles fine (it takes a moment; that does not mean invalid). java Test — `hello` infinite times.</p>
+<p>If he shows this code to 100 people, 99% feel compile error. Happily valid.</p>
+<p>Take it in this style first, then rewrite in the other style — valid syntax only.</p>
+<h3>[1:00:59] Unreachability in `do-while` — six cases</h3>
+<p>Same six shapes. Decide valid vs invalid. Difference from `while`: body always runs once, so `do { } while (false)` is valid.</p>
+<p>Case 1 — `while (true)` then `hi`</p>
+<p>do {
+    System.out.println(&quot;hello&quot;);
+} while (true);
+System.out.println(&quot;hi&quot;); // CE: unreachable statement</p>
+<p>Invalid. It is true → keep executing hello → hi never gets the chance.</p>
+<p>Case 2 — `while (false)` then `hi`</p>
+<pre class='code'>do {
+    System.out.println(&quot;hello&quot;);
+} while (false);
+System.out.println(&quot;hi&quot;);</pre>
+<p>Valid. Body executes at least once → print hello → condition false → stop → hi. Output: `hello` followed by `hi`.</p>
+<p>This is the contrast with while (false), which was CE.</p>
+<p>Case 3 — normal `a &lt; b`</p>
+<pre class='code'>int a = 10, b = 20;
+do {
+    System.out.println(&quot;hello&quot;);
+} while (a &lt; b);
+System.out.println(&quot;hi&quot;);</pre>
+<p>Valid. Compiler does not know true/false (normal variables). At runtime true → infinite `hello`. Compiler cannot see the unreachability of hi; JVM is not responsible to check unreachability.</p>
+<p>Case 4 — normal `a &gt; b`</p>
+<pre class='code'>int a = 10, b = 20;
+do {
+    System.out.println(&quot;hello&quot;);
+} while (a &gt; b);
+System.out.println(&quot;hi&quot;);</pre>
+<p>Valid. First hello, then false, then hi. Output: `hello` followed by `hi`.</p>
+<p>Case 5 — `final` `a &lt; b`</p>
+<p>final int a = 10, b = 20;
+do {
+    System.out.println(&quot;hello&quot;);
+} while (a &lt; b);
+System.out.println(&quot;hi&quot;); // CE: unreachable statement</p>
+<p>Compiler knows it is true (infinite loop) → hi never gets the chance → CE.</p>
+<p>Case 6 — `final` `a &gt; b`</p>
+<pre class='code'>final int a = 10, b = 20;
+do {
+    System.out.println(&quot;hello&quot;);
+} while (a &gt; b);
+System.out.println(&quot;hi&quot;);</pre>
+<p>Valid. Compiler knows false, but do-while still runs the body once, then hi. Every statement is reachable. Output: `hello` followed by `hi`.</p>
+<p>He compiles and runs:</p>
+<p>If an unreachable statement is there → compile error. Remove all unreachable statements → valid.</p>
+<h3>[1:11:14] Close</h3>
+<p>That&#x27;s all for while and do-while. Take clearly all these loopholes. Unreachability is a problem in every loop — you have to identify it.</p>
+<p>Next video: for and for-each.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 27 of 203</td></tr>
+<tr><td>Series</td><td>Flow-Control · Part 4</td></tr>
+<tr><td>Topic</td><td>Iterative statements: while, do-while</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 12m 39s</td></tr>
+<tr><td>Video ID</td><td>dd9Epay1y6g</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=dd9Epay1y6g</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Condition</th><th>Valid?</th></tr>
+<tr><td>1</td><td>while (true) then a statement after the loop</td><td>invalid</td></tr>
+<tr><td>2</td><td>while (false)</td><td>invalid</td></tr>
+<tr><td>3</td><td>normal int a, b and a &lt; b</td><td>valid</td></tr>
+<tr><td>4</td><td>normal int a, b and a &gt; b</td><td>valid</td></tr>
+<tr><td>5</td><td>final int a, b and a &lt; b</td><td>invalid</td></tr>
+<tr><td>6</td><td>final int a, b and a &gt; b</td><td>invalid</td></tr>
+</table>
+<table>
+<tr><th>Case</th><th>Compile</th><th>Runtime if it compiled</th></tr>
+<tr><td>while (true) + hi after</td><td>CE (hi unreachable)</td><td>—</td></tr>
+<tr><td>while (false)</td><td>CE (body unreachable)</td><td>—</td></tr>
+<tr><td>normal a &lt; b</td><td>valid</td><td>infinite hello</td></tr>
+<tr><td>normal a &gt; b</td><td>valid</td><td>hi</td></tr>
+<tr><td>final a &lt; b</td><td>CE (hi unreachable)</td><td>—</td></tr>
+<tr><td>final a &gt; b</td><td>CE (body unreachable)</td><td>—</td></tr>
+</table>
+<table>
+<tr><th>Case</th><th>Compile</th><th>Output if valid</th></tr>
+<tr><td>do … while (true) + hi</td><td>CE (hi unreachable)</td><td>—</td></tr>
+<tr><td>do … while (false) + hi</td><td>valid</td><td>hello then hi</td></tr>
+<tr><td>normal a &lt; b</td><td>valid</td><td>infinite hello</td></tr>
+<tr><td>normal a &gt; b</td><td>valid</td><td>hello then hi</td></tr>
+<tr><td>final a &lt; b</td><td>CE (hi unreachable)</td><td>—</td></tr>
+<tr><td>final a &gt; b</td><td>valid</td><td>hello then hi</td></tr>
+</table>
+</body></html>

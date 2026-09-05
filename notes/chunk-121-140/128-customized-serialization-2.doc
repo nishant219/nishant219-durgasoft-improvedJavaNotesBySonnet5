@@ -1,0 +1,322 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>128-customized-serialization-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 128</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Serialization Part- 4||Customized serialization - 2</p>
+<h3>00:06 — Recap: one transient vs multiple transient fields</h3>
+<p>In Video 127 (Part 1), the Account class had only one transient variable — password. Customized serialization recovered that single secured field after default serialization wrote null to the file.</p>
+<p>New requirement in this video: Assume more than one transient (secured) field exists — e.g., password and ATM card pinNumber. Both must remain transient (never written to the file in plain form), yet the receiver must get the original values back after deserialization.</p>
+<p>Core question Durga Sir poses: If more than one transient variable is present, how do we handle customized serialization for all of them?</p>
+<p>This video uses almost the same example as Part 1 — the only extra piece is the additional secured field (pinNumber). Focus on understanding the flow, not memorizing variable names.</p>
+<h3>01:11 — Problem setup: Account with username, password, and pin</h3>
+<pre class='code'>class Account implements Serializable {
+    String username = &quot;Durga&quot;;
+    transient String password = &quot;Anushka&quot;;   // secured — must not appear in file as-is
+    transient int pinNumber = 1234;          // secured — must not appear in file as-is
+}</pre>
+<p>Field count: 3 fields total — username, password, pinNumber.</p>
+<p>Secured fields: password and pinNumber — you should not write these anywhere in plain text during serialization.</p>
+<p>Normal field: username — serialized by default (no transient).</p>
+<p>Create and print before serialization:</p>
+<p>Account a1 = new Account();
+System.out.println(a1.username + &quot;...&quot; + a1.password + &quot;...&quot; + a1.pinNumber);
+// Output: Durga...Anushka...1234</p>
+<h3>04:11 — Default serialization behavior (without customized methods)</h3>
+<pre class='code'>FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+ObjectOutputStream oos = new ObjectOutputStream(fos);
+oos.writeObject(a1);</pre>
+<p>What goes into the file with default serialization only:</p>
+<p>Requirement: The receiver should get original values (Anushka, 1234) even though both secured fields are transient. That is exactly what customized serialization achieves.</p>
+<h3>04:52 — JVM checks for `writeObject` in Account class</h3>
+<p>When oos.writeObject(a1) is called:</p>
+<ol><li>JVM checks: does Account class contain a writeObject method?</li></ol>
+<ol><li>Yes → JVM is happy — programmer is doing customized serialization.</li></ol>
+<ol><li>JVM automatically executes writeObject on the Account object (never called by programmer directly).</li></ol>
+<p>The ObjectOutputStream (oos) passed as the argument to writeObject is the same stream pointing to the file — so anything written inside writeObject goes to the same .ser file.</p>
+<h3>05:05 — Full `writeObject` implementation (serialization side)</h3>
+<pre class='code'>private void writeObject(ObjectOutputStream oos) throws Exception {
+    // Step 1: default serialization
+    oos.defaultWriteObject();
+
+    // Step 2: extra work — encrypt and write password manually
+    String ePassword = &quot;123&quot; + password;   // &quot;123&quot; + &quot;Anushka&quot; = &quot;123Anushka&quot;
+    oos.writeObject(ePassword);            // String is an object → writeObject
+
+    // Step 3: extra work — encrypt and write pin manually
+    int ePin = 4444 + pinNumber;           // 4444 + 1234 = 5678
+    oos.writeInt(ePin);                    // int is primitive → writeInt
+}</pre>
+<p>Step-by-step breakdown:</p>
+<h4>Step 1 — `oos.defaultWriteObject()`</h4>
+<p>Performs default serialization for all non-transient fields and writes default values for transient fields.</p>
+<p>After this line, the file contains:</p>
+<ul><li>username = Durga</li></ul>
+<ul><li>password = null (transient default)</li></ul>
+<ul><li>pinNumber = 0 (transient default)</li></ul>
+<p>Highlight this line: oos.defaultWriteObject(); — default serialization inside the custom hook.</p>
+<h4>Step 2 — Encrypt and write password</h4>
+<p>String ePassword = &quot;123&quot; + password;   // prepend &quot;123&quot; as simple encryption
+oos.writeObject(ePassword);            // writes &quot;123Anushka&quot; as a separate object in stream</p>
+<p>Encryption rule (same as Video 127): prepend &quot;123&quot; to the original password.</p>
+<h4>Step 3 — Encrypt and write pin number</h4>
+<p>int ePin = 4444 + pinNumber;   // add 4444 to original pin as simple encryption
+oos.writeInt(ePin);            // writes 5678 (4444 + 1234) to stream</p>
+<p>Encryption rule for pin: add 4444 to the original pin value.</p>
+<p>Important: Password uses writeObject (String is an object). Pin uses writeInt (int is a primitive). This distinction is critical — covered again at end of video.</p>
+<p>File contents after complete `writeObject`:</p>
+<ol><li>Default-serialized Account state (username=Durga, password=null, pinNumber=0 in default part)</li></ol>
+<ol><li>Encrypted password object: &quot;123Anushka&quot;</li></ol>
+<ol><li>Encrypted pin primitive: 5678</li></ol>
+<h3>09:55 — Serialization complete; move to deserialization</h3>
+<p>After writeObject finishes, serialization is done. Deserialization side uses readObject.</p>
+<h3>10:06 — Deserialization setup</h3>
+<pre class='code'>FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+ObjectInputStream ois = new ObjectInputStream(fis);
+Account a2 = (Account) ois.readObject();</pre>
+<p>When ois.readObject() is called for Account:</p>
+<ol><li>JVM checks: does Account class contain a readObject method?</li></ol>
+<ol><li>Yes → JVM automatically executes readObject.</li></ol>
+<ol><li>Programmer never calls readObject directly — JVM invokes it as a callback.</li></ol>
+<h3>10:55 — Full `readObject` implementation (deserialization side)</h3>
+<pre class='code'>private void readObject(ObjectInputStream ois) throws Exception {
+    // Step 1: default deserialization
+    ois.defaultReadObject();
+
+    // Step 2: read encrypted password (must match write order — password was written FIRST)
+    String ePassword = (String) ois.readObject();
+
+    // Step 3: decrypt password and assign to original field
+    password = ePassword.substring(3);   // remove &quot;123&quot; prefix → &quot;Anushka&quot;
+
+    // Step 4: read encrypted pin (written SECOND — read SECOND)
+    int ePin = ois.readInt();
+
+    // Step 5: decrypt pin and assign to original field
+    pinNumber = ePin - 4444;             // 5678 - 4444 = 1234
+}</pre>
+<p>Step-by-step breakdown:</p>
+<h4>Step 1 — `ois.defaultReadObject()`</h4>
+<p>Performs default deserialization.</p>
+<p>After this line, a2 object state:</p>
+<ul><li>username = Durga</li></ul>
+<ul><li>password = null</li></ul>
+<ul><li>pinNumber = 0</li></ul>
+<p>Highlight this line: ois.defaultReadObject(); — default deserialization inside the custom hook.</p>
+<h4>Step 2 &amp; 3 — Read and decrypt password</h4>
+<p>String ePassword = (String) ois.readObject();   // reads &quot;123Anushka&quot;
+password = ePassword.substring(3);               // index 3 to end → &quot;Anushka&quot;</p>
+<p>substring(3) removes characters at index 0, 1, 2 (&quot;123&quot;) and returns from index 3 onward.</p>
+<h4>Step 4 &amp; 5 — Read and decrypt pin</h4>
+<p>int ePin = ois.readInt();       // reads 5678
+pinNumber = ePin - 4444;        // 5678 - 4444 = 1234</p>
+<p>Reverse the encryption: subtract the same 4444 that was added during serialization.</p>
+<h3>12:45 — CRITICAL RULE: Read order must match write order</h3>
+<p>During serialization (writeObject), extra data was written in this order:</p>
+<ol><li>Encrypted password (oos.writeObject(ePassword)) — first</li></ol>
+<ol><li>Encrypted pin (oos.writeInt(ePin)) — second</li></ol>
+<p>During deserialization (readObject), you must read in the exact same order:</p>
+<ol><li>Read encrypted password — first</li></ol>
+<ol><li>Read encrypted pin — second</li></ol>
+<p>If you swap the read order, the program will fail or produce wrong values. Durga Sir emphasizes: &quot;In which order we have to read it, make sure this one is very important.&quot;</p>
+<h3>15:35 — Final output after customized serialization</h3>
+<p>System.out.println(a2.username + &quot;...&quot; + a2.password + &quot;...&quot; + a2.pinNumber);
+// Output: Durga...Anushka...1234</p>
+<p>Comparison:</p>
+<p>No loss of information. Before serialization and after deserialization, the account object provides the same complete information.</p>
+<p>This is the entire purpose of customized serialization — recover data that would otherwise be lost because of the transient keyword.</p>
+<h3>16:18 — Live demo: `CustSerializeDemo2.java`</h3>
+<p>Durga Sir executes the program on screen.</p>
+<p>Complete program:</p>
+<pre class='code'>import java.io.*;
+
+class Account implements Serializable {
+    String username = &quot;Durga&quot;;
+    transient String password = &quot;Anushka&quot;;
+    transient int pinNumber = 1234;
+
+    private void writeObject(ObjectOutputStream oos) throws Exception {
+        oos.defaultWriteObject();              // default serialization
+        String ePassword = &quot;123&quot; + password;   // prepare encrypted password
+        int ePin = 4444 + pinNumber;           // prepare encrypted pin
+        oos.writeObject(ePassword);            // write encrypted password
+        oos.writeInt(ePin);                    // write encrypted pin
+    }
+
+    private void readObject(ObjectInputStream ois) throws Exception {
+        ois.defaultReadObject();               // default deserialization
+        String ePassword = (String) ois.readObject();  // read encrypted password
+        password = ePassword.substring(3);     // assign decrypted password
+        int ePin = ois.readInt();              // read encrypted pin
+        pinNumber = ePin - 4444;               // assign decrypted pin
+    }
+}
+
+class CustSerializeDemo2 {
+    public static void main(String[] args) throws Exception {
+        Account a1 = new Account();
+        System.out.println(a1.username + &quot;...&quot; + a1.password + &quot;...&quot; + a1.pinNumber);
+        // 1st print: Durga...Anushka...1234
+
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(a1);
+
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Account a2 = (Account) ois.readObject();
+        System.out.println(a2.username + &quot;...&quot; + a2.password + &quot;...&quot; + a2.pinNumber);
+        // 2nd print (with customized methods): Durga...Anushka...1234
+    }
+}</pre>
+<h3>17:15 — Experiment: comment out both customized methods</h3>
+<p>If writeObject and readObject are commented out, behavior reverts to default serialization:</p>
+<pre class='code'>// private void writeObject(ObjectOutputStream oos) throws Exception { ... }
+// private void readObject(ObjectInputStream ois) throws Exception { ... }</pre>
+<p>Output:</p>
+<p>Durga...Anushka...1234    ← 1st print (before serialization — in-memory object)
+Durga...null...0          ← 2nd print (after deserialization — password=null, pin=0)</p>
+<p>Both secured fields are lost: password becomes null, pinNumber becomes 0.</p>
+<p>When comments are removed (customized methods active):</p>
+<p>Durga...Anushka...1234    ← 1st print
+Durga...Anushka...1234    ← 2nd print — no loss of information</p>
+<p>Durga Sir confirms on screen: first run without methods → Durga null 0; with methods restored → Durga Anushka 1234 both times.</p>
+<h3>18:16 — Purpose recap: why customized serialization?</h3>
+<p>How this works is not magic — it is customized serialization.</p>
+<p>What customized serialization lets you do:</p>
+<ul><li>Declare sensitive fields as transient (so default serialization does not expose real values in the file).</li></ul>
+<ul><li>Still recover the original values at deserialization time by doing extra work on both sender and receiver sides.</li></ul>
+<p>Part 1 (Video 127): One transient field (password).</p>
+<p>Part 2 (this video): Multiple transient fields (password + pinNumber) — same pattern, repeated for each secured field, with correct read/write order.</p>
+<h3>20:53 — Second example on board (reinforcement)</h3>
+<p>Durga Sir writes a second Account example on the board with the same structure:</p>
+<ul><li>String username = &quot;Durga&quot;</li></ul>
+<ul><li>transient String password (any name/value — e.g., Anushka)</li></ul>
+<ul><li>transient int pinNumber</li></ul>
+<p>Same writeObject / readObject logic. The concept does not change — only the number of secured fields increases.</p>
+<h3>21:01 — How JVM invokes `writeObject`: argument and target object</h3>
+<p>When oos.writeObject(a1) is called from main:</p>
+<ol><li>The ObjectOutputStream (oos) passed to writeObject is the same stream that points to the file.</li></ol>
+<ol><li>JVM automatically calls writeObject on the Account object (a1) — because writeObject is defined in the Account class.</li></ol>
+<ol><li>The stream argument (oos) is forwarded by JVM as the method parameter.</li></ol>
+<p>Rule: writeObject and readObject must be defined in the corresponding class — the class of the object being serialized (Account), not in the demo/main class.</p>
+<p>Access modifier: Methods should be `private`. JVM can invoke private methods from outside the class; the programmer cannot. This is required for the callback mechanism to work.</p>
+<h3>21:56 — Order of operations inside `writeObject`</h3>
+<p>Recommended order:</p>
+<ol><li>First perform default serialization (defaultWriteObject).</li></ol>
+<ol><li>Then do extra manual work (encrypt and write secured fields).</li></ol>
+<p>Durga Sir notes: changing this order may or may not cause issues — safest and standard approach is default first, extra work second. Always follow the pattern shown.</p>
+<h3>23:55 — Wrapper / stream usage note</h3>
+<p>When writing encrypted data manually, use the same ObjectOutputStream instance (oos) that was passed into writeObject. Do not create a new stream. Whatever you write via oos.writeObject(...) or oos.writeInt(...) appends to the same serialized file stream.</p>
+<h3>26:18 — Most difficult concept in serialization</h3>
+<p>Durga Sir states clearly:</p>
+<p>The most difficult concept in the entire serialization unit is customized serialization only.</p>
+<p>By this point (Videos 127 + 128), students should feel that this topic demands the most careful attention in the whole serialization chapter.</p>
+<h3>27:23 — String vs int: `writeObject` vs `writeInt`</h3>
+<p>Critical distinction for OCJP:</p>
+<p>Rule: For every primitive type, ObjectOutputStream / ObjectInputStream provide dedicated writeXxx / readXxx methods. For objects (like String), use writeObject / readObject.</p>
+<p>That is why encrypted password uses writeObject (String is an object) and encrypted pin uses writeInt (int is a primitive).</p>
+<h3>28:01 — Video conclusion (Part 2 of customized serialization)</h3>
+<p>Topics covered in this video:</p>
+<ol><li>Handling more than one transient (secured) field in customized serialization.</li></ol>
+<ol><li>Extended Account example: username + transient password + transient pinNumber.</li></ol>
+<ol><li>writeObject: defaultWriteObject() → encrypt password → writeObject(ePassword) → encrypt pin → writeInt(ePin).</li></ol>
+<ol><li>readObject: defaultReadObject() → read password → decrypt → read pin → decrypt.</li></ol>
+<ol><li>Read order must match write order — compulsory rule.</li></ol>
+<ol><li>String (object) vs int (primitive) — different stream methods.</li></ol>
+<ol><li>Live demo confirms: without customized methods → Durga...null...0; with methods → Durga...Anushka...1234.</li></ol>
+<ol><li>Customized serialization is the hardest topic in the serialization unit.</li></ol>
+<p>Connection to Video 127: Part 1 introduced the concept with one transient field. Part 2 extends the same pattern to multiple transient fields — the mechanism is identical, just repeated for each secured field with strict ordering.</p>
+<h2>Summary tables</h2>
+<h3>Default vs customized serialization (multiple transient fields)</h3>
+<h3>File contents during customized serialization</h3>
+<h3>Encryption / decryption mapping</h3>
+<h3>Part 1 vs Part 2 comparison</h3>
+<h2>Metadata</h2>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>username</td><td>Durga</td></tr>
+<tr><td>password</td><td>Anushka</td></tr>
+<tr><td>pinNumber</td><td>1234</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Value in file</th><th>Reason</th></tr>
+<tr><td>username</td><td>Durga</td><td>Normal field — serialized as-is</td></tr>
+<tr><td>password</td><td>null</td><td>transient → JVM ignores original value, writes default (null for String)</td></tr>
+<tr><td>pinNumber</td><td>0</td><td>transient → JVM ignores original value, writes default (0 for int)</td></tr>
+</table>
+<table>
+<tr><th>Write order (serialization)</th><th>Read order (deserialization)</th></tr>
+<tr><td>1. oos.writeObject(ePassword)</td><td>1. (String) ois.readObject()</td></tr>
+<tr><td>2. oos.writeInt(ePin)</td><td>2. ois.readInt()</td></tr>
+</table>
+<table>
+<tr><th>Phase</th><th>username</th><th>password</th><th>pinNumber</th></tr>
+<tr><td>Before serialization (a1)</td><td>Durga</td><td>Anushka</td><td>1234</td></tr>
+<tr><td>After deserialization (a2) — with customized methods</td><td>Durga</td><td>Anushka</td><td>1234</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>Category</th><th>Write method</th><th>Read method</th></tr>
+<tr><td>String</td><td>Object (reference type)</td><td>oos.writeObject(str)</td><td>(String) ois.readObject()</td></tr>
+<tr><td>int</td><td>Primitive</td><td>oos.writeInt(n)</td><td>ois.readInt()</td></tr>
+<tr><td>float</td><td>Primitive</td><td>oos.writeFloat(f)</td><td>ois.readFloat()</td></tr>
+<tr><td>double</td><td>Primitive</td><td>oos.writeDouble(d)</td><td>ois.readDouble()</td></tr>
+<tr><td>boolean</td><td>Primitive</td><td>oos.writeBoolean(b)</td><td>ois.readBoolean()</td></tr>
+<tr><td>long</td><td>Primitive</td><td>oos.writeLong(l)</td><td>ois.readLong()</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>1st print (before)</th><th>2nd print (after deserialize)</th></tr>
+<tr><td>Default serialization (no custom methods)</td><td>Durga...Anushka...1234</td><td>Durga...null...0</td></tr>
+<tr><td>Customized serialization (with custom methods)</td><td>Durga...Anushka...1234</td><td>Durga...Anushka...1234</td></tr>
+</table>
+<table>
+<tr><th>Data in stream</th><th>Value</th><th>How written</th></tr>
+<tr><td>Default Account state</td><td>username=Durga, password=null, pin=0</td><td>oos.defaultWriteObject()</td></tr>
+<tr><td>Encrypted password</td><td>&quot;123Anushka&quot;</td><td>oos.writeObject(ePassword)</td></tr>
+<tr><td>Encrypted pin</td><td>5678</td><td>oos.writeInt(ePin)</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Encryption (write)</th><th>Decryption (read)</th></tr>
+<tr><td>password (String)</td><td>&quot;123&quot; + password</td><td>ePassword.substring(3)</td></tr>
+<tr><td>pinNumber (int)</td><td>4444 + pinNumber</td><td>ePin - 4444</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>Video 127 (Part 1)</th><th>Video 128 (Part 2)</th></tr>
+<tr><td>Transient fields</td><td>1 (password)</td><td>2 (password, pinNumber)</td></tr>
+<tr><td>Extra writes in writeObject</td><td>1 (writeObject for password)</td><td>2 (writeObject + writeInt)</td></tr>
+<tr><td>Extra reads in readObject</td><td>1 (readObject for password)</td><td>2 (readObject + readInt)</td></tr>
+<tr><td>Read order rule</td><td>N/A (only one)</td><td>Critical — must match write order</td></tr>
+<tr><td>Core mechanism</td><td>Same</td><td>Same — extended</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Position</td><td>128 of 203</td></tr>
+<tr><td>Series</td><td>Serialization</td></tr>
+<tr><td>Topic</td><td>Customized serialization — Part 2 (multiple transient fields, writeInt/readInt, read order)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>28m 27s</td></tr>
+<tr><td>Video ID</td><td>lVIl3wx67ds</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=lVIl3wx67ds</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Prerequisites</td><td>Video 127 — Customized serialization Part 1</td></tr>
+<tr><td>Java code block count</td><td>8</td></tr>
+</table>
+</body></html>

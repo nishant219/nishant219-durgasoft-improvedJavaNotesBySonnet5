@@ -1,0 +1,356 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>030-source-file-structure</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 030 — Java source file structure</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-1 || Java Source File Structure</p>
+<p>Source: real YouTube auto-captions (030-O3kDqVEbfMk.txt). ASR noise is decoded in place — keep subing = board heading, War / wired = void, Paka = pakka / definitely, list often = ArrayList, SCP / SJP = SCJP, doft = DurgaSoft, sag / Sagar = S.R. Nagar. He sets PATH to JDK 1.6 for this demo.</p>
+<h2>What this lecture covers</h2>
+<p>New topic: Declarations and Access Modifiers. Four-line agenda, but he says about 20 hours:</p>
+<ol><li>Java source file structure — 5 to 6 hours</li></ol>
+<ol><li>Class level modifiers — 4 to 5 hours</li></ol>
+<ol><li>Member level modifiers — 4 to 5 hours</li></ol>
+<ol><li>Interfaces — 4 to 5 hours</li></ol>
+<p>This video is source-file structure, then he introduces import (fully qualified name vs short name). Do not underestimate four lines of agenda.</p>
+<h2>Detailed notes</h2>
+<h3>[00:04] Agenda — board heading</h3>
+<p>Board heading: declarations and access modifiers.</p>
+<p>Subtopics he writes:</p>
+<ol><li>Java source file structure</li></ol>
+<ol><li>Class level modifiers</li></ol>
+<ol><li>Member level modifiers</li></ol>
+<ol><li>Interfaces</li></ol>
+<h3>[02:14] How many classes in a Java program?</h3>
+<p>Board heading: Java source file structure.</p>
+<p>A Java program can contain how many classes — only one, or any number? Any number of classes.</p>
+<pre class='code'>class A {
+}
+
+class B {
+}
+
+class C {
+}</pre>
+<p>If multiple classes are there, which name do we give the source file?</p>
+<p>Some people feel: the class which contains main — give that class name as the file name. Assume main is inside B, so B.java.</p>
+<p>Simple conclusion: the class which contains `main` and the program name are nowhere related. There is no link at all.</p>
+<p>Any name is fine:</p>
+<pre class='code'>// save as A.java   — valid
+// save as B.java   — valid
+// save as C.java   — valid
+// save as D.java   — valid  (even though there is no class D)</pre>
+<p>A Java program can contain any number of classes, and we can use any name for the Java program — but there is a twist.</p>
+<h3>[04:51] At most one public class</h3>
+<p>How many classes can be declared public? At most one — meaning either zero or one.</p>
+<p>If there is a public class, that class name must be the program name. Otherwise compile-time error.</p>
+<p>If there is no public class, any name is fine.</p>
+<p>If B is public, the name of the program should be B.java.</p>
+<h3>[07:30] Live compile — no public class, save as `D.java`</h3>
+<pre class='code'>class A {
+}
+
+class B {
+}
+
+class C {
+}</pre>
+<p>No public class. Save as D.java — valid.</p>
+<pre class='code'>// javac D.java   // compiles fine</pre>
+<p>Now make B public, still saved as D.java:</p>
+<pre class='code'>class A {
+}
+
+public class B {
+}
+
+class C {
+}
+// file: D.java
+// CE: class B is public, should be declared in a file named B.java</pre>
+<p>Compiler is decent: Class B is public; you have to place it inside B.java, not inside D.java.</p>
+<p>File → Save As → B.java. Now:</p>
+<pre class='code'>// javac B.java   // compiles fine</pre>
+<p>If B is already public and you also declare C public:</p>
+<pre class='code'>class A {
+}
+
+public class B {
+}
+
+public class C {
+}
+// file: B.java
+// CE: class C is public, should be declared in a file named C.java</pre>
+<p>B public + file B.java is no violation. The problem is C public while the file is B.java.</p>
+<p>Can we declare more than one class as public? No. More than one public class → compile error.</p>
+<h3>[11:17] Board — three cases</h3>
+<p>A Java program can contain any number of classes but at most one class can be declared as public. If there is a public class then name of the program and name of the public class must be matched otherwise we will get compile time error.</p>
+<pre class='code'>class A {
+}
+
+class B {
+}
+
+class C {
+}</pre>
+<p>Case 1 — no public class: we can use any name; there are no restrictions.</p>
+<pre class='code'>// A.java  B.java  C.java  D.java   — all valid file names</pre>
+<p>Case 2 — `B` is public: compulsory name of the program should be B.java. Any other name:</p>
+<pre class='code'>public class B {
+}
+// saved as anything except B.java
+// CE: class B is public, should be declared in a file named B.java</pre>
+<p>Case 3 — `B` and `C` both public, file is `B.java`: invalid. More than one public class.</p>
+<pre class='code'>public class B {
+}
+
+public class C {
+}
+// file: B.java
+// CE: class C is public, should be declared in a file named C.java</pre>
+<p>B public + B.java is fine; C public + file still B.java is the error.</p>
+<h3>[19:26] Multiple classes, multiple `main`s — name is still not related to `main`</h3>
+<p>Some people still feel: the class which contains main — that class name we have to use for the program. He writes another example to kill that.</p>
+<pre class='code'>class A {
+    public static void main(String[] args) {
+        System.out.println(&quot;A class main&quot;);
+    }
+}
+
+class B {
+    public static void main(String[] args) {
+        System.out.println(&quot;B class main&quot;);
+    }
+}
+
+class C {
+    public static void main(String[] args) {
+        System.out.println(&quot;C class main&quot;);
+    }
+}
+
+class D {
+}</pre>
+<p>A, B, C each have main. D does not. Which name for this program? Any name. He uses D.java — valid, because there is no public class.</p>
+<p>Doubts: this many main methods — how does it compile, and which main runs?</p>
+<h3>[21:50] `javac` compiles a program; `java` runs a class</h3>
+<p>Whenever we compile a Java program, for every class present in that program a separate `.class` file will be generated.</p>
+<p>Four classes → four .class files:</p>
+<pre class='code'>// javac D.java
+// generates: A.class  B.class  C.class  D.class</pre>
+<p>.class file names are based on classes present in the program, not based on the name of the program. The source is D.java, but there is no extra Durga.class. Compiling D.java does not invent a class from the filename.</p>
+<p>`javac` argument = name of the program (source file). `java` argument = class name.</p>
+<p>We compile a Java program (Java source file). We run a Java class, not a program.</p>
+<pre class='code'>// java A
+// prints A class main
+
+// java B
+// prints B class main
+
+// java C
+// prints C class main</pre>
+<p>Whenever we execute a particular class, that class’s `main` method will be executed.</p>
+<p>D has no main:</p>
+<pre class='code'>// java D
+// runtime exception: NoSuchMethodError: main</pre>
+<p>If the corresponding .class file is not there:</p>
+<pre class='code'>// java Durga
+// runtime exception: NoClassDefFoundError: Durga</pre>
+<p>He sets PATH to 1.6 (version-to-version small changes in JVM exception text) and runs the same program: javac D.java → four classes; java A / java B / java C print the matching mains; java D → Exception in thread &quot;main&quot; java.lang.NoSuchMethodError: main; java Durga → NoClassDefFoundError: Durga.</p>
+<h3>[28:45] Example 2 on the board (same program + commands)</h3>
+<pre class='code'>class A {
+    public static void main(String[] args) {
+        System.out.println(&quot;A class main&quot;);
+    }
+}
+
+class B {
+    public static void main(String[] args) {
+        System.out.println(&quot;B class main&quot;);
+    }
+}
+
+class C {
+    public static void main(String[] args) {
+        System.out.println(&quot;C class main&quot;);
+    }
+}
+
+class D {
+}
+// javac D.java
+// A.class  B.class  C.class  D.class
+
+// java A   // A class main
+// java B   // B class main
+// java C   // C class main
+// java D   // runtime: NoSuchMethodError: main
+// java Durga  // runtime: NoClassDefFoundError: Durga</pre>
+<p>There is no such rule as “use the class that contains main as the file name.”</p>
+<h3>[32:13] Conclusions (from this example)</h3>
+<p>Board heading: conclusions.</p>
+<p>1. Whenever we are compiling a Java program, for every class present in that program a separate `.class` file will be generated. This example: four classes → four class files.</p>
+<p>2. We can compile a Java program (Java source file), but we can run a Java .class file.</p>
+<p>3. Whenever we are executing a Java class, the corresponding class main method will be executed. If the class doesn’t contain main:</p>
+<pre class='code'>// java D
+// runtime exception: NoSuchMethodError: main</pre>
+<p>4. If the corresponding .class file is not available:</p>
+<pre class='code'>// java Durga
+// runtime exception: NoClassDefFoundError: Durga</pre>
+<p>If a Java program contains several classes and every class contains main, this is the behaviour.</p>
+<h3>[37:25] Not recommended: many classes in one source file</h3>
+<p>Even though we can declare multiple classes in a single program, it is not good programming practice. Readability and maintainability go down.</p>
+<p>Story: an application needs ~250 classes, spread across three files:</p>
+<pre class='code'>// File1.java  — 150 classes
+// File2.java  —  75 classes
+// File3.java  —  25 classes
+// total 250</pre>
+<p>Worst kind of programming practice. Which file contains which class is always a problem.</p>
+<pre class='code'>Account a = new Account();
+a.getInfo();</pre>
+<p>You want to see how getInfo() is implemented. Search File1.java for half an hour — no Account. Open File2.java — not there. Open File3.java — finally:</p>
+<pre class='code'>class Account {
+    void getInfo() {
+        // ...
+    }
+}</pre>
+<p>Later:</p>
+<pre class='code'>Loan l = new Loan();
+l.getInterestRate();</pre>
+<p>Where is Loan? Check file 1, file 2, finally file 3:</p>
+<pre class='code'>class Loan {
+    void getInterestRate() {
+        // ...
+    }
+}</pre>
+<p>Tomorrow you want to change loan functionality — first identify where Loan is. Big problem.</p>
+<p>Fix: for every class, take a separate source file. Per source file only one class; name of the class and name of the program must match.</p>
+<pre class='code'>// Account.java
+class Account {
+}
+// Loan.java
+class Loan {
+}
+// Customer.java
+class Customer {
+}</pre>
+<p>Where is Account? Inside Account.java. Loan → Loan.java. Customer → Customer.java. Same idea as String inside String.java, Object inside Object.java.</p>
+<p>Main advantage: readability and maintainability of the code will be improved.</p>
+<p>Board:</p>
+<p>It is not recommended to declare multiple classes in a single source file. It is highly recommended to declare only one class per source file and the name of the program we have to keep same as class name. The main advantage of this approach is readability and maintainability of the code will be improved.</p>
+<h3>[45:46] Why `ArrayList` needs a package name — compiler is innocent</h3>
+<p>He will spend about two hours on this concept. He does not name it at the beginning.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+    }
+}</pre>
+<p>Will this compile? No. Compiler: you are using some class named ArrayList — where is it available? First let me know.</p>
+<pre class='code'>// javac Test.java
+// CE: cannot find symbol
+//   symbol: class ArrayList
+//   location: class Test</pre>
+<p>Doubt on the compiler: if the compiler really doesn’t know ArrayList, how did it identify the symbol as class ArrayList?</p>
+<p>Maybe the compiler is acting — we create objects for classes, so it treats ArrayList as a class. Cross-check: compiler really doesn’t know ArrayList.</p>
+<p>He compiles that Test.java — same CE: cannot find symbol, class ArrayList, location class Test.</p>
+<p>Use it like a variable (like System.out.println(x)):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(ArrayList);
+    }
+}
+// CE: cannot find symbol
+//   symbol: variable ArrayList</pre>
+<p>Use it like a method: cannot find symbol method ArrayList. Use it as a class: cannot find symbol class ArrayList. Use it as a variable: cannot find symbol variable ArrayList.</p>
+<p>Conclusion: the compiler really doesn’t know about `ArrayList`. It is asking very innocently: you are using class ArrayList — where is it available? Please let me know.</p>
+<h3>[50:40] Fully qualified name — SCJP training analogy</h3>
+<p>Internet forum: “Where is SCJP training available?”</p>
+<p>Answer path he builds:</p>
+<p>World → Asia → India → Telangana (TG) → Hyderabad → S.R. Nagar → DurgaSoft</p>
+<p>If you start from the world, no further “where is that?” questions. (Then the person says thanks — not possible to attend, I’m from Afghanistan.)</p>
+<p>This type of information is a fully qualified name.</p>
+<p>Compiler: you are using class ArrayList — where is it? Convey: do you know the java package? Yes. Subpackage util? Yes. In that, ArrayList — that is what I’m using.</p>
+<p>Instead of the short name, use the fully qualified name:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        java.util.ArrayList l = new java.util.ArrayList();
+    }
+}
+// compiles</pre>
+<p>Without FQN:</p>
+<p>ArrayList l = new ArrayList();
+// CE: cannot find symbol
+//   symbol: class ArrayList</p>
+<p>With FQN the problem is solved.</p>
+<h3>[55:50] Problem with FQN every time — Veera Subba Prasad Sastri</h3>
+<p>One student named Veera Subba Prasad Sastri. If every sentence starts with that full name, a listener hears only that name — it dominates the conversation. Qualification? MCA. Native place? Warangal. Always the long name.</p>
+<p>Problem with using the fully qualified name every time: it increases length of the code and reduces readability.</p>
+<p>If you use java.util.ArrayList 100 times, you type it 100 times.</p>
+<p>Contract: next time “Sastri” means you. Conversation becomes more readable.</p>
+<p>That arrangement for the fully qualified name is the import statement.</p>
+<pre class='code'>import java.util.ArrayList;</pre>
+<p>In the program, wherever ArrayList is used, it means java.util.ArrayList. Write import once; afterwards use the short name — not required to use FQN every time.</p>
+<p>Import statement acts as the best typing shortcut. Without import, life is horrible — FQN every time, readability down.</p>
+<h3>[59:19] Import statement — board examples</h3>
+<p>Board heading: import statement.</p>
+<p>First program — CE:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+    }
+}
+// CE: cannot find symbol
+//   symbol: class ArrayList
+//   location: class Test</pre>
+<p>Solve by fully qualified name:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        java.util.ArrayList l = new java.util.ArrayList();
+    }
+}</pre>
+<p>Highlight java.util.ArrayList as fully qualified name.</p>
+<p>Board:</p>
+<p>The problem with usage of fully qualified name every time is it increases length of the code and reduces readability.</p>
+<p>Solve by import statement. Whenever we write import, it is not required to use FQN every time — we can use the short name directly.</p>
+<pre class='code'>import java.util.ArrayList;
+
+class Test {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList(); // short name
+    }
+}</pre>
+<p>Highlight ArrayList as short name. Happily compiles.</p>
+<p>Board:</p>
+<p>Hence import statement acts as typing shortcut.</p>
+<p>That’s all for this video. Next session continues import (types, loopholes, static import).</p>
+<p>Next video: 031-import-static-import.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 30 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 1 of 11</td></tr>
+<tr><td>Topic</td><td>Java source file structure; public class vs file name; multiple mains; import as typing shortcut</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 06m 36s</td></tr>
+<tr><td>Video ID</td><td>O3kDqVEbfMk</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=O3kDqVEbfMk</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,385 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>122-filereader</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 122</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: File I/O Part-3 || FileReader || important methods || BufferedWriter</p>
+<p>ASR decode key: file radar / file Rader / file leer → FileReader; Bufford / buffard / Prof → Buffered; typ casting → type casting; CE → checked exception; wi / qu → void; sop → System.out.println; compil → compile error; 10 lakh → 1,000,000 (Indian numbering); 1 CR → 10 million read ops in analogy.</p>
+<h2>Part A — FileReader</h2>
+<h3>00:05 — Introduction: reading after writing</h3>
+<p>Previous session: FileWriter — how to write character data to a file.</p>
+<p>This session: FileReader — how to read character/text data from a file.</p>
+<p>Name rule: FileReader — one word, no space.</p>
+<p>Purpose: Read character data (text) from a file — e.g. &quot;ABC&quot;, &quot;Durga&quot;, any textual content.</p>
+<pre class='code'>// Conceptual
+FileReader fr = new FileReader(&quot;abc.txt&quot;);
+// read character/text data from file</pre>
+<h3>01:25 — FileReader constructors (only 2)</h3>
+<p>No append/override concept for reading — only two constructors.</p>
+<p>Constructor 1 — file name:</p>
+<pre class='code'>FileReader fr = new FileReader(&quot;abc.txt&quot;);</pre>
+<p>Constructor 2 — `File` reference:</p>
+<pre class='code'>File f = new File(&quot;abc.txt&quot;);
+FileReader fr = new FileReader(f);</pre>
+<p>Either pass String file name or existing `File` reference.</p>
+<h3>04:13 — FileReader methods overview</h3>
+<p>For reading → `read` methods.</p>
+<p>Total methods in FileReader class covered: 3 (2 read + 1 close).</p>
+<h3>04:45 — `read()` — no-arg, returns `int` (Unicode value)</h3>
+<p>Sample file content (`abc.txt`): Durga + Software Solutions (ASR garbled as “u r g d software Solutions”).</p>
+<p>Behavior:</p>
+<ul><li>Each call reads next single character from file.</li></ul>
+<ul><li>1st call → &#x27;D&#x27; (Unicode 100)</li></ul>
+<ul><li>2nd call → next char, etc.</li></ul>
+<ul><li>When no next character → returns `-1`</li></ul>
+<p>Return type is `int`, not `char` — returns Unicode numeric value of the character.</p>
+<p>int i = fr.read();
+// 1st call: i == 100  (&#x27;D&#x27;)
+// at EOF:     i == -1</p>
+<p>Loop until `-1`:</p>
+<pre class='code'>int i = fr.read();
+while (i != -1) {
+    System.out.print((char) i);   // type casting mandatory for readable output
+    i = fr.read();
+}</pre>
+<p>Without type casting: prints 100 117 114 ... (Unicode values) — not human-readable.</p>
+<p>Board summary — `int read()`:</p>
+<p>Attempts to read next character from the file and returns its Unicode value (int).</p>
+<p>If next character not available → returns `-1`.</p>
+<p>At printing time → type casting to `char` is compulsory.</p>
+<h3>07:34 — Demo approach 1: character-by-character loop</h3>
+<p>Target: Read all data in abc.txt.</p>
+<pre class='code'>FileReader fr = new FileReader(&quot;abc.txt&quot;);
+int i = fr.read();
+while (i != -1) {
+    System.out.print((char) i);
+    i = fr.read();
+}
+fr.close();</pre>
+<p>Cycle stops when `i == -1` (end of file).</p>
+<h3>12:46 — `read(char[] c)` — read into char array</h3>
+<p>Signature: returns int (count of characters copied, not Unicode of one char).</p>
+<p>Example A — array smaller than file:</p>
+<p>char[] ch = new char[10];      // array size 10
+// file has 1000 characters
+int count = fr.read(ch);       // count == 10 (only 10 copied)</p>
+<p>Example B — array larger than file:</p>
+<p>char[] ch = new char[10000];   // array size 10000
+// file has 1000 characters
+int count = fr.read(ch);       // count == 1000</p>
+<p>Board summary — `int read(char[] c)`:</p>
+<p>Attempts to read enough characters from file into `c`.</p>
+<p>Returns number of characters copied from file into the array.</p>
+<p>Only 2 read methods in FileReader — no third overload.</p>
+<h3>17:32 — Problem: fixed array size (10 vs 10,000)</h3>
+<p>Good practice: Find file length first, then create array of exact size.</p>
+<h3>18:40 — `File.length()` and array sizing</h3>
+<pre class='code'>File f = new File(&quot;abc.txt&quot;);
+char[] ch = new char[(int) f.length()];   // type cast long → int
+FileReader fr = new FileReader(f);
+fr.read(ch);
+
+for (char ch1 : ch) {
+    System.out.println(ch1);
+}</pre>
+<p>Compile issue without cast:</p>
+<p>char[] ch = new char[f.length()];  // ERROR</p>
+<p>Compiler message (board):</p>
+<p>possible loss of precision
+found: long
+required: int</p>
+<p>Reason: Array size must be int; File.length() returns `long`.</p>
+<p>Limitation: This approach works only if character count ≤ `Integer.MAX_VALUE`. If file exceeds int range → use character-by-character read() loop (approach 1).</p>
+<h3>23:29 — Third method: `close()`</h3>
+<p>After read or write → close is highly recommended.</p>
+<p>fr.close();</p>
+<p>FileReader method count: 2 × read + close = 3.</p>
+<h3>24:07 — FileReaderDemo.java (both approaches in one program)</h3>
+<p>Sample `abc.txt` content (board):</p>
+<p>Durga
+Software Solutions
+Hyderabad 38</p>
+<p>Approach 2 — array + enhanced for:</p>
+<pre class='code'>File f = new File(&quot;abc.txt&quot;);
+char[] ch = new char[(int) f.length()];
+FileReader fr = new FileReader(f);
+fr.read(ch);
+for (char ch1 : ch) {
+    System.out.println(ch1);
+}</pre>
+<p>Separator on console: *** (Sir uses stars between approaches)</p>
+<p>Approach 1 — while loop:</p>
+<pre class='code'>FileReader fr1 = new FileReader(&quot;abc.txt&quot;);
+int i = fr1.read();
+while (i != -1) {
+    System.out.print((char) i);
+    i = fr1.read();
+}</pre>
+<p>Compile &amp; run (board):</p>
+<p>&gt; javac FileReaderDemo.java
+&gt; java FileReaderDemo</p>
+<p>Console output (observed):</p>
+<p>Durga
+Software Solutions
+Hyderabad 38
+***
+Durga
+Software Solutions
+Hyderabad 38</p>
+<p>Type casting reminders:</p>
+<ol><li>(int) f.length() for array size</li></ol>
+<ol><li>(char) i when printing from read()</li></ol>
+<h3>31:40 — Recap: one writer + one reader so far</h3>
+<h3>31:51 — Main problem with FileReader</h3>
+<p>Can read only character-by-character, not line-by-line.</p>
+<p>Performance analogy:</p>
+<ul><li>File has 10 lakh (1,000,000) mobile numbers, each 10 digits.</li></ul>
+<ul><li>To check if one number exists → compare digit by digit → 10 `read()` calls per number.</li></ul>
+<ul><li>For 10 lakh numbers → 10 lakh × 10 = 1 crore (10 million) read operations for one lookup.</li></ul>
+<p>Worst programming practice for real tasks that think in lines.</p>
+<p>Need: Read line by line (1st line, 2nd line, …) → `BufferedReader` (later in this video).</p>
+<p>Board note:</p>
+<p>By using FileReader, we can read data character by character, which is not convenient to the programmer.</p>
+<h3>35:28 — FileWriter vs FileReader problems → use Buffered classes</h3>
+<p>Conclusion (underline for exam):</p>
+<p>Usage of FileWriter and FileReader is NOT recommended in production-style code.</p>
+<p>Use BufferedWriter and BufferedReader instead.</p>
+<h2>Part B — BufferedWriter</h2>
+<h3>39:44 — BufferedWriter purpose</h3>
+<p>Purpose: Write character data to file — same job as FileWriter.</p>
+<p>Advantage: No manual `\n` for line breaks — call `newLine()` instead. Platform-specific line separator handled internally.</p>
+<p>(Minor performance buffering exists internally, but Sir emphasizes convenience of `newLine()` over raw performance in this lecture.)</p>
+<pre class='code'>// Conceptual
+BufferedWriter bw = new BufferedWriter(/* Writer argument */);</pre>
+<h3>41:07 — BufferedWriter constructors (2) — CRITICAL EXAM POINT</h3>
+<p>BufferedWriter CANNOT talk directly to a file.</p>
+<p>Unlike FileWriter, you cannot pass file name or File object.</p>
+<p>Must wrap another `Writer` (typically FileWriter).</p>
+<p>Constructor 1:</p>
+<pre class='code'>Writer w = new FileWriter(&quot;abc.txt&quot;);
+BufferedWriter bw = new BufferedWriter(w);</pre>
+<p>Constructor 2 — with buffer size:</p>
+<p>BufferedWriter bw = new BufferedWriter(w, bufferSize);  // int bufferSize</p>
+<p>Usually don’t customize buffer size — use 1-arg form.</p>
+<p>Pipeline diagram (board):</p>
+<p>Program → BufferedWriter → FileWriter → abc.txt (file)</p>
+<p>Invalid (compile error):</p>
+<p>BufferedWriter bw = new BufferedWriter(&quot;abc.txt&quot;);           // INVALID
+BufferedWriter bw = new BufferedWriter(new File(&quot;abc.txt&quot;)); // INVALID — File is not Writer</p>
+<p>Valid:</p>
+<p>BufferedWriter bw = new BufferedWriter(new FileWriter(&quot;abc.txt&quot;));  // VALID</p>
+<p>Valid (two-level buffering — optional performance):</p>
+<p>BufferedWriter bw2 = new BufferedWriter(
+    new BufferedWriter(new FileWriter(&quot;abc.txt&quot;)));  // VALID — nested buffers</p>
+<p>Board note:</p>
+<p>BufferedWriter can&#x27;t communicate directly with the file.</p>
+<p>It communicates via some Writer object only.</p>
+<h3>51:55 — BufferedWriter methods (6 total)</h3>
+<p>Same 5 as FileWriter:</p>
+<p>6th — EXTRA method (exam favorite):</p>
+<p>bw.newLine();   // inserts platform-specific line separator</p>
+<p>Exam bit question: *Which capability is available extra in BufferedWriter compared to FileWriter?*</p>
+<p>Answer: Inserting a new line character (newLine() method).</p>
+<h3>57:01 — BufferedWriterDemo.java</h3>
+<pre class='code'>import java.io.*;
+
+class BufferedWriterDemo {
+    public static void main(String[] args) throws Exception {
+        FileWriter fw = new FileWriter(&quot;abc.txt&quot;);
+        BufferedWriter bw = new BufferedWriter(fw);
+
+        bw.write(100);              // &#x27;d&#x27;
+        bw.newLine();
+        bw.write(&quot;ABCD&quot;);           // char[] or string — board uses char[] {&#x27;A&#x27;,&#x27;B&#x27;,&#x27;C&#x27;,&#x27;D&#x27;}
+        bw.newLine();
+        bw.write(&quot;Durga&quot;);
+        bw.newLine();
+        bw.write(&quot;Software Solutions&quot;);
+
+        bw.flush();
+        bw.close();                 // only bw.close() in demo — see closing rules below
+    }
+}</pre>
+<p>Expected `abc.txt`:</p>
+<p>d
+ABCD
+Durga
+Software Solutions</p>
+<p>Compile &amp; run:</p>
+<p>&gt; javac BufferedWriterDemo.java
+&gt; java BufferedWriterDemo</p>
+<p>Console: no output. File contains formatted lines (actual newlines, not literal \n text).</p>
+<h3>1:03:23 — Closing order: FileWriter + BufferedWriter</h3>
+<p>Open order: FileWriter first → then BufferedWriter on top.</p>
+<p>Close options:</p>
+<p>Rule:</p>
+<p>When closing BufferedWriter, the underlying FileWriter is closed automatically.</p>
+<p>No need to close `fw` explicitly.</p>
+<p>Same pattern applies to BufferedReader + FileReader later.</p>
+<h2>Part C — BufferedReader</h2>
+<h3>1:07:55 — BufferedReader purpose &amp; advantage</h3>
+<p>Purpose: Read character data from file (like FileReader).</p>
+<p>Main advantage over FileReader:</p>
+<p>Can read line by line in addition to character-by-character.</p>
+<p>“Most enhanced reader” (Sir’s phrase) for text files — prefer BufferedReader for reading.</p>
+<h3>1:09:51 — Main advantage (board)</h3>
+<p>The main advantage of BufferedReader when compared with FileReader is:</p>
+<p>we can read data line by line, in addition to character by character.</p>
+<h3>1:11:02 — BufferedReader constructors (2)</h3>
+<p>Same rule as BufferedWriter: Cannot connect directly to file — needs a `Reader`.</p>
+<pre class='code'>Reader r = new FileReader(&quot;abc.txt&quot;);
+BufferedReader br = new BufferedReader(r);
+
+// with buffer size:
+BufferedReader br = new BufferedReader(r, bufferSize);</pre>
+<p>Board note:</p>
+<p>BufferedReader can&#x27;t communicate directly with the file.</p>
+<p>It communicates via some Reader object.</p>
+<h3>1:14:14 — BufferedReader methods (4 total)</h3>
+<p>Same 3 as FileReader:</p>
+<p>4th — SPECIAL (line reading):</p>
+<pre class='code'>String line = br.readLine();</pre>
+<p>Behavior:</p>
+<ul><li>Each call → next line as String (without line terminator chars).</li></ul>
+<ul><li>1st call → line 1, 2nd → line 2, etc.</li></ul>
+<ul><li>When no next line → returns `null` (not -1).</li></ul>
+<p>Loop until `null`:</p>
+<pre class='code'>String line = br.readLine();
+while (line != null) {
+    System.out.println(line);
+    line = br.readLine();
+}</pre>
+<p>Board summary — `String readLine()`:</p>
+<p>Attempts to read next line from file and returns it.</p>
+<p>If next line not available → returns `null`.</p>
+<h3>1:17:46 — BufferedReaderDemo.java</h3>
+<p>Sample file:</p>
+<p>Durga
+Software Solutions
+Sr nagar
+Hyderabad 38</p>
+<p>Program:</p>
+<pre class='code'>import java.io.*;
+
+class BufferedReaderDemo {
+    public static void main(String[] args) throws Exception {
+        FileReader fr = new FileReader(&quot;abc.txt&quot;);
+        BufferedReader br = new BufferedReader(fr);
+
+        String line = br.readLine();
+        while (line != null) {
+            System.out.println(line);
+            line = br.readLine();
+        }
+
+        br.close();    // closes underlying FileReader too
+    }
+}</pre>
+<p>Compile &amp; run:</p>
+<p>&gt; javac BufferedReaderDemo.java
+&gt; java BufferedReaderDemo</p>
+<p>Console output (observed):</p>
+<p>Durga
+Software Solutions
+Sr nagar
+Hyderabad 38</p>
+<p>Best/simple approach to read text files line-by-line.</p>
+<h3>1:23:31 — Closing BufferedReader</h3>
+<p>Same as writer side:</p>
+<p>When closing BufferedReader, underlying FileReader is closed automatically — no explicit fr.close() required.</p>
+<h3>1:25:07 — Session wrap-up</h3>
+<p>Most enhanced reader for character data: BufferedReader</p>
+<p>Pipeline patterns:</p>
+<p>Write:  BufferedWriter → FileWriter → file
+Read:   BufferedReader → FileReader → file</p>
+<h2>Exam quick-reference bits</h2>
+<h3>Valid / invalid BufferedWriter creation</h3>
+<p>new BufferedWriter(&quot;abc.txt&quot;);                              // INVALID
+new BufferedWriter(new File(&quot;abc.txt&quot;));                    // INVALID
+new BufferedWriter(new FileWriter(&quot;abc.txt&quot;));              // VALID
+new BufferedWriter(new BufferedWriter(new FileWriter(&quot;abc.txt&quot;))); // VALID</p>
+<h3>EOF sentinels</h3>
+<h3>Type casting required</h3>
+<p>Java code block count: 26</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Java tutorial by Durga Sir</td></tr>
+<tr><td>Position</td><td>122 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>File I/O — FileReader, BufferedWriter, BufferedReader</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 26m 19s (from transcript)</td></tr>
+<tr><td>Video ID</td><td>Zw71nmiWkJ0</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=Zw71nmiWkJ0</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Array size</th><th>Problem</th></tr>
+<tr><td>10</td><td>File may have more chars → incomplete read</td></tr>
+<tr><td>10,000</td><td>File may have fewer → memory waste (e.g. 9000 slots unused)</td></tr>
+</table>
+<table>
+<tr><th>Role</th><th>Class covered</th></tr>
+<tr><td>Writer</td><td>FileWriter (prev video)</td></tr>
+<tr><td>Reader</td><td>FileReader (this video)</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Problem</th></tr>
+<tr><td>FileWriter</td><td>Must insert line separator manually (&quot;\n&quot;), varies system to system</td></tr>
+<tr><td>FileReader</td><td>Only character-by-character read</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Method</th><th>Purpose</th></tr>
+<tr><td>1</td><td>write(int ch)</td><td>Single character</td></tr>
+<tr><td>2</td><td>write(char[] c)</td><td>Char array</td></tr>
+<tr><td>3</td><td>write(String s)</td><td>String</td></tr>
+<tr><td>4</td><td>flush()</td><td>Flush buffer</td></tr>
+<tr><td>5</td><td>close()</td><td>Close</td></tr>
+</table>
+<table>
+<tr><th>Option</th><th>Code</th><th>Recommended?</th></tr>
+<tr><td>1</td><td>bw.close() only</td><td>YES — highly recommended</td></tr>
+<tr><td>2</td><td>fw.close() only</td><td>NO — BufferedWriter still open; may get “stream already closed” if writing later</td></tr>
+<tr><td>3</td><td>bw.close(); fw.close();</td><td>Redundant — not wrong but unnecessary</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Purpose</th></tr>
+<tr><td>int read()</td><td>Next char as Unicode int; -1 at EOF</td></tr>
+<tr><td>int read(char[] c)</td><td>Read into array; returns count</td></tr>
+<tr><td>close()</td><td>Close reader</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Role</th><th>Direct to file?</th><th>Key extra method</th></tr>
+<tr><td>FileReader</td><td>Basic read</td><td>Yes</td><td>—</td></tr>
+<tr><td>BufferedReader</td><td>Enhanced read</td><td>No (via Reader)</td><td>readLine()</td></tr>
+<tr><td>FileWriter</td><td>Basic write</td><td>Yes</td><td>—</td></tr>
+<tr><td>BufferedWriter</td><td>Enhanced write</td><td>No (via Writer)</td><td>newLine()</td></tr>
+</table>
+<table>
+<tr><th>API</th><th>End signal</th></tr>
+<tr><td>FileReader.read()</td><td>-1</td></tr>
+<tr><td>BufferedReader.readLine()</td><td>null</td></tr>
+</table>
+<table>
+<tr><th>Situation</th><th>Cast</th></tr>
+<tr><td>Print read() result</td><td>(char) i</td></tr>
+<tr><td>Array size from f.length()</td><td>(int) f.length()</td></tr>
+</table>
+</body></html>

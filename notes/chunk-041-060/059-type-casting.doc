@@ -1,0 +1,446 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>059-type-casting</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 059 — Type casting</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-9||type casting</p>
+<p>Source: real YouTube auto-captions (.transcripts/059-CrVLBpKIe0E.txt). ASR decoded in place: typ Casting / typ cash / type cash = type casting; Dua / Dura / DGA = Durga; object W / object r / object V = Object o; object of s / object of yes / object of n = (Object) s / (Object) n; CH class / CH of = child class; value type casting = valid type casting; inconvertible types / incompatible types kept; Legend / chest Legend = listen / just listen; Paka = pakka (definite); meod / meals = method / method calls; over rting / over ring = overriding; methoding = method hiding; INX / inex / index / in x = int x; Tri 7 / tri8 / tri9 = 777 / 888 / 999; s of / sop = System.out.println; IAL to n / Nal to = i == n / n == o; keep subing = keep writing (notes).</p>
+<p>This video is OOPs Part 9. Last session already covered the syntax and three rules of type casting (two compiler checks, one JVM check). This session is the internal meaning: type casting does not create a new object; it only adds another typed reference to the existing object. Then four exam-style boards: parent reference vs child-specific methods; overriding after casts (always runtime object); static method hiding after casts (reference type); instance-variable resolution after casts (reference type, never runtime object).</p>
+<h3>00:06 — Recap: three type-casting rules from last session</h3>
+<p>He opens by pointing back at the previous lecture. Related to type casting there are just three rules: two things checked by the compiler and one thing checked by the JVM.</p>
+<p>Syntactically, how do we perform type casting? Which casts are valid and which are invalid? The only three outcomes he wants in your head:</p>
+<ol><li>Compile-time error: inconvertible types</li></ol>
+<ol><li>Compile-time error: incompatible types</li></ol>
+<ol><li>Runtime exception: ClassCastException</li></ol>
+<p>Those are the only three possibilities. He checks: up to this, is it clear? Then he changes topic: internally, through type casting, what are we actually doing?</p>
+<p>He does not rewrite the three-rule examples in this video. He assumes last session’s boards. This video is the internal picture plus exam bits.</p>
+<h3>01:00 — Internal meaning: `String` to `Object` does not create a new object</h3>
+<p>“Listen very carefully.” One String object:</p>
+<pre class='code'>class StringCastDemo {
+    public static void main(String[] args) {
+        String s = new String(&quot;Durga&quot;);
+        Object o = (Object) s;
+        // valid type casting: String–Object are parent–child;
+        // destination type Object vs Object (same);
+        // runtime type of s is String, child of Object
+    }
+}</pre>
+<p>He walks the three rules on this line Object o = (Object) s:</p>
+<ul><li>Type of s is String; destination is Object. Parent–child relation — compiler check one is OK.</li></ul>
+<ul><li>We are casting to Object; the type after the cast is Object vs Object — same type, compiler check two is OK.</li></ul>
+<ul><li>Internal runtime object type of s is String, and String is a child class of `Object`, so the JVM accepts it. Valid type casting.</li></ul>
+<p>Then the question he hammers: because of this type casting, did a new object get created? Students say yes (“I’m performing type casting man”). He says no.</p>
+<p>Strictly speaking, through type casting we are not creating any new object. We are only providing another type of reference variable for the existing object. Object o = (Object) s means: for the existing String object, provide an Object-typed reference.</p>
+<p>How many objects? Only one. How many reference variables? Two (s and o). Watch this very carefully.</p>
+<h3>03:01 — Type casting, not object casting</h3>
+<p>That is why the topic is type casting / type conversion, not object casting / object conversion. He is not converting the object. The object is always a `String` object. For that existing String object we are providing another type of reference.</p>
+<pre class='code'>class OneObjectTwoRefs {
+    public static void main(String[] args) {
+        String s = new String(&quot;Durga&quot;);
+        Object o = (Object) s;
+        // heap: one String object with content &quot;Durga&quot;
+        // s ----+
+        //       +--&gt; String(&quot;Durga&quot;)
+        // o ----+   (o is Object type, still the same String)
+        System.out.println(s == o);
+        // prints true
+    }
+}</pre>
+<h3>04:15 — Combined into one line</h3>
+<p>If you want, the two lines can be combined. Equivalent:</p>
+<pre class='code'>class CombinedUpcast {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        // compile-time type of o: Object
+        // runtime object: String
+        // for the existing String object we provided an Object-type reference
+    }
+}</pre>
+<p>What type is the reference? Object. Which object is there internally? String object. Through type casting are we creating a new object or a new reference variable? Make sure: new reference variable, not a new object.</p>
+<h3>05:04 — Board theory (he dictates it several times)</h3>
+<p>He repeats this paragraph slowly for notes. Copy it as-is:</p>
+<p>Strictly speaking, through type casting we are not creating any new object. For the existing object we are providing another type of reference variable. That is we are performing type casting, but not object casting.</p>
+<p>Casting means conversion — type conversion, not object conversion.</p>
+<h3>06:41 — Example 1 on the board, with the diagram</h3>
+<p>Same example again so it sits under the theory plus a heap diagram:</p>
+<pre class='code'>class Example1 {
+    public static void main(String[] args) {
+        String s = new String(&quot;Durga&quot;);
+        Object o = (Object) s;
+        // same as: Object o = new String(&quot;Durga&quot;);
+        // through type casting: no new object;
+        // another type of reference for the existing String
+    }
+}</pre>
+<p>“These two lines if I can combine it is a single line. Instead of taking two lines, internally through type casting for the existing String object I’m providing another Object type of reference. Beyond that, nothing.”</p>
+<p>Take the diagram also: through type casting we are not creating any new object; for the existing object we are trying to provide another type of reference variable. This is what you people should be aware of.</p>
+<h3>08:02 — Example 2: `Integer` → `Number` → `Object`</h3>
+<p>“Take very very special care.” Next conclusion. Example two.</p>
+<pre class='code'>class Example2 {
+    public static void main(String[] args) {
+        Integer i = new Integer(10);
+        Number n = (Number) i;
+        Object o = (Object) n;
+    }
+}</pre>
+<p>He asks: is (Number) i valid? Check all three rules.</p>
+<ul><li>Integer and Number: parent–child (Integer extends Number).</li></ul>
+<ul><li>Destination type Number vs Number: same.</li></ul>
+<ul><li>Internal object of i is Integer, which is a child of `Number`. Valid type casting.</li></ul>
+<p>Then Object o = (Object) n:</p>
+<ul><li>n is type Number; Number and Object: parent–child.</li></ul>
+<ul><li>Destination Object vs Object: same.</li></ul>
+<ul><li>Runtime object type of n: n points at i, so the runtime object is `Integer`. Integer is a child class of Object. Valid.</li></ul>
+<h3>10:03 — Still one object; three reference variables</h3>
+<p>Internally what is happening?</p>
+<p>Integer i = new Integer(10) — this is the integer object, value 10, Integer-type reference.</p>
+<p>Number n = (Number) i — a new object or a new reference variable? New reference variable. So n is another arrow to the same heap object.</p>
+<p>Object o = (Object) n — again a new reference, not a new object.</p>
+<p>Total objects created: one. Reference variables: three (i, n, o — Integer, Number, Object).</p>
+<p>Same theory: through type casting we are not creating any new object; for the existing object another type of reference variable.</p>
+<h3>11:09 — `==` proves they are the same object; combined lines</h3>
+<p>Cross-check with ==:</p>
+<pre class='code'>class Example2SameObject {
+    public static void main(String[] args) {
+        Integer i = new Integer(10);
+        Number n = (Number) i;
+        Object o = (Object) n;
+
+        System.out.println(i == n);
+        // prints true
+        System.out.println(n == o);
+        // prints true
+    }
+}</pre>
+<p>Both pairs point to the same object, so the answer is true.</p>
+<p>Can we combine the first two lines into a single line? Yes:</p>
+<pre class='code'>class CombinedNumberRef {
+    public static void main(String[] args) {
+        Number n = new Integer(10);
+        // acceptable: Number reference, Integer runtime object
+    }
+}</pre>
+<p>Can we combine all three lines into a single line? Yes. At the end the reference is Object, but the runtime object is Integer:</p>
+<pre class='code'>class CombinedObjectRef {
+    public static void main(String[] args) {
+        Object o = new Integer(10);
+        // for the Integer object we provided an Object-type reference; beyond that, nothing
+    }
+}</pre>
+<p>“These many lines you are doing — what is nothing but just for Integer object we are providing Object type of reference variable. Beyond that nothing. Is it clear for all of you? Take this example — example two.”</p>
+<h3>12:39 — Copy example 2 into the notes (including the diagram)</h3>
+<p>He waits while students copy:</p>
+<pre class='code'>class Example2Notes {
+    public static void main(String[] args) {
+        Integer i = new Integer(10);
+        Number n = (Number) i;
+        Object o = (Object) n;
+        System.out.println(i == n);
+        // prints true
+        System.out.println(n == o);
+        // prints true
+    }
+}</pre>
+<p>Board pause with music (~13:28–14:33). “Take clearly including the diagram also, diagram, equivalent lines. Based on this type casting, internally what things are required — that part I will discuss for you people.”</p>
+<h3>14:35 — Exam setup: multilevel `A` ← `B` ← `C`</h3>
+<p>“Just another point. Observe a bit carefully.” From this type casting, what possible questions you people can expect — this is for the exam. Three or four things.</p>
+<p>“Don’t write, just listen.” Classes A, B, C. `B` is the child of `A`. `C` is the child of `B`. `A` is the grandparent of `C`. Multilevel inheritance.</p>
+<pre class='code'>class A { }
+
+class B extends A { }
+
+class C extends B { }
+
+class MultilevelCast {
+    public static void main(String[] args) {
+        C c = new C();
+        // compile-time type of c: C
+        // runtime object: C
+    }
+}</pre>
+<p>C c = new C(): what type of object? C object. What type is c? C only. Runtime object is C object only.</p>
+<h3>16:00 — Cast `C` to `B`, then that result to `A`</h3>
+<p>He wants to type-cast this c to B type. Is C → B acceptable? Yes, because B is the parent, C is the child. Child object type-cast to parent type — no problem at all.</p>
+<p>After (B) c, what type is “this combination”? B type. But the internal runtime type of the object is still C type. You must have that knowledge. Once you type-cast, the compile-time type becomes `B`; the runtime object is always `C`.</p>
+<p>Then he type-casts that total thing to A:</p>
+<pre class='code'>class MultilevelCast2 {
+    public static void main(String[] args) {
+        C c = new C();
+
+        B mid = (B) c;
+        // compile-time type: B
+        // runtime object: still C
+
+        A top = (A) ((B) c);
+        // compile-time type: A
+        // runtime object: still C
+    }
+}</pre>
+<p>At the end this is A type, but runtime object is C type.</p>
+<p>Equivalent of C cast to B:</p>
+<pre class='code'>class EquivalentB {
+    public static void main(String[] args) {
+        B b = new C();
+        // this is B type, but internal object is C type
+        // same as: B b = (B) new C();
+    }
+}</pre>
+<p>C cast to B, then that total thing cast to A — can we combine into a single equivalent line?</p>
+<pre class='code'>class EquivalentA {
+    public static void main(String[] args) {
+        A a = new C();
+        // compile-time type A, runtime object C
+    }
+}</pre>
+<p>“I hope now you have this clarity, because I will use this concept in my next example. That’s why better to take note.”</p>
+<h3>18:22 — Notes: parent reference can hold child object</h3>
+<p>Under the diagram, the code. The principle is only this: parent reference can be used to hold child object. That principle only we are using in type casting. Beyond that, nothing.</p>
+<pre class='code'>class ParentRefChildObj {
+    public static void main(String[] args) {
+        C c = new C();
+        A a = new C();
+        // (B) c  then  (A)((B) c)  is the same idea as A a = new C();
+    }
+}</pre>
+<p>He also writes the pair C c = new C() and the equivalent B b = new C() (ASR “new B” is the parent-reference / child-object line). Pause until ~19:22. “I hope clear for you people.”</p>
+<h3>19:38 — Example 1 (exam): `Parent.m1` / `Child.m2` — which calls are valid?</h3>
+<p>“Example one. Now multiple examples I will talk. Possible questions for the exam. Make sure you should have clear clarity.”</p>
+<p>Parent class contains m1. Child class contains m2. Actually the child contains two methods: its own m2 plus the parent m1 available by default.</p>
+<pre class='code'>class Parent {
+    public void m1() {
+        System.out.println(&quot;m1&quot;);
+    }
+}
+
+class Child extends Parent {
+    public void m2() {
+        System.out.println(&quot;m2&quot;);
+    }
+}
+
+class ExamMethodCalls {
+    public static void main(String[] args) {
+        Child c = new Child();
+        c.m1();            // valid
+        c.m2();            // valid
+        ((Parent) c).m1(); // valid
+        // ((Parent) c).m2(); // CE: cannot find symbol: method m2()
+    }
+}</pre>
+<p>Four calls to decide: c.m1(), c.m2(), child type-cast to parent then .m1(), child type-cast to parent then .m2().</p>
+<p>First: perfectly valid. Second: valid, because on a child reference we can call both parent and child class methods. No problem at all.</p>
+<h3>21:12 — Internals of `((Parent) c).m1()` vs `((Parent) c).m2()`</h3>
+<p>Because of the cast line, internally what is happening? Parent reference can be used to hold child object. That thing only. Equivalent:</p>
+<pre class='code'>class ExamMethodCallsEquivalent {
+    public static void main(String[] args) {
+        Parent p = new Child();
+        p.m1(); // valid — parent reference, parent method
+        // p.m2(); // CE: cannot find symbol: method m2()
+        // child-specific method not visible on Parent
+    }
+}</pre>
+<p>p.m1(): parent reference can hold child object, and by using that reference we can call methods present in the parent class. m1 is fine.</p>
+<p>The last call is the child-specific method m2 through the parent-typed cast. 100% pakka invalid. Remember from inheritance: parent reference can be used to hold child object, but by using that reference we can’t call child-specific methods.</p>
+<p>Exam wording he predicts: “Consider the following code. Which of the following method calls are valid?” First valid, second valid, third valid, last invalid. Know the reason also.</p>
+<h3>22:38 — Board copy of the four calls</h3>
+<p>He writes it again while students copy (music / “completed right”):</p>
+<pre class='code'>class ExamMethodCallsBoard {
+    public static void main(String[] args) {
+        Child c = new Child();
+        c.m1();              // valid
+        c.m2();              // valid
+        ((Parent) c).m1();   // valid  — child type-cast to parent, then m1
+        // ((Parent) c).m2(); // CE: cannot find symbol: method m2()
+        // child type-cast to parent, then m2 — invalid
+    }
+}</pre>
+<p>“The terminology is very very clear for you people.”</p>
+<h3>24:25 — Theory to add under example 1</h3>
+<p>If you want, add the reason so the concept becomes clear. He dictates:</p>
+<p>Parent reference can be used to hold child object, but by using that reference we can’t call child-specific methods, and we can call only the methods available in parent class.</p>
+<p>That’s example one related to type casting.</p>
+<h3>26:01 — Example 2: overriding `m1` in `A` / `B` / `C` → output `C C C`</h3>
+<p>“Example two. This example is also very very important.” Classes A, B, C. A contains m1 printing A. B contains m1 printing B. C contains m1 printing C.</p>
+<p>What concept is this? Overriding. Parent and child class methods having the same name, same argument types.</p>
+<pre class='code'>class A {
+    public void m1() {
+        System.out.println(&quot;A&quot;);
+    }
+}
+
+class B extends A {
+    public void m1() {
+        System.out.println(&quot;B&quot;);
+    }
+}
+
+class C extends B {
+    public void m1() {
+        System.out.println(&quot;C&quot;);
+    }
+}
+
+class OverrideAfterCast {
+    public static void main(String[] args) {
+        C c = new C();
+        c.m1();                 // which method?
+        ((B) c).m1();           // C cast to B, then m1
+        ((A) ((B) c)).m1();     // that B-typed thing cast to A, then m1
+    }
+}</pre>
+<p>He asks case by case, then tells students to wait until all three are on the board.</p>
+<p>First case: students say C (reference and object / method). He: “C is the answer.”</p>
+<p>Second: “C or B?” Students: C only. “Oh good.”</p>
+<p>Third: C only, because here B reference but runtime object is C type only; here A reference but runtime object is C type only.</p>
+<p>It is overriding. In overriding, method resolution is always based on runtime object type. Runtime object is always C type only. That’s why the output in all cases is C C C.</p>
+<h3>28:58 — Copy example 2 (diagram + code)</h3>
+<p>“Very very important terminology.” Board:</p>
+<pre class='code'>class OverrideAfterCastNotes {
+    public static void main(String[] args) {
+        C c = new C();
+        c.m1();
+        // prints C
+        ((B) c).m1();
+        // prints C
+        ((A) ((B) c)).m1();
+        // prints C
+    }
+}</pre>
+<p>Pause while they copy (~29:26–30:11). “Clear for all of you right. This is what you people should be aware clearly.”</p>
+<h3>30:20 — Theory under example 2: why `C C C`</h3>
+<p>Add the theory — how / why C C C is the answer:</p>
+<p>It is overriding, and method resolution is always based on runtime object type.</p>
+<p>That’s all. Example is the same for the next one; he will make a small change.</p>
+<h3>31:08 — Example 3: same methods, all `static` → method hiding → `C B A`</h3>
+<p>Example three. A, B, C still each contain m1, but all three methods are static.</p>
+<p>If all are static, what concept is this? Method hiding. In method hiding, method resolution is always based on reference type, and the compiler is responsible. Method resolution is always taken care of by the compiler based on reference type.</p>
+<pre class='code'>class A {
+    public static void m1() {
+        System.out.println(&quot;A&quot;);
+    }
+}
+
+class B extends A {
+    public static void m1() {
+        System.out.println(&quot;B&quot;);
+    }
+}
+
+class C extends B {
+    public static void m1() {
+        System.out.println(&quot;C&quot;);
+    }
+}
+
+class HideAfterCast {
+    public static void main(String[] args) {
+        C c = new C();
+        c.m1();                 // reference type C → C
+        ((B) c).m1();           // reference type B → B
+        ((A) ((B) c)).m1();     // reference type A → A
+    }
+}</pre>
+<p>c.m1(): what type of reference? C. First case answer: C.</p>
+<p>C type-cast to B, then m1: what is the reference? Equivalent line you already know: B b = new C(). Parent reference, child object, but in method hiding resolution is based on reference type. Answer: B.</p>
+<p>The total thing’s reference type is A, then m1. Answer: A.</p>
+<h3>33:11 — Copy the complete example three (do not write “add static to the above”)</h3>
+<p>“Compulsory you have to take complete example. Don’t take ‘in the above example every method is static’. Take complete example.”</p>
+<pre class='code'>class HideAfterCastNotes {
+    public static void main(String[] args) {
+        C c = new C();
+        c.m1();
+        // prints C
+        ((B) c).m1();
+        // prints B
+        ((A) ((B) c)).m1();
+        // prints A
+    }
+}</pre>
+<p>“In all cases C B A — of course different answers we are getting. C B A like all cases.” Copy pause.</p>
+<h3>34:29 — Theory under example 3: why `C B A`</h3>
+<p>Why is CBA the answer? What concept?</p>
+<p>It is method hiding, and method resolution is always based on reference type.</p>
+<p>That’s all. Complete.</p>
+<h3>35:30 — Example 4 (last type-casting example): instance variables `x`</h3>
+<p>Last example in type casting. Same cinema: A, B, C.</p>
+<p>He first floats int x = 8 in A and int x = 9 in B, then says try 7, 8, 9 because three values are there. On the board he dictates triple-7 / triple-8 / triple-9 (ASR Tri 7 / tri8 / tri9):</p>
+<pre class='code'>class A {
+    int x = 777;
+}
+
+class B extends A {
+    int x = 888;
+}
+
+class C extends B {
+    int x = 999;
+}
+
+class VarAfterCast {
+    public static void main(String[] args) {
+        C c = new C();
+        System.out.println(c.x);
+        System.out.println(((B) c).x);
+        System.out.println(((A) ((B) c)).x);
+    }
+}</pre>
+<p>Target: create C c = new C(), then print c.x, then C type-cast to B then .x, then that thing type-cast to A then .x.</p>
+<h3>37:32 — Answers: 999, 888, 777 — variable resolution is by reference type</h3>
+<p>First case: c.x — 999 (he says “9” for the C field).</p>
+<p>Second: students guess 999 or 888. “Because reference is B type but runtime object is C type.” Last session they already covered: variable resolution is always based on reference type, but not based on runtime object. This thing is B type; runtime object is C; it is B but variable resolution is always based on reference type. Answer: B’s `x` → 888.</p>
+<p>Last: A reference → 777.</p>
+<p>“Any explanation is required? Take this example. A B C. Example four.” Long copy pause (~38:41–39:40).</p>
+<h3>39:40 — Output line and theory for variables</h3>
+<p>“Now the answer is 9 8 7” — meaning 999, 888, 777:</p>
+<pre class='code'>class VarAfterCastNotes {
+    public static void main(String[] args) {
+        C c = new C();
+        System.out.println(c.x);
+        // prints 999
+        System.out.println(((B) c).x);
+        // prints 888
+        System.out.println(((A) ((B) c)).x);
+        // prints 777
+    }
+}</pre>
+<p>After this, add the theory:</p>
+<p>Variable resolution is always based on reference type, but not based on runtime object.</p>
+<h3>40:46 — Close of type casting</h3>
+<p>“These are the things what you people should be aware clearly. That’s all. There ends the concept of type casting and related possible bits.”</p>
+<p>Type casting should not be a problem: internally what is happening; what rules we have to check; which compile-time checkings are there; if they fail, what compile-time errors; worry about the runtime exception. Various things related to type casting. That’s all.</p>
+<h2>What this video actually taught (not a generic casting lecture)</h2>
+<ol><li>Type casting does not create a new object — it only adds another typed reference to the existing object (type casting ≠ object casting).</li></ol>
+<ol><li>String s then (Object) s is the same idea as Object o = new String(&quot;Durga&quot;); Integer → Number → Object is still one heap object (i == n and n == o are true).</li></ol>
+<ol><li>Multilevel C → (B) → (A) only changes the compile-time type; runtime object stays C. Equivalents: B b = new C(), A a = new C().</li></ol>
+<ol><li>After (Parent) childRef, you may call parent methods only — child-specific methods are a compile error.</li></ol>
+<ol><li>Overriding + casts: C C C (runtime object). Static hiding + casts: C B A (reference type). Fields + casts: 999 888 777 (reference type, never runtime object).</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 59 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 9</td></tr>
+<tr><td>Topic</td><td>type casting</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>41m 29s</td></tr>
+<tr><td>Video ID</td><td>CrVLBpKIe0E</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=CrVLBpKIe0E</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

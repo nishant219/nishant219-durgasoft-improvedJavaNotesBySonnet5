@@ -1,0 +1,369 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>095-thread-group</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 095 — Thread Group (Multithreading Enhancement Part-1)</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 1|| Introduction || Thread Group</p>
+<p>Source: real YouTube auto-captions (.transcripts/095-B2L-vVpFP7Y.txt). ASR decoded in place: thread group / thre group = ThreadGroup; subad / sub thread groups = sub thread groups; synchronizer block = synchronized block; demand = daemon; attach Leger / attach legar = Attach Listener; Finalizer = Finalizer (GC-related system thread); get a thread group = getThreadGroup(); get a Max priority / set a Max priority = getMaxPriority() / setMaxPriority(); interactive count / active count = activeCount(); inactive group count / active group count = activeGroupCount(); in numerate / enumerator = enumerate; set a demand = setDaemon; TG / teaching = sample group name &quot;TG&quot; / teaching; PG / CG = parent group / child group; keep subing / keep uping = keep writing.</p>
+<p>Series intro to Multithreading Enhancements, then full ThreadGroup lecture: definition, Yahoo Messenger analogy, main/system hierarchy, constructors, important methods (especially setMaxPriority loophole), demos for activeCount/list, and program listing all active threads under system group (daemon flags).</p>
+<h3>00:05 — Series: Multithreading enhancements (advanced)</h3>
+<p>Next: enhancements related to multi-threading — a bit advanced; terminology may be new; take special care.</p>
+<p>Agenda items announced for the enhancement series:</p>
+<ul><li>ThreadGroup</li></ul>
+<ul><li>ThreadLocal</li></ul>
+<ul><li>Alternative to synchronized block</li></ul>
+<ul><li>Concurrent package</li></ul>
+<ul><li>Executor framework</li></ul>
+<p>First concept: Thread Group.</p>
+<h3>00:52 — What is a Thread Group?</h3>
+<p>Thread group = a group of threads based on functionality, kept as a single unit.</p>
+<p>Examples of grouping by function: all producer threads, all consumer threads, all printing threads.</p>
+<pre class='code'> // Board:
+ // Based on functionality we can group threads into a single unit
+ // which is nothing but Thread Group
+ // That is: Thread Group contains a group of threads</pre>
+<h3>01:48 — Thread group can contain sub thread groups</h3>
+<p>A thread group contains threads and can also contain sub thread groups (nested groups with their own threads Tx, Ty, …).</p>
+<pre class='code'> // Thread group contains a group of threads
+ // In addition to threads, thread group can also contain sub thread groups</pre>
+<h3>02:42 — Advantage (Yahoo Messenger analogy)</h3>
+<p>Advantage of maintaining threads as a group: perform common operations very easily.</p>
+<p>Yahoo Messenger contacts:</p>
+<ul><li>Friends group, Relatives group, …</li></ul>
+<ul><li>Right-click group → send “Happy Friendship Day” to all friends in one shot.</li></ul>
+<ul><li>Without groups: identify each friend and send individually.</li></ul>
+<p>Same for threads:</p>
+<ul><li>Suspend all consumer threads</li></ul>
+<ul><li>Stop all producer threads</li></ul>
+<ul><li>Set max priority for all printing threads</li></ul>
+<ul><li>Set min priority for all header threads</li></ul>
+<p>→ common operations become easy.</p>
+<pre class='code'> // Board:
+ // The main advantage of maintaining threads in the form of Thread Group is
+ // we can perform common operations very easily</pre>
+<h3>08:25 — Every thread belongs to some thread group</h3>
+<p>Every thread in Java belongs to some thread group. Independently, without a thread group, there is no chance of a thread existing.</p>
+<h3>08:51 — Demo: which group does main belong to?</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // How many threads? One — main
+        System.out.println(
+            Thread.currentThread().getThreadGroup().getName()
+        );
+        // prints main
+    }
+}</pre>
+<p>Three “main” characters (do not confuse):</p>
+<ol><li>main method</li></ol>
+<ol><li>main thread</li></ol>
+<ol><li>main thread group</li></ol>
+<p>Main method is called by main thread; main thread belongs to main thread group. Default printed name: main.</p>
+<h3>11:24 — Parent of main group = system group</h3>
+<p>Every thread group is a child (directly or indirectly) of the system group — similar to how every class is a child of Object (Object is root for classes; system is root for thread groups).</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(
+            Thread.currentThread().getThreadGroup().getName()
+        );
+        // prints main
+
+        System.out.println(
+            Thread.currentThread().getThreadGroup().getParent().getName()
+        );
+        // prints system
+    }
+}</pre>
+<p>He compiles/runs: first line main, second system.</p>
+<h3>15:50 — Board theory: hierarchy rules</h3>
+<pre class='code'> // Every thread in Java belongs to some group
+ // Main thread belongs to main group
+ //
+ // Every thread group in Java is the child group of system group
+ // either directly or indirectly
+ // Hence system group acts as root for all thread groups in Java</pre>
+<h3>17:47 — What does system group contain?</h3>
+<p>System group contains several system-level threads, for example:</p>
+<ul><li>Finalizer (garbage collector related)</li></ul>
+<ul><li>Reference Handler</li></ul>
+<ul><li>Signal Dispatcher</li></ul>
+<ul><li>Attach Listener</li></ul>
+<ul><li>… and more (list can vary; don’t feel only these four)</li></ul>
+<p>Common misconception: “every Java program has exactly two threads — main and GC.” Wrong — there are several system-level threads.</p>
+<p>All system-level threads are daemon (he will show later).</p>
+<h3>20:04 — Hierarchy diagram (spoken)</h3>
+<p>system  (root)
+  └── main  (child of system)
+        └── (optional sub thread groups you create)
+        └── main thread, and other threads you add under main</p>
+<p>System group holds system threads (Finalizer, Attach Listener, Reference Handler, Signal Dispatcher, …).</p>
+<p>Main group holds main thread (and any threads/groups created under it).</p>
+<p>He asks students to take the diagram carefully (long silent board time ~21:40–23:05).</p>
+<h3>23:22 — Program again next to diagram</h3>
+<p>System.out.println(Thread.currentThread().getThreadGroup().getName());
+// prints main
+
+System.out.println(
+    Thread.currentThread().getThreadGroup().getParent().getName()
+);
+// prints system</p>
+<h3>25:02 — ThreadGroup is a Java class</h3>
+<p>ThreadGroup is a class in `java.lang`, direct child of `Object` (like Thread).</p>
+<pre class='code'> // ThreadGroup is a Java class
+ // present in java.lang package
+ // and it is the direct child class of Object</pre>
+<h3>26:33 — Constructor 1: `ThreadGroup(String name)`</h3>
+<p>ThreadGroup g = new ThreadGroup(String groupName);
+// Creates a new thread group with the specified group name
+// The parent of this new group is the thread group
+// of currently executing thread</p>
+<p>Example:</p>
+<p>ThreadGroup g1 = new ThreadGroup(&quot;First Group&quot;);
+System.out.println(g1.getParent().getName());
+// prints main
+ // because this line executed by main → parent = main group</p>
+<p>If the creating line were executed by a thread belonging to group XYZ, the new group would become child of XYZ.</p>
+<h3>31:41 — Constructor 2: customize parent</h3>
+<p>Requirement: new group should be child of some specified parent group (not only current thread’s group).</p>
+<p>ThreadGroup g = new ThreadGroup(ThreadGroup pg, String groupName);
+// Creates a new thread group with the specified group name
+// The parent of this new thread group is the specified parent group</p>
+<p>Example:</p>
+<p>ThreadGroup g1 = new ThreadGroup(&quot;First Group&quot;);
+ThreadGroup g2 = new ThreadGroup(g1, &quot;Second Group&quot;);
+System.out.println(g1.getParent().getName());
+// prints main
+System.out.println(g2.getParent().getName());
+// prints First Group</p>
+<p>Hierarchy from this program:</p>
+<p>system
+ └── main
+      └── First Group
+           └── Second Group</p>
+<h3>36:44 — Combined Test program (both constructors)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        ThreadGroup g1 = new ThreadGroup(&quot;First Group&quot;);
+        System.out.println(g1.getParent().getName());
+        // prints main
+
+        ThreadGroup g2 = new ThreadGroup(g1, &quot;Second Group&quot;);
+        System.out.println(g2.getParent().getName());
+        // prints First Group
+    }
+}</pre>
+<p>Diagram reminder: system → main → first group → second group.</p>
+<h3>39:53 — Important methods of ThreadGroup</h3>
+<p>Already used: getName(), getParent().</p>
+<p>More important methods he lists and explains:</p>
+<h3>40:39 — `String getName()`</h3>
+<p>Returns name of the thread group.</p>
+<pre class='code'>public String getName();
+ // returns name of the thread group</pre>
+<h3>41:55 — `int getMaxPriority()` / `void setMaxPriority(int p)`</h3>
+<pre class='code'>public int getMaxPriority();
+ // returns max priority of thread group
+
+public void setMaxPriority(int p);
+ // to set maximum priority of thread group</pre>
+<p>Default max priority of a thread group is 10 (same idea as max thread priority 10).</p>
+<h3>43:34 — Loophole / twist of `setMaxPriority` (board demo)</h3>
+<p>ThreadGroup g1 = new ThreadGroup(&quot;TG&quot;); // or &quot;Teaching&quot;
+ // default max priority of g1 = 10
+
+Thread t1 = new Thread(g1, &quot;First Thread&quot;);
+ // default thread priority = 5 → allowed (≤ 10)
+
+Thread t2 = new Thread(g1, &quot;Second Thread&quot;);
+ // priority 5 → allowed
+
+g1.setMaxPriority(3);
+ // group max becomes 3
+
+Thread t3 = new Thread(g1, &quot;Third Thread&quot;);
+ // newly added → priority becomes 3 (capped by group max)</p>
+<p>Question: After lowering group max to 3, do existing t1/t2 priorities change from 5 to 3 automatically?</p>
+<p>Answer: No. Threads already present with higher priority are not affected. New max applies to newly added threads.</p>
+<p>System.out.println(t1.getPriority()); // prints 5
+System.out.println(t2.getPriority()); // prints 5
+System.out.println(t3.getPriority()); // prints 3</p>
+<pre class='code'> // Board (dictated):
+ // Threads in the thread group that already have higher priority
+ // won&#x27;t be affected
+ // But for newly added threads this max priority is applicable</pre>
+<p>He runs ThreadGroupDemo / ThreadGroupDemo2 → output 5, 5, 3.</p>
+<h3>54:41 — More methods</h3>
+<p>`ThreadGroup getParent()`</p>
+<pre class='code'>public ThreadGroup getParent();
+ // returns parent group of current thread group</pre>
+<p>`void list()`</p>
+<pre class='code'>public void list();
+ // prints information about thread group to the console
+ // (threads + sub thread groups)</pre>
+<p>`int activeCount()`</p>
+<pre class='code'>public int activeCount();
+ // returns number of active threads present in the thread group</pre>
+<p>`int activeGroupCount()`</p>
+<pre class='code'>public int activeGroupCount();
+ // returns number of active groups (sub groups)
+ // present in the current thread group</pre>
+<h3>58:17 — `enumerate(Thread[] t)`</h3>
+<p>Copy all active threads of this thread group into the provided thread array.</p>
+<p>Thread[] t = new Thread[10];
+g.enumerate(t);
+ // all active threads in g copied into t
+ // Sub thread group threads also will be considered</p>
+<p>Use case: system group — copy all active threads, then print names.</p>
+<pre class='code'> // To copy all active threads of this thread group
+ // into provided thread array
+ // Sub thread group threads also will be considered</pre>
+<h3>1:01:42 — `enumerate(ThreadGroup[] g)`</h3>
+<pre class='code'>public int enumerate(ThreadGroup[] g);
+ // to copy all active sub thread groups
+ // into thread group array</pre>
+<h3>1:02:24 — Daemon / interrupt / destroy at group level</h3>
+<pre class='code'>public boolean isDaemon();
+ // check whether the thread group is daemon or not
+
+public void setDaemon(boolean b);
+ // change daemon nature of thread group
+
+public void interrupt();
+ // interrupt all waiting or sleeping threads
+ // present in the thread group
+
+public void destroy();
+ // destroy thread group and its sub thread groups</pre>
+<h3>1:04:33 — Demo 3: `activeCount`, `activeGroupCount`, `list`</h3>
+<pre class='code'>class MyThread extends Thread {
+    MyThread(ThreadGroup g, String name) {
+        super(g, name); // associate thread with group + name
+    }
+
+    public void run() {
+        System.out.println(&quot;Child Thread&quot;);
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+        }
+    }
+}
+
+class ThreadGroupDemo3 {
+    public static void main(String[] args) throws Exception {
+        ThreadGroup pg = new ThreadGroup(&quot;Parent Group&quot;);
+        ThreadGroup cg = new ThreadGroup(pg, &quot;Child Group&quot;);
+
+        MyThread t1 = new MyThread(pg, &quot;Child Thread 1&quot;);
+        MyThread t2 = new MyThread(pg, &quot;Child Thread 2&quot;);
+        t1.start();
+        t2.start();
+        // both print &quot;Child Thread&quot; then sleep 5s (still active)
+
+        System.out.println(pg.activeCount());
+        // prints 2
+
+        System.out.println(pg.activeGroupCount());
+        // prints 1  (child group)
+
+        pg.list();
+        // prints group info: parent group maxpri=10,
+        // Child Thread 1 / 2 priority 5 under parent,
+        // plus java.lang.ThreadGroup[name=Child Group,maxpri=10]
+
+        Thread.sleep(10000);
+        // within 10s both children finish (slept only 5s) → dead
+
+        System.out.println(pg.activeCount());
+        // prints 0
+
+        System.out.println(pg.activeGroupCount());
+        // prints 1  (child group still there)
+
+        pg.list();
+        // list shows child group remains; active threads gone
+    }
+}</pre>
+<p>Observed run (as narrated):</p>
+<p>2
+Child Thread
+Child Thread
+1
+java.lang.ThreadGroup[name=Parent Group,maxpri=10]
+    Thread[Child Thread 1,5,Parent Group]
+    Thread[Child Thread 2,5,Parent Group]
+    java.lang.ThreadGroup[name=Child Group,maxpri=10]
+... (after 10 seconds) ...
+0
+1
+java.lang.ThreadGroup[name=Parent Group,maxpri=10]
+    java.lang.ThreadGroup[name=Child Group,maxpri=10]</p>
+<h3>1:16:10 — Hierarchy diagram for Demo 3</h3>
+<p>system
+ └── main
+      └── Parent Group
+           ├── Child Thread 1
+           ├── Child Thread 2
+           └── Child Group   (sub group)</p>
+<h3>1:17:55 — Who associates thread to a group?</h3>
+<p>Constructor job: associate thread with a group.</p>
+<p>super(g, name) calls Thread constructor (ThreadGroup, String) — that associates name and group.</p>
+<h3>1:18:45 — Program: display all active thread names under system group</h3>
+<p>Requirement: write a program to display all active thread names belonging to system group and its child groups.</p>
+<p>Approach: get system group reference → enumerate into array → print name + isDaemon().</p>
+<pre class='code'>class ThreadGroupDemo4 {
+    public static void main(String[] args) {
+        ThreadGroup system =
+            Thread.currentThread()
+                .getThreadGroup()
+                .getParent(); // main&#x27;s parent = system
+
+        Thread[] t = new Thread[system.activeCount()];
+        system.enumerate(t);
+
+        for (Thread t1 : t) {
+            System.out.println(
+                t1.getName() + &quot; ........ &quot; + t1.isDaemon()
+            );
+        }
+    }
+}</pre>
+<p>Sample / expected style of output (exact set can vary by JVM):</p>
+<p>Reference Handler ........ true
+Finalizer ........ true
+Signal Dispatcher ........ true
+Attach Listener ........ true
+main ........ false</p>
+<p>He runs ThreadGroupDemo4.java and sees roughly: Reference Handler true, Finalizer true, Signal Dispatcher true, Attach Listener true, main false — matches expectation. System-level threads are daemon; main is non-daemon.</p>
+<h3>1:28:28 — Close of Part-1 enhancements</h3>
+<p>Summary covered: what is thread group, constructors, methods, how to create groups, how many active threads in system / system group contents. End of Multithreading Enhancement Part-1 (Thread Group). Next topics continue in later enhancement parts.</p>
+<p>` ```java ` block count: 28</p>
+<table>
+<tr><th>Field</th><th>Detail</th><th></th><th></th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td><td></td><td></td></tr>
+<tr><td>Position</td><td>Video 95 of 203</td><td></td><td></td></tr>
+<tr><td>Series</td><td>Multithreading Enhancement · Part 1</td><td></td><td></td></tr>
+<tr><td>Topic</td><td>Introduction</td><td></td><td>Thread Group</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 28m 54s</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>B2L-vVpFP7Y</td><td></td><td></td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=B2L-vVpFP7Y</td><td></td><td></td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td><td></td><td></td></tr>
+</table>
+</body></html>

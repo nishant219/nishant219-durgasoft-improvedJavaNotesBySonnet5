@@ -1,0 +1,382 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>157-concurrenthashmap-details</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 157 — Concurrent Collections Part-4: ConcurrentHashMap Details</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This lecture is the internal-details session for ConcurrentHashMap. Video 156 covered the ConcurrentMap interface and its three special methods (putIfAbsent, conditional remove, replace). This session answers the most important interview question in the concurrent-collections module:</p>
+<p>HashMap vs Hashtable vs ConcurrentHashMap — all three exist; what is the difference, especially with respect to thread safety and performance?</p>
+<p>What this lecture covers (~19 minutes):</p>
+<ol><li>Recap — ConcurrentHashMap implements ConcurrentMap; ConcurrentMap is child interface of Map</li></ol>
+<ol><li>Three-way comparison — HashMap (not thread-safe) vs Hashtable (thread-safe, slow) vs ConcurrentHashMap (thread-safe, fast)</li></ol>
+<ol><li>Internal locking mechanism — why Hashtable is slow and how ConcurrentHashMap fixes it</li></ol>
+<ol><li>Segment locking / bucket-level locking — the core performance idea</li></ol>
+<ol><li>Concurrency level — new term; default 16; relationship to number of buckets</li></ol>
+<ol><li>Scenarios when concurrency level ≠ initial capacity (8 vs 16, 32 vs 16)</li></ol>
+<ol><li>Theoretical properties of ConcurrentHashMap (null rules, iteration, CME)</li></ol>
+<ol><li>Five constructors and three default parameters (initial capacity, fill ratio, concurrency level)</li></ol>
+<p>Scope note: This session is theory + constructors only. Demo programs are deferred to Videos 158 and 159.</p>
+<h2>00:20 — Recap: where ConcurrentHashMap sits in the hierarchy</h2>
+<p>Map (interface)
+ └── ConcurrentMap (child interface of Map)
+      └── ConcurrentHashMap (implementation class)</p>
+<p>Already covered (Video 156):</p>
+<ul><li>All concurrent collections live in java.util.concurrent package.</li></ul>
+<ul><li>ConcurrentMap is the child interface of Map.</li></ul>
+<ul><li>ConcurrentHashMap is the implementation class of ConcurrentMap.</li></ul>
+<ul><li>ConcurrentMap defines three special methods in addition to all regular Map methods: putIfAbsent, conditional remove, replace.</li></ul>
+<p>This session&#x27;s focus: Not the three special methods again — now the internal working, locking, and properties of ConcurrentHashMap.</p>
+<h2>00:44 — ConcurrentHashMap: thread-safe AND concurrent</h2>
+<p>Sir states two labels that apply to ConcurrentHashMap:</p>
+<p>Interview setup question (Sir asks the class):</p>
+<p>HashMap is there. Hashtable is there. ConcurrentHashMap is there. What is the difference?</p>
+<p>You must understand all three before you can explain why ConcurrentHashMap exists.</p>
+<h2>01:11 — Level 1: HashMap — NOT thread-safe</h2>
+<h3>Behavior</h3>
+<p>On a normal HashMap object, multiple threads are allowed to operate simultaneously.</p>
+<h3>Problem</h3>
+<p>Because there is no synchronization, there may be a chance of data inconsistency problems.</p>
+<h3>Conclusion (board)</h3>
+<p>Normal HashMap is NOT thread-safe. Thread safety is NOT there with normal HashMap.</p>
+<p>If your requirement is thread safety, HashMap alone is not enough — you need Hashtable or ConcurrentHashMap (or Collections.synchronizedMap()).</p>
+<h2>02:04 — Level 2: Hashtable — thread-safe but performance problem</h2>
+<h3>Behavior</h3>
+<p>Hashtable IS thread-safe.</p>
+<p>But the mechanism is brutal:</p>
+<p>At a time, only ONE thread is allowed to operate on the Hashtable object.</p>
+<p>This applies to every operation — including read operations.</p>
+<h3>Locking model (Hashtable)</h3>
+<p>Thread-1 trying to operate
+    ↓
+While Thread-1 is operating, if any other thread comes
+    ↓
+Other thread MUST WAIT until Thread-1 completes its operation
+    ↓
+At a time on the Hashtable object: only ONE thread allowed</p>
+<p>Sir&#x27;s wording: &quot;Total map object lock&quot; — the entire map is locked for any operation (read or write).</p>
+<h3>Why this causes performance problems</h3>
+<ul><li>Requirement met: thread safety ✓</li></ul>
+<ul><li>Cost: waiting time of remaining threads increases</li></ul>
+<ul><li>Result: performance problem in multi-threaded scalable applications</li></ul>
+<p>Board conclusion:</p>
+<p>We get thread safety because at a time only one thread is allowed to operate — but it increases wait time of remaining threads and creates performance problems.</p>
+<h2>03:32 — Level 3: ConcurrentHashMap — thread-safe WITH improved performance</h2>
+<p>To overcome Hashtable&#x27;s performance issues in multi-thread scalable applications, we should go for ConcurrentHashMap.</p>
+<p>Both Hashtable and ConcurrentHashMap are thread-safe. The difference is how thread safety is achieved and what that costs in performance.</p>
+<p>Key interview question:</p>
+<p>How is locking different in ConcurrentHashMap when compared with Hashtable?</p>
+<p>This is the entire rest of the lecture.</p>
+<h2>03:49 — Internal structure: 16 buckets by default</h2>
+<h3>Default initial capacity</h3>
+<p>Both normal HashMap and ConcurrentHashMap have default initial capacity of 16.</p>
+<p>That means 16 buckets internally:</p>
+<p>Bucket index:  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
+               └───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
+               Total: 16 buckets (indices 0 to 15)</p>
+<p>Sir draws buckets numbered 0 through 15 on the board.</p>
+<h2>04:31 — The revolutionary locking rule: reads vs writes</h2>
+<p>This is the single most important internal detail of ConcurrentHashMap.</p>
+<h3>Read operations — NO lock required</h3>
+<p>To perform read operation, thread won&#x27;t require lock.</p>
+<ul><li>Any number of threads are allowed to perform read operations simultaneously.</li></ul>
+<ul><li>Multiple threads can read at the same time with zero waiting (for the lock itself).</li></ul>
+<h3>Write / update operations — lock required, but NOT whole-map lock</h3>
+<p>To perform write operation or update operation, thread compulsorily requires lock.</p>
+<p>But critically:</p>
+<h3>Side-by-side comparison (board)</h3>
+<p>HASHTABLE:
+  Thread wants read  → requires total map object lock
+  Thread wants write → requires total map object lock
+  → Only 1 thread at a time for ANYTHING
+
+CONCURRENTHASHMAP:
+  Thread wants read  → NO lock required (unlimited concurrent reads)
+  Thread wants write → requires lock of THAT BUCKET/SEGMENT only
+  → Many threads can operate simultaneously on different buckets</p>
+<h2>05:15 — Bucket-level locking explained</h2>
+<h3>Concept</h3>
+<p>The total ConcurrentHashMap is divided into multiple parts. Each part is nothing but a bucket.</p>
+<p>Instead of total map object lock, we use bucket-level lock.</p>
+<p>For every part (bucket), internally a separate lock will be maintained.</p>
+<h3>Default scenario (16 buckets, 16 locks)</h3>
+<p>Assume 16 buckets → 16 locks available.</p>
+<p>Bucket 0 [lock₀]   Bucket 1 [lock₁]   ...   Bucket 15 [lock₁₅]</p>
+<p>Scenario: Thread-1 is performing an update operation in Bucket 3.</p>
+<ul><li>Bucket 3 is locked by Thread-1.</li></ul>
+<ul><li>All remaining threads are allowed to perform update operations simultaneously in the remaining 15 buckets.</li></ul>
+<h3>How many simultaneous updates?</h3>
+<p>At a time, 16 update operations can be performed simultaneously (by default), because there are 16 buckets with 16 separate locks.</p>
+<p>Plus: any number of read operations can happen concurrently on top of that.</p>
+<h3>Performance impact</h3>
+<p>With this different locking mechanism, relatively performance is going to be improved.</p>
+<p>Sir also introduces the formal term: segment locking.</p>
+<h2>06:56 — Segment locking and concurrency level</h2>
+<h3>Segment locking</h3>
+<p>Sir says: instead of saying &quot;bucket-level locking&quot; every time, use segment locking.</p>
+<p>Meaning:</p>
+<p>Total hash map will be divided into a specific number of parts.</p>
+<p>That number is called concurrency level.</p>
+<h3>Concurrency level — NEW TERM (exam + interview)</h3>
+<p>Board definition:</p>
+<p>Concurrency level = 16 means total map will be divided into 16 segments/buckets, and for each segment a separate lock will be maintained.</p>
+<p>If a thread wants to perform any update operation in that segment, it requires the lock of that particular segment — not the total map object lock.</p>
+<h3>Relationship between buckets and concurrency level</h3>
+<p>Most of the times, number of buckets and concurrency level both are same.</p>
+<p>That&#x27;s why we can describe it as: for every bucket, one lock (in the default case).</p>
+<h2>08:00 — Performance summary: Hashtable vs ConcurrentHashMap</h2>
+<p>At a time:</p>
+<ul><li>Read operations on ConcurrentHashMap: any number of threads</li></ul>
+<ul><li>Update operations simultaneously: 16 threads (default concurrency level)</li></ul>
+<p>Wait time of threads will be reduced → overall performance of the system will be improved.</p>
+<h2>08:47 — When concurrency level ≠ initial capacity</h2>
+<p>Sir emphasizes: most of the time both numbers are the same, but need not be same.</p>
+<h3>Case 1: Both equal (default) — bucket-level locking</h3>
+<p>Initial capacity = 16  →  16 buckets
+Concurrency level = 16  →  16 locks
+Result: For every bucket, one lock  ✓  (bucket-level locking)</p>
+<h3>Case 2: Concurrency level = 8, initial capacity = 16</h3>
+<p>Initial capacity = 16  →  16 buckets
+Concurrency level = 8   →  8 locks
+Result: For every TWO buckets, ONE lock will be maintained</p>
+<p>Lock-0 covers buckets 0,1
+Lock-1 covers buckets 2,3
+Lock-2 covers buckets 4,5
+...
+Lock-7 covers buckets 14,15</p>
+<p>In two buckets (sharing one lock), at a time only one thread is allowed to perform update operation in that pair.</p>
+<p>Maximum simultaneous updates = 8 (not 16).</p>
+<h3>Case 3: Concurrency level = 32, initial capacity = 16</h3>
+<p>Initial capacity = 16  →  16 buckets
+Concurrency level = 32  →  32 locks
+Result: TWO locks per bucket (first half + second half of each bucket)</p>
+<p>Sir&#x27;s board explanation: in every bucket, two locks will be maintained — one for the first half, one for the second half.</p>
+<h3>General rule</h3>
+<p>Based on concurrency level and number of buckets, the arrangement will be adjusted.</p>
+<h2>10:37 — Internal mechanism recap (Sir&#x27;s final summary before properties)</h2>
+<p>Hashtable:</p>
+<ul><li>Total map object will be locked for any operation (read or write).</li></ul>
+<p>ConcurrentHashMap:</p>
+<ul><li>Segment lock concept available at bucket level or segment level.</li></ul>
+<ul><li>Instead of total map object lock → partial lock only.</li></ul>
+<ul><li>Read operation: no lock.</li></ul>
+<ul><li>Update operation: segment lock / bucket-level lock required.</li></ul>
+<ul><li>Default: 16 simultaneous update operations (concurrency level = 16).</li></ul>
+<p>Thread safety ✓ + improved performance ✓</p>
+<h2>12:06 — Theoretical properties / conclusions about ConcurrentHashMap</h2>
+<p>Sir now lists board points — copy these exactly for exams.</p>
+<h3>Property 1: Underlying data structure</h3>
+<p>Underlying data structure is hash table (same as HashMap and Hashtable).</p>
+<p>Java&#x27;s ConcurrentHashMap is implemented based on hash table data structure.</p>
+<h3>Property 2: Concurrent reads + thread-safe updates</h3>
+<p>ConcurrentHashMap allows concurrent read operations and thread-safe update operations.</p>
+<ul><li>Any number of read operations can be performed concurrently.</li></ul>
+<ul><li>Multiple update operations can be performed in a safe way (up to concurrency level simultaneously).</li></ul>
+<h3>Property 3: Lock rules (repeated for exam)</h3>
+<h3>Property 4: Map divided into smaller portions</h3>
+<p>Concurrent update achieved by internally dividing map into smaller portions, which is defined by concurrency level.</p>
+<ul><li>How many parts to divide? → concurrency level</li></ul>
+<ul><li>How many locks to maintain? → concurrency level</li></ul>
+<ul><li>Default concurrency level = 16</li></ul>
+<ul><li>By default → 16 locks maintained</li></ul>
+<h3>Property 5: Default simultaneous operations</h3>
+<p>ConcurrentHashMap allows any number of read operations but 16 update operations at a time by default (because concurrency level = 16).</p>
+<h3>Property 6: Null not allowed</h3>
+<p>Null is NOT allowed for both key and value.</p>
+<p>Same rule as Hashtable. You cannot use null for the key; you cannot use null for the value.</p>
+<p>ConcurrentHashMap m = new ConcurrentHashMap();
+m.put(null, &quot;value&quot;);   // RuntimeException — null key not allowed
+m.put(&quot;key&quot;, null);     // RuntimeException — null value not allowed</p>
+<p>Contrast: HashMap allows one null key and multiple null values.</p>
+<h3>Property 7: Iteration + concurrent updates — no CME</h3>
+<p>While one thread is iterating, another thread can perform update operation in the map simultaneously.</p>
+<p>ConcurrentHashMap never throws `ConcurrentModificationException`.</p>
+<p>Sir extends this:</p>
+<p>Not only ConcurrentHashMap — any concurrent collection never throws ConcurrentModificationException.</p>
+<p>This is a major difference from regular HashMap / ArrayList where fail-fast iterators throw CME if structurally modified during iteration.</p>
+<h3>Property 8: How thread safety + performance achieved (one-line exam answer)</h3>
+<ol><li>Thread safety: bucket-level / segment-level lock for updates</li></ol>
+<ol><li>Performance improved: read operation lock not required; update operation uses lock of particular part (not total map object lock), defined by concurrency level</li></ol>
+<p>One word you must know: concurrency level</p>
+<h2>16:00 — Constructors: how to create ConcurrentHashMap</h2>
+<p>Sir says: before programs (next videos), let&#x27;s see how to create ConcurrentHashMap and what constructors exist.</p>
+<h3>Pattern (same as HashMap)</h3>
+<p>Like normal HashMap / HashSet — four constructors with capacity/fill-ratio variants — plus one extra parameter: concurrency level.</p>
+<p>Total constructors: 5</p>
+<p>Three parameters to remember:</p>
+<h3>Constructor 1: No-arg (all defaults)</h3>
+<pre class='code'>ConcurrentHashMap m = new ConcurrentHashMap();</pre>
+<p>Creates an empty ConcurrentHashMap with:</p>
+<ul><li>Default initial capacity = 16</li></ul>
+<ul><li>Default fill ratio = 0.75</li></ul>
+<ul><li>Default concurrency level = 16</li></ul>
+<h3>Constructor 2: Custom initial capacity</h3>
+<pre class='code'>ConcurrentHashMap m = new ConcurrentHashMap(int initialCapacity);</pre>
+<p>If default capacity 16 is not enough, customize your own capacity. Fill ratio and concurrency level still use defaults (0.75 and 16).</p>
+<h3>Constructor 3: Custom initial capacity + fill ratio</h3>
+<pre class='code'>ConcurrentHashMap m = new ConcurrentHashMap(int initialCapacity, float loadFactor);</pre>
+<p>Customize both initial capacity and fill ratio (load factor). Concurrency level still defaults to 16.</p>
+<h3>Constructor 4: Custom initial capacity + fill ratio + concurrency level</h3>
+<pre class='code'>ConcurrentHashMap m = new ConcurrentHashMap(int initialCapacity, float loadFactor, int concurrencyLevel);</pre>
+<p>Full customization. If you don&#x27;t want default concurrency level 16, you can set 8, 30, 32, etc. based on requirement:</p>
+<ul><li>How many locks do you require?</li></ul>
+<ul><li>How many parts do you want to divide your ConcurrentHashMap into?</li></ul>
+<p>That number = concurrency level.</p>
+<h3>Constructor 5: From another Map (inter-conversion)</h3>
+<pre class='code'>ConcurrentHashMap m = new ConcurrentHashMap(Map map);</pre>
+<p>Provide any Map object → creates an equivalent ConcurrentHashMap with the same entries.</p>
+<p>This type of constructor exists in all Map implementations — inter-conversion between one map type and another.</p>
+<h2>Constructors summary table</h2>
+<h2>Master comparison: HashMap vs Hashtable vs ConcurrentHashMap</h2>
+<h2>Locking mechanism diagram (exam-ready)</h2>
+<p>┌─────────────────────────────────────────────────────────────────┐
+│                    HASHTABLE (total map lock)                      │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  ONE LOCK on entire map                                    │  │
+│  │  Read  → needs lock → 1 thread at a time                   │  │
+│  │  Write → needs lock → 1 thread at a time                   │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│              CONCURRENTHASHMAP (segment/bucket locks)            │
+│  ┌────┐ ┌────┐ ┌────┐ ┌────┐     ┌────┐ ┌────┐                  │
+│  │ B0 │ │ B1 │ │ B2 │ │ B3 │ ... │B14 │ │B15 │  (16 buckets)   │
+│  │ L0 │ │ L1 │ │ L2 │ │ L3 │     │L14 │ │L15 │  (16 locks)     │
+│  └────┘ └────┘ └────┘ └────┘     └────┘ └────┘                  │
+│  Read anywhere  → NO lock needed (unlimited threads)            │
+│  Write in B3    → only L3 locked; B0-B2, B4-B15 still free      │
+│  Max simultaneous writes (default) = 16                          │
+└─────────────────────────────────────────────────────────────────┘</p>
+<h2>Interview questions &amp; model answers</h2>
+<h3>Q1: What is the difference between HashMap, Hashtable, and ConcurrentHashMap?</h3>
+<p>Answer: HashMap is not thread-safe — multiple threads can operate simultaneously but data inconsistency may occur. Hashtable is thread-safe by locking the entire map object — only one thread at a time even for reads, causing performance problems. ConcurrentHashMap is thread-safe with segment/bucket-level locking — reads need no lock; writes lock only the relevant segment. Default concurrency level 16 allows 16 simultaneous updates plus unlimited concurrent reads.</p>
+<h3>Q2: Why is ConcurrentHashMap faster than Hashtable?</h3>
+<p>Answer: Hashtable requires total map object lock for every operation including reads — only one thread at a time. ConcurrentHashMap uses segment locking — reads require no lock at all; updates lock only the specific bucket/segment. So many threads can read and write (in different segments) simultaneously.</p>
+<h3>Q3: What is concurrency level?</h3>
+<p>Answer: Concurrency level defines how many parts the ConcurrentHashMap is internally divided into and how many locks are maintained. Default is 16. It determines the maximum number of simultaneous update operations (when concurrency level equals number of buckets). It can be customized via the 4-parameter constructor.</p>
+<h3>Q4: Does ConcurrentHashMap allow null keys or null values?</h3>
+<p>Answer: No. Null is not allowed for both keys and values — same as Hashtable, unlike HashMap.</p>
+<h3>Q5: Will ConcurrentHashMap throw ConcurrentModificationException during iteration?</h3>
+<p>Answer: No. While one thread iterates, another thread can update the map simultaneously. In fact, no concurrent collection throws ConcurrentModificationException.</p>
+<h3>Q6: What are the default values for ConcurrentHashMap constructor?</h3>
+<p>Answer: Initial capacity = 16, fill ratio (load factor) = 0.75, concurrency level = 16.</p>
+<h3>Q7: What is segment locking / bucket-level locking?</h3>
+<p>Answer: Instead of locking the entire map, ConcurrentHashMap divides the map into segments (buckets) and maintains a separate lock per segment. A thread performing an update only locks its target segment, leaving other segments available for other threads.</p>
+<h2>Exam one-liners (copy to revision sheet)</h2>
+<ol><li>ConcurrentHashMap → implementation class of ConcurrentMap → child interface of Map.</li></ol>
+<ol><li>Thread-safe and concurrent collection.</li></ol>
+<ol><li>Underlying data structure: hash table.</li></ol>
+<ol><li>Read operation → no lock; any number of concurrent reads.</li></ol>
+<ol><li>Update operation → segment/bucket lock required (NOT total map object lock).</li></ol>
+<ol><li>Concurrency level (default 16) = number of internal parts = number of locks (usually).</li></ol>
+<ol><li>Default: 16 simultaneous update operations + unlimited reads.</li></ol>
+<ol><li>Null not allowed for key or value.</li></ol>
+<ol><li>Never throws `ConcurrentModificationException` (true for all concurrent collections).</li></ol>
+<ol><li>Default constructor: capacity 16, load factor 0.75, concurrency level 16.</li></ol>
+<ol><li>5 constructors total; 4 like HashMap + concurrency level parameter + Map-copy constructor.</li></ol>
+<ol><li>Hashtable = total map lock (1 thread); ConcurrentHashMap = segment lock (16 updates + unlimited reads by default).</li></ol>
+<h2>Connection to adjacent videos</h2>
+<h2>Sir&#x27;s closing (18:58)</h2>
+<p>Clear for all of you? That&#x27;s all for this session.</p>
+<p>Next session: programs demonstrating ConcurrentHashMap in code.</p>
+<p>End of Video 157 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>157 of 203</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Concurrent Collections Part-4 \</td><td>\</td><td>ConcurrentHashMap Details</td></tr>
+<tr><td>YouTube URL</td><td>https://www.youtube.com/watch?v=IUo1Ym-Uj_I</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>19m 14s</td><td></td><td></td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td><td></td></tr>
+<tr><td>Module</td><td>Concurrent Collections (Part 4 of 7 in this sub-series)</td><td></td><td></td></tr>
+<tr><td>Caption source</td><td>YouTube auto-generated (yt-dlp + node PO token)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Label</th><th>Meaning</th></tr>
+<tr><td>Thread-safe collection</td><td>Multiple threads can use it without data corruption</td></tr>
+<tr><td>Concurrent collection</td><td>Multiple threads can operate simultaneously with good performance</td></tr>
+</table>
+<table>
+<tr><th>Collection</th><th>Lock scope for update</th></tr>
+<tr><td>Hashtable</td><td>Total map object lock — entire map locked</td></tr>
+<tr><td>ConcurrentHashMap</td><td>Bucket-level lock (or segment lock) — only the relevant part locked</td></tr>
+</table>
+<table>
+<tr><th>Term</th><th>Definition</th></tr>
+<tr><td>Concurrency level</td><td>The number of parts the map is divided into internally; equals the number of locks maintained</td></tr>
+<tr><td>Default value</td><td>16</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>Hashtable</th><th>ConcurrentHashMap</th></tr>
+<tr><td>Lock for any operation</td><td>Total map object lock</td><td>Segment/bucket lock for updates only</td></tr>
+<tr><td>Read operations</td><td>Requires total map lock (1 thread)</td><td>No lock — unlimited concurrent reads</td></tr>
+<tr><td>Update operations</td><td>1 at a time (whole map)</td><td>Up to concurrency level simultaneous updates (default 16)</td></tr>
+<tr><td>Performance</td><td>Not up to the mark</td><td>Too good (Sir&#x27;s words)</td></tr>
+<tr><td>Thread safety</td><td>Yes</td><td>Yes</td></tr>
+</table>
+<table>
+<tr><th>Condition</th><th>Locking style</th></tr>
+<tr><td>concurrency level == number of buckets</td><td>Bucket-level locking (1 lock per bucket)</td></tr>
+<tr><td>concurrency level ≠ number of buckets</td><td>Locks distributed based on concurrency level and bucket count</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>Lock required?</th><th>Which lock?</th></tr>
+<tr><td>Read</td><td>No</td><td>—</td></tr>
+<tr><td>Update (put, remove, replace, etc.)</td><td>Yes, compulsory</td><td>Lock of particular part only — segment lock or bucket-level lock — NOT total map object lock</td></tr>
+</table>
+<table>
+<tr><th>Parameter</th><th>Default value</th><th>Also known as</th></tr>
+<tr><td>Initial capacity</td><td>16</td><td>—</td></tr>
+<tr><td>Fill ratio</td><td>0.75</td><td>Load factor</td></tr>
+<tr><td>Concurrency level</td><td>16</td><td>Number of segments/locks</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Signature</th><th>Defaults used</th></tr>
+<tr><td>1</td><td>ConcurrentHashMap()</td><td>capacity=16, loadFactor=0.75, concurrencyLevel=16</td></tr>
+<tr><td>2</td><td>ConcurrentHashMap(int initialCapacity)</td><td>loadFactor=0.75, concurrencyLevel=16</td></tr>
+<tr><td>3</td><td>ConcurrentHashMap(int initialCapacity, float loadFactor)</td><td>concurrencyLevel=16</td></tr>
+<tr><td>4</td><td>ConcurrentHashMap(int initialCapacity, float loadFactor, int concurrencyLevel)</td><td>all custom</td></tr>
+<tr><td>5</td><td>ConcurrentHashMap(Map m)</td><td>copies from given map</td></tr>
+</table>
+<table>
+<tr><th>Feature</th><th>HashMap</th><th>Hashtable</th><th>ConcurrentHashMap</th></tr>
+<tr><td>Introduced</td><td>1.2</td><td>1.0 (legacy)</td><td>1.5 (java.util.concurrent)</td></tr>
+<tr><td>Thread-safe?</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Null key</td><td>Allowed (one)</td><td>Not allowed</td><td>Not allowed</td></tr>
+<tr><td>Null value</td><td>Allowed</td><td>Not allowed</td><td>Not allowed</td></tr>
+<tr><td>Lock scope</td><td>None</td><td>Entire map for every operation</td><td>Segment/bucket for updates only</td></tr>
+<tr><td>Read concurrency</td><td>Unsynchronized (unsafe)</td><td>1 thread (locked)</td><td>Unlimited (no lock)</td></tr>
+<tr><td>Write concurrency</td><td>Unsynchronized (unsafe)</td><td>1 thread (locked)</td><td>Up to concurrency level (default 16)</td></tr>
+<tr><td>Performance (multi-thread)</td><td>Fast but unsafe</td><td>Slow (total lock)</td><td>Fast + safe</td></tr>
+<tr><td>Underlying DS</td><td>Hash table</td><td>Hash table</td><td>Hash table</td></tr>
+<tr><td>Default capacity</td><td>16</td><td>11</td><td>16</td></tr>
+<tr><td>Default load factor</td><td>0.75</td><td>0.75</td><td>0.75</td></tr>
+<tr><td>Concurrency level</td><td>N/A</td><td>N/A</td><td>16 (default)</td></tr>
+<tr><td>Fail-fast / CME on iteration</td><td>Yes (CME possible)</td><td>Yes (CME possible)</td><td>Never throws CME</td></tr>
+<tr><td>Implements</td><td>Map</td><td>Map (legacy)</td><td>ConcurrentMap</td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th></tr>
+<tr><td>156</td><td>ConcurrentMap interface — putIfAbsent, conditional remove, replace</td></tr>
+<tr><td>157 (this)</td><td>ConcurrentHashMap internal details, locking, properties, constructors</td></tr>
+<tr><td>158</td><td>ConcurrentHashMap Program-1 (demo)</td></tr>
+<tr><td>159</td><td>ConcurrentHashMap Program-2 (demo)</td></tr>
+<tr><td>160</td><td>HashMap &amp; ConcurrentHashMap comparison program</td></tr>
+</table>
+</body></html>

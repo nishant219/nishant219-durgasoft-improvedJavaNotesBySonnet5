@@ -1,0 +1,587 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>061-static-block</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 061 — static block</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-11 ||static block</p>
+<p>ASR decode (Whisper): post-tumatum = post-mortem; keep subiting = keep writing; yet that time = at the time; register native = registerNatives; resulta set = ResultSet; Kourjava = core Java; immorietly / Immuriate = immediately; ATM = automatic; Yaman / Yam one = m1; Deraiyudha / deri would = Derived; Pasta = first; Swapyap / S.P.Yav = SOP (System.out.println); RIWO / read and directly write only = RIWO (Read Indirectly Write Only); shadam da JVM = shut down the JVM; No such method error column main = `NoSuchMethodError: main`; Kuchin = question; Validering = valid; Chaila / chile = child; base 1 / derived 1 = demo filenames Base1 / Derived1.</p>
+<h3>00:04 — Agenda: post-mortem on static block</h3>
+<p>Next topic after static control flow (Video 060): a post-mortem on the static block.</p>
+<p>Points to cover:</p>
+<ul><li>What is the need of a static block?</li></ul>
+<ul><li>How do we declare it?</li></ul>
+<ul><li>How many static blocks can we take?</li></ul>
+<ul><li>When is a static block executed?</li></ul>
+<h3>00:34 — When is a static block executed?</h3>
+<p>Rule: A static block is executed at the time of class loading.</p>
+<p>Therefore: at the time of class loading, if we want to perform any activity, we must define that activity inside a static block.</p>
+<p>When should we go for a static block?</p>
+<p>At the time of class loading, if we want to perform any activity → go for a static block.</p>
+<pre class='code'>class DemoNeed {
+    static {
+        // activity that must run when the class is loaded
+        System.out.println(&quot;class loading activity&quot;);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;main&quot;);
+    }
+}
+// prints:
+ // class loading activity
+ // main</pre>
+<h3>02:34 — When is static block required? (motivation)</h3>
+<p>Doubt: Sir, when exactly is a static block required?</p>
+<p>Two classic real-world examples:</p>
+<ol><li>Loading native libraries at class-load time</li></ol>
+<ol><li>Registering a JDBC driver with DriverManager at class-load time</li></ol>
+<h3>02:47 — Example 1: load native libraries at class loading</h3>
+<p>At the time of Java class loading, the corresponding native libraries should be loaded. That activity belongs in a static block.</p>
+<pre class='code'>class Test {
+    static {
+        System.loadLibrary(&quot;native_library_path&quot;);
+    }
+}</pre>
+<p>System.loadLibrary(...) takes the native library name/path. When class Test is loaded, the static block runs and the native library is loaded.</p>
+<p>This is not only for our classes. Every predefined class that needs native libraries also does this at class-loading time.</p>
+<h3>06:01 — Proof from JDK: `Object` and `Thread`</h3>
+<h4>`Object.java` (idea from JDK source)</h4>
+<p>java.lang.Object has several native methods (hashCode(), wait(), …). So the corresponding native library must be loaded when Object is loaded.</p>
+<p>Inside Object, there is a static block that calls something like `registerNatives()` (same idea as System.loadLibrary):</p>
+<pre class='code'>public class Object {
+    private static native void registerNatives();
+
+    static {
+        registerNatives();
+    }
+
+    // native methods such as hashCode(), wait(), etc.
+}</pre>
+<h4>`Thread.java`</h4>
+<p>Thread also has native methods (start(), yield(), …). Same pattern:</p>
+<pre class='code'>public class Thread implements Runnable {
+    private static native void registerNatives();
+
+    static {
+        registerNatives();
+    }
+
+    // native start(), yield(), etc.
+}</pre>
+<p>Takeaway: If an activity must happen exactly when the class is loaded, put it in a static block. Loading native libraries is one such area.</p>
+<h3>07:53 — Example 2: JDBC driver registration (very important)</h3>
+<p>Typical basic JDBC steps (core Java):</p>
+<ol><li>Load driver class → Class.forName(&quot;driver.class.Name&quot;)</li></ol>
+<ol><li>Get connection → DriverManager.getConnection(...)</li></ol>
+<ol><li>Prepare statement</li></ol>
+<ol><li>Execute query</li></ol>
+<ol><li>Use ResultSet to read data</li></ol>
+<pre class='code'>// conceptual JDBC flow (not a full runnable app)
+Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;); // load driver class
+// Connection con = DriverManager.getConnection(url, user, pwd);
+// PreparedStatement pst = con.prepareStatement(sql);
+// ResultSet rs = pst.executeQuery();</pre>
+<h4>The puzzle</h4>
+<p>A machine may have multiple DB drivers installed (Oracle, MySQL, DB2, …).</p>
+<p>After Class.forName(...), we immediately ask DriverManager for a connection. We never explicitly “register” the driver with DriverManager in our application code.</p>
+<p>Question: How does DriverManager know about the driver class we just loaded?</p>
+<h4>The answer: static block inside every driver class</h4>
+<p>As per the JDBC specification, every database driver class must contain a static block that registers this driver with `DriverManager`.</p>
+<pre class='code'>class DBDriver {
+    static {
+        // register this driver with DriverManager
+        // (conceptual — real drivers call DriverManager.registerDriver(...))
+    }
+}
+// what happens when we write:
+Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);
+// 1) Driver class is loaded
+// 2) its static block runs automatically
+// 3) driver registers itself with DriverManager
+// → we are NOT responsible to register explicitly</pre>
+<p>If we design our own driver class, this static-block registration is compulsory (JDBC spec). That is why the “register with DriverManager” step is not listed as a separate app step after Class.forName.</p>
+<p>Need of static block (summary):</p>
+<p>At the time of class loading, if we want to perform certain activity automatically, go for a static block.</p>
+<h3>15:04 — How many static blocks in a class?</h3>
+<p>Within a class we can declare any number of static blocks.</p>
+<p>All of them execute from top to bottom.</p>
+<pre class='code'>class MultiStatic {
+    static {
+        System.out.println(&quot;first static block&quot;);
+    }
+
+    static {
+        System.out.println(&quot;second static block&quot;);
+    }
+
+    static {
+        System.out.println(&quot;third static block&quot;);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;main&quot;);
+    }
+}
+// prints:
+ // first static block
+ // second static block
+ // third static block
+ // main</pre>
+<h3>16:23 — Interview Q1: print without `main`?</h3>
+<p>Question 1: Without writing a main method, is it possible to print some statements to the console?</p>
+<p>Answer: Yes — by using a static block (valid through Java 1.6; see version note later).</p>
+<pre class='code'>class Test {
+    static {
+        System.out.println(&quot;Hello I can print&quot;);
+    }
+}</pre>
+<p>What happens (≤ 1.6):</p>
+<ol><li>Class loads → static block runs → prints Hello I can print</li></ol>
+<ol><li>JVM then looks for main</li></ol>
+<ol><li>main is missing → `NoSuchMethodError: main`</li></ol>
+<pre class='code'>// runtime behavior without System.exit(0):
+// prints Hello I can print
+// then: Exception in thread &quot;main&quot; java.lang.NoSuchMethodError: main</pre>
+<p>To stop JVM from searching for main, call `System.exit(0)` inside the static block:</p>
+<pre class='code'>class Test {
+    static {
+        System.out.println(&quot;Hello I can print&quot;);
+        System.exit(0);
+    }
+}
+// prints: Hello I can print
+// (JVM exits; no NoSuchMethodError)</pre>
+<p>Demo without exit (compile OK, then error after print):</p>
+<pre class='code'>class Test {
+    static {
+        System.out.println(&quot;Hello I can print&quot;);
+    }
+}
+// prints Hello I can print
+// then NoSuchMethodError: main</pre>
+<p>Demo with exit:</p>
+<pre class='code'>class Test {
+    static {
+        System.out.println(&quot;Hello I can print&quot;);
+        System.exit(0);
+    }
+}
+// prints: Hello I can print</pre>
+<h3>21:10 — Interview Q2: without `main` **and** without static block?</h3>
+<p>Question 2: Without writing main and without writing a static block, is it possible to print to the console?</p>
+<p>First instinct: No.</p>
+<p>Correct answer (≤ 1.6): Yes — there are multiple ways.</p>
+<p>Constraint reminder:</p>
+<ul><li>Do not write main</li></ul>
+<ul><li>Do not write a static block</li></ul>
+<ul><li>Still print something</li></ul>
+<h3>22:41 — Way 1: static variable assignment → static method</h3>
+<p>Declare a static variable whose initialization calls a static method. That method prints and then exits.</p>
+<pre class='code'>class Test {
+    static int x = m1();
+
+    public static int m1() {
+        System.out.println(&quot;Hello I can print&quot;);
+        System.exit(0);
+        return 10; // syntactically required (return type int)
+    }
+}</pre>
+<p>Static control flow (idea):</p>
+<ol><li>Identification of static members (x, m1)</li></ol>
+<ol><li>Execution of static variable assignments → x = m1() runs → print → System.exit(0)</li></ol>
+<p>No main, no static block — still prints.</p>
+<p>Variant shown in lab (message changed):</p>
+<pre class='code'>class Test {
+    static int x = m1();
+
+    public static int m1() {
+        System.out.println(&quot;Hi I can print&quot;);
+        System.exit(0);
+        return 10;
+    }
+}
+// prints: Hi I can print</pre>
+<h3>25:37 — Way 2: static object + instance block</h3>
+<p>Create an object while initializing a static reference. Object creation runs the instance block.</p>
+<pre class='code'>class Test {
+    static Test t = new Test();
+
+    {
+        System.out.println(&quot;Hello I can print&quot;);
+        System.exit(0);
+    }
+}
+// prints: Hello I can print</pre>
+<p>Why it works:</p>
+<ol><li>Identify static members (t)</li></ol>
+<ol><li>Execute static assignment t = new Test() → object creation → instance block runs</li></ol>
+<p>Instance block runs at object creation time (unlike static block, which runs at class loading).</p>
+<p>Demo with different text:</p>
+<pre class='code'>class Test {
+    static Test t = new Test();
+
+    {
+        System.out.println(&quot;Hi I can print&quot;);
+        System.exit(0);
+    }
+}
+// prints: Hi I can print</pre>
+<h3>27:36 — Way 3: static object + constructor</h3>
+<p>Same idea: static reference = new Test(), but print from the constructor.</p>
+<pre class='code'>class Test {
+    static Test t = new Test();
+
+    Test() {
+        System.out.println(&quot;Hello I can print&quot;);
+        System.exit(0);
+    }
+}
+// prints: Hello I can print</pre>
+<p>Lab variant:</p>
+<pre class='code'>class Test {
+    static Test t = new Test();
+
+    Test() {
+        System.out.println(&quot;Hello Hi I can print&quot;);
+        System.exit(0);
+    }
+}
+// prints: Hello Hi I can print</pre>
+<p>Q2 summary: Without main and without static block — yes, multiple ways (static init calling a method; instance block; constructor), up to Java 1.6.</p>
+<p>Board recap of way 1:</p>
+<pre class='code'>class Test {
+    static int x = m1();
+
+    public static int m1() {
+        System.out.println(&quot;Hello I can print&quot;);
+        System.exit(0);
+        return 10;
+    }
+}</pre>
+<h3>32:43 — Version twist (very important)</h3>
+<p>Everything above (print without main / without static block) applies only up to Java 1.6.</p>
+<p>From Java 1.7 onwards:</p>
+<ul><li>`main` method is mandatory to start program execution</li></ul>
+<ul><li>Without writing main, it is impossible to print statements to the console (for a normal java ClassName launch)</li></ul>
+<pre class='code'>// Java ≥ 1.7: this alone is NOT enough to start a program
+class Test {
+    static {
+        System.out.println(&quot;Hello I can print&quot;);
+        System.exit(0);
+    }
+}
+// From 1.7 onwards: JVM requires main to start execution
+ // (behavior / error messaging differs by version; exam point: main is mandatory)</pre>
+<p>Note (board):</p>
+<p>From 1.7 V onwards, main method is mandatory to start a program execution.</p>
+<p>Hence, without writing main, it is impossible to print some statements to the console.</p>
+<p>(Same point was also covered in the main method fundamentals lectures.)</p>
+<h3>35:09 — Next topic: static control flow in parent–child</h3>
+<p>Up to here: need of static block, native/JDBC examples, multiple static blocks, interview tricks + 1.7 rule.</p>
+<p>Next important terminology: static control flow in parent-to-child relationship — if parent and child both have static members, what is the control flow when we run the child?</p>
+<h3>36:09 — Example: `Base` and `Derived`</h3>
+<p>Two classes, one compilation unit (e.g. Base.java containing both). Derived is the same shape as the single-class static-control-flow example from Video 060 (two static blocks, main, helper method).</p>
+<h4>Parent: `Base`</h4>
+<pre class='code'>class Base {
+    static int i = 10;
+
+    static {
+        m1();
+        System.out.println(&quot;Base static block&quot;);
+    }
+
+    public static void main(String[] args) {
+        m1();
+        System.out.println(&quot;Base main&quot;);
+    }
+
+    public static void m1() {
+        System.out.println(j);
+    }
+
+    static int j = 20;
+}</pre>
+<p>(Compared with the previous single-class demo: second static block in parent is omitted here; otherwise same idea.)</p>
+<h4>Child: `Derived`</h4>
+<pre class='code'>class Derived extends Base {
+    static int x = 100;
+
+    static {
+        m2();
+        System.out.println(&quot;Derived first static block&quot;);
+    }
+
+    public static void main(String[] args) {
+        m2();
+        System.out.println(&quot;Derived main&quot;);
+    }
+
+    public static void m2() {
+        System.out.println(y);
+    }
+
+    static {
+        System.out.println(&quot;Derived second static block&quot;);
+    }
+
+    static int y = 200;
+}</pre>
+<p>Combined file sketch:</p>
+<pre class='code'>class Base {
+    static int i = 10;
+    static {
+        m1();
+        System.out.println(&quot;Base static block&quot;);
+    }
+    public static void main(String[] args) {
+        m1();
+        System.out.println(&quot;Base main&quot;);
+    }
+    public static void m1() {
+        System.out.println(j);
+    }
+    static int j = 20;
+}
+
+class Derived extends Base {
+    static int x = 100;
+    static {
+        m2();
+        System.out.println(&quot;Derived first static block&quot;);
+    }
+    public static void main(String[] args) {
+        m2();
+        System.out.println(&quot;Derived main&quot;);
+    }
+    public static void m2() {
+        System.out.println(y);
+    }
+    static {
+        System.out.println(&quot;Derived second static block&quot;);
+    }
+    static int y = 200;
+}</pre>
+<h3>41:03 — Compile and run the child</h3>
+<p>javac Base.java</p>
+<p>Generates two .class files:</p>
+<ul><li>Base.class</li></ul>
+<ul><li>Derived.class</li></ul>
+<p>Run the child:</p>
+<p>java Derived</p>
+<p>Key idea: Parent class members are available to the child by default. So whenever we load the child class, the parent class is also loaded, and parent static control flow runs first.</p>
+<h3>42:44 — Three activities when executing the child</h3>
+<p>Whenever we execute the child class, static control flow does these three activities:</p>
+<ol><li>Identification of static members from parent to child (top to bottom: parent first, then child)</li></ol>
+<ol><li>Execution of static variable assignments and static blocks from parent to child</li></ol>
+<ol><li>Execution of only the child class `main` method (we launched java Derived, not java Base)</li></ol>
+<p>When executing child class:
+  1) Identify static members: parent → child
+  2) Execute static assignments &amp; static blocks: parent → child
+  3) Execute only child class main method</p>
+<p>If the child has no main, then the parent main would run (inherited). Here child already has main, so parent main is not executed.</p>
+<h3>45:24 — Trace step 1: identification (RIWO)</h3>
+<p>During identification, static variables get default values and enter RIWO state (Read Indirectly / Write Only — same idea as Video 060).</p>
+<p>Parent (`Base`) — identify in order:</p>
+<p>Child (`Derived`) — continue numbering:</p>
+<p>Steps 1–11 = identification complete.</p>
+<h3>47:12 — Trace step 2: assignments &amp; static blocks (parent → child)</h3>
+<p>Parent execution (continues numbering):</p>
+<pre class='code'>// during Base static block, j is still 0
+public static void m1() {
+    System.out.println(j); // prints 0
+}</pre>
+<p>Child execution:</p>
+<pre class='code'>// during Derived first static block, y is still 0
+public static void m2() {
+    System.out.println(y); // prints 0
+}</pre>
+<p>Steps 12–22 = second activity complete.</p>
+<h3>50:56 — Trace step 3: only child `main`</h3>
+<p>Steps 23–25.</p>
+<h3>52:02 — Expected output: `java Derived`</h3>
+<p>0
+Base static block
+0
+Derived first static block
+Derived second static block
+200
+Derived main</p>
+<p>Full runnable program (same as board):</p>
+<pre class='code'>class Base {
+    static int i = 10;
+
+    static {
+        m1();
+        System.out.println(&quot;Base static block&quot;);
+    }
+
+    public static void main(String[] args) {
+        m1();
+        System.out.println(&quot;Base main&quot;);
+    }
+
+    public static void m1() {
+        System.out.println(j);
+    }
+
+    static int j = 20;
+}
+
+class Derived extends Base {
+    static int x = 100;
+
+    static {
+        m2();
+        System.out.println(&quot;Derived first static block&quot;);
+    }
+
+    public static void main(String[] args) {
+        m2();
+        System.out.println(&quot;Derived main&quot;);
+    }
+
+    public static void m2() {
+        System.out.println(y);
+    }
+
+    static {
+        System.out.println(&quot;Derived second static block&quot;);
+    }
+
+    static int y = 200;
+}</pre>
+<p>javac Base.java
+java Derived
+// prints:
+ // 0
+ // Base static block
+ // 0
+ // Derived first static block
+ // Derived second static block
+ // 200
+ // Derived main</p>
+<p>Lab used names like Base1 / Derived1 — same program, same output when running the child.</p>
+<h3>53:56 — Theory board (parent → child)</h3>
+<p>Whenever we are executing the child class, the following sequence runs automatically as per static control flow:</p>
+<ol><li>Identification of static members from parent to child (steps ~1–11)</li></ol>
+<ol><li>Execution of static variable assignments and static blocks from parent to child (steps ~12–22)</li></ol>
+<ol><li>Execution of only child class main method (steps ~23–25)</li></ol>
+<p>Color hint from lecture (for notebook):</p>
+<ul><li>Red boxes → identification</li></ul>
+<ul><li>Green boxes → assignments / static blocks</li></ul>
+<ul><li>Blue boxes → child main</li></ul>
+<h3>1:02:41 — Child `main` vs parent `main`</h3>
+<p>We are executing Derived, so Derived.main runs.</p>
+<ul><li>If Derived does not contain main, then Base.main would execute (available via inheritance).</li></ul>
+<ul><li>Here Derived does contain main, so Base.main is not executed.</li></ul>
+<ul><li>If we execute the parent (java Base), parent main runs (child not involved).</li></ul>
+<pre class='code'>// if Derived had NO main:
+class DerivedNoMain extends Base {
+    static int x = 100;
+    // ... static blocks / m2 / y ...
+    // no main → Base.main would run after parent+child static init
+}</pre>
+<h3>1:05:44 — Run the parent instead: `java Base`</h3>
+<p>Same program, but:</p>
+<p>java Base</p>
+<p>Question: When we execute the child, parent is loaded. When we execute the parent, is the child loaded?</p>
+<p>No. Parent members are available to the child, but child members are not available to the parent. So loading/executing Base does not load Derived.</p>
+<p>Only Base static control flow:</p>
+<ol><li>Identify Base static members</li></ol>
+<ol><li>Execute Base static assignments &amp; static block → m1() prints `j == 0`, then &quot;Base static block&quot;, then j = 20</li></ol>
+<ol><li>Execute Base main → m1() prints `20`, then &quot;Base main&quot;</li></ol>
+<p>java Base
+// prints:
+ // 0
+ // Base static block
+ // 20
+ // Base main</p>
+<p>Side-by-side:</p>
+<pre class='code'>// java Derived  →  0, Base static block, 0, Derived first..., Derived second..., 200, Derived main
+// java Base     →  0, Base static block, 20, Base main</pre>
+<h3>1:08:14 — Closing rules (must remember)</h3>
+<ol><li>Whenever we are loading the CHILD class → parent class will be loaded automatically (parent members must be available to child).</li></ol>
+<ol><li>Whenever we are loading the PARENT class → child class will NOT be loaded (child members are not available to parent by default).</li></ol>
+<pre class='code'>// conceptual
+// load Derived  ⇒  Base loaded first, then Derived
+// load Base     ⇒  only Base  (Derived untouched)</pre>
+<p>Loading CHILD  → parent loaded automatically
+Loading PARENT → child will NOT be loaded
+  (because child members by default won&#x27;t be available to the parent)</p>
+<p>These are important loopholes / exam traps for static control flow with inheritance.</p>
+<h3>1:10:45 — End of video</h3>
+<p>Covered in this Part-11 lecture:</p>
+<ul><li>Need &amp; timing of static block (class loading)</li></ul>
+<ul><li>Native library loading + JDK registerNatives pattern</li></ul>
+<ul><li>JDBC driver auto-registration via static block</li></ul>
+<ul><li>Any number of static blocks, top-to-bottom</li></ul>
+<ul><li>Print without main (static block / other tricks) ≤ 1.6; `main` mandatory from 1.7</li></ul>
+<ul><li>Static control flow: parent → child (3 steps, full trace, java Derived vs java Base)</li></ul>
+<p>Next videos continue instance control flow / mixing instance + static (see playlist Parts after this).</p>
+<p>```java block count: 30</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 61 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 11</td></tr>
+<tr><td>Topic</td><td>static block</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 11m 00s</td></tr>
+<tr><td>Video ID</td><td>T-vbOoCzxI4</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=T-vbOoCzxI4</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Member</th><th>Effect</th></tr>
+<tr><td>1</td><td>static int i</td><td>i = 0 (RIWO)</td></tr>
+<tr><td>2</td><td>static block</td><td>identified</td></tr>
+<tr><td>3</td><td>main</td><td>identified</td></tr>
+<tr><td>4</td><td>m1</td><td>identified</td></tr>
+<tr><td>5</td><td>static int j</td><td>j = 0 (RIWO)</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Member</th><th>Effect</th></tr>
+<tr><td>6</td><td>static int x</td><td>x = 0 (RIWO)</td></tr>
+<tr><td>7</td><td>first static block</td><td>identified</td></tr>
+<tr><td>8</td><td>main</td><td>identified</td></tr>
+<tr><td>9</td><td>m2</td><td>identified</td></tr>
+<tr><td>10</td><td>second static block</td><td>identified</td></tr>
+<tr><td>11</td><td>static int y</td><td>y = 0 (RIWO)</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Action</th><th>Output / effect</th></tr>
+<tr><td>12</td><td>i = 10</td><td>read &amp; write</td></tr>
+<tr><td>13–15</td><td>static block → m1() → print j</td><td>`0` (j still default) then `Base static block`</td></tr>
+<tr><td>16</td><td>j = 20</td><td>read &amp; write</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Action</th><th>Output / effect</th></tr>
+<tr><td>17</td><td>x = 100</td><td></td></tr>
+<tr><td>18–20</td><td>first static block → m2() → print y</td><td>`0` then `Derived first static block`</td></tr>
+<tr><td>21</td><td>second static block</td><td>`Derived second static block`</td></tr>
+<tr><td>22</td><td>y = 200</td><td></td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Action</th><th>Output</th></tr>
+<tr><td>23–24</td><td>m2() → print y</td><td>`200` (now assigned)</td></tr>
+<tr><td>25</td><td>print &quot;Derived main&quot;</td><td>`Derived main`</td></tr>
+</table>
+</body></html>

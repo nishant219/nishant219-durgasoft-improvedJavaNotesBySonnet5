@@ -1,0 +1,233 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>083-defining-thread-part-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 083 — Ways of defining a Thread Part-2</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-3 || The ways of defining a Thread Part-2</p>
+<p>Source: real YouTube auto-captions (.transcripts/083-8xnNgR0zeS8.txt). ASR: runable / renable = Runnable; keep subing = keep copying; threat = thread; target runable = target Runnable; pan Kalan / P Kalan = his demo customized name (e.g. “Pavan Kalyan”); thread I zero / thread iphone zero / thread ion zero = Thread-0; Artic exception = ArithmeticException; Dura’s / duras approach = Durga’s approach; SCJP = OCJP/SCJP.</p>
+<h3>00:08 — Heading: defining a thread by implementing Runnable</h3>
+<p>Second approach. Diagram vs first approach:</p>
+<ul><li>First: MyThread extends Thread, and Thread already implements Runnable.</li></ul>
+<ul><li>Second: implement Runnable directly — MyRunnable implements Runnable — without extending Thread.</li></ul>
+<pre class='code'>// First approach (reminder)
+class MyThread extends Thread { /* ... */ }
+
+// Second approach
+class MyRunnable implements Runnable { /* ... */ }</pre>
+<h3>03:47 — Runnable interface facts (board)</h3>
+<ul><li>Present in `java.lang` package.</li></ul>
+<ul><li>Contains only one method: run.</li></ul>
+<pre class='code'>// java.lang.Runnable
+public void run();</pre>
+<h3>05:07 — Full second-approach example</h3>
+<pre class='code'>class MyRunnable implements Runnable {
+    public void run() {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Child Thread&quot;);
+        }
+    }
+}
+
+class ThreadDemo {
+    public static void main(String[] args) {
+        MyRunnable r = new MyRunnable();   // main creates MyRunnable object
+        Thread t = new Thread(r);          // r = target Runnable
+        t.start();
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Main Thread&quot;);
+        }
+    }
+}
+// mixed output — we can&#x27;t tell exact output</pre>
+<p>Only one-word difference from approach 1: `implements Runnable` instead of `extends Thread`. Code inside run = job of the thread. Total writing of this class = defining a thread.</p>
+<p>Starting steps (main thread still only one until start):</p>
+<ol><li>Create MyRunnable object — “car is ready.”</li></ol>
+<ol><li>MyRunnable has no start (Runnable interface also has no start) — need someone with start capability → Thread.</li></ol>
+<ol><li>Thread t = new Thread(r); then t.start();.</li></ol>
+<p>Without passing r:</p>
+<p>Thread t = new Thread(); // no target
+t.start();
+// Thread class run() (empty) — not MyRunnable.run()</p>
+<p>With r passed, Thread’s start ends up calling MyRunnable’s `run`. That object is the target Runnable.</p>
+<p>After t.start(): two threads — main runs remaining loop; child runs run.</p>
+<p>Student digression about starting another thread / restart: restarting same thread → IllegalThreadStateException (from Part-2).</p>
+<h3>16:32 — Case study: with vs without Runnable argument</h3>
+<p>MyRunnable r = new MyRunnable();
+Thread t1 = new Thread();    // without r
+Thread t2 = new Thread(r);   // with r</p>
+<h4>Case 1 — `t1.start()`</h4>
+<p>t1.start();</p>
+<ul><li>New thread will be created.</li></ul>
+<ul><li>Executes Thread class `run` (empty implementation) → essentially no useful output from job.</li></ul>
+<h4>Case 2 — `t1.run()`</h4>
+<p>t1.run();</p>
+<ul><li>No new thread.</li></ul>
+<ul><li>Thread class run executed like a normal method call.</li></ul>
+<h4>Case 3 — `t2.start()`</h4>
+<p>t2.start();</p>
+<ul><li>New thread will be created.</li></ul>
+<ul><li>Executes MyRunnable `run` — proper way.</li></ul>
+<h4>Case 4 — `t2.run()`</h4>
+<p>t2.run();</p>
+<ul><li>No new thread.</li></ul>
+<ul><li>MyRunnable run executed like a normal method call.</li></ul>
+<h4>Case 5 — `r.start()`</h4>
+<p>r.start();
+// CE: cannot find symbol
+// symbol: method start()
+// location: class MyRunnable</p>
+<p>MyRunnable has no start. If Runnable had start, no need to create Thread object.</p>
+<h4>Case 6 — `r.run()`</h4>
+<p>r.run();</p>
+<ul><li>No new thread.</li></ul>
+<ul><li>MyRunnable run like a normal method call.</li></ul>
+<h3>30:11 — Which approach is best? (interview)</h3>
+<p>Two ways to define a thread. Which is recommended?</p>
+<p>Implementing Runnable is recommended over extending Thread.</p>
+<p>Reason he wants you to recite:</p>
+<ul><li>First approach: class always extends Thread → no chance of extending any other class → missing inheritance benefit.</li></ul>
+<ul><li>Second approach: while implementing Runnable you can still extend another class → won’t miss inheritance benefit.</li></ul>
+<p>Also: memory / performance level reasons may exist internally; conclusion stays — implements Runnable approach is recommended than extending Thread.</p>
+<pre class='code'>// First approach — inheritance already &quot;used up&quot; on Thread
+class MyThread extends Thread {
+    public void run() { /* job */ }
+}
+
+// Second — can still extend something else
+class MyRunnable extends SomeOtherClass implements Runnable {
+    public void run() { /* job */ }
+}</pre>
+<h3>38:24 — Thread class constructors (eight)</h3>
+<p>He lists constructors present in Thread class (whether you use all or not):</p>
+<pre class='code'>Thread t = new Thread();
+
+Thread t = new Thread(Runnable r);
+
+Thread t = new Thread(String name);
+
+Thread t = new Thread(Runnable r, String name);
+
+Thread t = new Thread(ThreadGroup g, String name);
+
+Thread t = new Thread(ThreadGroup g, Runnable r);
+
+Thread t = new Thread(ThreadGroup g, Runnable r, String name);
+
+Thread t = new Thread(ThreadGroup g, Runnable r, String name, long stackSize);</pre>
+<p>Notes as he speaks:</p>
+<ul><li>Every thread has a name.</li></ul>
+<ul><li>Every thread belongs to some ThreadGroup (group by functionality).</li></ul>
+<ul><li>For every thread JVM creates a runtime stack; last constructor lets you specify stack size.</li></ul>
+<ul><li>Total: eight constructors.</li></ul>
+<h3>45:49 — Durga’s approach (hybrid — not recommended, but valid)</h3>
+<p>Heading: Durga’s approach to define a thread (not recommended to use)</p>
+<p>Define with first approach (extends Thread) but start like second approach (wrap in new Thread(target)):</p>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        System.out.println(&quot;Child Thread&quot;);
+    }
+}
+
+class ThreadDemo {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        Thread t1 = new Thread(t); // t is acceptable as Runnable (Thread implements Runnable)
+        t1.start();
+        System.out.println(&quot;Main Thread&quot;);
+    }
+}
+// possible: Child Thread then Main Thread, or Main Thread then Child Thread</pre>
+<p>Why valid: MyThread extends Thread, Thread implements Runnable → MyThread is-a Runnable object → can pass as target.</p>
+<p>Hybrid: definition style of approach 1, starting style of approach 2. In SCJP/OCJP if you see this, do not mark invalid — it is valid. Still not recommended as a teaching “standard” approach.</p>
+<h3>51:19 — Getting and setting name of a thread</h3>
+<p>Every thread in Java has some name — default name generated by JVM, or customized name provided by programmer.</p>
+<pre class='code'>class MyThread extends Thread {
+    // run optional for analyzing name properties
+}
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(Thread.currentThread().getName());
+        // prints main
+
+        MyThread t = new MyThread();
+        System.out.println(t.getName());
+        // prints Thread-0
+
+        // MyThread t2 = new MyThread();
+        // System.out.println(t2.getName()); // Thread-1
+
+        Thread.currentThread().setName(&quot;Pavan Kalyan&quot;);
+        System.out.println(Thread.currentThread().getName());
+        // prints Pavan Kalyan
+
+        // optional demo he runs:
+        // System.out.println(10 / 0);
+        // Exception in thread &quot;Pavan Kalyan&quot; java.lang.ArithmeticException: / by zero
+        // (name &quot;main&quot; replaced)
+    }
+}</pre>
+<p>Board theory:</p>
+<ul><li>Every thread in Java has some name — default name generated by JVM or customized name provided by programmer.</li></ul>
+<ul><li>We can get and set name by:</li></ul>
+<pre class='code'>public final String getName()
+public final void setName(String name)</pre>
+<p>Default child names: first child Thread-0, next Thread-1, …</p>
+<p>Even main thread’s name can be changed happily.</p>
+<h3>1:08:25 — `Thread.currentThread()` — current executing thread object</h3>
+<p>Static method on Thread: Thread.currentThread() returns the currently executing thread object.</p>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        System.out.println(
+            &quot;run method executed by the thread &quot;
+                + Thread.currentThread().getName());
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+        System.out.println(
+            &quot;main method executed by the thread &quot;
+                + Thread.currentThread().getName());
+    }
+}
+// possible mixed order of the two lines
+// prints ... main method ... main
+// prints ... run method ... Thread-0</pre>
+<ul><li>Inside main: currentThread() → main thread.</li></ul>
+<ul><li>Inside run (after proper start): currentThread() → child (e.g. Thread-0).</li></ul>
+<p>Board note: We can get current executing thread object by using Thread.currentThread() method (static method of Thread class).</p>
+<h3>1:18:31 — Close of Part-3</h3>
+<p>How to get/set name of a thread and how to get current executing thread object reference — clear. Series continues with priorities next.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 83 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 3</td></tr>
+<tr><td>Topic</td><td>Defining a thread by implementing Runnable; case study start/run; which approach is best; Thread constructors; Durga’s hybrid approach; get/set name; currentThread</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 18m 54s</td></tr>
+<tr><td>Video ID</td><td>8xnNgR0zeS8</td></tr>
+<tr><td>Watch URL</td><td>https://www.youtube.com/watch?v=8xnNgR0zeS8</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

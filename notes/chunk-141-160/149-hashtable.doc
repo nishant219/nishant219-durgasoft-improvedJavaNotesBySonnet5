@@ -1,0 +1,539 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>149-hashtable</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 149 — Collections Part-14: Hashtable &amp; Properties</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This lecture completes the Map half of the Collections Framework by covering the two remaining legacy (Java 1.0) map-related classes:</p>
+<ol><li>Hashtable — full property sheet, four constructors, and a memory-level demo proving how hash codes determine bucket placement and print order</li></ol>
+<ol><li>Properties — real-time importance of externalizing configuration, the Properties class API (load/store), and JDBC-style usage patterns</li></ol>
+<p>Sir explicitly states that most Hashtable terminology is already familiar from HashMap/HashSet sessions — the minor differences (default capacity 11, full synchronization, null rejection) are the exam focus.</p>
+<p>After this video, the entire Map concept is completed. The next Collections topic is Queue.</p>
+<h2>00:05 — Recap: Map classes already covered</h2>
+<p>Before starting legacy classes, Sir recaps everything covered in prior Map sessions (no re-explanation needed):</p>
+<p>Remaining legacy Map-related classes (this session):</p>
+<p>Note: Dictionary is an abstract legacy class — Sir skips it because abstract classes are not used directly (same decision as in Video 146 agenda).</p>
+<h2>01:00 — Hashtable introduction</h2>
+<h3>Underlying data structure</h3>
+<p>Hashtable (Java class) is implemented based on Hashtable (data structure).</p>
+<p>Same naming convention as HashMap → hash table, HashSet → hash table. The Java class name matches the standard CS data structure name.</p>
+<h3>Hashtable — complete property sheet (board conclusions)</h3>
+<p>Copy these exactly — they mirror HashMap with critical differences highlighted:</p>
+<p>Board wording (exact phrases Sir repeats):</p>
+<ul><li>&quot;Null — such a type of story — not applicable for the key, not applicable for the value.&quot;</li></ul>
+<ul><li>&quot;Otherwise we will get runtime exception saying NullPointerException.&quot;</li></ul>
+<ul><li>&quot;Every method present in Hashtable is synchronized, and hence Hashtable object is thread-safe.&quot;</li></ul>
+<ul><li>&quot;Hashtable is the best choice if our frequent operation is search operation.&quot;</li></ul>
+<h3>Why these points feel familiar</h3>
+<p>Sir acknowledges: &quot;More or less all points are our known points only… most of the times we covered already with respect to some other [class]. Small minor differences only.&quot;</p>
+<p>You are near the end of Collections — Hashtable is essentially HashMap + synchronization + stricter null rules + different default capacity.</p>
+<h2>09:35 — Hashtable constructors (VERY IMPORTANT)</h2>
+<p>Hashtable has four constructors — same pattern as HashMap and HashSet:</p>
+<p>Hashtable h = new Hashtable();
+Hashtable h = new Hashtable(int initialCapacity);
+Hashtable h = new Hashtable(int initialCapacity, float fillRatio);
+Hashtable h = new Hashtable(Map m);   // conversion from another Map</p>
+<h3>Constructor details table</h3>
+<h3>⚠️ EXAM TRAP: Default initial capacity is 11, NOT 16</h3>
+<p>All three use default fill ratio 0.75.</p>
+<p>Sir emphasizes: &quot;If it is HashSet — 16. If it is HashMap — 16. But if it is Hashtable — 11 only. Remember.&quot;</p>
+<h2>15:13 — Memory-level demo: How hash code determines storage</h2>
+<p>Sir goes deeper than theory — a programmatic proof showing exactly where each entry lands in buckets and what System.out.println(h) prints.</p>
+<p>&quot;Being programmer, not required to talk this much — but having the basic idea is always essential.&quot;</p>
+<h3>Step 1: Custom `Temp` class (controlled hash codes)</h3>
+<p>Sir deliberately overrides `hashCode()` so hash codes are predictable (not relying on Object.hashCode()):</p>
+<pre class='code'>class Temp {
+    int i;
+    Temp(int i) { this.i = i; }
+
+    public int hashCode() {
+        return i;   // hash code = the int value passed to constructor
+    }
+
+    public String toString() {
+        return i + &quot;&quot;;   // prints the int value (i + &quot;&quot; converts int to String)
+    }
+}</pre>
+<p>Why `i + &quot;&quot;` instead of returning `i` directly?</p>
+<ul><li>toString() return type must be String</li></ul>
+<ul><li>i is int — compiler error if you return i;</li></ul>
+<ul><li>i + &quot;&quot; concatenates int with empty string → String result</li></ul>
+<p>Example: Temp t1 = new Temp(10); → hash code of t1 is 10.</p>
+<h3>Step 2: Insert key–value pairs into Hashtable</h3>
+<pre class='code'>Hashtable h = new Hashtable();
+
+h.put(new Temp(5),  &quot;A&quot;);
+h.put(new Temp(2),  &quot;B&quot;);
+h.put(new Temp(6),  &quot;C&quot;);
+h.put(new Temp(15), &quot;D&quot;);
+h.put(new Temp(23), &quot;E&quot;);
+h.put(new Temp(16), &quot;F&quot;);
+// h.put(null, &quot;X&quot;);  // commented — would throw NullPointerException
+
+System.out.println(h);</pre>
+<h3>Step 3: Bucket model (default capacity = 11)</h3>
+<p>Default constructor → 11 buckets, indexed 0 through 10.</p>
+<p>Technical term: Sir uses &quot;bucket&quot; — this is the official hashing terminology, not casual language.</p>
+<p>Placement rule: For each key, compute hashCode, then determine bucket index. When hash code ≥ capacity, use modulo:</p>
+<p>Collision handling: Multiple entries can exist in the same bucket — linked within the bucket. Bucket 5 holds both 5=A and 16=F.</p>
+<h3>Bucket diagram (default demo)</h3>
+<p>Bucket index:  0    1       2       3    4        5              6       7   8   9   10
+               .   23=E    2=B     .   15=D    5=A → 16=F       6=C     .   .   .   .</p>
+<h3>Step 4: Print order formula (CRITICAL for exam)</h3>
+<p>When you print a Hashtable (System.out.println(h)), iteration order follows:</p>
+<p>From top to bottom (higher bucket index → lower bucket index)</p>
+<p>Within a bucket: from right to left (most recently added entry first)</p>
+<p>Sir&#x27;s exact words: &quot;From top to bottom… within a bucket, multiple entries — from right to left.&quot;</p>
+<p>Applying the formula to buckets 10 → 0:</p>
+<h3>Expected program output (Demo 1)</h3>
+<pre class='code'>{6=C, 16=F, 5=A, 15=D, 2=B, 23=E}</pre>
+<p>Sir runs the program live — output matches exactly.</p>
+<h3>Key takeaways from Demo 1</h3>
+<ol><li>Entries are stored based on hash code of keys (not values).</li></ol>
+<ol><li>When hash code ≥ initial capacity, bucket = hashCode % capacity.</li></ol>
+<ol><li>Collisions place multiple entries in one bucket.</li></ol>
+<ol><li>Print order ≠ insertion order — follows top-to-bottom, right-to-left rule.</li></ol>
+<ol><li>If you know all hash codes and capacity, you can predict exact output.</li></ol>
+<h2>27:29 — Null value demo → NullPointerException</h2>
+<p>Sir tests null rules:</p>
+<p>h.put(new Temp(5), null);   // null VALUE — compiles fine</p>
+<p>Runtime result:</p>
+<p>Exception in thread &quot;main&quot; java.lang.NullPointerException</p>
+<p>&quot;Null — such a type of story — not applicable for Hashtable.&quot;</p>
+<p>Both null key and null value are rejected at runtime with NullPointerException.</p>
+<h2>34:13 — Demo 2: Changing hashCode formula (`return i % 9`)</h2>
+<p>Sir modifies only the hashCode() method:</p>
+<pre class='code'>public int hashCode() {
+    return i % 9;
+}</pre>
+<p>Same entries, same default capacity (11), new hash codes:</p>
+<p>Print order (top → bottom, right → left):</p>
+<pre class='code'>{16=F, 15=D, 6=C, 23=E, 5=A, 2=B}</pre>
+<p>Board conclusion:</p>
+<p>If we change hashCode method of key class → automatically there is a change in output.</p>
+<p>Live execution confirms: 16=F, 15=D, 6=C, 23=E, 5=A, 2=B ✓</p>
+<h2>41:04 — Demo 3: Changing initial capacity to 25</h2>
+<p>Sir keeps return i but changes constructor:</p>
+<p>Hashtable h = new Hashtable(25);   // 25 buckets: indices 0–24</p>
+<p>Placement (hash codes fit directly into buckets 0–24):</p>
+<p>No collisions — each entry gets its own bucket.</p>
+<p>Print order (buckets 24 → 0):</p>
+<pre class='code'>{23=E, 16=F, 15=D, 6=C, 5=A, 2=B}</pre>
+<p>Live execution confirms ✓</p>
+<p>Board conclusion:</p>
+<p>If we configure initial capacity as 25 → corresponding change in output (because number of buckets changed, so bucket assignment changes).</p>
+<h3>Summary of three demo variations</h3>
+<h2>48:19 — Hashtable concept complete → transition to Properties</h2>
+<p>Sir closes Hashtable with:</p>
+<p>&quot;Based on hash code of the keys, the entries will be saved in Hashtable. Practical proof for you people.&quot;</p>
+<p>Next topic: Properties — described as &quot;the most valuable concept, especially for real-time coding and day-to-day programming.&quot;</p>
+<h2>48:28 — Properties: Why externalize configuration?</h2>
+<h3>The hardcoding problem</h3>
+<p>Suppose you write a Java program and hardcode database credentials:</p>
+<pre class='code'>String username = &quot;Scott&quot;;
+String password = &quot;tiger&quot;;</pre>
+<p>Client requirement: Every 3 months, database username/password must change (security constraint).</p>
+<p>To change tiger → tiger123 in the Java source file, you must:</p>
+<p>Total downtime: 2–3 hours minimum per change.</p>
+<p>Business impact: Application down for 3 hours = significant financial loss for the client.</p>
+<p>Sir&#x27;s examples of hardcoded values that change frequently:</p>
+<ul><li>Database username / password</li></ul>
+<ul><li>Mail IDs</li></ul>
+<ul><li>Mobile numbers</li></ul>
+<ul><li>Even punctuation (comma → semicolon, dot → comma)</li></ul>
+<p>&quot;For every small change we have to do this — minimum 2 to 3 hours time must be required.&quot;</p>
+<h3>The properties file solution</h3>
+<p>Rule: If anything changes frequently → never hardcode in Java program.</p>
+<p>Instead, configure in a properties file:</p>
+<p># db.properties
+username=Scott
+password=tiger
+db.url=jdbc:oracle:thin:@localhost:1521:xe
+driver.class.name=oracle.jdbc.driver.OracleDriver</p>
+<p>Workflow:</p>
+<ol><li>Configure variable data in .properties file</li></ol>
+<ol><li>From Java program → read values from properties file</li></ol>
+<ol><li>Use read values in application logic</li></ol>
+<p>When properties file changes (e.g., password tiger → tiger123):</p>
+<p>&quot;Just redeployment is enough — which won&#x27;t create big business impact to the client.&quot;</p>
+<p>Real-world truth: &quot;In real time, any application without having properties file — there is no chance of expecting any Java-based application.&quot; Not only Java — every programming language uses config files.</p>
+<h2>55:00 — Properties class: Role in the architecture</h2>
+<p>┌─────────────────────┐         load()          ┌──────────────────────┐
+│  abc.properties     │  ───────────────────►   │  Java Properties     │
+│  (on disk)          │                         │  object (in memory)  │
+│                     │  ◄───────────────────   │                      │
+└─────────────────────┘         store()          └──────────────────────┘
+                                                          │
+                                                          │ getProperty()
+                                                          ▼
+                                                   Java application code</p>
+<p>Purpose of Properties object:</p>
+<p>&quot;We can use Java Properties object to hold properties which are coming from properties file.&quot;</p>
+<ol><li>Load all properties from file → into Properties object (load)</li></ol>
+<ol><li>Read individual values from Properties object (getProperty)</li></ol>
+<ol><li>Optionally write changes back to file (store)</li></ol>
+<p>Package: java.util.Properties</p>
+<h2>01:04:03 — Properties vs normal Map: String-only restriction</h2>
+<p>Properties is a Map (key–value pairs), but with one critical restriction:</p>
+<p>Board wording:</p>
+<p>&quot;In normal map — key and value can be any type. But in the case of Properties — key and value should be string type only.&quot;</p>
+<p>Property name = key (String). Property value = value (String).</p>
+<p>Both are compulsory and both must be String.</p>
+<h2>01:06:47 — Properties constructor</h2>
+<p>Only one constructor discussed:</p>
+<pre class='code'>Properties p = new Properties();</pre>
+<p>Creates an empty Properties object (empty Map with String–String restriction).</p>
+<h2>01:07:20 — Properties methods</h2>
+<h3>Method 1: `String getProperty(String propertyName)`</h3>
+<ul><li>Purpose: Given a property name (key), return the corresponding property value.</li></ul>
+<ul><li>Return type: String</li></ul>
+<ul><li>If property not available: returns `null`</li></ul>
+<p>String user = p.getProperty(&quot;username&quot;);    // e.g., &quot;Scott&quot;
+String pass = p.getProperty(&quot;password&quot;);    // e.g., &quot;tiger&quot;
+String missing = p.getProperty(&quot;unknown&quot;);  // null</p>
+<p>Most commonly used method in real projects.</p>
+<h3>Method 2: `String setProperty(String propertyName, String propertyValue)`</h3>
+<ul><li>Purpose: Add a new property (or update existing).</li></ul>
+<ul><li>Behavior: Like Map.put() — if key already exists, old value replaced with new value, and old value is returned.</li></ul>
+<ul><li>Return type: String (the old value, or null if key was new)</li></ul>
+<pre class='code'>String old = p.setProperty(&quot;nag&quot;, &quot;8888&quot;);</pre>
+<p>Sir notes: Usually Properties object is used to read, not write — but setProperty exists for rare cases.</p>
+<h3>Method 3: `Enumeration propertyNames()`</h3>
+<ul><li>Purpose: Returns all property names present in the Properties object.</li></ul>
+<ul><li>Return type: Enumeration (legacy — old naming convention, not getPropertyNames())</li></ul>
+<ul><li>Usage pattern: Iterate property names → call getProperty(name) for each value</li></ul>
+<pre class='code'>Enumeration e = p.propertyNames();
+while (e.hasMoreElements()) {
+    String name = (String) e.nextElement();
+    String value = p.getProperty(name);
+    System.out.println(name + &quot; = &quot; + value);
+}</pre>
+<h3>Method 4: `void load(InputStream is)` ⭐ VERY IMPORTANT</h3>
+<ul><li>Purpose: Load all properties from a properties file (via InputStream) into the Java Properties object.</li></ul>
+<ul><li>Direction: File → Properties object</li></ul>
+<p>FileInputStream fis = new FileInputStream(&quot;abc.properties&quot;);
+p.load(fis);
+// After this line, Properties object contains ALL entries from the file</p>
+<h3>Method 5: `void store(OutputStream os, String comment)` ⭐ VERY IMPORTANT</h3>
+<ul><li>Purpose: Store properties from Java Properties object back into a properties file.</li></ul>
+<ul><li>Direction: Properties object → File</li></ul>
+<ul><li>Comment parameter: Written as a header comment in the output file (e.g., &quot;updated by durga for OCJP demo class&quot;)</li></ul>
+<ul><li>File also gets a timestamp of when it was updated</li></ul>
+<pre class='code'>FileOutputStream fos = new FileOutputStream(&quot;abc.properties&quot;);
+p.store(fos, &quot;updated by durga for OCJP demo class&quot;);</pre>
+<h3>Properties methods summary table</h3>
+<h2>01:19:07 — Properties file naming convention</h2>
+<ul><li>Convention: abc.properties, db.properties, log4j.properties</li></ul>
+<ul><li>Extension .properties is convention only — not enforced by Java</li></ul>
+<ul><li>Java file concept follows Unix: extension is not important</li></ul>
+<ul><li>Acceptable alternatives: abc.xml, abc.txt, abc.dat — anything works</li></ul>
+<ul><li>Convention exists for readability only</li></ul>
+<h2>01:20:27 — Demo 1: PropertiesDemo (full program)</h2>
+<h3>abc.properties (input file)</h3>
+<p>user=Scott
+winky=9999
+password=tiger</p>
+<h3>PropertiesDemo.java</h3>
+<pre class='code'>import java.util.*;
+import java.io.*;
+
+public class PropertiesDemo {
+    public static void main(String[] args) throws Exception {
+        Properties p = new Properties();
+
+        FileInputStream fis = new FileInputStream(&quot;abc.properties&quot;);
+        p.load(fis);   // load all properties from file into p
+
+        System.out.println(p);                              // all key-value pairs
+        System.out.println(p.getProperty(&quot;winky&quot;));       // 9999
+
+        p.setProperty(&quot;nag&quot;, &quot;8888&quot;);   // add new property
+
+        FileOutputStream fos = new FileOutputStream(&quot;abc.properties&quot;);
+        p.store(fos, &quot;updated by durga for OCJP demo class&quot;);
+    }
+}</pre>
+<h3>Program output</h3>
+<pre class='code'>{user=Scott, winky=9999, password=tiger}
+9999</pre>
+<h3>abc.properties AFTER store()</h3>
+<p>The file now contains:</p>
+<p>#updated by durga for OCJP demo class
+#Sun Sep 21 ... (timestamp)
+user=Scott
+winky=9999
+password=tiger
+nag=8888</p>
+<p>Observations:</p>
+<ol><li>Comment from store() second parameter appears in file</li></ol>
+<ol><li>Timestamp of update is automatically added</li></ol>
+<ol><li>New property nag=8888 is persisted to file</li></ol>
+<ol><li>Order in file/output is not insertion order — based on hash code of keys (because Properties extends Hashtable internally)</li></ol>
+<h3>Live proof: Change properties file WITHOUT recompiling</h3>
+<p>Sir manually edits abc.properties:</p>
+<p>password=tiger123</p>
+<p>Then runs the already compiled program again (no recompile):</p>
+<p>9999                    // winky still 9999
+password → tiger123     // updated value picked up automatically</p>
+<p>&quot;Can I require to recompile? No. Automatically it should be reflected.&quot;</p>
+<p>This is the power of properties files.</p>
+<h2>01:26:44 — JDBC anti-pattern vs best practice</h2>
+<p>Sir warns against hardcoding in JDBC programs:</p>
+<pre class='code'>// ❌ BAD — hardcoded (common beginner mistake)
+Connection con = DriverManager.getConnection(
+    &quot;jdbc:oracle:thin:@localhost:1521:xe&quot;, &quot;Scott&quot;, &quot;tiger&quot;);</pre>
+<p>Recommended approach:</p>
+<pre class='code'>// ✅ GOOD — read from db.properties
+Properties p = new Properties();
+FileInputStream fis = new FileInputStream(&quot;db.properties&quot;);
+p.load(fis);
+
+String url  = p.getProperty(&quot;url&quot;);
+String user = p.getProperty(&quot;username&quot;);
+String pass = p.getProperty(&quot;password&quot;);
+
+Connection con = DriverManager.getConnection(url, user, pass);</pre>
+<h3>db.properties example</h3>
+<p>username=Scott
+password=tiger
+url=jdbc:oracle:thin:@localhost:1521:xe
+driver.class.name=oracle.jdbc.driver.OracleDriver</p>
+<p>Flexibility: Change properties file to MySQL values → same Java program works with MySQL without code changes.</p>
+<h2>01:31:41 — Demo 2: PropertiesDemo2 (JDBC pseudo-code)</h2>
+<p>Sir shows the real-world pattern (pseudo-code for enterprise applications):</p>
+<pre class='code'>import java.util.*;
+import java.io.*;
+import java.sql.*;
+
+public class PropertiesDemo2 {
+    public static void main(String[] args) throws Exception {
+        Properties p = new Properties();
+        FileInputStream fis = new FileInputStream(&quot;db.properties&quot;);
+        p.load(fis);
+
+        String url  = p.getProperty(&quot;url&quot;);
+        String user = p.getProperty(&quot;username&quot;);
+        String pass = p.getProperty(&quot;password&quot;);
+
+        Connection con = DriverManager.getConnection(url, user, pass);
+        // ... use connection ...
+    }
+}</pre>
+<p>Typical JDBC properties required:</p>
+<p>&quot;Don&#x27;t hardcode anything in the Java program. This type of approach is always recommended.&quot;</p>
+<h2>01:36:08 — Session wrap-up</h2>
+<h3>Map module status: COMPLETED ✓</h3>
+<p>All Map-related topics from the syllabus are now done:</p>
+<h3>Next topic</h3>
+<p>&quot;Next what we have to discuss — Queue. In Collections, one more remaining part — Queue. That part we will discuss.&quot;</p>
+<h2>Hashtable vs HashMap — complete comparison (exam table)</h2>
+<p>Interview one-liner: &quot;Hashtable is legacy, synchronized, null-hostile, default capacity 11. HashMap is modern, unsynchronized, null-tolerant, default capacity 16. For thread-safe HashMap, use `Collections.synchronizedMap()` — don&#x27;t default to Hashtable.&quot;</p>
+<h2>OCJP / SCJP exam rapid-fire Q&amp;A</h2>
+<h2>What&#x27;s next (Video 150+)</h2>
+<p>Per session closing:</p>
+<ul><li>Queue — remaining part of Collections Framework</li></ul>
+<ul><li>Collections utility classes (if not yet covered)</li></ul>
+<ul><li>Arrays class (Video 153 per playlist)</li></ul>
+<h2>Board diagrams to reproduce</h2>
+<h3>Diagram 1: Hashtable bucket layout (Demo 1, capacity 11)</h3>
+<p>Index:  0     1      2     3     4       5            6      7-10
+        empty 23=E   2=B   empty 15=D   5=A←→16=F     6=C    empty
+
+Print order: 6=C → 16=F → 5=A → 15=D → 2=B → 23=E
+Rule: top→bottom buckets, right→left within bucket</p>
+<h3>Diagram 2: Properties architecture</h3>
+<p>.properties file  ──load()──►  Properties object  ──getProperty()──►  Application
+                               ◄──store()──</p>
+<h3>Diagram 3: Hardcode vs Properties file workflow</h3>
+<p>Hardcoded in .java:
+  Change → Recompile → Rebuild → Redeploy → Restart server (2-3 hours)
+
+Properties file:
+  Change → Redeploy only (2-3 minutes)</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Collections Part-14 \</td><td>\</td><td>hashtable</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=rfpvtTwWFK0</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>rfpvtTwWFK0</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 36m 34s</td><td></td><td></td></tr>
+<tr><td>Position</td><td>Video 149 of 203 in the Durga Sir OCJP/SCJP playlist</td><td></td><td></td></tr>
+<tr><td>Source</td><td>YouTube auto-generated captions (yt-dlp + node PO token)</td><td></td><td></td></tr>
+<tr><td>Prerequisite</td><td>Videos 146–148 (HashMap, LinkedHashMap, IdentityHashMap, WeakHashMap, SortedMap, TreeMap)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Class / Interface</th><th>Status</th></tr>
+<tr><td>1</td><td>HashMap</td><td>✓ Completed</td></tr>
+<tr><td>2</td><td>LinkedHashMap</td><td>✓ Completed</td></tr>
+<tr><td>3</td><td>IdentityHashMap</td><td>✓ Completed</td></tr>
+<tr><td>4</td><td>WeakHashMap</td><td>✓ Completed</td></tr>
+<tr><td>5</td><td>SortedMap (interface)</td><td>✓ Completed</td></tr>
+<tr><td>6</td><td>TreeMap (implementation)</td><td>✓ Completed</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Class</th><th>Java version</th></tr>
+<tr><td>1</td><td>Hashtable</td><td>1.0 (legacy)</td></tr>
+<tr><td>2</td><td>Properties</td><td>1.0 (legacy, extends Hashtable)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Property</th><th>Hashtable value</th><th>HashMap comparison</th></tr>
+<tr><td>1</td><td>Underlying data structure</td><td>Hash table</td><td>Same</td></tr>
+<tr><td>2</td><td>Insertion order</td><td>Not preserved — based on hash code of keys</td><td>Same rule</td></tr>
+<tr><td>3</td><td>Duplicate keys</td><td>Not allowed</td><td>Same</td></tr>
+<tr><td>4</td><td>Duplicate values</td><td>Allowed</td><td>Same</td></tr>
+<tr><td>5</td><td>Heterogeneous objects</td><td>Allowed for both keys and values</td><td>Same</td></tr>
+<tr><td>6</td><td>Null key / null value</td><td>NOT allowed for key OR value → NullPointerException</td><td>HashMap: null key once, null values unlimited</td></tr>
+<tr><td>7</td><td>Implements</td><td>Serializable and Cloneable</td><td>Same</td></tr>
+<tr><td>8</td><td>RandomAccess</td><td>No</td><td>Same</td></tr>
+<tr><td>9</td><td>Synchronization</td><td>Every method is synchronized → object is thread-safe</td><td>HashMap: not synchronized</td></tr>
+<tr><td>10</td><td>Best choice when</td><td>Frequent operation is search / retrieval</td><td>Same recommendation</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Signature</th><th>Creates</th><th>Default initial capacity</th><th>Default fill ratio</th></tr>
+<tr><td>1</td><td>new Hashtable()</td><td>Empty Hashtable</td><td>11</td><td>0.75</td></tr>
+<tr><td>2</td><td>new Hashtable(int initialCapacity)</td><td>Empty Hashtable</td><td>user-specified</td><td>0.75</td></tr>
+<tr><td>3</td><td>new Hashtable(int initialCapacity, float fillRatio)</td><td>Empty Hashtable</td><td>user-specified</td><td>user-specified</td></tr>
+<tr><td>4</td><td>new Hashtable(Map m)</td><td>Hashtable from existing Map entries</td><td>depends on m</td><td>0.75</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Default initial capacity</th></tr>
+<tr><td>HashMap</td><td>16</td></tr>
+<tr><td>HashSet</td><td>16</td></tr>
+<tr><td>Hashtable</td><td>11</td></tr>
+</table>
+<table>
+<tr><th>Key object</th><th>hashCode</th><th>Bucket index</th><th>Entry stored</th></tr>
+<tr><td>new Temp(5)</td><td>5</td><td>5 (5 &lt; 11)</td><td>5 = A</td></tr>
+<tr><td>new Temp(2)</td><td>2</td><td>2</td><td>2 = B</td></tr>
+<tr><td>new Temp(6)</td><td>6</td><td>6</td><td>6 = C</td></tr>
+<tr><td>new Temp(15)</td><td>15</td><td>15 % 11 = 4</td><td>15 = D</td></tr>
+<tr><td>new Temp(23)</td><td>23</td><td>23 % 11 = 1</td><td>23 = E</td></tr>
+<tr><td>new Temp(16)</td><td>16</td><td>16 % 11 = 5</td><td>16 = F (collision with 5=A)</td></tr>
+</table>
+<table>
+<tr><th>Bucket</th><th>Entries (right → left)</th><th>Printed</th></tr>
+<tr><td>6</td><td>6=C</td><td>6=C</td></tr>
+<tr><td>5</td><td>16=F, 5=A</td><td>16=F, then 5=A</td></tr>
+<tr><td>4</td><td>15=D</td><td>15=D</td></tr>
+<tr><td>2</td><td>2=B</td><td>2=B</td></tr>
+<tr><td>1</td><td>23=E</td><td>23=E</td></tr>
+</table>
+<table>
+<tr><th>Key</th><th>hashCode (i % 9)</th><th>Bucket</th></tr>
+<tr><td>Temp(5)</td><td>5</td><td>5</td></tr>
+<tr><td>Temp(2)</td><td>2</td><td>2</td></tr>
+<tr><td>Temp(6)</td><td>6</td><td>6</td></tr>
+<tr><td>Temp(15)</td><td>15 % 9 = 6</td><td>6 (collision with 6=C)</td></tr>
+<tr><td>Temp(23)</td><td>23 % 9 = 5</td><td>5 (collision with 5=A)</td></tr>
+<tr><td>Temp(16)</td><td>16 % 9 = 7</td><td>7</td></tr>
+</table>
+<table>
+<tr><th>Key</th><th>hashCode</th><th>Bucket</th></tr>
+<tr><td>Temp(5)</td><td>5</td><td>5</td></tr>
+<tr><td>Temp(2)</td><td>2</td><td>2</td></tr>
+<tr><td>Temp(6)</td><td>6</td><td>6</td></tr>
+<tr><td>Temp(15)</td><td>15</td><td>15</td></tr>
+<tr><td>Temp(23)</td><td>23</td><td>23</td></tr>
+<tr><td>Temp(16)</td><td>16</td><td>16</td></tr>
+</table>
+<table>
+<tr><th>Demo</th><th>hashCode()</th><th>Initial capacity</th><th>Output</th></tr>
+<tr><td>1 (default)</td><td>return i</td><td>11 (default)</td><td>{6=C, 16=F, 5=A, 15=D, 2=B, 23=E}</td></tr>
+<tr><td>2 (formula change)</td><td>return i % 9</td><td>11 (default)</td><td>{16=F, 15=D, 6=C, 23=E, 5=A, 2=B}</td></tr>
+<tr><td>3 (capacity change)</td><td>return i</td><td>25</td><td>{23=E, 16=F, 15=D, 6=C, 5=A, 2=B}</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Activity</th><th>Time impact</th></tr>
+<tr><td>1</td><td>Edit .java source file</td><td>—</td></tr>
+<tr><td>2</td><td>Recompile</td><td>Required</td></tr>
+<tr><td>3</td><td>Rebuild application (EAR / WAR / JAR)</td><td>Required</td></tr>
+<tr><td>4</td><td>Redeploy new EAR/WAR to server</td><td>Required</td></tr>
+<tr><td>5</td><td>Restart server (often required for web/enterprise apps)</td><td>Required</td></tr>
+</table>
+<table>
+<tr><th>Activity</th><th>Required?</th></tr>
+<tr><td>Recompile</td><td>❌ No</td></tr>
+<tr><td>Rebuild</td><td>❌ No</td></tr>
+<tr><td>Restart server</td><td>❌ No (usually)</td></tr>
+<tr><td>Redeploy only</td><td>✅ Yes — ~2–3 minutes</td></tr>
+</table>
+<table>
+<tr><th>Map type</th><th>Key type</th><th>Value type</th></tr>
+<tr><td>HashMap, Hashtable, TreeMap, etc.</td><td>Any type</td><td>Any type</td></tr>
+<tr><td>Properties</td><td>String only</td><td>String only</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Return type</th><th>Purpose</th></tr>
+<tr><td>getProperty(String name)</td><td>String</td><td>Get value for property name; returns null if missing</td></tr>
+<tr><td>setProperty(String name, String value)</td><td>String</td><td>Set/add property; returns old value</td></tr>
+<tr><td>propertyNames()</td><td>Enumeration</td><td>All property names in the object</td></tr>
+<tr><td>load(InputStream is)</td><td>void</td><td>Load from properties file → object</td></tr>
+<tr><td>store(OutputStream os, String comment)</td><td>void</td><td>Store from object → properties file</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>Example value</th></tr>
+<tr><td>url</td><td>jdbc:oracle:thin:@localhost:1521:xe</td></tr>
+<tr><td>username</td><td>Scott</td></tr>
+<tr><td>password</td><td>tiger</td></tr>
+<tr><td>driver.class.name</td><td>oracle.jdbc.driver.OracleDriver</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Status</th></tr>
+<tr><td>HashMap, LinkedHashMap, IdentityHashMap, WeakHashMap</td><td>✓</td></tr>
+<tr><td>SortedMap, TreeMap</td><td>✓</td></tr>
+<tr><td>Hashtable</td><td>✓ (this session)</td></tr>
+<tr><td>Properties</td><td>✓ (this session)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Point</th><th>HashMap</th><th>Hashtable</th></tr>
+<tr><td>1</td><td>Introduced in</td><td>Java 1.2</td><td>Java 1.0 (legacy)</td></tr>
+<tr><td>2</td><td>Underlying DS</td><td>Hash table</td><td>Hash table</td></tr>
+<tr><td>3</td><td>Insertion order</td><td>Not preserved (hash code of keys)</td><td>Not preserved (hash code of keys)</td></tr>
+<tr><td>4</td><td>Duplicate keys</td><td>Not allowed</td><td>Not allowed</td></tr>
+<tr><td>5</td><td>Null key</td><td>Allowed (once)</td><td>Not allowed → NPE</td></tr>
+<tr><td>6</td><td>Null value</td><td>Allowed (multiple)</td><td>Not allowed → NPE</td></tr>
+<tr><td>7</td><td>Synchronization</td><td>Not synchronized</td><td>All methods synchronized</td></tr>
+<tr><td>8</td><td>Thread-safe?</td><td>No (use Collections.synchronizedMap())</td><td>Yes</td></tr>
+<tr><td>9</td><td>Performance</td><td>Faster (no sync overhead)</td><td>Slower (sync overhead)</td></tr>
+<tr><td>10</td><td>Default initial capacity</td><td>16</td><td>11</td></tr>
+<tr><td>11</td><td>Default fill ratio</td><td>0.75</td><td>0.75</td></tr>
+<tr><td>12</td><td>Constructors</td><td>4</td><td>4 (same pattern)</td></tr>
+<tr><td>13</td><td>Implements</td><td>Serializable, Cloneable</td><td>Serializable, Cloneable</td></tr>
+<tr><td>14</td><td>RandomAccess</td><td>No</td><td>No</td></tr>
+<tr><td>15</td><td>Best for</td><td>Frequent search</td><td>Frequent search</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Question</th><th>Answer</th></tr>
+<tr><td>1</td><td>Underlying data structure of Hashtable?</td><td>Hash table</td></tr>
+<tr><td>2</td><td>Default initial capacity of Hashtable?</td><td>11 (not 16)</td></tr>
+<tr><td>3</td><td>Default fill ratio?</td><td>0.75</td></tr>
+<tr><td>4</td><td>Is Hashtable thread-safe?</td><td>Yes — every method synchronized</td></tr>
+<tr><td>5</td><td>Null key allowed in Hashtable?</td><td>No → NullPointerException</td></tr>
+<tr><td>6</td><td>Null value allowed in Hashtable?</td><td>No → NullPointerException</td></tr>
+<tr><td>7</td><td>How many constructors in Hashtable?</td><td>Four</td></tr>
+<tr><td>8</td><td>Hashtable print order rule?</td><td>Top to bottom (buckets), right to left (within bucket)</td></tr>
+<tr><td>9</td><td>Properties extends which class?</td><td>Hashtable</td></tr>
+<tr><td>10</td><td>Properties key/value type restriction?</td><td>Both must be String</td></tr>
+<tr><td>11</td><td>How to load properties file into object?</td><td>p.load(InputStream)</td></tr>
+<tr><td>12</td><td>How to save Properties object to file?</td><td>p.store(OutputStream, comment)</td></tr>
+<tr><td>13</td><td>getProperty() returns what if key missing?</td><td>null</td></tr>
+<tr><td>14</td><td>propertyNames() return type?</td><td>Enumeration</td></tr>
+<tr><td>15</td><td>Why use properties file over hardcoding?</td><td>Avoid recompile/rebuild/redeploy/restart cycle</td></tr>
+</table>
+</body></html>

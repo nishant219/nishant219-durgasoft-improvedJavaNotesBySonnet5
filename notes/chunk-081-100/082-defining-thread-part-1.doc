@@ -1,0 +1,291 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>082-defining-thread-part-1</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 082 — Ways of defining a Thread Part-1</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-2 || The ways of defining a Thread Part-1</p>
+<p>Source: real YouTube auto-captions (.transcripts/082-fd3TAYCHRfw.txt). ASR: keep subing = keep copying; scheder = scheduler; runable = Runnable; threat = thread; demand = daemon; JM = JVM; ENT / entry room = interview; CH = child; MRA / myra = MyThread; SOP = System.out.println; no AR = no-arg; stop often = start (ASR). This video = extending Thread + postmortem cases 1–9. Implementing Runnable is Part-3.</p>
+<h3>00:10 — Recap from Part-1</h3>
+<p>Already covered: multitasking; process vs thread based; go for thread-based at programmatic level; main advantage = performance (overall task finishes in less time).</p>
+<p>Now: what is a thread, and in how many ways we can define a thread.</p>
+<h3>01:00 — What is a thread?</h3>
+<p>He will use the word “thread” thousands of times. Synonyms students offer (all valid): flow of execution, independent job, lightweight process.</p>
+<p>Working definition for his explanation: a thread is a separate flow of execution. One flow → single-threaded (main). Multiple flows → multiple threads. For every flow / thread there is a separate job.</p>
+<p>If two independent jobs exist → need two threads; both execute jobs simultaneously → overall job finishes sooner.</p>
+<h3>03:54 — Board: Defining a thread — two ways</h3>
+<p>Heading: Defining a thread</p>
+<p>We can define a thread in the following two ways:</p>
+<ol><li>By extending Thread class</li></ol>
+<ol><li>By implementing Runnable interface</li></ol>
+<p>Now first way in depth (~1.5 hours on this base example — foundation of multi-threading).</p>
+<h3>06:03 — First approach: extend Thread, override run (define the thread)</h3>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Child Thread&quot;);
+        }
+    }
+}</pre>
+<ul><li>Write a class that extends Thread.</li></ul>
+<ul><li>Override run (word “override” because run already exists in Thread).</li></ul>
+<ul><li>Code inside run = job of the thread. If you start this thread, it performs this job.</li></ul>
+<ul><li>Total process of writing such a class = defining a thread.</li></ul>
+<ul><li>Job is defined inside `run`.</li></ul>
+<h3>08:37 — ThreadDemo: instantiate and start (main creates child)</h3>
+<pre class='code'>class ThreadDemo {
+    public static void main(String[] args) {
+        MyThread t = new MyThread(); // thread instantiation
+        t.start();                   // starting of a thread
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Main Thread&quot;);
+        }
+    }
+}</pre>
+<p>Full combined board program (with comments as he dictates):</p>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Child Thread&quot;);
+        }
+    }
+}
+
+class ThreadDemo {
+    public static void main(String[] args) {
+        // defining done above; now start
+        MyThread t = new MyThread(); // main thread creates child thread object
+        t.start();                   // main thread starts child thread
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Main Thread&quot;);
+        }
+    }
+}
+// mixed output — no guaranteed order</pre>
+<p>Key vocabulary he drills:</p>
+<ul><li>Before any of this in main: one thread — the main thread (also daemon threads like GC internally; discuss later). Main thread executes main.</li></ul>
+<ul><li>MyThread t = new MyThread(); executed by main → main creates child thread object (thread instantiation).</li></ul>
+<ul><li>t.start(); executed by main → main starts child thread.</li></ul>
+<ul><li>After t.start(): two threads — main and child.</li></ul>
+<ul><li>Child executes run (Child Thread loop). Main executes remaining code (Main Thread loop).</li></ul>
+<ul><li>Both jobs simultaneously → mixed output.</li></ul>
+<p>Clarify: main method ≠ main thread. Main method is code; main thread executes the main method.</p>
+<p>Why mixed order is OK: go for multi-threading only when jobs are independent. If order mattered (dependency), do not use multi-threading this way.</p>
+<h3>19:11 — Case 1: Thread scheduler</h3>
+<p>Heading: Case 1 — Thread scheduler</p>
+<ul><li>Thread scheduler is part of JVM.</li></ul>
+<ul><li>Responsible to schedule threads when multiple threads wait for a chance.</li></ul>
+<ul><li>Algorithm (FCFS, round robin, shortest job, …) varies from JVM to JVM — we cannot expect it.</li></ul>
+<ul><li>Hence we cannot expect thread execution order or exact output.</li></ul>
+<ul><li>Run-to-run / system-to-system output can change.</li></ul>
+<ul><li>SCJP/OCJP: may ask which of the following is a possible output; never “what is the exact output” for multi-threaded examples.</li></ul>
+<p>Demo: same MyThread / ThreadDemo program — he runs repeatedly; sometimes Main then Child pattern, sometimes Child then Main, sometimes interleaved.</p>
+<p>Board points:</p>
+<ul><li>It is the part of JVM.</li></ul>
+<ul><li>Responsible to schedule threads: if multiple threads are waiting to get the chance of execution, then in which order threads will be executed is decided by thread scheduler.</li></ul>
+<ul><li>We can’t expect exact algorithm followed by thread scheduler — varied from JVM to JVM.</li></ul>
+<ul><li>Hence we can’t expect threads’ execution order and the exact output.</li></ul>
+<ul><li>Hence whenever situation comes to multi-threading there is no guarantee for exact output, but we can provide several possible outputs.</li></ul>
+<h3>27:31 — Possible outputs for the above program</h3>
+<p>Any combination of ten &quot;Main Thread&quot; and ten &quot;Child Thread&quot; lines is possible, including:</p>
+<ol><li>Main Thread ×10 then Child Thread ×10</li></ol>
+<ol><li>Child Thread ×10 then Main Thread ×10</li></ol>
+<ol><li>Main, Child, Main, Child, … alternating</li></ol>
+<ol><li>Child, Main, Child, Main, …</li></ol>
+<ol><li>Other mixes (e.g. Main ×2, Child ×2, …)</li></ol>
+<p>Doubt “if no guarantee how use in apps?”: if jobs are independent, order does not matter.</p>
+<h3>31:17 — Case 2: Difference between `t.start()` and `t.run()`</h3>
+<p>Interview favorite.</p>
+<p>When you call t.start():</p>
+<ul><li>t is MyThread type; no start in MyThread → JVM finds start in parent Thread.</li></ul>
+<ul><li>Thread class `start` runs → responsible to start the thread → internally calls `run`.</li></ul>
+<p>If instead of t.start() you call `t.run()` directly:</p>
+<ul><li>run executes like a normal method call by the main thread.</li></ul>
+<ul><li>No new thread is created.</li></ul>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Child Thread&quot;);
+        }
+    }
+}
+
+class ThreadDemo {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.run(); // NOT t.start()
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Main Thread&quot;);
+        }
+    }
+}
+// prints Child Thread 10 times then Main Thread 10 times
+// total output produced by only main thread
+// same on every run / every machine (only one thread)</pre>
+<p>Board:</p>
+<ul><li>In the case of `t.start()`: a new thread will be created which is responsible for the execution of run method.</li></ul>
+<ul><li>In the case of `t.run()`: a new thread won’t be created and the run method will be executed just like a normal method call by main thread.</li></ul>
+<ul><li>Hence if we replace t.start() with t.run(), output is Child Thread ×10 followed by Main Thread ×10; total output produced by only main thread.</li></ul>
+<h3>41:03 — Case 3: Importance of Thread class `start` method</h3>
+<p>Why must we call start? Why not only run?</p>
+<p>School-admission analogy: you cannot leave a kid at the school main gate and say “you are a student.” Joining formalities required; only then school considers the kid valid.</p>
+<p>Same for threads: after creating thread object, many joining formalities needed (register with thread scheduler, etc.). Programmer only calls t.start(); Thread class `start` performs those activities, then invokes `run`.</p>
+<p>What is inside Thread’s start (conceptual board):</p>
+<pre class='code'>// Conceptual contents of Thread.start() as he dictates (not literal JDK source)
+/*
+1. register this thread with thread scheduler
+2. perform all other mandatory activities required for this thread
+3. invoke run() method
+*/</pre>
+<p>Without executing Thread class start, there is no chance of starting a new thread in Java. Due to this, Thread class start is considered the heart of multi-threading.</p>
+<p>(~“70,000 lines” inside start — if programmer had to write that every time, life would be horrible.)</p>
+<h3>51:44 — Case 4: Overloading of `run` method</h3>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        System.out.println(&quot;no-arg run&quot;);
+    }
+
+    public void run(int i) {
+        System.out.println(&quot;int-arg run&quot;);
+    }
+}
+
+class ThreadDemo {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+    }
+}
+// prints no-arg run</pre>
+<ul><li>Overloading of run is always possible (same name, different args).</li></ul>
+<ul><li>But Thread class start always invokes no-argument `run` only.</li></ul>
+<ul><li>Other overloaded run methods must be called explicitly like normal methods.</li></ul>
+<p>Same rule as: overloading main is possible, but JVM always calls main(String[] args).</p>
+<h3>1:00:20 — Case 5: If we are not overriding `run`</h3>
+<pre class='code'>class MyThread extends Thread {
+    // no run() override
+}
+
+class Test {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+    }
+}
+// prints (no output)</pre>
+<p>Valid program: start from Thread → calls run → Thread’s empty run → no output.</p>
+<p>It is highly recommended to override `run`. Otherwise you have no job for the thread — you are misusing multi-threading; don’t go for multi-threading.</p>
+<h3>1:06:08 — Case 6: Overriding of `start` method</h3>
+<pre class='code'>class MyThread extends Thread {
+    public void start() {
+        System.out.println(&quot;start method&quot;);
+    }
+
+    public void run() {
+        System.out.println(&quot;run method&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+        System.out.println(&quot;main method&quot;);
+    }
+}
+// prints start method
+// prints main method
+// total output produced by only main thread</pre>
+<ul><li>t.start() finds start in MyThread → child’s `start` wins (no chance for Thread’s start).</li></ul>
+<ul><li>New thread won’t be created; run won’t run from scheduler path.</li></ul>
+<ul><li>Our start runs like a normal method; then main continues → &quot;main method&quot;.</li></ul>
+<ul><li>Guaranteed same output every run (only one thread).</li></ul>
+<p>It is not recommended to override `start`. Otherwise multi-threading concept itself is not there — don’t go for multi-threading.</p>
+<h3>1:15:31 — Case 6 continued: `super.start()` inside overridden `start`</h3>
+<p>Small change — call Thread’s start from child start:</p>
+<pre class='code'>class MyThread extends Thread {
+    public void start() {
+        super.start(); // gives chance to Thread.start()
+        System.out.println(&quot;start method&quot;);
+    }
+
+    public void run() {
+        System.out.println(&quot;run method&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+        System.out.println(&quot;main method&quot;);
+    }
+}</pre>
+<p>After super.start(): two threads. Child executes run. Main continues rest of child’s start (&quot;start method&quot;) then &quot;main method&quot;.</p>
+<p>Only three possible outputs (he runs repeatedly and sees all):</p>
+<ol><li>run method → start method → main method</li></ol>
+<ol><li>start method → main method → run method</li></ol>
+<ol><li>start method → run method → main method</li></ol>
+<p>Not possible: e.g. main method before start method as if those two lines were from different threads — both &quot;start method&quot; and &quot;main method&quot; after return from t.start()’s child-start body are ordered on main; &quot;start method&quot; must come before &quot;main method&quot; in main’s flow. Mixing only happens between child’s run and main’s remaining lines.</p>
+<h3>1:25:29 — Case 8: Thread life cycle (top-level)</h3>
+<p>MyThread t = new MyThread(); // New / Born state
+t.start();                   // Ready / Runnable state
+// if thread scheduler allocates processor → Running state
+// if run() completes → Dead state</p>
+<p>Diagram he dictates:</p>
+<ol><li>new MyThread() → New / Born</li></ol>
+<ol><li>t.start() → Ready / Runnable</li></ol>
+<ol><li>Thread scheduler allocates processor → Running (run started)</li></ol>
+<ol><li>run completes → Dead</li></ol>
+<p>Gita / birth-death joke aside: from running, later topics add sleep / join / wait / yield states; for now this is the simple life cycle.</p>
+<h3>1:32:20 — Case 9: Restarting the same thread → IllegalThreadStateException</h3>
+<p>Long childhood / residential school / MBBS story leading to: once life cycle started, you cannot ask Brahma to restart the same life — IllegalThreadStateException.</p>
+<p>Interview: after starting a thread, if you try to restart the same thread again → runtime exception: IllegalThreadStateException.</p>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        System.out.println(&quot;run method&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+        t.start(); // second start on same thread
+    }
+}
+// compiles fine
+// at runtime: IllegalThreadStateException
+// (he also shows: may print run / main related lines then exception)</pre>
+<p>Board case text: After starting a thread if we are trying to restart the same thread then we will get runtime exception saying IllegalThreadStateException.</p>
+<h3>1:44:26 — Close of Part-2</h3>
+<p>Various cases related to defining/starting a thread by extending Thread class — no doubt left on first way. Next video: implementing Runnable (second way).</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 82 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 2</td></tr>
+<tr><td>Topic</td><td>Defining a thread by extending Thread; thread scheduler; start vs run; overloading run; overriding start; life cycle; IllegalThreadStateException</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 44m 56s</td></tr>
+<tr><td>Video ID</td><td>fd3TAYCHRfw</td></tr>
+<tr><td>Watch URL</td><td>https://www.youtube.com/watch?v=fd3TAYCHRfw</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

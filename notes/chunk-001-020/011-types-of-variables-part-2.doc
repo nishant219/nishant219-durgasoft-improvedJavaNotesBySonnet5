@@ -1,0 +1,493 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>011-types-of-variables-part-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 011 — Types of variables part 2</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-11 || Types of Variables :part-2</p>
+<h2>What this lecture covers</h2>
+<ol><li>Recap: last session covered instance + static; this session is local variables</li></ol>
+<ol><li>What a local variable is, where it lives, other names (temporary / stack / automatic)</li></ol>
+<ol><li>Creation, destruction, scope = the block; per-call copies; thread-safety hint</li></ol>
+<ol><li>Scope exam traps: for-loop j after the loop; try/catch j</li></ol>
+<ol><li>JVM does not provide default values — “before using”</li></ol>
+<ol><li>int x; then print &quot;hello&quot; vs print x</li></ol>
+<ol><li>Command-line if (args.length &gt; 0) x = 10; then print x — compiler as JVM’s assistant</li></ol>
+<ol><li>if/else both assign → compiles; java Test a vs java Test</li></ol>
+<ol><li>Never initialize locals inside logical blocks; initialize at declaration</li></ol>
+<ol><li>Only applicable modifier for locals is `final`; others → illegal start of expression</li></ol>
+<ol><li>“No modifier means default access” applies to instance/static only, not to locals</li></ol>
+<ol><li>Summary: defaults; thread safety table</li></ol>
+<ol><li>Every variable is (instance|static|local) and (primitive|reference) — six combinations</li></ol>
+<ol><li>Uninitialized arrays at instance, static, and local level (null / NPE / CE / [I@hash / 0)</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:06] Recap and heading</h3>
+<p>Last session: types of variables — instance and static done. Remaining type: local variables.</p>
+<h3>[00:31] What is a local variable?</h3>
+<p>Sometimes, based on programmer requirement, we declare variables inside a method, or inside a block, or inside a constructor, to meet temporary requirements.</p>
+<p>Such variables are local variables.</p>
+<pre class='code'>void m1() {
+    int x = 10;          // local to the method
+}
+
+Test() {
+    int x = 10;          // local to the constructor
+}
+
+{
+    int x = 10;          // local to this instance block
+}
+
+static {
+    int x = 10;          // local to this static block
+}
+
+for (int i = 0; i &lt; 10; i++) {
+    System.out.println(i);   // i is local to the for loop
+}</pre>
+<p>Where can you access them? Only within the method / block / constructor where they were declared.</p>
+<p>They are not permanent class-level or object-level data. That is why they are also called temporary variables.</p>
+<p>They are stored in stack memory. That is why they are also called stack variables.</p>
+<p>The for-loop i is local to that for loop. Inside the loop it is available; if you come out of the for loop it is automatically not available. Within the curly braces, available; outside the curly braces, gone.</p>
+<p>That “sometimes available, sometimes not” behaviour is why local variables are also called automatic variables.</p>
+<p>Other names — recite all four:</p>
+<h3>[05:40] Storage</h3>
+<p>Local variables will be stored inside stack memory. That is the memory-area point matching instance→heap and static→method area from video 010.</p>
+<h3>[06:17] Creation, destruction, scope — and the thread-safety seed</h3>
+<p>When created: while executing the block in which we declared it (the method, static block, constructor, for loop, if block, …).</p>
+<p>When destroyed: once that block’s execution completes, the local variable is automatically gone.</p>
+<p>Call m1() → locals of m1 are created → you use them in later lines of m1 → m1 returns → those locals are gone.</p>
+<p>Call m1() a second time → a new local variable is created. After that call completes, that new one is gone.</p>
+<p>If you call `m1` 10 times, the local variable is created 10 times. Do not feel “one time.” For every execution of that block, a fresh local is created; after the block, it is gone.</p>
+<p>Multiple threads: t1 calls m1, t2 calls m1, t3 calls m1 → each thread gets its own local variable. For every thread a separate copy of the local variable will be created. That is why local variables are considered thread-safe. (He returns to the full table later.)</p>
+<p>Scope sentence: the scope of a local variable is exactly the same as the scope of the block in which we declared it.</p>
+<h3>[11:01] Why JVM gives locals almost no support</h3>
+<p>Place in the architecture:</p>
+<ul><li>Static variable → part of the class (class-level data)</li></ul>
+<ul><li>Instance variable → part of the object (object-level data)</li></ul>
+<ul><li>Local variable → part of the method / block / for / if (temporary)</li></ul>
+<p>Instance and static are “standard” data. Locals are not standard; they are temporary. JVM will not provide much support for local variables.</p>
+<p>Consequences he flags as the two exam angles:</p>
+<ol><li>Default values: for instance and static, if you skip initialization, JVM provides defaults. No such terminology for local variables. For a local, we must initialize explicitly (with the “before using” refinement coming next).</li></ol>
+<ol><li>Scope: wherever the object is, the instance variable is there; wherever the class is, the static variable is there. A local is available inside its if / for / try and not outside. Scope issues are dangerous. Exam questions love this.</li></ol>
+<p>He covers scope first, then defaults.</p>
+<h3>[12:57] Scope trap 1 — `j` after a `for` loop</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int i = 0;
+        for (int j = 0; j &lt; 3; j++) {
+            i = i + j;
+        }
+        System.out.println(i + &quot;...&quot; + j);
+    }
+}</pre>
+<p>He first asks the room: what is i, what is j? If the loop ran, i would be 0+1+2 = 3 and after j++ when j is no longer &lt; 3, j would be 3. The code does not compile, so those values never print.</p>
+<ul><li>i is a local variable of `main`. Anywhere inside main you can access i. No problem.</li></ul>
+<ul><li>j is a local variable of the `for` loop. Within the loop only. Outside the for loop you cannot access `j`.</li></ul>
+<p>Compile-time error:</p>
+<p>cannot find symbol
+symbol:   variable j
+location: class Test</p>
+<p>The compiler’s attitude: inside class Test you used some variable j — first tell me where it is, then I can compile. j is local to the loop; outside the loop it does not exist.</p>
+<h3>[16:02] Scope trap 2 — `j` declared in `try`, used in `catch` / after `try`</h3>
+<p>This question is in their SCJP practice book. Compulsory possibility on the exam.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            int j = Integer.parseInt(&quot;ten&quot;);   // NumberFormatException
+        } catch (NumberFormatException e) {
+            j = 10;                            // CE
+        }
+        System.out.println(j);                 // CE
+    }
+}</pre>
+<p>&quot;ten&quot; is not a number. Converting that String to int throws `NumberFormatException` (he first slips “ClassCastException”, then names NumberFormatException). The idea of the catch is: if that happens, set j = 10 and print j.</p>
+<p>It will not compile. j is a local variable of the `try` block. Outside the try — including inside catch and after the whole try/catch — you cannot see j.</p>
+<p>Two cannot find symbol errors (one at j = 10, one at System.out.println(j)):</p>
+<p>cannot find symbol
+symbol:   variable j
+location: class Test</p>
+<p>Scope of local variables is dangerous. Take special care. Locals are sometimes available, sometimes not.</p>
+<h3>[21:05] Defaults — JVM will not initialize locals</h3>
+<p>Default values exist only for instance and static variables, not for local variables.</p>
+<p>Board:</p>
+<ul><li>For local variables, JVM won’t provide default values</li></ul>
+<ul><li>Compulsory: we should perform initialization explicitly</li></ul>
+<p>Then he immediately refines this. The next examples are the exam version of that sentence.</p>
+<h3>[22:30] Using vs not using — `hello` compiles, printing `x` does not</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x;
+        System.out.println(&quot;hello&quot;);
+    }
+}</pre>
+<p>Is this going to compile? Students say no, because no initialization and JVM provides no default.</p>
+<p>It compiles. Output: `hello`.</p>
+<p>You did not initialize x, but you also did not use x. Before using a local, you must initialize it. If you are not using it, there is no need to initialize it.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x;
+        System.out.println(x);
+    }
+}</pre>
+<p>Invalid. Compile-time error:</p>
+<p>variable x might not have been initialized</p>
+<p>Corrected board rule:</p>
+<p>For local variables, JVM won’t provide default values. Compulsory we should perform initialization explicitly before using that variable. If we are not using it, it is not required to perform initialization.</p>
+<p>Put both examples side by side:</p>
+<h3>[28:22] Command-line `if` without `else` — “might not have been initialized”</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x;
+        if (args.length &gt; 0) {
+            x = 10;
+        }
+        System.out.println(x);
+    }
+}</pre>
+<p>args is command-line arguments. If we pass any command-line arguments, args.length &gt; 0, so x becomes 10, then we print x.</p>
+<p>The compiler refuses. Story Durga tells:</p>
+<p>You tell the compiler: if we pass arguments, x is 10. Compiler: if you are not passing a command-line argument, what is x? You initialize x sometimes but not always, then you try to print it. If no argument is passed, what value should I print? I can’t compile.</p>
+<p>You try to convince the compiler: “Believe me, definitely at least once I will pass a command-line argument.” Compiler’s answer (the joke): three months back a person with a very innocent face like yours said the same thing; that bloody person did not pass an argument; JVM tried to print x; x had no value; JVM was in big trouble; JVM gave the compiler left and right, because the compiler is the assistant of the JVM. If the compiler does not do its job, JVM suffers. “I don’t want to take any risk for the sake of stupid programmers like you.” First tell me what x is when no argument is passed, then I will compile.</p>
+<p>Compile-time error:</p>
+<p>variable x might not have been initialized</p>
+<p>The compiler does not care about your promise to pass arguments at run time. It only cares whether x is definitely assigned on every path.</p>
+<h3>[32:13] `if` / `else` both assign — now it compiles</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x;
+        if (args.length &gt; 0) {
+            x = 10;
+        } else {
+            x = 20;
+        }
+        System.out.println(x);
+    }
+}</pre>
+<p>Now if the compiler raises an error, Durga will give the compiler left and right: if arguments are passed, x is 10; else x is 20. x is always initialized. The code compiles.</p>
+<p>First version (if only): compile error. This version (if/else): compiles, and the output depends on whether arguments were passed.</p>
+<h3>[34:18] Programming practice notes</h3>
+<p>Note 1: It is never recommended to perform initialization for a local variable inside logical blocks (if, else, …). Those blocks may or may not execute. There is no guarantee they always execute at run time. If you skip the command-line argument, the if body does not run.</p>
+<p>Note 2: It is highly recommended to perform initialization for local variables at the time of declaration, at least with default values.</p>
+<p>int x = 0;
+if (args.length &gt; 0) {
+    x = 10;
+}
+System.out.println(x);   // compiles: no args → 0, with args → 10</p>
+<p>Same idea you already use in real code:</p>
+<pre class='code'>Connection con = null;
+String s = null;</pre>
+<p>Why write = null explicitly? To overcome exactly this class of “might not have been initialized” problems. JVM will not default a local for you, so you put the default at declaration.</p>
+<p>Reason for note 2: prevents this family of compile errors, because JVM won’t provide default values; if you then try to access the variable, problem.</p>
+<h3>[41:29] The only applicable modifier for local variables is `final`</h3>
+<pre class='code'>class Test {
+    int x = 10;                 // instance
+    static int y = 20;          // static
+
+    public static void main(String[] args) {
+        int j = 30;             // local
+    }
+}</pre>
+<p>For instance (and same for static):</p>
+<p>Those modifiers change scope / accessibility of instance and static members.</p>
+<p>Local `j`: you can access it only within the method. public int j does not let you use j outside the method. The scope of a local is already fixed. So public, private, protected, default — such terminology is not applicable for local variables.</p>
+<p>The only applicable modifier for local variables is `final`. Except final, you cannot use any other modifier. If you try, compile-time error.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        public int x = 10;       // CE
+        private int x = 10;      // CE
+        protected int x = 10;    // CE
+        static int x = 10;       // CE
+        transient int x = 10;    // CE
+        volatile int x = 10;     // CE
+
+        final int x = 10;        // VALID
+    }
+}</pre>
+<p>In all of the illegal cases, compile-time error:</p>
+<p>illegal start of expression</p>
+<p>(final int x = 10; is perfectly valid.)</p>
+<p>He lists them on the board one by one: public, private, protected, static, transient, volatile — all CE; only final is OK.</p>
+<h3>[48:45] “No modifier ⇒ default access” is **not** for locals</h3>
+<p>If an instance variable is declared with no modifier, it is default (package) access — accessible anywhere in the current package.</p>
+<p>If a static variable is declared with no modifier, same: default, current package.</p>
+<p>If a local is declared with no modifier:</p>
+<pre class='code'>void m1() {
+    int j = 30;
+}</pre>
+<p>Is j “default”? If it were default, you could access it anywhere in the current package. Can you access `j` outside `main` / outside `m1`? No.</p>
+<p>So: if we are not declaring with any modifier, then by default it is default — this rule is applicable only for instance and static variables, not for local variables.</p>
+<p>Local scope is always the block. “Anywhere in the current package / anywhere in the class” rules do not apply to locals.</p>
+<h3>[52:27] Summary conclusions — defaults</h3>
+<p>Conclusion 1 — initialization</p>
+<ul><li>For instance and static variables: JVM will provide default values; we are not required to initialize explicitly.</li></ul>
+<ul><li>For local variables: JVM won’t provide default values; we must initialize explicitly before using that variable.</li></ul>
+<h3>[54:59] Summary conclusions — thread safety</h3>
+<p>Instance variable is part of an object. A single object can be accessed by multiple threads at a time. People who know synchronization / multi-threading already see the issue: instance variables are not thread-safe.</p>
+<p>Static: only one copy at class level. That single copy can be accessed by multiple threads at a time. Static variables are also not thread-safe.</p>
+<p>Local: m1 has int x = 10. For every thread a separate copy of the local variable will be created. A modification by thread t1 is not reflected in t2’s copy. Local variables are thread-safe.</p>
+<p>Board:</p>
+<ul><li>Instance and static variables can be accessed by multiple threads simultaneously, and hence these are not thread-safe.</li></ul>
+<ul><li>In the case of local variables, for every thread a separate copy will be created, and hence local variables are thread-safe.</li></ul>
+<p>Table he draws:</p>
+<h3>[1:00:09] Every variable is one of three, and also primitive or reference</h3>
+<p>Every variable in Java is compulsory either instance or static or local — one of these three.</p>
+<p>Every variable in Java is also either a primitive variable or a reference variable.</p>
+<p>Two divisions from video 010, crossed:</p>
+<p>Six possible combinations:</p>
+<ol><li>instance primitive</li></ol>
+<ol><li>instance reference</li></ol>
+<ol><li>static primitive</li></ol>
+<ol><li>static reference</li></ol>
+<ol><li>local primitive</li></ol>
+<ol><li>local reference</li></ol>
+<p>Example program:</p>
+<pre class='code'>class Test {
+    int x = 10;                    // instance + primitive
+    static String s = &quot;durga&quot;;     // static + reference
+
+    public static void main(String[] args) {
+        int[] y = new int[3];      // local + reference  (every array in Java is an object)
+    }
+}</pre>
+<p>People ask: can an instance variable be primitive? Can it be reference? Can static be either? Yes — all six combinations exist.</p>
+<p>Board wrap:</p>
+<ul><li>Every variable in Java should be either instance or static or local</li></ul>
+<ul><li>Every variable in Java should be either primitive or reference</li></ul>
+<ul><li>Hence the various possible combinations are: instance primitive, instance reference, static primitive, static reference, local primitive, local reference</li></ul>
+<h3>[1:08:37] Uninitialized arrays</h3>
+<p>Heading: uninitialized arrays. Behaviour when you declare an array but do not create / initialize it — and the same idea at instance, static, and local level. This part is important.</p>
+<h4>Instance level</h4>
+<pre class='code'>class Test {
+    int[] x;   // instance, reference (array is an object)
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(t.x);
+        System.out.println(t.x[0]);
+    }
+}</pre>
+<p>Instance variable → JVM provides default. x is a reference → default `null`.</p>
+<ul><li>t.x → `null`</li></ul>
+<ul><li>t.x[0] → you are asking null for its first element → runtime NullPointerException</li></ul>
+<p>He compiles and runs: first line null, second line NullPointerException.</p>
+<p>Now create the array object:</p>
+<pre class='code'>class Test {
+    int[] x = new int[3];
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(t.x);
+        System.out.println(t.x[0]);
+    }
+}</pre>
+<p>x is initialized; it points to an array object.</p>
+<ul><li>Printing a reference calls toString() (already covered in the arrays lectures): class-name code `[I` ([ = array, I = int), @, hex hash code, e.g. [I@3e25a5 / [I@d0c6… — some number.</li></ul>
+<ul><li>Once we create an array, every element is initialized with default values. Default for int is 0. So t.x[0] → `0`.</li></ul>
+<h4>Static level</h4>
+<p>Same numbers, but you do not need an object reference; access directly.</p>
+<pre class='code'>class Test {
+    static int[] x;
+
+    public static void main(String[] args) {
+        System.out.println(x);      // null  (JVM default for static reference)
+        System.out.println(x[0]);   // NullPointerException
+    }
+}
+class Test {
+    static int[] x = new int[3];
+
+    public static void main(String[] args) {
+        System.out.println(x);      // [I@&lt;hash&gt;
+        System.out.println(x[0]);   // 0
+    }
+}</pre>
+<p>Static also gets JVM defaults, so uninitialized x is still null, and x[0] is still NPE. Created array: toString of the array, then element default 0.</p>
+<h4>Local level — behaviour is different</h4>
+<p>Inside a method:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int[] x;
+        System.out.println(x);      // CE
+        System.out.println(x[0]);   // CE
+    }
+}</pre>
+<p>JVM won’t provide default values for locals. Both prints are compile errors:</p>
+<p>variable x might not have been initialized</p>
+<p>Now create the array:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int[] x = new int[3];
+        System.out.println(x);      // [I@&lt;hash&gt;   — x is initialized with the object
+        System.out.println(x[0]);   // 0           — NOT a compile error
+    }
+}</pre>
+<p>Students may guess x[0] is still a compile error because x is local. Output is `0`. Once we create an array, every array element is initialized with the default value whether the array is local, static, or instance.</p>
+<p>x is the local variable. x[0] is part of the array object. Array properties dominate: creating the array initializes elements.</p>
+<h3>[1:25:27] Final note on arrays vs instance/static/local</h3>
+<p>Note: once we create an array, every array element is by default initialized with default values, irrespective of whether it is instance or static or local.</p>
+<p>That closes types of variables: instance, static, local; initialized vs not; and the special array cases.</p>
+<h2>Side-by-side: uninitialized `int[] x`</h2>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int i = 0;
+        for (int j = 0; j &lt; 3; j++) {
+            i = i + j;
+        }
+        // System.out.println(i + &quot;...&quot; + j);  // CE: cannot find symbol, variable j
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        try {
+            int j = Integer.parseInt(&quot;ten&quot;);
+        } catch (NumberFormatException e) {
+            // j = 10;                  // CE: cannot find symbol
+        }
+        // System.out.println(j);       // CE: cannot find symbol
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x;
+        System.out.println(&quot;hello&quot;);   // hello
+
+        // int y;
+        // System.out.println(y);      // CE: variable y might not have been initialized
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x;
+        if (args.length &gt; 0) {
+            x = 10;
+        }
+        // System.out.println(x);      // CE: variable x might not have been initialized
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x;
+        if (args.length &gt; 0) {
+            x = 10;
+        } else {
+            x = 20;
+        }
+        System.out.println(x);         // java Test a → 10;  java Test → 20
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        // public int x = 10;          // CE: illegal start of expression
+        // private int x = 10;
+        // protected int x = 10;
+        // static int x = 10;
+        // transient int x = 10;
+        // volatile int x = 10;
+        final int x = 10;              // only applicable modifier
+    }
+}
+class Test {
+    int x = 10;                        // instance primitive
+    static String s = &quot;durga&quot;;         // static reference
+
+    public static void main(String[] args) {
+        int[] y = new int[3];          // local reference
+    }
+}</pre>
+<h2>Exam / interview traps</h2>
+<ul><li>Local names: temporary, stack, automatic. Instance: object-level / attributes. Static: class-level / fields.</li></ul>
+<ul><li>Calling a method 10 times creates the local 10 times, not once.</li></ul>
+<ul><li>Locals are thread-safe; instance and static are not.</li></ul>
+<ul><li>for (int j = 0; j &lt; 3; j++) { ... } System.out.println(j); → CE `cannot find symbol`, not “j is 3”.</li></ul>
+<ul><li>int j inside try is invisible in catch and after try. Same cannot find symbol. Exception type in the example is `NumberFormatException` from Integer.parseInt(&quot;ten&quot;), not ClassCastException.</li></ul>
+<ul><li>Uninitialized local that is never read is legal (int x; System.out.println(&quot;hello&quot;);).</li></ul>
+<ul><li>Uninitialized local that is read → variable x might not have been initialized (this message, not cannot find symbol).</li></ul>
+<ul><li>Compiler does not trust “I will pass command-line args.” if (args.length &gt; 0) x = 10; then print x is CE even if you always pass args when you run.</li></ul>
+<ul><li>if/else both assign → compiles. java Test then prints 20; java Test a prints 10.</li></ul>
+<ul><li>Do not initialize locals only inside if. Initialize at declaration (int x = 0;, String s = null;).</li></ul>
+<ul><li>Local modifiers: only `final`. public/private/protected/static/transient/volatile on a local → `illegal start of expression`, not a nice “modifier not allowed” essay.</li></ul>
+<ul><li>No-modifier-means-default-access is instance and static only.</li></ul>
+<ul><li>Array int[] y is a reference, even if the element type is primitive. Combination = local reference (or instance/static reference).</li></ul>
+<ul><li>Uninitialized instance/static int[] x → print x is null; print x[0] is NPE (runtime), not CE.</li></ul>
+<ul><li>Uninitialized local int[] x → CE for both x and x[0].</li></ul>
+<ul><li>After int[] x = new int[3];, x[0] is 0 even if x is local. Array-element defaults are independent of instance/static/local.</li></ul>
+<h2>Recap</h2>
+<p>Local variables are block-scoped stack data. JVM will not default them; the compiler demands definite assignment before use. Scope bugs (j after for, j after try) and the command-line if without else are the standard OCJP questions. Only final may modify a local. Crossing the two divisions gives six combinations. Uninitialized array references follow the same default/null/CE rules as other variables; created array elements are always defaulted.</p>
+<p>Next video: 012-var-arg-methods.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 11 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 11 of 16</td></tr>
+<tr><td>Topic</td><td>Types of variables part 2 — local variables, modifiers, thread safety, combinations, uninitialized arrays</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 27m 12s</td></tr>
+<tr><td>Video ID</td><td>CQMaVTO0Cfk</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=CQMaVTO0Cfk</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Name</th><th>Why</th></tr>
+<tr><td>local variables</td><td>declared inside method / block / constructor</td></tr>
+<tr><td>temporary variables</td><td>not permanent data; only while that block runs</td></tr>
+<tr><td>stack variables</td><td>stored in stack memory</td></tr>
+<tr><td>automatic variables</td><td>available inside the block, automatically gone outside</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>Result</th></tr>
+<tr><td>int x; System.out.println(&quot;hello&quot;);</td><td>compiles; prints hello</td></tr>
+<tr><td>int x; System.out.println(x);</td><td>CE: variable x might not have been initialized</td></tr>
+</table>
+<table>
+<tr><th>Command</th><th>Meaning</th><th>Output</th></tr>
+<tr><td>java Test a</td><td>passing a command-line argument</td><td>10</td></tr>
+<tr><td>java Test</td><td>no command-line argument</td><td>20</td></tr>
+<tr><td>java Test a b</td><td>still args.length &gt; 0</td><td>10</td></tr>
+</table>
+<table>
+<tr><th>Modifier</th><th>Access (preview of access modifiers)</th></tr>
+<tr><td>public</td><td>anywhere</td></tr>
+<tr><td>private</td><td>only within the class</td></tr>
+<tr><td>default (no modifier)</td><td>anywhere in the current package</td></tr>
+<tr><td>protected</td><td>current package anywhere; outside package only in child classes</td></tr>
+</table>
+<table>
+<tr><th>Type of variable</th><th>Thread-safe?</th></tr>
+<tr><td>instance variable</td><td>no</td></tr>
+<tr><td>static variable</td><td>no</td></tr>
+<tr><td>local variable</td><td>yes</td></tr>
+</table>
+<table>
+<tr><th>Variable</th><th>instance / static / local</th><th>primitive / reference</th><th>Combination</th></tr>
+<tr><td>x</td><td>instance</td><td>primitive (int)</td><td>instance primitive</td></tr>
+<tr><td>s</td><td>static</td><td>reference (String object)</td><td>static reference</td></tr>
+<tr><td>y</td><td>local</td><td>reference (array is an object)</td><td>local reference</td></tr>
+</table>
+<table>
+<tr><th>Declaration</th><th>System.out.println(x)</th><th>System.out.println(x[0])</th></tr>
+<tr><td>instance int[] x;</td><td>null</td><td>NullPointerException</td></tr>
+<tr><td>instance int[] x = new int[3];</td><td>[I@&lt;hashcode&gt;</td><td>0</td></tr>
+<tr><td>static int[] x;</td><td>null</td><td>NullPointerException</td></tr>
+<tr><td>static int[] x = new int[3];</td><td>[I@&lt;hashcode&gt;</td><td>0</td></tr>
+<tr><td>local int[] x;</td><td>CE: variable x might not have been initialized</td><td>CE: same</td></tr>
+<tr><td>local int[] x = new int[3];</td><td>[I@&lt;hashcode&gt;</td><td>0</td></tr>
+</table>
+</body></html>

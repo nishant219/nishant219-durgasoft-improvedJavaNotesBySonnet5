@@ -1,0 +1,569 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>106-hashcode</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 106 — `hashCode()` (Object class, Part 2)</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This is Part 2 of the java.lang / Object class series. In the previous session (Video 105), Durga Sir covered `toString()`. This session covers the second Object method: `hashCode()`.</p>
+<p>Agenda for this video:</p>
+<ol><li>What is hashCode()? (definition, myths, JVM usage)</li></ol>
+<ol><li>Why hashing matters — linear vs binary vs hashing search</li></ol>
+<ol><li>Default Object.hashCode() — native method, address-based generation</li></ol>
+<ol><li>Overriding hashCode() — proper vs improper ways</li></ol>
+<ol><li>Relation between toString() and hashCode()</li></ol>
+<ol><li>Three board demo programs with exact/predictable outputs</li></ol>
+<h2>00:06 — Continuation from Part 1 (`toString()` done)</h2>
+<p>Durga Sir opens by recalling that in the last session the `java.lang` package and the first Object method — `toString()` — were covered. Some students may have found the theoretical portion a bit slow; this session moves to the second method, which he describes as shorter and easier: `hashCode()`.</p>
+<h2>00:46 — Opening question: What is hashCode?</h2>
+<p>Classroom poll: &quot;What is hashCode of an object?&quot;</p>
+<p>Many students assume:</p>
+<p>hashCode = address of the object</p>
+<p>Durga Sir immediately challenges this with a logical trap:</p>
+<ul><li>We can override hashCode() — e.g., return your phone number as hashCode.</li></ul>
+<ul><li>Can we override the address of an object? No.</li></ul>
+<ul><li>Therefore hashCode ≠ address. They are different concepts, not related.</li></ul>
+<h2>01:52 — Java cannot expose object address or size</h2>
+<p>Key platform facts (interview-ready):</p>
+<p>Why? Java is a programmer-friendly language, not a machine-friendly language. At the memory/machine level, Java deliberately hides low-level details.</p>
+<ul><li>If you need address or object size → use C / C++ (low-level, machine-friendly languages).</li></ul>
+<ul><li>As a Java programmer, do not expect APIs for object address or size.</li></ul>
+<p>Takeaway: Because Java hides addresses, hashCode and object address are unrelated concepts.</p>
+<h2>02:56 — Definition of hashCode</h2>
+<p>Board definition:</p>
+<p>For every object, JVM generates a unique number. That number is `hashCode`.</p>
+<ul><li>hashCode does not represent the address of the object.</li></ul>
+<ul><li>It is a unique identifier number assigned/generated per object (by default, by JVM logic).</li></ul>
+<p>Immediate follow-up: Why does JVM need this unique number?</p>
+<h2>03:20 — Who uses hashCode? Hashing data structures</h2>
+<p>JVM uses hashCode when storing objects in hashing-related data structures:</p>
+<h3>Bucket model (board diagram)</h3>
+<p>Durga Sir draws buckets numbered 1, 2, 3, … (conceptually infinite):</p>
+<p>Bucket 1   Bucket 2   ...   Bucket 100   ...   Bucket 150
+   |          |                    |                  |
+ obj?       obj?              Student-1           Student-2</p>
+<p>Insertion flow:</p>
+<ol><li>Object wants to enter HashSet / HashMap / Hashtable.</li></ol>
+<ol><li>JVM asks: &quot;Object, what is your hashCode?&quot;</li></ol>
+<ol><li>Object answers, e.g., 100.</li></ol>
+<ol><li>JVM places the object in the 100th bucket.</li></ol>
+<ol><li>Second object with hashCode 150 → 150th bucket.</li></ol>
+<p>Rule: All objects in hashing collections are stored based on hashCode → which bucket they land in.</p>
+<h2>04:57 — Advantage: O(1) search (hashing = #1 search algorithm)</h2>
+<p>Advantage of hashCode-based storage:</p>
+<ul><li>Search operation becomes very efficient — go directly to the correct bucket.</li></ul>
+<ul><li>HashMap / HashSet / Hashtable are the best choice when the frequent operation is search.</li></ul>
+<p>Durga Sir ranks search algorithms taught on the board:</p>
+<h3>Linear search analogy [06:08–07:53]</h3>
+<ul><li>1000 students → up to 1000 comparisons in worst case.</li></ul>
+<ul><li>Time grows linearly with number of elements → O(n).</li></ul>
+<ul><li>Simplest search, but worst performance for large data.</li></ul>
+<h3>Binary search analogy [08:13–10:35]</h3>
+<ul><li>Students sit in alphabetical order (sorted data required).</li></ul>
+<ul><li>Compare target with middle element:</li></ul>
+<ul><li>If R &gt; middle → ignore first half, search second half.</li></ul>
+<ul><li>If R &lt; middle → ignore second half.</li></ul>
+<ul><li>Each step eliminates half the remaining students → O(log n).</li></ul>
+<ul><li>Better than linear, but still depends on number of students.</li></ul>
+<h3>Hashing analogy [10:36–12:00]</h3>
+<ul><li>Ravi&#x27;s hashCode = 100 → go directly to bucket 100.</li></ul>
+<ul><li>No need to check other buckets.</li></ul>
+<ul><li>Whether 10, 1000, or 1 crore elements — within ~1 step (conceptually O(1)).</li></ul>
+<ul><li>Most powerful search algorithm up to today: hashing.</li></ul>
+<h2>12:02 — Board summary (hashCode fundamentals)</h2>
+<p>Durga Sir writes the consolidated board notes:</p>
+<p>For every object → JVM generates a unique number → hashCode
+
+hashCode ≠ address of object
+
+JVM uses hashCode while saving objects into hashing-related
+data structures (Hashtable, HashMap, HashSet, etc.)
+
+Main advantage: search operation becomes easy
+(most powerful search algorithm up to today = hashing)</p>
+<h2>16:27 — Default behavior: Object class hashCode()</h2>
+<p>Question: If we don&#x27;t override hashCode, which method runs?</p>
+<p>Answer: `Object` class `hashCode()` method.</p>
+<h3>Declaration (from Object.java)</h3>
+<pre class='code'>public native int hashCode();</pre>
+<ul><li>`public` — accessible everywhere</li></ul>
+<ul><li>`native` — implemented in native (JVM/C) code, not Java source</li></ul>
+<ul><li>Return type `int`</li></ul>
+<h3>How Object.hashCode() generates the value [17:01–18:37]</h3>
+<ul><li>Object class hashCode is generated based on address of the object internally.</li></ul>
+<ul><li>Example thought experiment:</li></ul>
+<ul><li>Assume object address = 1024 (hypothetical — you cannot read this in Java).</li></ul>
+<ul><li>JVM runs some internal algorithm: 3 × 6 ÷ 2 × 10.75 ÷ 3.2 … → result e.g. 132.</li></ul>
+<ul><li>132 is NOT the address 1024.</li></ul>
+<ul><li>The algorithm uses address as input, but the result is hashCode, not address.</li></ul>
+<p>Critical distinction:</p>
+<h2>18:40 — Overriding hashCode()</h2>
+<p>We can override hashCode() to return our own number instead of depending on Object&#x27;s address-based algorithm.</p>
+<p>Board note:</p>
+<p>If you give the chance to Object class hashCode method,
+it will generate hashCode based on address of the object.
+It does NOT mean hashCode represents address.
+
+Based on our requirement, we can override hashCode method
+in our class to generate our own hashCode.</p>
+<h2>20:54 — Proper vs improper overriding</h2>
+<h3>Improper override — same hashCode for all objects [21:46–22:54]</h3>
+<pre class='code'>class Student {
+    int rollNumber;
+    String name;
+
+    // IMPROPER — every Student returns 100
+    public int hashCode() {
+        return 100;
+    }
+}</pre>
+<p>Why improper?</p>
+<ul><li>Student 1 → hashCode 100</li></ul>
+<ul><li>Student 2 → hashCode 100</li></ul>
+<ul><li>Student 3 → hashCode 100</li></ul>
+<ul><li>All objects share the same hashCode → violates uniqueness expectation.</li></ul>
+<h3>Proper override — unique hashCode per object [23:02–23:51]</h3>
+<pre class='code'>class Student {
+    int rollNumber;
+    String name;
+
+    // PROPER — roll number differs per student
+    public int hashCode() {
+        return rollNumber;
+    }
+}</pre>
+<p>Why proper?</p>
+<ul><li>Each student has a different roll number → different hashCode per object.</li></ul>
+<ul><li>Matches the spirit of JVM&#x27;s default behavior (unique number per object).</li></ul>
+<h2>24:00 — Why improper override breaks hashing [24:10–26:08]</h2>
+<p>Scenario: HashSet&lt;Student&gt; with improper hashCode() returning 100 for everyone.</p>
+<p>HashSet internal buckets:
+[...] [Bucket 100: Student1, Student2, Student3, ... thousands ...] [...]</p>
+<ol><li>All students land in bucket 100 only.</li></ol>
+<ol><li>On search: JVM goes to bucket 100 → finds thousands of objects.</li></ol>
+<ol><li>Must ask each one: &quot;Are you Ravi?&quot; → degrades to linear search inside one bucket.</li></ol>
+<ol><li>Total hashing advantage is lost — search becomes very difficult.</li></ol>
+<p>Rule (board):</p>
+<p>Overriding hashCode is proper if and only if we generate a unique / separate number (hashCode) for every object.</p>
+<p>If all objects return the same hashCode → improper → spoils hashing algorithm performance.</p>
+<h2>26:33 — Board recap: overriding rules</h2>
+<p>Overriding hashCode method is said to be PROPER
+if and only if for every object we generate a unique number as hashCode.
+
+IMPROPER way:
+  class Student {
+      public int hashCode() { return 100; }  // same for all
+  }
+  → for all student objects, same number as hashCode
+
+PROPER way:
+  class Student {
+      public int hashCode() { return rollNumber; }
+  }
+  → different hashCode for every object (because roll numbers differ)</p>
+<h2>31:21 — Relation: `toString()` vs `hashCode()` [31:21–35:45]</h2>
+<p>From Video 105, `Object.toString()` implementation:</p>
+<pre class='code'>public String toString() {
+    return getClass().getName() + &quot;@&quot; + Integer.toHexString(hashCode());
+}</pre>
+<p>Student override example (from last class):</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    public String toString() {
+        return name + &quot;..&quot; + rollNumber;
+    }
+}</pre>
+<h3>Link between the two methods</h3>
+<p>Board heading: toString() vs hashCode()</p>
+<p>If we give the chance to Object class toString method
+  → it will internally call hashCode method.
+
+If we are overriding toString method (our own implementation)
+  → our toString may NOT call hashCode method.</p>
+<p>This link is exam-critical — many trick questions depend on knowing which method chain executes.</p>
+<h2>36:04 — Board Demo Example 1: No overrides [36:10–39:16]</h2>
+<p>Code on board:</p>
+<pre class='code'>class Test {
+    int i;
+
+    Test(int i) {
+        this.i = i;
+    }
+
+    public static void main(String[] args) {
+        Test t1 = new Test(10);
+        Test t2 = new Test(100);
+        System.out.println(t1);
+        System.out.println(t2);
+    }
+}</pre>
+<h3>Which methods execute?</h3>
+<ul><li>Test class has no toString() override → Object version runs.</li></ul>
+<ul><li>Test class has no hashCode() override → Object native hashCode runs.</li></ul>
+<h3>Output</h3>
+<p>Exact output? NO — only format is guaranteed.</p>
+<p>Test@&lt;hex1&gt;
+Test@&lt;hex2&gt;</p>
+<ul><li>Format: className + &#x27;@&#x27; + Integer.toHexString(hashCode())</li></ul>
+<ul><li>Hex values depend on JVM, memory layout, run — unpredictable.</li></ul>
+<ul><li>Example from live run (ASR): Test@12b6513, Test@4a5ab2 (illustrative only).</li></ul>
+<p>Exam answer: Cannot tell exact decimal/hex hashCode because Object.hashCode() executes (address-based, unknown).</p>
+<h2>39:17 — Board Demo Example 2: Override hashCode only [39:22–43:43]</h2>
+<p>Code on board:</p>
+<pre class='code'>class Test {
+    int i;
+
+    Test(int i) {
+        this.i = i;
+    }
+
+    public int hashCode() {
+        return i;   // hashCode = instance variable value
+    }
+
+    public static void main(String[] args) {
+        Test t1 = new Test(10);
+        Test t2 = new Test(100);
+        System.out.println(t1);
+        System.out.println(t2);
+    }
+}</pre>
+<h3>Which methods execute?</h3>
+<p>Key insight: Even though we only overrode hashCode, Object.toString() still runs and uses our hashCode.</p>
+<h3>Computing exact output</h3>
+<p>t1: hashCode = 10 → hex = Integer.toHexString(10) = `a`</p>
+<p>t2: hashCode = 100 → hex = Integer.toHexString(100) = `64`</p>
+<p>Test@a
+Test@64</p>
+<p>Hex quick reference (board): a=10, b=11, … f=15.</p>
+<p>Durga Sir stresses: run on thousands of machines → same output every time, because the only variable part (hashCode) is fixed by our override.</p>
+<h2>43:43 — Board Demo Example 3: Override both toString and hashCode [43:53–49:55]</h2>
+<p>Code on board:</p>
+<pre class='code'>class Test {
+    int i;
+
+    Test(int i) {
+        this.i = i;
+    }
+
+    public String toString() {
+        return i + &quot;&quot;;   // NOT &quot;return i;&quot; alone — int vs String compile error
+    }
+
+    public int hashCode() {
+        return i;
+    }
+
+    public static void main(String[] args) {
+        Test t1 = new Test(10);
+        Test t2 = new Test(100);
+        System.out.println(t1);
+        System.out.println(t2);
+    }
+}</pre>
+<h3>Compile trap: `return i;` in toString()</h3>
+<ul><li>toString() return type = `String`</li></ul>
+<ul><li>i is `int`</li></ul>
+<ul><li>return i; → compile error: incompatible types — int found, String required.</li></ul>
+<p>Fix (board):</p>
+<pre class='code'>return i + &quot;&quot;;           // string concatenation → String
+// or
+return String.valueOf(i);
+// or
+return Integer.toString(i);</pre>
+<h3>Which methods execute?</h3>
+<p>Important: hashCode() exists in the class but has no impact on println output in this example.</p>
+<h3>Output</h3>
+<p>10
+100</p>
+<p>Not Test@a / Test@64 — because our toString returns just the int as String.</p>
+<h3>Live IDE demonstration summary [47:02–49:55]</h3>
+<p>Durga Sir runs all three versions in IDE:</p>
+<h2>50:00 — Session snapshot (end board)</h2>
+<p>Final checklist — you should know:</p>
+<ol><li>What is hashCode? Unique number per object (default: JVM-generated).</li></ol>
+<ol><li>hashCode ≠ address — Java cannot expose address.</li></ol>
+<ol><li>Who uses it? JVM / hashing collections (HashMap, HashSet, Hashtable).</li></ol>
+<ol><li>Advantage? O(1) search via buckets — hashing is the fastest search approach.</li></ol>
+<ol><li>Default impl? public native int hashCode() in Object — uses address internally, result is not address.</li></ol>
+<ol><li>Can we override? Yes — proper if unique per object; improper if same for all.</li></ol>
+<ol><li>toString vs hashCode? Object.toString() calls hashCode(); custom toString may not.</li></ol>
+<ol><li>Three demo patterns — know which methods run and whether output is exact or format-only.</li></ol>
+<h2>Complete runnable demo — all three examples</h2>
+<pre class='code'>// ========== Example 1: No overrides ==========
+class Test1 {
+    int i;
+    Test1(int i) { this.i = i; }
+
+    public static void main(String[] args) {
+        Test1 t1 = new Test1(10);
+        Test1 t2 = new Test1(100);
+        System.out.println(t1);  // Test@&lt;unpredictable hex&gt;
+        System.out.println(t2);  // Test@&lt;unpredictable hex&gt;
+    }
+}
+
+// ========== Example 2: hashCode override only ==========
+class Test2 {
+    int i;
+    Test2(int i) { this.i = i; }
+
+    public int hashCode() { return i; }
+
+    public static void main(String[] args) {
+        Test2 t1 = new Test2(10);
+        Test2 t2 = new Test2(100);
+        System.out.println(t1);  // Test@a
+        System.out.println(t2);  // Test@64
+    }
+}
+
+// ========== Example 3: Both overridden ==========
+class Test3 {
+    int i;
+    Test3(int i) { this.i = i; }
+
+    public String toString() { return i + &quot;&quot;; }
+    public int hashCode() { return i; }  // not used by println in this case
+
+    public static void main(String[] args) {
+        Test3 t1 = new Test3(10);
+        Test3 t2 = new Test3(100);
+        System.out.println(t1);  // 10
+        System.out.println(t2);  // 100
+    }
+}</pre>
+<h2>Student improper/proper override demos</h2>
+<pre class='code'>import java.util.HashSet;
+
+// IMPROPER — all students hash to bucket 100
+class StudentBad {
+    int rollNumber;
+    StudentBad(int rollNumber) { this.rollNumber = rollNumber; }
+
+    public int hashCode() { return 100; }  // WRONG: same for all
+
+    public static void main(String[] args) {
+        HashSet&lt;StudentBad&gt; set = new HashSet&lt;&gt;();
+        set.add(new StudentBad(101));
+        set.add(new StudentBad(102));
+        set.add(new StudentBad(103));
+        // All land in same bucket → search degrades
+    }
+}
+
+// PROPER — unique hashCode per student
+class StudentGood {
+    int rollNumber;
+    String name;
+
+    StudentGood(int rollNumber, String name) {
+        this.rollNumber = rollNumber;
+        this.name = name;
+    }
+
+    public int hashCode() { return rollNumber; }  // unique per student
+
+    public String toString() { return name + &quot;..&quot; + rollNumber; }
+
+    public static void main(String[] args) {
+        StudentGood s1 = new StudentGood(101, &quot;Durga&quot;);
+        StudentGood s2 = new StudentGood(102, &quot;Ravi&quot;);
+        System.out.println(s1);  // Durga..101  (custom toString, no hashCode in output)
+        System.out.println(s2);  // Ravi..102
+    }
+}</pre>
+<h2>OCJP / SCJP exam traps</h2>
+<h2>Method dispatch decision tree (println)</h2>
+<p>System.out.println(obj)
+        │
+        ▼
+   obj.toString()
+        │
+        ├─ Our class overrides toString?
+        │     YES → our toString() executes
+        │            └─ Does OUR code call hashCode()? Only if we wrote it.
+        │
+        └─ NO → Object.toString()
+                  └─ ALWAYS calls hashCode()
+                        ├─ Our class overrides hashCode? → our hashCode()
+                        └─ else → Object.hashCode() (native, unpredictable int)</p>
+<h2>Full transcript coverage (timestamp index)</h2>
+<h2>ASR decode notes (Whisper STT corrections)</h2>
+<h2>Quick reference card</h2>
+<p>hashCode()
+├── Definition: unique int per object (default JVM-generated)
+├── NOT equal to object memory address
+├── Used by: HashMap, HashSet, Hashtable (bucket placement)
+├── Default: Object.public native int hashCode() — address used internally
+├── Override rules:
+│     PROPER   → different hashCode per object (e.g., rollNumber)
+│     IMPROPER → same hashCode for all (e.g., return 100)
+└── vs toString():
+      Object.toString() → calls hashCode()
+      Custom toString() → may NOT call hashCode()</p>
+<p>End of Video 106 notes — java.lang Part-2, Object.hashCode()</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: java.lang.package Part-2 — object class — Hashcode()</td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Position</td><td>106 of 203</td></tr>
+<tr><td>Series</td><td>java.lang.package</td></tr>
+<tr><td>Topic</td><td>Object class — hashCode(); relation with toString()</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>51m 49s</td></tr>
+<tr><td>Video ID</td><td>r6G5Pz0yMH4</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=r6G5Pz0yMH4</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer in Java</th></tr>
+<tr><td>What is the address of an object?</td><td>Impossible to find</td></tr>
+<tr><td>What is the size of an object?</td><td>Impossible to find</td></tr>
+</table>
+<table>
+<tr><th>Data structure</th><th>Package</th></tr>
+<tr><td>Hashtable</td><td>legacy, synchronized</td></tr>
+<tr><td>HashMap</td><td>most common map</td></tr>
+<tr><td>HashSet</td><td>set backed by HashMap</td></tr>
+</table>
+<table>
+<tr><th>Algorithm</th><th>How it finds &quot;Ravi&quot; in class</th><th>Time complexity</th></tr>
+<tr><td>Linear search</td><td>Ask every student one by one: &quot;Are you Ravi?&quot;</td><td>O(n)</td></tr>
+<tr><td>Binary search</td><td>Students sorted alphabetically; compare with middle; halve each step</td><td>O(log n)</td></tr>
+<tr><td>Hashing</td><td>Ask Ravi his hashCode (e.g., 100); go directly to bucket 100</td><td>O(1)</td></tr>
+</table>
+<table>
+<tr><th>Statement</th><th>True/False</th></tr>
+<tr><td>Object.hashCode() uses address internally</td><td>True</td></tr>
+<tr><td>hashCode represents / equals address</td><td>False</td></tr>
+<tr><td>If we don&#x27;t override, hashCode comes from Object&#x27;s native impl</td><td>True</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Which toString()?</th><th>Does it call hashCode()?</th></tr>
+<tr><td>No override in our class</td><td>Object.toString()</td><td>Yes — internally calls hashCode()</td></tr>
+<tr><td>We override toString() in our class</td><td>Our toString()</td><td>May not call hashCode() — depends on our code</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Method chain</th></tr>
+<tr><td>System.out.println(t1)</td><td>t1.toString() → Object.toString() → internally Object.hashCode()</td></tr>
+<tr><td>Same for t2</td><td>Object.toString() → Object.hashCode()</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>What happens</th></tr>
+<tr><td>println(t1)</td><td>Calls t1.toString()</td></tr>
+<tr><td>toString</td><td>Still Object.toString() (not overridden)</td></tr>
+<tr><td>Inside Object.toString()</td><td>Calls hashCode()</td></tr>
+<tr><td>hashCode</td><td>Test class hashCode() — because Test overrides it</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Method</th></tr>
+<tr><td>println(t1)</td><td>Test.toString() — our override</td></tr>
+<tr><td>hashCode()</td><td>NOT called — our toString does not invoke hashCode</td></tr>
+</table>
+<table>
+<tr><th>Version</th><th>Output (representative)</th></tr>
+<tr><td>Example 1 — no overrides</td><td>Test@12b6513, Test@4a5ab2 (hex varies)</td></tr>
+<tr><td>Example 2 — hashCode only</td><td>Test@a, Test@64</td></tr>
+<tr><td>Example 3 — both overridden</td><td>10, 100</td></tr>
+</table>
+<table>
+<tr><th>Trap question</th><th>Correct reasoning</th></tr>
+<tr><td>&quot;hashCode is object address&quot;</td><td>False — can override hashCode; cannot override address</td></tr>
+<tr><td>&quot;Can we find object size in Java?&quot;</td><td>No</td></tr>
+<tr><td>print object with no toString override</td><td>Object.toString() → calls hashCode()</td></tr>
+<tr><td>Override hashCode only, print object</td><td>Object.toString() still runs; uses your hashCode → predictable hex</td></tr>
+<tr><td>Override toString only</td><td>Your toString runs; hashCode may not be called</td></tr>
+<tr><td>return i; inside toString() when i is int</td><td>Compile error — need String</td></tr>
+<tr><td>Same hashCode for all objects</td><td>Improper — destroys hashing performance</td></tr>
+<tr><td>Time complexity of hashing search</td><td>O(1) (ideal case; collisions add cost)</td></tr>
+<tr><td>Object.hashCode declaration</td><td>public native int hashCode()</td></tr>
+</table>
+<table>
+<tr><th>Time</th><th>Topic</th></tr>
+<tr><td>00:06</td><td>Recap: java.lang Part-1, toString() completed</td></tr>
+<tr><td>00:29</td><td>Introduce hashCode() as second Object method</td></tr>
+<tr><td>00:46</td><td>Poll: hashCode = address? (myth busting)</td></tr>
+<tr><td>01:20</td><td>Can override hashCode; cannot override address</td></tr>
+<tr><td>01:52</td><td>Java hides address &amp; object size; use C/C++ for machine-level info</td></tr>
+<tr><td>02:56</td><td>Definition: JVM unique number per object = hashCode</td></tr>
+<tr><td>03:20</td><td>Why needed: hashing data structures</td></tr>
+<tr><td>03:42</td><td>Hashtable, HashMap, HashSet</td></tr>
+<tr><td>04:03</td><td>Bucket insertion model</td></tr>
+<tr><td>04:57</td><td>Advantage: efficient search</td></tr>
+<tr><td>05:53</td><td>Linear search O(n) — classroom analogy</td></tr>
+<tr><td>08:13</td><td>Binary search O(log n) — sorted names analogy</td></tr>
+<tr><td>10:36</td><td>Hashing O(1) — direct bucket jump</td></tr>
+<tr><td>12:02</td><td>Board summary of hashCode definition &amp; usage</td></tr>
+<tr><td>16:27</td><td>Default: Object.hashCode() when not overridden</td></tr>
+<tr><td>16:48</td><td>Declaration: public native int hashCode()</td></tr>
+<tr><td>17:01</td><td>Native impl uses address in algorithm; result ≠ address</td></tr>
+<tr><td>18:40</td><td>Can override to generate own hashCode</td></tr>
+<tr><td>20:54</td><td>Proper vs improper overriding introduced</td></tr>
+<tr><td>21:46</td><td>Improper: return 100 for all Student objects</td></tr>
+<tr><td>23:02</td><td>Proper: return rollNumber</td></tr>
+<tr><td>24:10</td><td>HashSet collision demo — all in bucket 100</td></tr>
+<tr><td>26:08</td><td>Same hashCode spoils hashing; search becomes hard</td></tr>
+<tr><td>31:21</td><td>toString vs hashCode relation</td></tr>
+<tr><td>31:38</td><td>Object.toString() source: getClass().getName() + &quot;@&quot; + hex(hashCode())</td></tr>
+<tr><td>33:57</td><td>Object.toString calls hashCode; custom toString may not</td></tr>
+<tr><td>36:04</td><td>Example 1: Test class, no overrides</td></tr>
+<tr><td>37:29</td><td>Object.toString + Object.hashCode; output format only</td></tr>
+<tr><td>39:17</td><td>Example 2: override hashCode return i</td></tr>
+<tr><td>41:10</td><td>Object.toString still; Test.hashCode used</td></tr>
+<tr><td>42:00</td><td>Exact output: Test@a, Test@64</td></tr>
+<tr><td>43:43</td><td>Example 3: override both</td></tr>
+<tr><td>44:28</td><td>return i compile error in toString</td></tr>
+<tr><td>44:54</td><td>Fix: i + &quot;&quot;</td></tr>
+<tr><td>46:02</td><td>Test.toString runs; hashCode not called</td></tr>
+<tr><td>46:45</td><td>Output: 10, 100</td></tr>
+<tr><td>47:02</td><td>Live IDE run of all three examples</td></tr>
+<tr><td>50:07</td><td>Final snapshot / wrap-up</td></tr>
+</table>
+<table>
+<tr><th>Heard (Whisper)</th><th>Intended</th></tr>
+<tr><td>Jawadhat Lang / javal</td><td>java.lang</td></tr>
+<tr><td>has scored / ash code / ascord / escort</td><td>hashCode</td></tr>
+<tr><td>address / a drasa / nathima</td><td>address</td></tr>
+<tr><td>mission friendly</td><td>machine friendly</td></tr>
+<tr><td>CRC++</td><td>C / C++</td></tr>
+<tr><td>Javiyam / Jovie nyam</td><td>JVM</td></tr>
+<tr><td>HASHESET / has set</td><td>HashSet</td></tr>
+<tr><td>SETCH / such</td><td>search</td></tr>
+<tr><td>Ashing / atima hashing</td><td>hashing</td></tr>
+<tr><td>linear set / state gel</td><td>linear search</td></tr>
+<tr><td>binary set / bhai</td><td>binary search</td></tr>
+<tr><td>Adraf / a draw of n</td><td>O(n)</td></tr>
+<tr><td>lag m base lagardhamic</td><td>O(log n)</td></tr>
+<tr><td>a draft one</td><td>O(1)</td></tr>
+<tr><td>twisting / two-sync / 2S</td><td>toString</td></tr>
+<tr><td>Uchitushin / Uchmetan</td><td>Object.toString</td></tr>
+<tr><td>Uchash code / Escort</td><td>hashCode</td></tr>
+<tr><td>warrior main</td><td>void main</td></tr>
+<tr><td>aaksa / A.A.A.C.A</td><td>args</td></tr>
+<tr><td>RETUM / RETAM / written</td><td>return</td></tr>
+<tr><td>S4P / print Lm</td><td>System.out.println</td></tr>
+<tr><td>tested the rate / test at the rate</td><td>Test@ (className@hex in toString output)</td></tr>
+<tr><td>XR is one / x-adish</td><td>hexadecimal</td></tr>
+<tr><td>compalt / validator</td><td>compiler / valid</td></tr>
+<tr><td>left hand right</td><td>classroom humor (wrong answer)</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,268 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>045-child-vs-parent-constructor-1</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 045 — Child object vs parent constructor (part 1)</h1>
+<h2>Video info</h2>
+<p>Title: Java -  Interface  and Abstract class Loopholes Part-2 || Child Object Vs Parent Constructor-1</p>
+<p>ASR decode (Whisper): children class option = child class object; what is the read = what is the need; name mode with person / nobody with person = namely Person; asian two properties = saying / taking two properties; string the name = String name; into age = int age; this or that name = this.name; role number / row number / RO = rollNo; box / max / marks = marks; terrain = parent; piece of bar / piece of that = this.; Virga = Durga; fair properties = four properties; clean the constructor = child constructor; installation = initialization; positive properties = parent-specific properties; compulsive = compulsory; 9 to / nine two / 90 = 90; 1, 3 it can find = Q / one point to find (interview line).</p>
+<p>Continuity: Video 044 listed the loophole “whenever we create a child object, is a parent object created?” and taught new vs constructor. This video answers why the parent constructor runs when you create a child object — with one shared Person / Student board example (he says the next part uses the same code).</p>
+<h3>00:23 — Recap: both constructors run; parent object?</h3>
+<p>Whenever we create a child class object, both the parent constructor and the child constructor will be executed.</p>
+<p>But: does that mean a parent object is created? (The rest of this lecture answers: No — parent constructor runs for the child object’s inherited fields.)</p>
+<pre class='code'>class Parent {
+    Parent() {
+        System.out.println(&quot;Parent constructor&quot;);
+    }
+}
+
+class Child extends Parent {
+    Child() {
+        System.out.println(&quot;Child constructor&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Child c = new Child();
+        // prints Parent constructor
+        // prints Child constructor
+        // only ONE object: Child (not a separate Parent object)
+    }
+}</pre>
+<h3>00:35 — Core question: need of executing parent constructor</h3>
+<p>Question: Why do we need to execute the parent constructor when we create a child class object?</p>
+<p>The child constructor is already there to perform initialization — so why must the parent constructor execute?</p>
+<p>He will explain with a simple, concrete example (same code continues into the next video).</p>
+<h3>00:58 — Board: class `Person` (common properties)</h3>
+<p>He takes one class named `Person`.</p>
+<p>For every person, common properties apply: name, age, height, weight, color, etc. For the board he keeps it small — two properties only:</p>
+<ul><li>String name</li></ul>
+<ul><li>int age</li></ul>
+<p>Constructor to initialize them:</p>
+<pre class='code'>class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}</pre>
+<p>Listen carefully: Person has these two instance variables; the constructor’s job is initialization of those two.</p>
+<h3>02:15 — Board: `Student extends Person`</h3>
+<pre class='code'>class Student extends Person {
+    // name, age inherited from Person
+}</pre>
+<p>Because Student is-a Person, the two properties name and age come to the student automatically.</p>
+<p>Student-specific properties (applicable only for student):</p>
+<ul><li>int rollNo (ASR: role / row number)</li></ul>
+<ul><li>int marks (ASR: box / max / marks)</li></ul>
+<p>So:</p>
+<p>Two from parent + two child-specific = four for the student.</p>
+<h3>03:16 — Child constructor must cover four properties</h3>
+<p>The constructor responsible for a Student must be able to initialize all four properties:</p>
+<pre class='code'>class Student extends Person {
+    int rollNo;
+    int marks;
+
+    Student(String name, int age, int rollNo, int marks) {
+        // body filled next on the board
+    }
+}</pre>
+<h3>03:49 — Creating one `Student` object (four arguments)</h3>
+<p>He creates one student object and passes four values:</p>
+<ul><li>name → &quot;Durga&quot;</li></ul>
+<ul><li>age → 48</li></ul>
+<ul><li>rollNo → 101</li></ul>
+<ul><li>marks → 90</li></ul>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Student s = new Student(&quot;Durga&quot;, 48, 101, 90);
+        // one Student object; four properties on that same object
+    }
+}</pre>
+<p>Whenever we create a Student object this way, those four properties belong to that one student object: name, age, rollNo, marks.</p>
+<p>Which constructor is executing from the new Student(...) call? The child (Student) constructor starts — but it will call the parent constructor for the inherited part.</p>
+<h3>05:06 — Inside child constructor: do not re-init parent fields — call `super`</h3>
+<p>In the Student constructor he does not want to write initialization for the two properties that come from the parent (name, age), because the parent constructor already exists for that job.</p>
+<p>What he does: call `super(name, age)`.</p>
+<p>That executes the parent constructor. Parent constructor’s job: initialize name and age.</p>
+<p>Values passed from the call site: &quot;Durga&quot;, 48 → after parent constructor, name becomes &quot;Durga&quot;, age becomes 48.</p>
+<p>Who initializes `name` and `age`? Parent constructor — not the child constructor’s own assignment statements.</p>
+<pre class='code'>class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name; // initialization performed by parent constructor
+        this.age = age;
+    }
+}
+
+class Student extends Person {
+    int rollNo;
+    int marks;
+
+    Student(String name, int age, int rollNo, int marks) {
+        super(name, age); // parent constructor runs here
+        // child-specific init next...
+    }
+}</pre>
+<h3>06:32 — Child constructor initializes child-specific properties</h3>
+<p>After super(...) returns, the remaining two child-specific properties:</p>
+<ul><li>rollNo → 101</li></ul>
+<ul><li>marks → 90</li></ul>
+<pre class='code'>class Student extends Person {
+    int rollNo;
+    int marks;
+
+    Student(String name, int age, int rollNo, int marks) {
+        super(name, age);       // parent takes name + age
+        this.rollNo = rollNo;   // initialization performed by child constructor
+        this.marks = marks;     // initialization performed by child constructor
+    }
+}</pre>
+<p>Summary of responsibility on one object:</p>
+<h3>07:29 — Need of parent constructor (answer)</h3>
+<p>If the terminology is clear:</p>
+<p>What is the need of executing the parent constructor?</p>
+<p>Very simple, from this example:</p>
+<ul><li>How many objects did we create? Only one — the Student object.</li></ul>
+<ul><li>How many properties does that student have? Four — name, age, rollNo, marks.</li></ul>
+<p>Whenever we create a student object, the child constructor executes to perform initialization. For properties coming from the parent, the parent constructor initializes them; remaining (child-specific) properties are initialized by the child constructor.</p>
+<p>Both parent and child constructors are responsible for initializing only the child class object (its full set of instance variables).</p>
+<p>Is a parent object created? No. Parent properties come to the child; to initialize those properties, the parent constructor is executed.</p>
+<p>Need of executing parent constructor when creating a child class object: to perform initialization for the instance variables inheriting from the parent.</p>
+<h3>08:48 — Board rule (dictation line)</h3>
+<p>Whenever we are creating a child class object, automatically the parent constructor will be executed to perform initialization for the instance variables which are inheriting from the parent.</p>
+<pre class='code'>// Rule (conceptual):
+// new Child(...)  →  Child constructor runs
+//                 →  first (typically via super) Parent constructor runs
+//                 →  Parent ctor initializes inherited fields
+//                 →  Child ctor initializes child-specific fields
+//                 →  still only ONE object: Child</pre>
+<h3>10:12 — Compact board restatement: `Person` + need of parent ctor</h3>
+<p>He restates the person shape and the rule:</p>
+<pre class='code'>class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}</pre>
+<p>Need of executing parent constructors: parent and child both constructors are executing for the child object purpose only.</p>
+<ul><li>Parent constructor → initialization of parent-specific properties (on the child object).</li></ul>
+<ul><li>Child constructor → initialization of child-specific properties.</li></ul>
+<p>Parent constructor executed ≠ parent object created. Parent constructor executed for child object purpose only.</p>
+<h3>11:25 — Hope of clarity; compulsory diagram</h3>
+<p>He hopes everyone got it clearly:</p>
+<ul><li>Parent takes care of initialization of parent-class properties.</li></ul>
+<ul><li>Child constructor takes care of initialization of child properties.</li></ul>
+<ul><li>Do not feel that a parent object got created.</li></ul>
+<p>Compulsory: take the diagram and this line also:</p>
+<p>Student s = new Student(&quot;Durga&quot;, 48, 101, 90);
+// after construction on that one object:
+// name  = &quot;Durga&quot;   // by parent constructor
+// age   = 48        // by parent constructor
+// rollNo = 101      // by child constructor
+// marks  = 90       // by child constructor</p>
+<h3>12:55 — Who is responsible (comments on diagram)</h3>
+<p>Clear clarity he wants on the board comments:</p>
+<ul><li>Child constructor responsible → initialization for child-specific properties.</li></ul>
+<ul><li>Parent constructor responsible → initialization for parent-specific properties.</li></ul>
+<p>Better to take the diagram with comments:</p>
+<ul><li>“this initialization performed by parent constructor”</li></ul>
+<ul><li>“this initialization performed by child constructor”</li></ul>
+<p>Full compilable picture matching the board:</p>
+<pre class='code'>class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name; // performed by parent constructor
+        this.age = age;   // performed by parent constructor
+    }
+}
+
+class Student extends Person {
+    int rollNo;
+    int marks;
+
+    Student(String name, int age, int rollNo, int marks) {
+        super(name, age);     // parent ctor: name + age
+        this.rollNo = rollNo; // performed by child constructor
+        this.marks = marks;   // performed by child constructor
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student(&quot;Durga&quot;, 48, 101, 90);
+        System.out.println(s.name + &quot; &quot; + s.age + &quot; &quot; + s.rollNo + &quot; &quot; + s.marks);
+        // prints Durga 48 101 90
+    }
+}</pre>
+<h3>13:43 — Interview / board Q1 on the above program</h3>
+<p>Q: In the above program, both parent and child constructors executed — for what?</p>
+<p>A: Both parent and child constructors executed for child object initialization only.</p>
+<pre class='code'>// Q: both Parent and Student constructors ran when we did:
+Student s = new Student(&quot;Durga&quot;, 48, 101, 90);
+// A: they ran for child-object initialization only
+//    — not because a separate Parent object was created</pre>
+<h3>14:36 — Repeat (last two examples → this rule)</h3>
+<p>From the last examples, repeat once:</p>
+<p>Whenever we are creating a child class object:</p>
+<ul><li>Parent object created? → No</li></ul>
+<ul><li>Parent constructor executed? → Yes, for some initialization of the child object only</li></ul>
+<ul><li>For which variables? → If any variables are coming from the parent, to perform initialization for those variables, the parent constructor takes care</li></ul>
+<p>Final one-liner: Whenever we are creating a child class object, what is the need of executing parent class constructors? → this story (initialize inherited instance variables on the child object).</p>
+<h2>Key takeaways</h2>
+<ol><li>Creating new Student(...) creates one object (Student), not a separate Person object.</li></ol>
+<ol><li>Parent constructor still runs (via super(...) / automatic super()) to initialize inherited fields.</li></ol>
+<ol><li>Child constructor initializes child-specific fields.</li></ol>
+<ol><li>“Parent constructor executed” ≠ “parent object created.”</li></ol>
+<h2>```java block count</h2>
+<p>12</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 45 of 203</td></tr>
+<tr><td>Series</td><td>Interface and Abstract class Loopholes · Part 2</td></tr>
+<tr><td>Topic</td><td>Child Object Vs Parent Constructor-1</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>15m 43s</td></tr>
+<tr><td>Video ID</td><td>c55db2_fFLo</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=c55db2_fFLo</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Properties</th></tr>
+<tr><td>Person</td><td>2 → name, age</td></tr>
+<tr><td>Student</td><td>4 → name, age, rollNo, marks</td></tr>
+</table>
+<table>
+<tr><th>Properties</th><th>Initialized by</th></tr>
+<tr><td>name, age (from parent)</td><td>Parent constructor</td></tr>
+<tr><td>rollNo, marks (child-specific)</td><td>Child constructor</td></tr>
+</table>
+</body></html>

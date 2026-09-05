@@ -1,0 +1,133 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>048-abstract-vs-interface-constructor</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 048</h1>
+<h2>Video info</h2>
+<p>Title: Interface and Abstract class Loopholes Part-5 || Abstract class vs Interface wrt constructor</p>
+<p>Source: real YouTube auto-captions (.transcripts/048-Sztm3l_dmdU.txt). ASR decoded in place: interace / inace / inas = interface; abstruct / obstruct / arctor / abstracted = abstract; CH class = child class; keep subing = board heading; public State final / public stating final / starting = public static final; visualization = initialization; injp = OCJP. He several times says “you can create object” while meaning can&#x27;t (same slip as in the earlier loophole videos).</p>
+<p>This is question 4 from the video-044 list: anyway we can&#x27;t create an object for abstract class and interface, but abstract class can contain a constructor and interface doesn&#x27;t — why?</p>
+<h3>00:00 — Open</h3>
+<p>Caption starts with a stray e.</p>
+<h3>00:33 — Recap of what they already completed</h3>
+<p>Up to this, have you observed? These things I hope we completed.</p>
+<p>Q1 (need of abstract-class constructor): we can&#x27;t create an object for abstract class, but abstract class can contain a constructor — what is the need? Completed already (video 047).</p>
+<p>Q2 (directly vs indirectly): we cannot create an object for abstract class directly, but indirectly we can create — is it valid or invalid? Invalid. Abstract class: we can&#x27;t create an object either directly or indirectly. Not possible.</p>
+<p>Q3 (child object vs parent object): whenever we are creating child class object, automatically parent class object will be created — is it valid or not? Invalid, because automatically parent constructor will be executed but parent object won&#x27;t be created (videos 045–046).</p>
+<h3>01:24 — Next (very important): constructor for abstract class but not for interface</h3>
+<p>So now this one is the very important next. Anyway we can&#x27;t create an object for abstract class and interface, but abstract class can contain a constructor but interface doesn&#x27;t. Why? What is the reason?</p>
+<p>Interface concept: constructor concept not applicable for interface. What is the need? Just observe that. Also one very important point.</p>
+<p>He slips “you can create object for abstract class / interface” — from the rest of the sentence he means you can&#x27;t. Abstract class can contain constructor but interface doesn&#x27;t. What is the reason for that?</p>
+<h3>02:00 — Purpose of constructor: values for instance variables</h3>
+<p>Very simple. Can you please tell: what is the purpose of constructor?</p>
+<p>To perform initialization — initialization means to provide values for instance variables. Correct or not? To provide values for instance variables.</p>
+<h3>02:17 — Abstract class can contain instance variables (just-now example)</h3>
+<p>Abstract class can contain [instance variables] or not? Just now we covered one example:</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}</pre>
+<p>Of course abstract class can contain instance variables. These variables are required for child classes. Abstract class can contain instance variables; these variables of course required for child classes. To perform initialization of these instance variables, abstract class can contain constructor concept.</p>
+<p>String name, int age. Can you please tell what is the code? this.name = name; this.age = age; Like that. Very simple.</p>
+<p>Constructor job: to perform initialization of an object — meaning, to perform initialization for instance variables. Abstract class can contain instance variables; of course these variables required for child class only; to perform [initialization of] those instance variables, constructor concept required for abstract class.</p>
+<p>You can&#x27;t create an object for abstract class, but when will this constructor execute? Whenever we are creating child class object. Clear.</p>
+<h3>03:44 — What about interface?</h3>
+<p>What about interface (interace)?</p>
+<p>If I consider interface: inside interface, do you know, every variable present inside interface is always public static final, whether we are declaring or not.</p>
+<pre class='code'>interface Inter {
+    int x = 10;
+    // always public static final, whether we are declaring or not
+    // compiler treats this as:
+    // public static final int x = 10;
+}</pre>
+<p>Interface variable is always public static final, whether we are declaring or not. There is no chance of existing any instance variable. Sorry — variable is always static. No chance of existing instance variable.</p>
+<p>If the instance-variable concept is not there, where is the chance of initialization of instance variable? That&#x27;s why constructor concept not required for the interface. Constructor concept not applicable for interfaces. Are you getting?</p>
+<h3>04:34 — Spoken contrast (short)</h3>
+<p>Constructor job: to initialize instance variable. Abstract class can contain instance variable — for that, constructor is required. But inside interface every variable is always public static final. There is no chance of existing any instance variable. That&#x27;s why constructor concept not required, not applicable for interfaces. Clear.</p>
+<h3>04:57 — Take the note (question + answer dictation)</h3>
+<p>Add the note. One minute — have you took this point?</p>
+<p>The question from [the board list]:</p>
+<p>Anyway we can&#x27;t create object for abstract class and the interface, but abstract class can contain constructor but interface doesn&#x27;t. Why?</p>
+<p>(He repeats “anyway we can&#x27;t create object for abstract class and the interface” while writing. Same “we can / we can&#x27;t” ASR flip as before — the question is the can&#x27;t version from video 044.)</p>
+<h3>06:07 — Board answer, first half: constructor job</h3>
+<p>The answer:</p>
+<p>The main purpose of constructor is to perform initialization of an object — that is, to perform initialization for instance variables.</p>
+<h3>07:05 — Abstract class side</h3>
+<p>Abstract class can contain instance variables, which are required for child class object.</p>
+<p>To perform initialization for these instance variables, constructor concept is required for abstract classes.</p>
+<pre class='code'>abstract class Person {
+    String name; // instance variable, required for child object
+    int age;
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+class Student extends Person {
+    Student(String name, int age) {
+        super(name, age); // abstract-class constructor runs for this child object
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student(&quot;Durga&quot;, 48);
+        // Person constructor executed; no Person object created
+    }
+}</pre>
+<p>That&#x27;s all. Next part.</p>
+<h3>08:25 — Interface side</h3>
+<p>Every variable present inside interface is always public static final, whether we are declaring or not.</p>
+<p>Hence there is no chance of existing instance variables inside interface.</p>
+<p>Because of this, constructor concept not required for interfaces.</p>
+<pre class='code'>interface Inter {
+    int x = 10; // public static final, whether we declare that or not
+    // no instance variables
+    // constructor concept not required / not applicable
+}
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(Inter.x);
+        // prints 10
+    }
+}</pre>
+<p>That&#x27;s all. I hope you people can be aware.</p>
+<h3>10:06 — Close</h3>
+<p>Abstract class can contain constructor but interface doesn&#x27;t — why? What is the reason for that? I hope you can clearly [see it]. Are you getting? That&#x27;s all.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>48 of 203</td></tr>
+<tr><td>Series</td><td>Interface and Abstract class Loopholes · Part 5</td></tr>
+<tr><td>Topic</td><td>Abstract class vs Interface wrt constructor</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>10m 50s</td></tr>
+<tr><td>Video ID</td><td>Sztm3l_dmdU</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=Sztm3l_dmdU</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

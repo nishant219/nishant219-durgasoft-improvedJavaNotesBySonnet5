@@ -1,0 +1,739 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>148-sortedmap-treemap</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 148 — Collections Part-13: SortedMap &amp; TreeMap</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This lecture (~42 minutes) opens the sorted Map branch of the Collections Framework. After completing all HashMap variations in Video 147, Sir moves to maps where entries are stored according to sorting order of keys — not values, not insertion order.</p>
+<p>What was already covered (prior Map sessions — recap only):</p>
+<p>What this session covers:</p>
+<ol><li>Map hierarchy recap — where SortedMap and TreeMap fit</li></ol>
+<ol><li>SortedMap interface — child of Map (NOT Collection); sorting by key only</li></ol>
+<ol><li>All six SortedMap-specific methods — signatures, return types, boundary rules (parallel to SortedSet)</li></ol>
+<ol><li>TreeMap — implementation class; Red-Black tree; complete property sheet (parallel TreeSet)</li></ol>
+<ol><li>Four TreeMap constructors — natural vs customized sorting (same thumb rule as TreeSet)</li></ol>
+<ol><li>Demo 1 — TreeMap with String keys (default natural sorting)</li></ol>
+<ol><li>Demo 2 — TreeMap with Integer keys + Comparator (descending order)</li></ol>
+<ol><li>Demo 3 — Custom class keys implementing Comparable</li></ol>
+<ol><li>Null key acceptance rules — identical story to TreeSet; null values allowed</li></ol>
+<ol><li>TreeMap vs HashMap — comparison table (top interview question)</li></ol>
+<ol><li>Exam traps and OCJP must-know questions</li></ol>
+<p>What continues in next sessions:</p>
+<ul><li>NavigableMap (Java 1.6) — navigation methods on TreeMap (Video 151)</li></ul>
+<ul><li>Hashtable &amp; Properties — legacy Map classes (Video 149)</li></ul>
+<ul><li>Queue module</li></ul>
+<p>Exam mantra: TreeMap = TreeSet logic applied to Map keys. If TreeSet + Comparable/Comparator (Videos 143–144) is clear, TreeMap becomes a 30-minute topic, not a new subject. Sorting is always by key; values are passengers — they never decide order.</p>
+<h2>00:05 — Recap: Map hierarchy and HashMap variations done</h2>
+<h3>Collection Framework — two halves (board reminder)</h3>
+<p>Collection Framework
+├── First half  → Collection interface (List, Set, Queue)
+└── Second half → Map interface (completely separate branch)</p>
+<ul><li>Map is NOT a child interface of Collection.</li></ul>
+<ul><li>Map = group of objects as key–value pairs (entries).</li></ul>
+<ul><li>Collection = group of individual objects.</li></ul>
+<h3>Map module progress (after Video 147)</h3>
+<p>Map (I)
+ ├── HashMap (C)              ← Video 146 ✓
+ ├── LinkedHashMap (C)        ← Video 147 ✓  (extends HashMap)
+ ├── IdentityHashMap (C)      ← Video 147 ✓
+ ├── WeakHashMap (C)          ← Video 147 ✓
+ ├── SortedMap (I)            ← TODAY (Video 148)
+ │    └── NavigableMap (I)    ← deferred (Video 151, Java 1.6)
+ │         └── TreeMap (C)    ← TODAY (Video 148)
+ ├── Hashtable (C)            ← next (Video 149, legacy 1.0)
+ └── Properties (C)           ← next (Video 149, legacy 1.0)</p>
+<p>Sir&#x27;s framing: &quot;HashMap and its three small variations — finished. Now we enter sorted Map territory. Same story you saw with SortedSet and TreeSet — but Map terminology.&quot;</p>
+<h3>Set ↔ Map parallel (critical memory hook)</h3>
+<p>&quot;If TreeSet is clear, TreeMap is copy-paste — just replace add(element) with put(key, value) and remember sorting is by key, not value.&quot; — Durga Sir (cross-ref Video 146 recap)</p>
+<h2>02:30 — SortedMap interface introduction</h2>
+<h3>Hierarchy</h3>
+<p>Map (I)
+ └── SortedMap (I)          ← child of Map, NOT Collection
+      └── NavigableMap (I)  ← Java 1.6 (deferred)
+           └── TreeMap (C)  ← implementation class</p>
+<h3>When should we go for SortedMap?</h3>
+<p>Board rule (copy exactly):</p>
+<p>If we want to represent a group of key–value pairs where entries are stored according to some sorting order of keys, then we should go for SortedMap.</p>
+<p>Conditions implied:</p>
+<ul><li>Duplicate keys are NOT allowed (Map contract — same as all Map implementations).</li></ul>
+<ul><li>Duplicate values ARE allowed.</li></ul>
+<ul><li>Entries appear in sorted key order, not insertion order.</li></ul>
+<h3>★ Critical rule — sorting on KEYS only, NEVER values</h3>
+<p>Exam trap: &quot;TreeMap sorts entries by value&quot; → FALSE. Values can be any type in any order; only keys determine position in the tree.</p>
+<p>Real-world examples (board):</p>
+<ul><li>Phone directory: name (key) → phone number (value) — alphabetical by name</li></ul>
+<ul><li>Roll-number map: rollNo (key) → studentName (value) — numeric ascending by roll</li></ul>
+<ul><li>Word frequency (if key = word): lexicographic order of words</li></ul>
+<h3>Why no standalone SortedMap demo?</h3>
+<p>Same reason as SortedSet (Video 142):</p>
+<p>SortedMap sm = new SortedMap();  // CE — interface cannot be instantiated</p>
+<p>SortedMap is an interface. You always work through an implementation class — TreeMap.</p>
+<h2>06:00 — SortedMap: six specific methods (complete catalog)</h2>
+<p>SortedMap defines six specific methods beyond inherited Map methods. These apply only to SortedMap / TreeMap objects — NOT on HashMap, LinkedHashMap, etc.</p>
+<p>Parallel to SortedSet (Video 142): Replace element with key, SortedSet return type with SortedMap, first()/last() with firstKey()/lastKey().</p>
+<h3>Worked example map (used throughout)</h3>
+<p>Assume this TreeMap of roll numbers → names (keys sorted ascending):</p>
+<pre class='code'>{100=Ram, 101=Sita, 104=Arjun, 106=Bharat, 110=Lakshman, 115=Hanuman, 120=Ravan}</pre>
+<h3>Method 1 — `Comparator comparator()`</h3>
+<p>Comparator comparator()</p>
+<p>Board note: comparator() returning null means default natural sorting order is in effect (numbers → ascending, strings → alphabetical).</p>
+<h3>Method 2 — `Object firstKey()`</h3>
+<p>Object firstKey()</p>
+<ul><li>Returns the first (lowest) key in the sorted map.</li></ul>
+<ul><li>Example: firstKey() → 100</li></ul>
+<ul><li>Throws NoSuchElementException if map is empty.</li></ul>
+<h3>Method 3 — `Object lastKey()`</h3>
+<p>Object lastKey()</p>
+<ul><li>Returns the last (highest) key in the sorted map.</li></ul>
+<ul><li>Example: lastKey() → 120</li></ul>
+<h3>Method 4 — `SortedMap headMap(Object toKey)`</h3>
+<p>SortedMap headMap(Object toKey)</p>
+<ul><li>Returns a view of the portion of this map whose keys are strictly less than toKey (&lt; — NOT equal).</li></ul>
+<ul><li>Example: headMap(106) → {100=Ram, 101=Sita, 104=Arjun}</li></ul>
+<ul><li>106 is excluded — headMap uses strict &lt;.</li></ul>
+<h3>Method 5 — `SortedMap tailMap(Object fromKey)`</h3>
+<p>SortedMap tailMap(Object fromKey)</p>
+<ul><li>Returns a view whose keys are greater than or equal to fromKey (≥ — inclusive).</li></ul>
+<ul><li>Example: tailMap(106) → {106=Bharat, 110=Lakshman, 115=Hanuman, 120=Ravan}</li></ul>
+<h3>Method 6 — `SortedMap subMap(Object fromKey, Object toKey)`</h3>
+<p>SortedMap subMap(Object fromKey, Object toKey)</p>
+<ul><li>Returns a view whose keys are:</li></ul>
+<ul><li>≥ fromKey (inclusive start)</li></ul>
+<ul><li>&lt; toKey (exclusive end)</li></ul>
+<ul><li>Example: subMap(101, 115) → {101=Sita, 104=Arjun, 106=Bharat, 110=Lakshman}</li></ul>
+<ul><li>Includes 101 (≥ 101); excludes 115 (&lt; 115, not ≤).</li></ul>
+<h3>★ Boundary rule summary (star this — exam favorite)</h3>
+<p>Same &lt; vs ≤ pattern as SortedSet — Sir uses identical numeric examples in both lectures.</p>
+<h3>SortedSet ↔ SortedMap method mapping table</h3>
+<h3>Quick reference program — SortedMap methods only</h3>
+<pre class='code'>import java.util.*;
+
+class SortedMapMethodsDemo {
+    public static void main(String[] args) {
+        SortedMap&lt;Integer, String&gt; sm = new TreeMap&lt;&gt;();
+        sm.put(100, &quot;Ram&quot;);
+        sm.put(101, &quot;Sita&quot;);
+        sm.put(104, &quot;Arjun&quot;);
+        sm.put(106, &quot;Bharat&quot;);
+        sm.put(110, &quot;Lakshman&quot;);
+        sm.put(115, &quot;Hanuman&quot;);
+        sm.put(120, &quot;Ravan&quot;);
+
+        System.out.println(&quot;Full map: &quot; + sm);
+        System.out.println(&quot;firstKey(): &quot; + sm.firstKey());           // 100
+        System.out.println(&quot;lastKey(): &quot; + sm.lastKey());             // 120
+        System.out.println(&quot;headMap(106): &quot; + sm.headMap(106));       // {100=Ram, 101=Sita, 104=Arjun}
+        System.out.println(&quot;tailMap(106): &quot; + sm.tailMap(106));       // {106=Bharat, 110=Lakshman, 115=Hanuman, 120=Ravan}
+        System.out.println(&quot;subMap(101,115): &quot; + sm.subMap(101, 115)); // {101=Sita, 104=Arjun, 106=Bharat, 110=Lakshman}
+        System.out.println(&quot;comparator(): &quot; + sm.comparator());       // null (natural ascending)
+    }
+}</pre>
+<p>Expected output:</p>
+<p>Full map: {100=Ram, 101=Sita, 104=Arjun, 106=Bharat, 110=Lakshman, 115=Hanuman, 120=Ravan}
+firstKey(): 100
+lastKey(): 120
+headMap(106): {100=Ram, 101=Sita, 104=Arjun}
+tailMap(106): {106=Bharat, 110=Lakshman, 115=Hanuman, 120=Ravan}
+subMap(101,115): {101=Sita, 104=Arjun, 106=Bharat, 110=Lakshman}
+comparator(): null</p>
+<h2>12:00 — TreeMap: implementation class &amp; complete properties</h2>
+<h3>Board introduction</h3>
+<p>TreeMap is the implementation class of SortedMap.</p>
+<p>Same relationship as TreeSet ↔ SortedSet:</p>
+<h3>Property 1 — Underlying data structure</h3>
+<p>Balanced Tree (Red-Black Tree internally in Java&#x27;s TreeMap implementation).</p>
+<ul><li>Unlike HashMap (hash table), TreeMap maintains entries in a tree structure.</li></ul>
+<ul><li>Balanced tree → O(log n) for get, put, remove.</li></ul>
+<ul><li>Sir: &quot;Same Red-Black tree story as TreeSet — only difference is each node stores a key and a value.&quot;</li></ul>
+<h3>Property 2 — Duplicate keys</h3>
+<p>NOT allowed.</p>
+<ul><li>TreeMap is a Map — duplicate keys rejected.</li></ul>
+<ul><li>When compareTo() returns 0 (or compare() returns 0), keys are considered equal → old value replaced, new value stored (Map put() contract).</li></ul>
+<ul><li>Contrast with TreeSet: duplicate element silently not inserted (add() returns false).</li></ul>
+<pre class='code'>TreeMap tm = new TreeMap();
+tm.put(&quot;A&quot;, 1);
+tm.put(&quot;A&quot;, 2);   // duplicate KEY — replaces value; returns old value 1
+System.out.println(tm);  // {A=2}</pre>
+<h3>Property 3 — Insertion order</h3>
+<p>NOT preserved.</p>
+<ul><li>Entries stored according to sorting order of keys, not the order of put() calls.</li></ul>
+<ul><li>If you put Z, then A, then L — output follows key sorting, not Z-A-L.</li></ul>
+<h3>Property 4 — Heterogeneous keys</h3>
+<p>NOT allowed.</p>
+<p>Critical exception in Collections Framework (same as TreeSet):</p>
+<p>TreeMap tm = new TreeMap();
+tm.put(&quot;A&quot;, 100);
+tm.put(&quot;B&quot;, 200);
+tm.put(new Integer(10), 300);  // RuntimeException: ClassCastException</p>
+<ul><li>Comparison is compulsory for TreeMap keys.</li></ul>
+<ul><li>String and Integer are heterogeneous → JVM cannot compare meaningfully → ClassCastException.</li></ul>
+<ul><li>Values can be heterogeneous — only keys must be comparable and homogeneous.</li></ul>
+<h3>Property 5 — Null key insertion</h3>
+<p>Possible — but only once (with major caveats; see Null Key section below).</p>
+<ul><li>Default board answer (legacy): &quot;Null key insertion is possible (only once).&quot;</li></ul>
+<ul><li>Sir&#x27;s warning: &quot;There is a big story about null key.&quot; — identical to TreeSet null story.</li></ul>
+<ul><li>Null values: Allowed without restriction (unlike Hashtable).</li></ul>
+<h3>Property 6 — Marker interfaces</h3>
+<p>TreeMap implements:</p>
+<h3>Property 7 — Sorting order of keys</h3>
+<p>All entries inserted based on sorting order of keys.</p>
+<p>Two options (same as TreeSet):</p>
+<h3>Complete TreeMap property summary (copy for exam)</h3>
+<h2>16:00 — TreeMap constructors (all four — VERY IMPORTANT)</h2>
+<p>Sir: &quot;Same constructor terminology as TreeSet and SortedSet. We are going to use minimum 10 times these two words: default natural sorting order and customized sorting order.&quot;</p>
+<h3>Constructor 1 — No-argument (DEFAULT NATURAL SORTING)</h3>
+<pre class='code'>TreeMap tm = new TreeMap();</pre>
+<ul><li>Creates an empty TreeMap.</li></ul>
+<ul><li>Keys inserted according to default natural sorting order.</li></ul>
+<ul><li>Natural order comes from the key class implementing Comparable.</li></ul>
+<p>Thumb rule: No-arg constructor = default natural sorting order.</p>
+<h3>Constructor 2 — Comparator argument (CUSTOMIZED SORTING)</h3>
+<pre class='code'>TreeMap tm = new TreeMap(Comparator c);</pre>
+<ul><li>Creates an empty TreeMap.</li></ul>
+<ul><li>Keys inserted according to customized sorting order.</li></ul>
+<ul><li>Customized order specified by the Comparator object passed as argument.</li></ul>
+<p>Thumb rule: Comparator-argument constructor = customized sorting order.</p>
+<h3>Constructor 3 — Map argument (INTER-CONVERSION)</h3>
+<pre class='code'>TreeMap tm = new TreeMap(Map m);</pre>
+<ul><li>Used for inter-conversion between Map objects.</li></ul>
+<ul><li>If you pass a normal HashMap (or any Map), TreeMap applies default natural sorting order to those entries.</li></ul>
+<ul><li>Source map has no inherent key sorting — TreeMap imposes natural order on keys.</li></ul>
+<h3>Constructor 4 — SortedMap argument (EQUIVALENT TREEMAP)</h3>
+<pre class='code'>TreeMap tm = new TreeMap(SortedMap sm);</pre>
+<ul><li>Creates an equivalent TreeMap from any existing SortedMap.</li></ul>
+<ul><li>Same sorting order as the source SortedMap is preserved.</li></ul>
+<ul><li>Contrast with Constructor 3: here the source already has a defined sort order (including custom Comparator).</li></ul>
+<h3>Constructor summary table</h3>
+<p>Constructors 3 and 4 are inter-conversion constructors — less exam emphasis than 1 and 2.</p>
+<p>Memorize permanently: Constructor 1 = natural, Constructor 2 = customized.</p>
+<h2>18:30 — Demo 1: TreeMap with String keys (natural sorting)</h2>
+<h3>Program</h3>
+<pre class='code'>import java.util.*;
+
+class TreeMapDemo {
+    public static void main(String[] args) {
+        TreeMap t = new TreeMap();  // no-arg → default natural sorting of KEYS
+        t.put(&quot;Z&quot;, 100);
+        t.put(&quot;A&quot;, 200);
+        t.put(&quot;L&quot;, 300);
+        t.put(&quot;A&quot;, 400);   // duplicate KEY &quot;A&quot; → replaces 200 with 400; returns 200
+        t.put(&quot;B&quot;, 500);
+        // t.put(new Integer(10), 600);  // ClassCastException — heterogeneous key
+        // t.put(null, 700);             // see Null Key section
+        System.out.println(t);
+    }
+}</pre>
+<h3>Which constructor? Which sorting?</h3>
+<h3>Predicting the output</h3>
+<p>Insertion sequence of keys: Z, A, L, A (dup), B — but insertion order is NOT preserved. Output follows key sorting order.</p>
+<p>For String keys, default natural sorting = lexicographic (Unicode-based) order.</p>
+<p>Critical Unicode fact (exam favorite — from TreeSet session):</p>
+<p>Capital letters (65–90) come before lowercase letters (97–122). Small &#x27;a&#x27; is &quot;bigger&quot; than capital &#x27;A&#x27; because 97 &gt; 65.</p>
+<p>Given keys: &quot;Z&quot;, &quot;A&quot;, &quot;L&quot;, &quot;B&quot; (all capitals in this demo):</p>
+<p>Output: {A=400, B=500, L=300, Z=100}</p>
+<ul><li>Duplicate key &quot;A&quot;: value 200 replaced by 400 (Map put contract).</li></ul>
+<ul><li>Keys sorted: A, B, L, Z — values follow their keys.</li></ul>
+<h3>Heterogeneous keys trap</h3>
+<p>t.put(new Integer(10), 600);  // after String keys already present</p>
+<p>Result: Exception in thread &quot;main&quot; java.lang.ClassCastException</p>
+<ul><li>String and Integer keys are heterogeneous types.</li></ul>
+<ul><li>TreeMap cannot compare them → ClassCastException.</li></ul>
+<h2>22:00 — Demo 2: TreeMap with Integer keys + Comparator (descending)</h2>
+<p>Cross-reference: Video 144 — same descending Integer Comparator program, but TreeSet → TreeMap.</p>
+<h3>Problem statement (board)</h3>
+<p>Write a program to insert key–value pairs into TreeMap where keys are Integer objects and sorting order of keys is descending order.</p>
+<h3>Step 1 — Comparator class</h3>
+<pre class='code'>class MyComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        Integer I1 = (Integer) obj1;
+        Integer I2 = (Integer) obj2;
+
+        if (I1 &lt; I2)
+            return +1;      // smaller key → after (descending)
+        else if (I1 &gt; I2)
+            return -1;      // bigger key → before (descending)
+        else
+            return 0;       // equal keys → duplicate key
+    }
+}</pre>
+<h3>Step 2 — Full program</h3>
+<pre class='code'>import java.util.*;
+
+class MyComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        Integer I1 = (Integer) obj1;
+        Integer I2 = (Integer) obj2;
+        if (I1 &lt; I2) return +1;
+        else if (I1 &gt; I2) return -1;
+        else return 0;
+    }
+}
+
+class TreeMapDemo2 {
+    public static void main(String[] args) {
+        TreeMap t = new TreeMap(new MyComparator());  // LINE ONE — customized sorting
+        t.put(10, &quot;Ten&quot;);
+        t.put(0, &quot;Zero&quot;);
+        t.put(15, &quot;Fifteen&quot;);
+        t.put(5, &quot;Five&quot;);
+        t.put(20, &quot;Twenty&quot;);
+        t.put(20, &quot;Score&quot;);   // duplicate KEY 20 → replaces &quot;Twenty&quot; with &quot;Score&quot;
+        System.out.println(t);
+    }
+}</pre>
+<h3>Which method does JVM call on keys?</h3>
+<p>Observe the difference: Without Comparator → compareTo. With Comparator → compare.</p>
+<h3>Expected output</h3>
+<pre class='code'>{20=Score, 15=Fifteen, 10=Ten, 5=Five, 0=Zero}</pre>
+<p>Keys in descending order: 20, 15, 10, 5, 0. Values are attached to keys — they do not influence sort position.</p>
+<h3>Descending-order compare logic table (keys)</h3>
+<p>JVM-as-blind-person rule (Video 144): JVM trusts only the sign of the return value — negative = before, positive = after, zero = duplicate/equal.</p>
+<h2>28:00 — Demo 3: Custom class keys with Comparable</h2>
+<p>When key class implements Comparable, no-arg TreeMap constructor works — JVM calls compareTo() on keys during insertion.</p>
+<h3>Custom key class</h3>
+<pre class='code'>class Student implements Comparable {
+    int rollNo;
+    String name;
+
+    Student(int rollNo, String name) {
+        this.rollNo = rollNo;
+        this.name = name;
+    }
+
+    public int compareTo(Object obj) {
+        Student s = (Student) obj;
+        // Sort by rollNo ascending (natural order for this class)
+        return this.rollNo - s.rollNo;
+    }
+
+    public String toString() {
+        return rollNo + &quot;=&quot; + name;
+    }
+}</pre>
+<p>Note: compareTo() defines natural order for keys. Values (here embedded in toString for demo clarity) are separate.</p>
+<h3>Program</h3>
+<pre class='code'>import java.util.*;
+
+class Student implements Comparable {
+    int rollNo;
+    String name;
+
+    Student(int rollNo, String name) {
+        this.rollNo = rollNo;
+        this.name = name;
+    }
+
+    public int compareTo(Object obj) {
+        Student s = (Student) obj;
+        return this.rollNo - s.rollNo;
+    }
+
+    public String toString() {
+        return rollNo + &quot;=&quot; + name;
+    }
+}
+
+class TreeMapDemo3 {
+    public static void main(String[] args) {
+        TreeMap t = new TreeMap();  // default natural sorting — keys must be Comparable
+        t.put(new Student(103, &quot;Ravi&quot;), &quot;Hyderabad&quot;);
+        t.put(new Student(101, &quot;Durga&quot;), &quot;Bangalore&quot;);
+        t.put(new Student(105, &quot;Shiva&quot;), &quot;Chennai&quot;);
+        t.put(new Student(102, &quot;Rama&quot;), &quot;Mumbai&quot;);
+        System.out.println(t);
+    }
+}</pre>
+<h3>Internal insertion mechanism (keys)</h3>
+<p>Same as TreeSet (Video 143) — only the object being compared is the key:</p>
+<p>obj1 vs obj2 terminology (exam favorite):</p>
+<p>obj1.compareTo(obj2)
+
+obj1 = the KEY which is TO BE INSERTED (new key in put())
+obj2 = the KEY which is ALREADY INSERTED (existing key in tree)</p>
+<h3>Output</h3>
+<p>When printing TreeMap, entrySet() iteration walks keys in sorted order. With custom toString on Student showing rollNo:</p>
+<pre class='code'>{101=Durga, 102=Rama, 103=Ravi, 105=Shiva}</pre>
+<p>Keys sorted by rollNo ascending. Values (city names) do not affect order.</p>
+<h3>What if key class does NOT implement Comparable?</h3>
+<pre class='code'>class Employee {  // NO Comparable
+    int id;
+    Employee(int id) { this.id = id; }
+}
+
+TreeMap t = new TreeMap();
+t.put(new Employee(1), &quot;A&quot;);
+t.put(new Employee(2), &quot;B&quot;);
+// ClassCastException: Employee cannot be cast to Comparable</pre>
+<p>Same trap as StringBuffer in TreeSet (Video 143) — homogeneous but non-Comparable keys fail with no-arg constructor.</p>
+<p>Mandatory conditions for default natural sorting (keys):</p>
+<ol><li>Keys must be homogeneous (same type).</li></ol>
+<ol><li>Key class must implement Comparable.</li></ol>
+<h2>32:00 — Null key acceptance rules in TreeMap (same as TreeSet)</h2>
+<p>&quot;Null — such a type of story — for key in TreeMap, same as TreeSet. For value, null is happily allowed.&quot; — Durga Sir</p>
+<h3>Why null key is problematic</h3>
+<p>While adding entries to TreeMap, comparison of keys is compulsory (except for the very first entry in an empty map).</p>
+<p>When inserting null key, JVM must decide: &quot;Should null go before or after existing key X?&quot; → it must compare null with existing keys.</p>
+<p>Comparing any key object with null → NullPointerException.</p>
+<h3>Rule 1 — Non-empty TreeMap + null key</h3>
+<p>TreeMap t = new TreeMap();
+t.put(&quot;A&quot;, 1);
+t.put(&quot;B&quot;, 2);
+t.put(null, 3);   // NullPointerException at runtime — compiles fine!</p>
+<ul><li>Code compiles (generics erasure; null allowed at compile time).</li></ul>
+<ul><li>Runtime: NullPointerException.</li></ul>
+<ul><li>Reason: null key must be compared with existing &quot;A&quot;, &quot;B&quot; to find tree position.</li></ul>
+<h3>Rule 2 — Empty TreeMap — first entry null key (Java ≤ 1.6 only)</h3>
+<pre class='code'>TreeMap t = new TreeMap();
+t.put(null, &quot;value&quot;);  // OK in Java 1.6 only
+System.out.println(t);  // {null=value}</pre>
+<p>No comparison required for first entry — tree is empty, null key goes in directly.</p>
+<h3>Rule 3 — After null key inserted, adding any other key</h3>
+<p>TreeMap t = new TreeMap();
+t.put(null, &quot;first&quot;);  // OK (Java 1.6)
+t.put(&quot;A&quot;, 2);         // NPE — must compare &quot;A&quot; with null key</p>
+<h3>Rule 4 — Null VALUES are allowed (contrast with Hashtable)</h3>
+<pre class='code'>TreeMap t = new TreeMap();
+t.put(&quot;A&quot;, null);      // ✓ OK — null VALUE is fine
+t.put(&quot;B&quot;, null);      // ✓ OK — multiple null values allowed
+System.out.println(t); // {A=null, B=null}</pre>
+<p>Hashtable rejects both null key and null value. TreeMap rejects null key (with TreeSet rules) but accepts null values.</p>
+<h3>★ Version difference: Java 1.6 vs 1.7+ (STAR NOTE)</h3>
+<p>For modern OCJP/SCJP exams (Java 8+): null key is NOT allowed in TreeMap at all.</p>
+<h3>Null acceptance summary table (KEYS)</h3>
+<h2>36:00 — TreeMap vs HashMap (comparison table)</h2>
+<p>Top interview / OCJP question — Sir covers this after TreeMap properties are established.</p>
+<h3>When to use which? (decision guide)</h3>
+<h3>Side-by-side demo — same puts, different output</h3>
+<pre class='code'>import java.util.*;
+
+class HashMapVsTreeMapDemo {
+    public static void main(String[] args) {
+        Map hash = new HashMap();
+        hash.put(&quot;Z&quot;, 1);
+        hash.put(&quot;A&quot;, 2);
+        hash.put(&quot;M&quot;, 3);
+        System.out.println(&quot;HashMap: &quot; + hash);
+        // e.g. {A=2, Z=1, M=3} — unpredictable hash order
+
+        Map tree = new TreeMap();
+        tree.put(&quot;Z&quot;, 1);
+        tree.put(&quot;A&quot;, 2);
+        tree.put(&quot;M&quot;, 3);
+        System.out.println(&quot;TreeMap: &quot; + tree);
+        // {A=2, M=3, Z=1} — always sorted by key
+    }
+}</pre>
+<h2>38:30 — Comparable vs Comparator thumb rule (TreeMap edition)</h2>
+<p>Same one-line interview answer from Video 143/144 — applied to keys:</p>
+<p>If default natural sorting order is not available for keys, OR if we are not satisfied with default natural sorting order of keys, then we can go for customized sorting by using Comparator.</p>
+<p>Cross-ref Video 146: &quot;If Comparable/Comparator is clear, TreeMap learning becomes very simple.&quot;</p>
+<h2>40:00 — Exam traps and interview questions</h2>
+<h3>OCJP must-know Q&amp;A</h3>
+<h3>Common exam traps</h3>
+<h3>Interview favorites</h3>
+<ol><li>Difference between TreeMap and HashMap? → Use comparison table above.</li></ol>
+<ol><li>Difference between SortedSet and SortedMap methods? → element vs key terminology; first/last vs firstKey/lastKey.</li></ol>
+<ol><li>When does TreeMap call compareTo vs compare? → Depends on constructor (no-arg vs Comparator).</li></ol>
+<ol><li>Can I use TreeMap without Comparable keys? → Only if you pass a Comparator that handles the key type.</li></ol>
+<ol><li>Why is TreeMap slower than HashMap? → Tree O(log n) vs hash O(1) average.</li></ol>
+<h2>Exception quick reference</h2>
+<h2>Programs covered in this session</h2>
+<h2>Connection to upcoming topics</h2>
+<p>NavigableMap preview (Video 151): &quot;Same copy-paste as NavigableSet — but Map terminology. Methods operate on keys, not values.&quot;</p>
+<h2>Durga Sir&#x27;s emphasis points (write in notebook)</h2>
+<ol><li>&quot;TreeMap is copy-paste of TreeSet&quot; — sorting rules apply to keys, not values.</li></ol>
+<ol><li>&quot;Minimum 10 times&quot; — default natural sorting order vs customized sorting order.</li></ol>
+<ol><li>&quot;Map is not child of Collection&quot; — SortedMap lives on Map branch.</li></ol>
+<ol><li>&quot;Sorting based on key, NOT based on value&quot; — underline on board.</li></ol>
+<ol><li>&quot;Same null story as TreeSet&quot; — for keys only; values can be null.</li></ol>
+<ol><li>Constructor 1 = natural, Constructor 2 = customized — memorize permanently.</li></ol>
+<ol><li>headMap `&lt;`, tailMap `≥`, subMap `≥` and `&lt;` — same as SortedSet boundaries.</li></ol>
+<ol><li>comparator() returns null → default natural sorting in effect.</li></ol>
+<ol><li>obj1 = key to be inserted, obj2 = key already in tree — during put().</li></ol>
+<ol><li>If Comparable/Comparator clear from TreeSet sessions, TreeMap is easy — don&#x27;t re-learn from scratch.</li></ol>
+<h2>One-page revision sheet</h2>
+<p>SORTEDMAP  = Map + keys sorted (no dup keys) — interface, no impl
+TREEMAP    = SortedMap implementation — Red-Black tree — Java 1.2
+
+Sorting: KEY only, NEVER value
+Constructors:
+  new TreeMap()              → natural (keys Comparable)
+  new TreeMap(Comparator)    → customized
+  new TreeMap(Map)           → natural on copy
+  new TreeMap(SortedMap)     → same order as source
+
+SortedMap methods (6):
+  comparator()  firstKey()  lastKey()
+  headMap(k)    → keys &lt; k
+  tailMap(k)    → keys ≥ k
+  subMap(from,to) → keys ≥ from AND &lt; to
+
+TreeMap properties (= TreeSet on keys):
+  No dup keys | sorted keys | no heterogeneous keys
+  null key: TreeSet rules (Java 7+ = never)
+  null value: OK
+
+TreeMap vs HashMap:
+  Tree = sorted O(log n) | Hash = unsorted O(1)
+  Tree = no null key (7+) | Hash = one null key OK
+  Tree = homogeneous Comparable keys | Hash = any keys</p>
+<h2>Metadata — Map module checklist (updated)</h2>
+<h2>Heterogeneous objects allowed? (Collections Framework)</h2>
+<p>TreeSet and TreeMap are the only places in the Collections Framework where heterogeneous objects (for elements/keys) cause ClassCastException.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>148 of 203</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Collections Part-13 \</td><td>\</td><td>sortedmap</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=aOAWzh3BJM4</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>aOAWzh3BJM4</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>42m 13s</td><td></td><td></td></tr>
+<tr><td>Series</td><td>Collections Framework — Map module (sorted maps)</td><td></td><td></td></tr>
+<tr><td>Prerequisite</td><td>Videos 146–147 (HashMap, LinkedHashMap, IdentityHashMap, WeakHashMap). Videos 143–144 (TreeSet, Comparable/Comparator) — mandatory; TreeMap is copy-paste of TreeSet terminology applied to keys.</td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>Synthesized from adjacent lecture cross-references + standard Durga Sir OCJP syllabus (YouTube captions unavailable; Whisper blocked by bot-check — pending re-transcription)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Topic</th><th>Status</th></tr>
+<tr><td>1</td><td>Map introduction — keys, values, entries; Map is NOT child of Collection</td><td>✓ Video 146</td></tr>
+<tr><td>2</td><td>HashMap — properties, four constructors, demo</td><td>✓ Video 146</td></tr>
+<tr><td>3</td><td>HashMap vs Hashtable</td><td>✓ Video 146</td></tr>
+<tr><td>4</td><td>LinkedHashMap — insertion order preserved</td><td>✓ Video 147</td></tr>
+<tr><td>5</td><td>IdentityHashMap — == for duplicate keys</td><td>✓ Video 147</td></tr>
+<tr><td>6</td><td>WeakHashMap — weak keys, GC interaction</td><td>✓ Video 147</td></tr>
+</table>
+<table>
+<tr><th>Set side</th><th>Map side</th><th>Sorting applies to</th></tr>
+<tr><td>SortedSet (I)</td><td>SortedMap (I)</td><td>Keys only (Map) / Elements (Set)</td></tr>
+<tr><td>TreeSet (C)</td><td>TreeMap (C)</td><td>Red-Black tree implementation</td></tr>
+<tr><td>NavigableSet (I)</td><td>NavigableMap (I)</td><td>Java 1.6 navigation APIs</td></tr>
+<tr><td>Comparable/Comparator on elements</td><td>Comparable/Comparator on keys</td><td>Same rules</td></tr>
+</table>
+<table>
+<tr><th>Sorts by</th><th>SortedMap</th></tr>
+<tr><td>Key</td><td>✓ YES — this is the entire purpose</td></tr>
+<tr><td>Value</td><td>✗ NO — value never participates in sorting</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>Detail</th></tr>
+<tr><td>Returns</td><td>The Comparator object describing the sorting technique used for keys</td></tr>
+<tr><td>Default natural sorting</td><td>Returns `null` — no custom Comparator was supplied</td></tr>
+<tr><td>Custom sorting</td><td>Returns the same Comparator object passed to TreeMap(Comparator c) constructor</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Lower bound</th><th>Upper bound</th></tr>
+<tr><td>headMap(toKey)</td><td>(none)</td><td>&lt; toKey (exclusive)</td></tr>
+<tr><td>tailMap(fromKey)</td><td>≥ fromKey (inclusive)</td><td>(none)</td></tr>
+<tr><td>subMap(from, to)</td><td>≥ fromKey (inclusive)</td><td>&lt; toKey (exclusive)</td></tr>
+</table>
+<table>
+<tr><th>SortedSet (Video 142)</th><th>SortedMap (Video 148)</th><th>Same boundary?</th></tr>
+<tr><td>first()</td><td>firstKey()</td><td>—</td></tr>
+<tr><td>last()</td><td>lastKey()</td><td>—</td></tr>
+<tr><td>headSet(toElement)</td><td>headMap(toKey)</td><td>Strict &lt;</td></tr>
+<tr><td>tailSet(fromElement)</td><td>tailMap(fromKey)</td><td>Inclusive ≥</td></tr>
+<tr><td>subSet(from, to)</td><td>subMap(from, to)</td><td>≥ from, &lt; to</td></tr>
+<tr><td>comparator()</td><td>comparator()</td><td>null = natural order</td></tr>
+</table>
+<table>
+<tr><th>Interface</th><th>Implementation</th></tr>
+<tr><td>SortedSet</td><td>TreeSet</td></tr>
+<tr><td>SortedMap</td><td>TreeMap</td></tr>
+</table>
+<table>
+<tr><th>Interface</th><th>Supported?</th></tr>
+<tr><td>Serializable</td><td>✓ Yes</td></tr>
+<tr><td>Cloneable</td><td>✓ Yes</td></tr>
+<tr><td>RandomAccess</td><td>✗ NO (List-only marker)</td></tr>
+</table>
+<table>
+<tr><th>Sorting type</th><th>Mechanism</th><th>Constructor</th></tr>
+<tr><td>Default natural sorting order</td><td>Key class implements Comparable; JVM calls compareTo() on keys internally</td><td>new TreeMap()</td></tr>
+<tr><td>Customized sorting order</td><td>You supply a Comparator object for keys</td><td>new TreeMap(Comparator c)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Property</th><th>TreeMap value</th></tr>
+<tr><td>1</td><td>Underlying DS</td><td>Red-Black tree (balanced tree)</td></tr>
+<tr><td>2</td><td>Duplicate keys</td><td>Not allowed (replace on duplicate key)</td></tr>
+<tr><td>3</td><td>Duplicate values</td><td>Allowed</td></tr>
+<tr><td>4</td><td>Insertion order</td><td>Not preserved (sorted by key)</td></tr>
+<tr><td>5</td><td>Heterogeneous keys</td><td>Not allowed — ClassCastException</td></tr>
+<tr><td>6</td><td>Null key</td><td>See Null Key section (1.7+: never)</td></tr>
+<tr><td>7</td><td>Null value</td><td>Allowed</td></tr>
+<tr><td>8</td><td>Sorting</td><td>By key only, never by value</td></tr>
+<tr><td>9</td><td>Implements</td><td>Serializable, Cloneable</td></tr>
+<tr><td>10</td><td>RandomAccess</td><td>No</td></tr>
+<tr><td>11</td><td>Time complexity</td><td>O(log n) get/put/remove</td></tr>
+<tr><td>12</td><td>Best for</td><td>Sorted key traversal, range queries (headMap/tailMap/subMap)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Syntax</th><th>Sorting order applied</th></tr>
+<tr><td>1</td><td>new TreeMap()</td><td>Default natural sorting (keys must be Comparable)</td></tr>
+<tr><td>2</td><td>new TreeMap(Comparator c)</td><td>Customized sorting (via Comparator on keys)</td></tr>
+<tr><td>3</td><td>new TreeMap(Map m)</td><td>Default natural sorting (imposed on m&#x27;s entries)</td></tr>
+<tr><td>4</td><td>new TreeMap(SortedMap sm)</td><td>Same as source SortedMap&#x27;s order</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>Constructor used</td><td>No-argument → default natural sorting order</td></tr>
+<tr><td>Key type</td><td>String — implements Comparable → valid</td></tr>
+<tr><td>Sorting applies to</td><td>Keys only; values (100, 200, …) do not affect order</td></tr>
+</table>
+<table>
+<tr><th>Character</th><th>Unicode value</th></tr>
+<tr><td>&#x27;A&#x27; (capital)</td><td>65</td></tr>
+<tr><td>&#x27;a&#x27; (small)</td><td>97</td></tr>
+</table>
+<table>
+<tr><th>LINE ONE</th><th>Method invoked internally for key comparison</th></tr>
+<tr><td>new TreeMap()</td><td>compareTo() on keys (Comparable)</td></tr>
+<tr><td>new TreeMap(new MyComparator())</td><td>compare() on keys (Comparator)</td></tr>
+</table>
+<table>
+<tr><th>Comparison</th><th>Return</th><th>Meaning (descending)</th></tr>
+<tr><td>I1 &lt; I2</td><td>+1 (positive)</td><td>Smaller key goes after</td></tr>
+<tr><td>I1 &gt; I2</td><td>-1 (negative)</td><td>Larger key goes before</td></tr>
+<tr><td>I1 == I2</td><td>0</td><td>Duplicate key → replace value</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>put() call</th><th>Internal comparison</th></tr>
+<tr><td>1</td><td>put(103, &quot;Hyderabad&quot;)</td><td>First key — no comparison; 103 becomes root</td></tr>
+<tr><td>2</td><td>put(101, &quot;Durga&quot;)</td><td>101.compareTo(103) → negative → go left</td></tr>
+<tr><td>3</td><td>put(105, &quot;Shiva&quot;)</td><td>105.compareTo(103) → positive → go right</td></tr>
+<tr><td>4</td><td>put(102, &quot;Rama&quot;)</td><td>102.compareTo(103) → negative → left; then 102.compareTo(101) → positive → right of 101</td></tr>
+</table>
+<table>
+<tr><th>JDK version</th><th>t.put(null, value) on empty TreeMap</th></tr>
+<tr><td>Java 1.6</td><td>Allowed — {null=value}</td></tr>
+<tr><td>Java 1.7 onwards</td><td>NullPointerException — even as first entry</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Result</th></tr>
+<tr><td>Non-empty TreeMap + put(null, v)</td><td>NullPointerException</td></tr>
+<tr><td>Empty TreeMap + put(null, v) as first entry</td><td>Allowed (Java ≤ 1.6 only)</td></tr>
+<tr><td>TreeMap containing null key + put(anyKey, v)</td><td>NullPointerException</td></tr>
+<tr><td>Second put(null, v) attempt</td><td>Only one null key possible anyway</td></tr>
+<tr><td>put(key, null) — null value</td><td>Allowed</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Feature</th><th>HashMap</th><th>TreeMap</th></tr>
+<tr><td>1</td><td>Underlying DS</td><td>Hash table</td><td>Red-Black tree</td></tr>
+<tr><td>2</td><td>Map interface child</td><td>✓</td><td>✓</td></tr>
+<tr><td>3</td><td>SortedMap interface</td><td>✗</td><td>✓</td></tr>
+<tr><td>4</td><td>Key order</td><td>No guaranteed order (hash-based)</td><td>Sorted by key (natural or Comparator)</td></tr>
+<tr><td>5</td><td>Insertion order preserved</td><td>✗</td><td>✗ (sorted order, not insertion)</td></tr>
+<tr><td>6</td><td>Duplicate keys</td><td>✗</td><td>✗</td></tr>
+<tr><td>7</td><td>Duplicate values</td><td>✓</td><td>✓</td></tr>
+<tr><td>8</td><td>Null key</td><td>✓ (one null key allowed)</td><td>✗ (Java 7+; see null rules)</td></tr>
+<tr><td>9</td><td>Null value</td><td>✓</td><td>✓</td></tr>
+<tr><td>10</td><td>Heterogeneous keys</td><td>✓</td><td>✗ — ClassCastException</td></tr>
+<tr><td>11</td><td>Comparable/Comparator</td><td>Not required</td><td>Required for keys (Comparable or Comparator ctor)</td></tr>
+<tr><td>12</td><td>Performance get/put</td><td>O(1) average</td><td>O(log n)</td></tr>
+<tr><td>13</td><td>Default initial capacity</td><td>16</td><td>N/A (tree grows dynamically)</td></tr>
+<tr><td>14</td><td>Fill ratio / load factor</td><td>0.75 default</td><td>N/A</td></tr>
+<tr><td>15</td><td>Synchronized</td><td>No (use Collections.synchronizedMap)</td><td>No</td></tr>
+<tr><td>16</td><td>Best choice when</td><td>General-purpose map; fast lookup; no sorting needed</td><td>Sorted key traversal; range views (headMap/tailMap/subMap)</td></tr>
+<tr><td>17</td><td>Java version</td><td>1.2</td><td>1.2 (NavigableMap in 1.6)</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>Choose</th></tr>
+<tr><td>Fast lookup, don&#x27;t care about key order</td><td>HashMap</td></tr>
+<tr><td>Insertion order of entries</td><td>LinkedHashMap</td></tr>
+<tr><td>Sorted keys, range queries</td><td>TreeMap</td></tr>
+<tr><td>Reference-equality keys</td><td>IdentityHashMap</td></tr>
+<tr><td>Cache with weak keys</td><td>WeakHashMap</td></tr>
+<tr><td>Thread-safe, legacy</td><td>Hashtable</td></tr>
+</table>
+<table>
+<tr><th>Mechanism</th><th>TreeMap constructor</th><th>JVM calls on keys</th></tr>
+<tr><td>Comparable (internal)</td><td>new TreeMap()</td><td>compareTo()</td></tr>
+<tr><td>Comparator (external)</td><td>new TreeMap(Comparator c)</td><td>compare()</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Question</th><th>Answer</th></tr>
+<tr><td>1</td><td>What is the implementation class of SortedMap?</td><td>TreeMap</td></tr>
+<tr><td>2</td><td>Is SortedMap a child of Collection?</td><td>No — child of Map</td></tr>
+<tr><td>3</td><td>Does TreeMap sort by key or value?</td><td>Key only — never by value</td></tr>
+<tr><td>4</td><td>Underlying DS of TreeMap?</td><td>Red-Black tree (balanced tree)</td></tr>
+<tr><td>5</td><td>Are heterogeneous keys allowed?</td><td>No — ClassCastException</td></tr>
+<tr><td>6</td><td>Are null values allowed in TreeMap?</td><td>Yes</td></tr>
+<tr><td>7</td><td>Is null key allowed (Java 8+)?</td><td>No — NullPointerException</td></tr>
+<tr><td>8</td><td>Which constructor for natural key sorting?</td><td>new TreeMap()</td></tr>
+<tr><td>9</td><td>Which constructor for custom key sorting?</td><td>new TreeMap(Comparator c)</td></tr>
+<tr><td>10</td><td>What does comparator() return for natural order?</td><td>`null`</td></tr>
+<tr><td>11</td><td>headMap(106) — is 106 included?</td><td>No — strict &lt;</td></tr>
+<tr><td>12</td><td>tailMap(106) — is 106 included?</td><td>Yes — inclusive ≥</td></tr>
+<tr><td>13</td><td>Duplicate key in TreeMap — what happens?</td><td>Old value replaced; put() returns old value</td></tr>
+<tr><td>14</td><td>Duplicate key in TreeSet — what happens?</td><td>Element not inserted; add() returns false</td></tr>
+<tr><td>15</td><td>TreeMap vs HashMap — null key?</td><td>HashMap allows one; TreeMap does not (Java 7+)</td></tr>
+<tr><td>16</td><td>Time complexity of TreeMap get/put?</td><td>O(log n)</td></tr>
+<tr><td>17</td><td>Time complexity of HashMap get/put?</td><td>O(1) average</td></tr>
+</table>
+<table>
+<tr><th>Trap</th><th>Reality</th></tr>
+<tr><td>&quot;TreeMap sorts by value&quot;</td><td>FALSE — keys only</td></tr>
+<tr><td>&quot;TreeMap preserves insertion order&quot;</td><td>FALSE — sorted key order</td></tr>
+<tr><td>&quot;Null key OK in TreeMap like HashMap&quot;</td><td>FALSE for Java 7+</td></tr>
+<tr><td>&quot;Null value throws NPE in TreeMap&quot;</td><td>FALSE — null values OK (unlike Hashtable)</td></tr>
+<tr><td>&quot;headMap(N) includes N&quot;</td><td>FALSE — strict less than</td></tr>
+<tr><td>&quot;subMap(101,115) includes 115&quot;</td><td>FALSE — upper bound exclusive</td></tr>
+<tr><td>&quot;StringBuffer keys work in no-arg TreeMap&quot;</td><td>FALSE — not Comparable → CCE</td></tr>
+<tr><td>&quot;Values must be Comparable&quot;</td><td>FALSE — only keys</td></tr>
+<tr><td>&quot;SortedMap is part of Collection API&quot;</td><td>FALSE — Map branch</td></tr>
+</table>
+<table>
+<tr><th>Failure type</th><th>Example</th><th>Exception</th></tr>
+<tr><td>Heterogeneous keys</td><td>String key + Integer key</td><td>ClassCastException</td></tr>
+<tr><td>Non-Comparable keys (no-arg ctor)</td><td>StringBuffer as key</td><td>ClassCastException</td></tr>
+<tr><td>Null key (Java 7+)</td><td>put(null, v)</td><td>NullPointerException</td></tr>
+<tr><td>Null key in non-empty map</td><td>After real keys exist</td><td>NullPointerException</td></tr>
+<tr><td>Empty map firstKey/lastKey</td><td>No entries</td><td>NoSuchElementException</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Class name</th><th>Topic</th></tr>
+<tr><td>1</td><td>SortedMapMethodsDemo</td><td>All six SortedMap methods with numeric keys</td></tr>
+<tr><td>2</td><td>TreeMapDemo</td><td>String keys, natural sorting, duplicate key replace</td></tr>
+<tr><td>3</td><td>TreeMapDemo2</td><td>Integer keys, Comparator descending</td></tr>
+<tr><td>4</td><td>TreeMapDemo3</td><td>Custom Comparable class as key</td></tr>
+<tr><td>5</td><td>HashMapVsTreeMapDemo</td><td>Side-by-side order comparison</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Video</th><th>Relationship</th></tr>
+<tr><td>NavigableMap</td><td>151</td><td>Child of SortedMap; ceilingKey, floorKey, pollFirstEntry, descendingMap on TreeMap</td></tr>
+<tr><td>Hashtable</td><td>149</td><td>Legacy synchronized map; null key/value both rejected</td></tr>
+<tr><td>Properties</td><td>149</td><td>Extends Hashtable; config files</td></tr>
+<tr><td>Collections.sort()</td><td>151</td><td>Same Comparable/Comparator rules as TreeMap keys</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Topic</th><th>Video</th><th>Status</th></tr>
+<tr><td>1</td><td>Map intro, HashMap</td><td>146</td><td>✓</td></tr>
+<tr><td>2</td><td>LinkedHashMap, IdentityHashMap, WeakHashMap</td><td>147</td><td>✓</td></tr>
+<tr><td>3</td><td>SortedMap, TreeMap</td><td>148</td><td>✓ This session</td></tr>
+<tr><td>4</td><td>Hashtable, Properties</td><td>149</td><td>Next</td></tr>
+<tr><td>5</td><td>NavigableMap (detail)</td><td>151</td><td>Later</td></tr>
+</table>
+<table>
+<tr><th>Collection / Map</th><th>Heterogeneous allowed?</th></tr>
+<tr><td>ArrayList, LinkedList</td><td>Yes</td></tr>
+<tr><td>HashSet, LinkedHashSet</td><td>Yes</td></tr>
+<tr><td>HashMap, LinkedHashMap, IdentityHashMap, WeakHashMap</td><td>Yes (keys and values)</td></tr>
+<tr><td>TreeSet</td><td>No</td></tr>
+<tr><td>TreeMap</td><td>No (keys) — values can differ in type</td></tr>
+<tr><td>All others</td><td>Yes</td></tr>
+</table>
+</body></html>

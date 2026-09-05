@@ -1,0 +1,337 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>025-if-else</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 025 — Selection statements: if-else</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Flow-Control Part-2  || Selection Statements : if-else</p>
+<p>Source: real YouTube auto-captions (English, auto-generated). ASR writes bullan / bullion / oan for boolean, inex / in xal for int x, if of two for if (true), dou equal for ==, compartive method / compa method for compile-time error, cly / clyra for curly braces, angling for dangling, PKA for “pakka” (definitely). These notes restore every board example as Java.</p>
+<h2>What this lecture covers</h2>
+<p>He says there are just two conclusions related to if-else (plus a small dangling-else clarity at the end).</p>
+<ol><li>Syntax: if (b) / else — `b` must be boolean. Any other type → compile-time error (incompatible types, found int, required boolean). Exam options around if (x), if (x = 20), if (x == 20), if (b = false), if (b == false).</li></ol>
+<ol><li>`else` is optional. Curly braces are optional. Without braces, only one statement under if, and it must not be a declarative statement. Same rule wherever braces are optional (while, …). Semicolon is a valid empty statement.</li></ol>
+<ol><li>Extra: no dangling-else problem in Java — every else is mapped to the nearest `if`.</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:05] Keep copying: selection statements → if-else</h3>
+<p>Board: selection statements, under that `if-else`.</p>
+<h3>[00:38] Syntax (for the sake of syllabus)</h3>
+<p>At this stage not required to discuss much, but for the sake of syllabus he covers the syntax.</p>
+<pre class='code'>if (b) {          // b should be boolean type
+    // action if b is true
+} else {
+    // action if b is false
+}</pre>
+<p>Simple syntax. They should have clarity. Compulsory: the argument to this if should be boolean type.</p>
+<p>He copies it again: syntax if (b) — b should be boolean type; action if b is true; else action if b is false.</p>
+<h3>[02:20] Argument must be boolean — otherwise compile-time error</h3>
+<p>Compulsory: the argument should be boolean type. By mistake if they try to provide any other type, compile-time error by default.</p>
+<p>The argument to the if statement should be boolean. If they try to provide any other type, they will get a compile-time error.</p>
+<p>He dictates that sentence several times for the notebook:</p>
+<p>The argument to the if statement should be boolean type. By mistake if you are trying to provide any other type, then we will get compile-time error.</p>
+<p>Based on this small point there may be a chance to ask in the exam — various possibilities. Point is small; observe the options.</p>
+<h3>[03:54] Example 1 — `if (x)` with `int x = 0` (C/C++ trap)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 0;
+        if (x) {
+            System.out.println(&quot;hello&quot;);
+        } else {
+            System.out.println(&quot;hi&quot;);
+        }
+    }
+}</pre>
+<p>What output? Most people are going to fail here. They feel: x is 0; if (0); 0 means false; false means else-part executes; `hi` is the answer.</p>
+<p>That is if they are coming from C or C++ background — zero means false, one means true. Such terminology is there there. In Java, no such terminology.</p>
+<p>if is always expecting boolean type. In the place of boolean they provided `int`. Immediately compile-time error:</p>
+<p>incompatible types
+found: int
+required: boolean</p>
+<p>In old languages like C / C++ this code is valid and hi is the answer. In Java, no.</p>
+<h3>[05:51] Example 2 — `if (x = 20)` assignment, not comparison</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        if (x = 20) {
+            System.out.println(&quot;hello&quot;);
+        } else {
+            System.out.println(&quot;hi&quot;);
+        }
+    }
+}</pre>
+<p>Hello or hi? Most people feel: x is 10; 10 and 20 both are not equal; else-part executes; `hi`. Compiler will give left and right. Why?</p>
+<p>int x = 10. Here, is he performing comparison or assignment? Assignment. From now onwards x value will become 20. Then if (x) means if (20).</p>
+<p>if never expects a 20. Same compile-time error: incompatible types, found int, required boolean.</p>
+<p>Compulsory they should be aware whether they are using assignment operator or comparison operator. Here it is assignment.</p>
+<h3>[07:23] Example 3 — `if (x == 20)` comparison (valid; prints `hi`)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        if (x == 20) {
+            System.out.println(&quot;hello&quot;);
+        } else {
+            System.out.println(&quot;hi&quot;);
+        }
+    }
+    // prints hi
+}</pre>
+<p>10 and 20 both equal or not? Not equal. Else-part executes. Output: `hi`.</p>
+<p>Assignment was the previous example; comparison is here. They should have that clarity.</p>
+<h3>[08:16] Example 4 — `boolean b = true; if (b = false)` assignment (valid; prints `hi`)</h3>
+<p>Take special care.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        boolean b = true;
+        if (b = false) {
+            System.out.println(&quot;hello&quot;);
+        } else {
+            System.out.println(&quot;hi&quot;);
+        }
+    }
+    // prints hi
+}</pre>
+<p>Hello or hi or compile error?</p>
+<p>Whether he used comparison or assignment: assignment. Can they get a compile-time error or not?</p>
+<p>boolean b is true. From now onwards b value will become `false`. if (b) is if (false). Is there any syntactical mistake? No — because if is expecting boolean. Whether they use assignment or comparison is not important for if; at the end they have to provide a boolean argument.</p>
+<p>After assignment, b is false → if (false) → else-part → output `hi`.</p>
+<p>Even though it is assignment, no problem, because after assignment the result is always boolean type. Valid.</p>
+<h3>[10:05] Example 5 — `boolean b = false; if (b == false)` comparison (prints `hello`)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        boolean b = false;
+        if (b == false) {
+            System.out.println(&quot;hello&quot;);
+        } else {
+            System.out.println(&quot;hi&quot;);
+        }
+    }
+    // prints hello
+}</pre>
+<p>Hello or hi or compile-time error? Hello — false and false both are equal → result true → if (true) → hello.</p>
+<p>Point is very simple: the argument to if should be boolean type. Based on that, how many options are there to ask the question for the exam — they should be aware.</p>
+<p>Especially dangerous: by overlooking, most people feel “10 and 20 both are not equal, that’s why hi” — they never check whether it was `=` or `==`. Compulsory they should have clear clarity: assignment operator or comparison operator.</p>
+<h3>[11:26] He recopies the examples on the board</h3>
+<p>First (CE) — when recopying he uses int x = 10 (same CE as x = 0; argument is still int):</p>
+<p>int x = 10;
+if (x) {
+    System.out.println(&quot;hello&quot;);
+} else {
+    System.out.println(&quot;hi&quot;);
+}
+// CE: incompatible types
+// found: int
+// required: boolean</p>
+<p>Second (also CE) — same error:</p>
+<p>int x = 10;
+if (x = 20) {
+    System.out.println(&quot;hello&quot;);
+} else {
+    System.out.println(&quot;hi&quot;);
+}
+// CE: incompatible types found: int required: boolean</p>
+<p>Third — comparison; else-part; output `hi` (not hello):</p>
+<p>int x = 10;
+if (x == 20) {
+    System.out.println(&quot;hello&quot;);
+} else {
+    System.out.println(&quot;hi&quot;);
+}
+// prints hi</p>
+<p>Last — comparison of booleans; output `hello`. On the board the pair of live outputs for the two boolean examples is `hi` followed by `hello` (assignment-to-boolean then ==).</p>
+<p>boolean b = true;
+if (b = false) {
+    System.out.println(&quot;hello&quot;);
+} else {
+    System.out.println(&quot;hi&quot;);
+}
+// prints hi
+
+boolean b2 = false;
+if (b2 == false) {
+    System.out.println(&quot;hello&quot;);
+} else {
+    System.out.println(&quot;hi&quot;);
+}
+// prints hello</p>
+<p>These are the various things they should be aware.</p>
+<h3>[14:53] Second conclusion — else optional, braces optional, but…</h3>
+<p>A bit very very important. Take special care; for most people it may be a new point. More concentration required.</p>
+<p>In if-else: is the else-part mandatory or optional? Optional. else is optional.</p>
+<p>Are the curly braces mandatory or optional? Optional. Else-part optional; curly braces also optional.</p>
+<p>But: without the curly braces, how many statements can they take under if? Only one statement.</p>
+<p>Only twist is here. Take special care.</p>
+<h3>[15:55] `if (true)` + one statement — valid, prints `hello`</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        if (true)
+            System.out.println(&quot;hello&quot;);
+    }
+}</pre>
+<p>Valid or not? Don’t think too much. Valid. Happily the output is `hello`.</p>
+<h3>[16:18] `if (true);` — valid empty statement, no output</h3>
+<pre class='code'>if (true);</pre>
+<p>Valid or invalid? 100% pakka valid, because semicolon is a valid Java statement. They can take semicolon any number of times. Of course, after semicolon got executed — which is also known as empty statement — which output? No output. But it is valid. No problem at all.</p>
+<p>if (true); got executed; it won’t provide any output.</p>
+<h3>[17:02] `if (true) int x = 10;` — invalid (old students: be silent)</h3>
+<p>People who already attended: be silent so the remaining people can think.</p>
+<pre class='code'>if (true)
+    int x = 10;</pre>
+<p>Valid or invalid? Class guesses “valid.” He will show otherwise they may not believe, then they will think about the reason.</p>
+<h3>[17:42] Same declaration **with** curly braces — valid</h3>
+<pre class='code'>if (true) {
+    int x = 10;
+}</pre>
+<p>If the version with braces is valid, is the version without braces automatically valid? No. If he takes it without braces, compiler will give left and right — compile-time error by default. They should be aware clearly. First he will execute so they believe.</p>
+<h3>[18:50] He compiles `class Test` (practical)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        if (true)
+            System.out.println(&quot;hello&quot;);
+    }
+}</pre>
+<p>First one: valid, no problem at all. The code compiles fine. java Test → `hello`.</p>
+<p>Next: if (true); — he does not want the println. Semicolon is a valid Java statement; they can take any number of semicolons; no problem. Valid. Output: no output — empty statement.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        if (true);
+        // extra empty statements after if already completed:
+        ;;;
+    }
+}</pre>
+<p>If already completed, remaining semicolons: valid or not? Perfectly valid. No output.</p>
+<h3>[20:11] `if (true) int x = 10;` — compiler “shocked” (several errors)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        if (true)
+            int x = 10;
+    }
+}</pre>
+<p>100% pakka invalid. Compile-time errors he reads from the compiler (several; even the compiler is getting shocked to understand this line). He lists among them:</p>
+<ul><li>`;` expected</li></ul>
+<ul><li>not a statement</li></ul>
+<ul><li>illegal start of expression</li></ul>
+<p>Four errors possible on that line.</p>
+<h3>[20:49] Same declaration inside `{ }` — valid, no output</h3>
+<p>Whenever he takes curly brace open and close:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        if (true) {
+            int x = 10;
+        }
+    }
+}</pre>
+<p>100% pakka valid. They are not printing anything → no output.</p>
+<p>So: without braces, int x = 10 under if is invalid. He showed it practically. It seems perfectly valid; internally it is not.</p>
+<h3>[21:26] The rule (not only for `if`)</h3>
+<p>Without curly braces they can take only one statement under if, which should not be a declarative statement.</p>
+<p>This rule is not only applicable for `if`. Next they will discuss while: curly braces are optional; without curly braces under while only one statement is allowed, which should not be a declarative statement.</p>
+<p>Wherever curly braces are optional, this rule is there.</p>
+<p>while (condition)
+    int x = 10; // same idea: not allowed — declarative statement without braces</p>
+<pre class='code'>while (condition) {
+    int x = 10; // allowed — braces present
+}</pre>
+<h3>[21:56] Internal reason: local variable of the `if` block</h3>
+<p>Why internally?</p>
+<pre class='code'>if (true)
+    int x = 10;</pre>
+<p>What is this variable? It is a local variable of which block? The `if` block. Where can they use it? Only within the block — under if only. Is it possible to use outside? No.</p>
+<p>Without curly braces, the if block contains how many statements? Only one statement. Once this semicolon completes, automatically remaining lines are not related to the if.</p>
+<p>In the remaining lines, is it possible to use this x? No — x is under if; once semicolon completes, if-block completes. In the remaining lines of the code there is no chance to use it.</p>
+<p>They are declaring a variable, assigning a value, but in the next line they are not allowed to use it. Then what is the need of declaring such a type of variable? Compiler will give left and right.</p>
+<p>Once semicolon completes, if-block already completed; in the remaining code x is not allowed because x is a local variable of the if block.</p>
+<p>That’s why: without curly braces they can take only one statement, and that statement should not be a declarative statement. By mistake if they take it, immediately compile-time error.</p>
+<h3>[24:10] Why braces make the same declaration legal</h3>
+<p>Without curly braces it is not allowed; with curly braces how is it allowed?</p>
+<pre class='code'>if (true) {
+    int x = 10;
+    // there may be a chance of thousands of lines
+    // in these lines it is possible to use this x
+}</pre>
+<p>If they take curly braces, there may be a chance of thousands of lines within. In these lines, is it possible to use this x or not? Yes. Whether remaining lines of the code are actually there or not, there is a possibility to use this x. That’s why the compiler considers they can use it — valid.</p>
+<p>Without curly braces: only one statement under if, which should not be a declarative statement. Clear.</p>
+<h3>[25:18] Dictation of conclusion 2</h3>
+<p>Else-part and curly braces are optional.</p>
+<p>Without curly braces, only one statement is allowed under if, which should not be a declarative statement.</p>
+<p>Without curly braces, how many statements are allowed? Only one, which should not be declarative.</p>
+<p>He marks the examples: first one valid; second one valid (empty ;); third one compile-time error. By mistake if they try to declare without braces, compile-time error.</p>
+<p>if after System.out.println(&quot;hello&quot;); if after semicolon — these are the things. Clear. That’s all.</p>
+<h3>[27:31] Note: semicolon is an empty statement</h3>
+<p>He covered one point about semicolon. Remember: semicolon is a valid Java statement, which is also known as empty statement.</p>
+<p>He dictates that several times:</p>
+<p>Semicolon is a valid Java statement, which is also known as empty statement.</p>
+<p>; // empty statement — valid Java statement
+if (true); // if with empty body — valid, no output</p>
+<h3>[28:23] Extra clarity: dangling else — no such problem in Java</h3>
+<p>Not a big conclusion. Whether they are aware or not they have to cross-check, because yesterday one student asked this doubt.</p>
+<p>In old languages, compilers are not that much strong. C or C++ — old languages — compiler is not that much strong. Java compiler is very strong. One area he will explain.</p>
+<pre class='code'>if (true)
+    if (true)
+        System.out.println(&quot;hello&quot;);
+else
+    System.out.println(&quot;hi&quot;);</pre>
+<p>How many if statements? Two. How many else statements? Only one.</p>
+<p>Is this else related to this if or this if? First one, second one, or both?</p>
+<p>Some people say both — a single else for both if statements. No. For every if, one else is allowed.</p>
+<p>If they take it like this in old languages, the compiler will get left and right: you are taking two ifs, one else — this else belongs to which if? First let me know, then only I can compile; otherwise I can’t.</p>
+<p>Dangling else problem — they may have heard this in programming languages. This type of problem is very common: else is related to which if is always a problem.</p>
+<p>Java compiler is not that much weak; Java compiler is strong in this area. Clear rule for the Java compiler: if anywhere else is there, it is always related to the nearest `if`.</p>
+<p>This else is related to which one? This `if` (the inner / nearest one), not the outer one. Even though this else seems to be under the outer if, don’t feel that. This else is related to the inner `if` only.</p>
+<p>There is no dangling-else problem in Java. else is always going to be considered for the nearest `if` statement.</p>
+<p>He dictates:</p>
+<p>There is no dangling else problem in Java.</p>
+<p>Every else is mapped to the nearest if statement.</p>
+<p>That’s all for if-else.</p>
+<h2>Rules (as he states them)</h2>
+<ol><li>Argument to if must be boolean. Any other type → `incompatible types` (found int, required boolean).</li></ol>
+<ol><li>Java has no C/C++ “0 is false, 1 is true.”</li></ol>
+<ol><li>Check `=` vs `==`. if (x = 20) with int x is still an int → CE. if (b = false) with boolean b is boolean → valid, uses the value after assignment.</li></ol>
+<ol><li>else is optional. Curly braces are optional.</li></ol>
+<ol><li>Without braces: exactly one statement under if, and it must not be declarative.</li></ol>
+<ol><li>Same brace rule wherever braces are optional (while, …).</li></ol>
+<ol><li>if (true) int x = 10; is CE because after the semicolon the if block is over; x can never be used — no need to declare it.</li></ol>
+<ol><li>if (true) { int x = 10; } is valid because later lines inside the braces could use x.</li></ol>
+<ol><li>`;` is a valid Java statement (empty statement). if (true); is valid; no output. Any number of extra ; is fine.</li></ol>
+<ol><li>No dangling else in Java. Every else maps to the nearest `if`.</li></ol>
+<h2>Exam traps (from this lecture)</h2>
+<h2>Recap</h2>
+<p>Two exam-sized conclusions: boolean-only argument (with = / == traps), and optional else/braces with the “no declaration without braces” rule. Bonus: Java has no dangling-else problem — nearest if wins.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 25 of 203</td></tr>
+<tr><td>Series</td><td>Flow-Control · Part 2 of 6</td></tr>
+<tr><td>Topic</td><td>if-else: boolean argument, = vs ==, braces, empty statement, dangling else</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>32m 21s (1941 seconds)</td></tr>
+<tr><td>Video ID</td><td>FnnJkV1Euxk</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=FnnJkV1Euxk</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>What most people say</th><th>Actual</th></tr>
+<tr><td>int x = 0; if (x)</td><td>hi (0 is false)</td><td>CE incompatible types</td></tr>
+<tr><td>int x = 10; if (x = 20)</td><td>hi (10 ≠ 20)</td><td>CE — it is assignment, then if (20)</td></tr>
+<tr><td>int x = 10; if (x == 20)</td><td>mixed up with =</td><td>`hi` (valid comparison)</td></tr>
+<tr><td>boolean b = true; if (b = false)</td><td>CE because assignment</td><td>valid, prints `hi`</td></tr>
+<tr><td>boolean b = false; if (b == false)</td><td>hi / CE</td><td>`hello`</td></tr>
+<tr><td>if (true);</td><td>invalid</td><td>valid, no output</td></tr>
+<tr><td>if (true) int x = 10;</td><td>valid (one statement)</td><td>CE — declarative statement without braces</td></tr>
+<tr><td>two ifs, one else, no braces</td><td>dangling / belongs to both / outer</td><td>nearest (inner) `if`</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,168 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>013-main-method-part-1</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 013 — main() method, part 1</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-13 || main() method part-1</p>
+<p>YouTube has captions disabled on this upload. Video 012 closes var-args with “next we perform postmortem on main method, almost two sessions, then command line arguments.” This is session 1 of that postmortem. Video 014 is session 2 (overload, inherit, static block vs main). Video 015 is command-line arguments.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Why main exists (JVM entry point)</li></ol>
+<ol><li>Word-by-word meaning of public static void main(String[] args)</li></ol>
+<ol><li>What happens if you drop or change each word (NoSuchMethodError)</li></ol>
+<ol><li>Legal rearrangements and extra modifiers</li></ol>
+<ol><li>String[] args vs String args[] vs String... args</li></ol>
+<ol><li>Changing the name args</li></ol>
+<h2>Detailed notes</h2>
+<h3>Who calls `main`?</h3>
+<p>You never call main from your own code as the start of the program. You type:</p>
+<p>java Test</p>
+<p>The JVM loads Test, then looks for a method with a fixed protocol:</p>
+<pre class='code'>public static void main(String[] args)</pre>
+<p>If that exact contract is missing, you do not get a compiler error for “no main” in a normal class compile. You get a runtime error when you launch:</p>
+<p>NoSuchMethodError: main</p>
+<p>(On newer Java the message is often Error: Main method not found in class Test, please define the main method as: public static void main(String[] args).)</p>
+<p>Durga’s point: main is a protocol between programmer and JVM, not a language keyword. main is an identifier. That is why Main is a different method.</p>
+<h3>`public`</h3>
+<p>JVM is outside the class (it is not your code). It must be allowed to call main from anywhere → public.</p>
+<pre class='code'>class Test {
+    private static void main(String[] args) { }   // launches: NoSuchMethodError
+}</pre>
+<p>Same story for default (no modifier) and protected. The JVM’s search is for public main.</p>
+<h3>`static`</h3>
+<p>JVM calls main without creating an object. There is no new Test() before main. So main must be static.</p>
+<pre class='code'>class Test {
+    public void main(String[] args) { }  // NoSuchMethodError — not static
+}</pre>
+<p>If it were instance, JVM would have to guess a constructor and create an object — Java does not do that for startup.</p>
+<h3>`void`</h3>
+<p>JVM does not use a return value from main. Return type must be void.</p>
+<pre class='code'>class Test {
+    public static int main(String[] args) {
+        return 0;   // NoSuchMethodError — not void
+    }
+}</pre>
+<p>(C’s int main is a different language.)</p>
+<h3>`main` — the name</h3>
+<p>The name must be `main`, exact case.</p>
+<pre class='code'>public static void Main(String[] args) { }  // NoSuchMethodError
+public static void MAIN(String[] args) { }  // NoSuchMethodError</pre>
+<p>Those compile as ordinary methods. JVM just will not call them as the entry point.</p>
+<h3>`String[] args`</h3>
+<p>Command-line arguments are strings (video 015). So the parameter is an array of String.</p>
+<p>Legal forms Durga writes:</p>
+<pre class='code'>public static void main(String[] args) { }
+public static void main(String args[]) { }
+public static void main(String []args) { }</pre>
+<p>From Java 1.5, var-arg form is also an entry point (internally an array):</p>
+<pre class='code'>public static void main(String... args) { }</pre>
+<p>Not an entry point:</p>
+<pre class='code'>public static void main(String args) { }     // one String, not array
+public static void main() { }                // no args
+public static void main(int[] args) { }      // wrong element type</pre>
+<p>Those compile; JVM ignores them for launch.</p>
+<h3>Parameter name is your identifier</h3>
+<p>args is only a convention (video 016 coding standards: even args is the usual name). Any valid identifier works:</p>
+<pre class='code'>public static void main(String[] a) { }
+public static void main(String[] dhanush) { }
+public static void main(String[] values) { }</pre>
+<p>Still the entry point. Inside, use that name: dhanush.length, not args.length.</p>
+<h3>Order of `public` and `static`</h3>
+<p>Modifier order is not fixed:</p>
+<p>static public void main(String[] args) { }   // valid entry point</p>
+<p>void must stay the return type (before the name). You cannot write public static main void.</p>
+<h3>Extra modifiers that are still an entry point</h3>
+<p>You may add:</p>
+<ul><li>final — cannot hide/override in the usual instance way; for static it is “cannot hide with same signature in child” in the sense of final static</li></ul>
+<ul><li>synchronized — JVM still calls it; it just acquires the class lock</li></ul>
+<ul><li>strictfp — IEEE floating-point strictness</li></ul>
+<pre class='code'>public static final synchronized strictfp void main(String[] args) { }</pre>
+<p>This is still a legal main for the JVM. Durga puts this on the board as a “don’t panic in the exam” example.</p>
+<p>Not allowed as a working Java main body:</p>
+<ul><li>abstract — no body; class would have to be abstract; JVM still would not treat it as a runnable entry with a body</li></ul>
+<ul><li>native — no Java body</li></ul>
+<p>Keep abstract / native off main for this lecture’s exam answers unless the question is specifically about compile vs launch.</p>
+<h3>Compile vs run — Durga’s two-step check</h3>
+<p>For each variant, ask:</p>
+<ol><li>Does it compile? (Java language rules)</li></ol>
+<ol><li>Can we launch with `java ClassName`? (JVM protocol)</li></ol>
+<p>Examples:</p>
+<p>The class can still have those methods. They are just not the JVM entry.</p>
+<h3>Why this is “language fundamentals”</h3>
+<p>OCJP loves mixing:</p>
+<ul><li>a legal main that is not the protocol</li></ul>
+<ul><li>two methods named main (overloading — video 014)</li></ul>
+<ul><li>String[] vs String...</li></ul>
+<p>Part 1 is: one method, tear it apart word by word.</p>
+<h3>`String` is not a keyword</h3>
+<p>Reminder from video 001: you could theoretically name a variable String, which would make String[] args a mess. Don’t. The parameter type must be java.lang.String.</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Test {
+    static public final synchronized strictfp void main(String... dhanush) {
+        System.out.println(&quot;entry point&quot;);
+        System.out.println(dhanush.length);
+    }
+
+    public static void main(int[] args) {
+        System.out.println(&quot;overloaded — JVM ignores this on launch&quot;);
+    }
+}</pre>
+<p>Launch:</p>
+<p>java Test</p>
+<p>Prints entry point then 0. The int[] overload is unused.</p>
+<h2>Rules to memorize</h2>
+<ol><li>Protocol: public static void main(String[] args) (or String args[] or String... args).</li></ol>
+<ol><li>Missing public / static / void / name main / String array-or-varargs → launch error, usually still compiles.</li></ol>
+<ol><li>public and static may swap order.</li></ol>
+<ol><li>final, synchronized, strictfp may be added.</li></ol>
+<ol><li>Parameter name can be anything; type cannot.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>“CE because static is after public” — false.</li></ul>
+<ul><li>Main vs main — compiles, does not launch.</li></ul>
+<ul><li>String... args is a valid entry point (1.5+).</li></ul>
+<ul><li>No compiler error for a class without main; failure is at run.</li></ul>
+<ul><li>public static void main(String args) is not the protocol.</li></ul>
+<h2>Recap</h2>
+<p>Part 1 is the JVM contract. Part 2 is what happens when there are several mains, inheritance, and static blocks.</p>
+<p>Next video: 014-main-method-part-2.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 13 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 13 of 16</td></tr>
+<tr><td>Topic</td><td>main() method (part 1): signature, modifiers, JVM contract</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 06m 40s (4000 seconds)</td></tr>
+<tr><td>Video ID</td><td>AipADVI3OG0</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=AipADVI3OG0</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Declaration</th><th>Compile?</th><th>java Test?</th></tr>
+<tr><td>public static void main(String[] args)</td><td>yes</td><td>yes</td></tr>
+<tr><td>static public void main(String[] args)</td><td>yes</td><td>yes</td></tr>
+<tr><td>public static void main(String... args)</td><td>yes</td><td>yes</td></tr>
+<tr><td>public static void main(String args[])</td><td>yes</td><td>yes</td></tr>
+<tr><td>public void main(String[] args)</td><td>yes</td><td>NoSuchMethodError</td></tr>
+<tr><td>public static void Main(String[] args)</td><td>yes</td><td>NoSuchMethodError</td></tr>
+<tr><td>public static int main(String[] args)</td><td>yes</td><td>NoSuchMethodError</td></tr>
+<tr><td>private static void main(String[] args)</td><td>yes</td><td>NoSuchMethodError</td></tr>
+<tr><td>public static void main(int[] args)</td><td>yes</td><td>NoSuchMethodError</td></tr>
+</table>
+</body></html>

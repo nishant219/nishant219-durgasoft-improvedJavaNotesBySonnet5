@@ -1,0 +1,496 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>091-inter-thread-communication-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 091 — Inter-thread communication part 2</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-11 || Inter Thread Communication Part-2</p>
+<p>Source: real YouTube auto-captions (.transcripts/091-2z218xjvw1M.txt). ASR decoded in place: await / waight = wait; threat(s) = thread(s); luck / lack = lock; bead / beed / bd = b (ThreadB); ch = child; SO = System.out; stuck / st = start; nofa / nfa = notify; illegal Monitor State = IllegalMonitorStateException; 1 crore lines = ~10 million lines after update; stuck object = Stack; 0 byj / Object of Java = ordinary Java objects o1/o2; Keshani / Sandhya / Vijayawada / Kakinada bus office = notifyAll “particular object” analogy.</p>
+<p>This part turns Part-1 theory into a full sum-of-1-to-100 demo, shows why sleep and join are wrong for “expecting update”, then the correct wait / notify program, the missed-notify forever-wait trap, timed wait, producer–consumer sketch, and notify vs notifyAll (plus lock-ownership exam trap).</p>
+<h3>00:06 — Recap of Part-1 conclusions</h3>
+<p>Morning session covered inter-thread communication, important loopholes, and impact of wait / notify / notifyAll on the thread life cycle. Five valuable conclusions (he spent ~1½ hours on them in Part-1):</p>
+<ol><li>Two threads communicate using wait, notify, notifyAll.</li></ol>
+<ol><li>Those methods are in `Object`, not Thread.</li></ol>
+<ol><li>Call them only from a synchronized area; otherwise runtime `IllegalMonitorStateException`.</li></ol>
+<ol><li>If a thread calls `wait`, it immediately releases that object’s lock and enters waiting state.</li></ol>
+<ol><li>If a thread calls `notify`, it releases the lock but may not immediately. wait / notify / notifyAll are the only classical methods where a thread releases the lock (reason: waiter must free the lock so the updater can enter; notifier must eventually free the lock so the waiter can continue).</li></ol>
+<p>Next: convert the whole discussion into an example.</p>
+<h3>02:08 — Board problem: child sums 1…100; main prints `total`</h3>
+<p>Target: two threads. Main exists by default; create one child (ThreadB). Child updates an instance field total (sum of first 100 naturals = \(100 \times 101 / 2 = 5050\)). Main prints b.total.</p>
+<pre class='code'>class ThreadB extends Thread {
+    int total = 0;
+
+    public void run() {
+        for (int i = 1; i &lt;= 100; i++) {
+            total = total + i;
+        }
+        // after loop, total should be 5050
+    }
+}
+
+class ThreadA {
+    public static void main(String[] args) {
+        ThreadB b = new ThreadB();
+        b.start();
+        // two threads now: main + child
+        System.out.println(b.total);
+    }
+}</pre>
+<ul><li>Child (run) is responsible to update total.</li></ul>
+<ul><li>Main is responsible to print b.total — main is “expecting updation”.</li></ul>
+<h3>06:36 — Without wait: output is not guaranteed</h3>
+<p>If you run the program as written, there is no guarantee:</p>
+<p>Any value \(\ge 0\) and \(\le 5050\) is possible. You cannot expect a fixed answer.</p>
+<pre class='code'>class ThreadB extends Thread {
+    int total = 0;
+
+    public void run() {
+        for (int i = 1; i &lt;= 100; i++) {
+            total = total + i;
+        }
+    }
+}
+
+class ThreadA {
+    public static void main(String[] args) {
+        ThreadB b = new ThreadB();
+        b.start();
+        System.out.println(b.total);
+        // prints 0   OR  5050  OR  some middle value (race)
+        // demo runs he showed: sometimes 0, sometimes 5050, sometimes 4851 / 1653
+    }
+}</pre>
+<p>Requirement: always print `5050` only — not 0, not an intermediate.</p>
+<h3>10:46 — Attempt 1: `Thread.sleep` so main waits for update</h3>
+<p>Idea: after b.start(), main sleeps long enough that child finishes the loop, then prints.</p>
+<pre class='code'>class ThreadB extends Thread {
+    int total = 0;
+
+    public void run() {
+        for (int i = 1; i &lt;= 100; i++) {
+            total = total + i;
+        }
+    }
+}
+
+class ThreadA {
+    public static void main(String[] args) throws InterruptedException {
+        ThreadB b = new ThreadB();
+        b.start();
+        Thread.sleep(10000); // 10 seconds
+        System.out.println(b.total);
+        // prints 5050 (almost always for this tiny loop)
+    }
+}</pre>
+<p>Classroom pushback: “maybe child won’t finish in 10 seconds?” He scolds underestimating the machine — millions of ops per nanosecond; this loop finishes easily.</p>
+<p>He then reduces sleep: 10 s → 1 s → 100 ms → 10 ms → 1 ms → even 0 ms + 1 ns still enough for this loop to get 5050. Point is pedagogical, not a timing guarantee for big work.</p>
+<h3>16:04 — Why sleep is **not recommended** for “expecting update”</h3>
+<p>Even though sleep “works” here:</p>
+<ol><li>Performance: if update is ready in ≪ 10 s, main still sleeps the rest — unnecessary sleep → system performance down.</li></ol>
+<ol><li>Correctness: if the calculation is huge and does not finish within the chosen sleep time, main wakes early → intermediate / wrong value again.</li></ol>
+<ol><li>You don’t know when the update will be ready → fixed sleep duration is bad practice.</li></ol>
+<p>So: when expecting some update, calling sleep for a fixed time is not recommended.</p>
+<h3>17:17 — Attempt 2: `b.join()` instead of sleep</h3>
+<pre class='code'>class ThreadB extends Thread {
+    int total = 0;
+
+    public void run() {
+        for (int i = 1; i &lt;= 100; i++) {
+            total = total + i;
+        }
+        // imagine 1 crore more lines of unrelated work here...
+    }
+}
+
+class ThreadA {
+    public static void main(String[] args) throws InterruptedException {
+        ThreadB b = new ThreadB();
+        b.start();
+        b.join(); // main waits until child dies
+        System.out.println(b.total);
+        // prints 5050
+    }
+}</pre>
+<p>join does give 5050 here: main waits until child completes run, then prints.</p>
+<h3>18:32 — Why join is also **not recommended** for “expecting update”</h3>
+<p>Update (total) is ready right after the for-loop. If after that loop there are still ~1 crore lines of other work in run, join makes main wait for all of that too.</p>
+<p>Update was ready mid-run; waiting until child dies is meaningless extra waiting → performance down.</p>
+<p>Rule he drills:</p>
+<ul><li>Expecting update → sleep: not recommended</li></ul>
+<ul><li>Expecting update → join: not recommended</li></ul>
+<ul><li>Expecting update → `wait` / `notify`: highly recommended</li></ul>
+<p>Every method has its own purpose; replacing one with another may not always fit.</p>
+<h3>20:15 — Correct approach sketch: wait + notify (still missing sync)</h3>
+<p>Main (expecting update) calls wait → enters waiting immediately. Child finishes sum, then calls notify → main continues and prints total. Main need not wait a single extra nanosecond after the update is ready — and need not wait for “1 crore” leftover lines.</p>
+<pre class='code'>class ThreadB extends Thread {
+    int total = 0;
+
+    public void run() {
+        for (int i = 1; i &lt;= 100; i++) {
+            total = total + i;
+        }
+        // update ready → notify waiting main
+        this.notify(); // WRONG place still — see next section
+    }
+}
+
+class ThreadA {
+    public static void main(String[] args) throws InterruptedException {
+        ThreadB b = new ThreadB();
+        b.start();
+        b.wait(); // main expects update — WRONG place still
+        System.out.println(b.total);
+    }
+}</pre>
+<h3>21:53 — Without synchronized: `IllegalMonitorStateException` (twice)</h3>
+<p>Part-1 rule: wait / notify / notifyAll only from synchronized area.</p>
+<p>This version has no synchronized area around wait or notify → runtime (compiles fine):</p>
+<pre class='code'>class ThreadB extends Thread {
+    int total = 0;
+
+    public void run() {
+        for (int i = 1; i &lt;= 100; i++) {
+            total = total + i;
+        }
+        this.notify();
+        // Runtime: IllegalMonitorStateException (child / &quot;Thread-0&quot;)
+    }
+}
+
+class ThreadA {
+    public static void main(String[] args) throws InterruptedException {
+        ThreadB b = new ThreadB();
+        b.start();
+        b.wait();
+        // Runtime: IllegalMonitorStateException (main)
+        System.out.println(b.total);
+    }
+}</pre>
+<p>He runs it: exception in thread main, and exception in child — two IllegalMonitorStateExceptions (one for wait, one for notify).</p>
+<h3>23:38 — Full correct program with synchronized (most valuable demo)</h3>
+<p>Main must get lock of b before b.wait(). Child synchronizes on this (same b object) before notify.</p>
+<pre class='code'>class ThreadB extends Thread {
+    int total = 0;
+
+    public void run() {
+        synchronized (this) {
+            System.out.println(&quot;Child thread starts calculation&quot;);
+            for (int i = 1; i &lt;= 100; i++) {
+                total = total + i;
+            }
+            System.out.println(&quot;Child thread giving notification&quot;);
+            this.notify();
+        }
+    }
+}
+
+class ThreadA {
+    public static void main(String[] args) throws InterruptedException {
+        ThreadB b = new ThreadB();
+        b.start();
+        synchronized (b) {
+            System.out.println(&quot;Main thread calling wait method&quot;);
+            b.wait();
+            System.out.println(&quot;Main thread got notification&quot;);
+            System.out.println(b.total);
+        }
+    }
+}</pre>
+<p>Usual sequence (when main gets the lock of b first — “most of the times”):</p>
+<ol><li>Main thread calling wait method</li></ol>
+<ol><li>Child thread starts calculation</li></ol>
+<ol><li>Child thread giving notification</li></ol>
+<ol><li>Main thread got notification</li></ol>
+<ol><li>Print 5050</li></ol>
+<p>Main thread calling wait method
+Child thread starts calculation
+Child thread giving notification
+Main thread got notification
+5050</p>
+<p>Number the board lines the same way he asks students to number them (1 wait → 2 calc → 3 notify → 4 got notify → 5 print total).</p>
+<h3>33:22 — Lesson restated</h3>
+<p>If a thread is expecting update, it should call `wait`.</p>
+<p>If a thread performs the update, after update it should call `notify`.</p>
+<p>Then waiting thread continues with updated values — highly recommended over sleep/join for this requirement.</p>
+<h3>36:14 — Doubt: what if **child** gets the chance first?</h3>
+<p>There is no guarantee main always gets the lock first after b.start(). He simulates the bad order by making main sleep first so child runs to completion (including notify) before main ever calls wait.</p>
+<pre class='code'>class ThreadB extends Thread {
+    int total = 0;
+
+    public void run() {
+        synchronized (this) {
+            System.out.println(&quot;Child thread starts calculation&quot;);
+            for (int i = 1; i &lt;= 100; i++) {
+                total = total + i;
+            }
+            System.out.println(&quot;Child thread giving notification&quot;);
+            this.notify(); // nobody is waiting yet!
+        }
+    }
+}
+
+class ThreadA {
+    public static void main(String[] args) throws InterruptedException {
+        ThreadB b = new ThreadB();
+        b.start();
+        Thread.sleep(10000); // lazy main — child finishes + notify already done
+        synchronized (b) {
+            System.out.println(&quot;Main thread calling wait method&quot;);
+            b.wait(); // waits forever — notification already missed
+            System.out.println(&quot;Main thread got notification&quot;);
+            System.out.println(b.total);
+        }
+    }
+}</pre>
+<p>What happens:</p>
+<ol><li>After b.start(), main sleeps 10 s.</li></ol>
+<ol><li>Child gets chance → starts calculation → notify → leaves synchronized → child dies.</li></ol>
+<ol><li>Main wakes → acquires lock of b → calls wait → enters waiting.</li></ol>
+<ol><li>No one left to notify → main waits forever (cursor blinking; process hangs).</li></ol>
+<p>Long classroom analogies he uses:</p>
+<ul><li>Friend who “slept 10 seconds” while notifier already finished → waiting forever (“10 years later still waiting”).</li></ul>
+<ul><li>Student standing at the same spot for years saying “I’ll get a job in 2–3 months” while hopes go down — same “worst situation.”</li></ul>
+<ul><li>Moral: don’t sleep in class / don’t miss the notify window.</li></ul>
+<p>This is why “main first” is common but not compulsory — reverse order is a real trap.</p>
+<h3>48:23 — Fix for missed-notify: `wait(long)` with time period</h3>
+<p>Parents analogy: after years without job, parents say come home / don’t wait forever. Same for threads:</p>
+<p>If there is no guarantee someone will notify, don’t wait forever — wait at most a time period, then continue.</p>
+<pre class='code'>class ThreadB extends Thread {
+    int total = 0;
+
+    public void run() {
+        synchronized (this) {
+            System.out.println(&quot;Child thread starts calculation&quot;);
+            for (int i = 1; i &lt;= 100; i++) {
+                total = total + i;
+            }
+            System.out.println(&quot;Child thread giving notification&quot;);
+            this.notify();
+        }
+    }
+}
+
+class ThreadA {
+    public static void main(String[] args) throws InterruptedException {
+        ThreadB b = new ThreadB();
+        b.start();
+        Thread.sleep(10000); // still simulates late main
+        synchronized (b) {
+            System.out.println(&quot;Main thread calling wait method&quot;);
+            b.wait(10000); // max 10 seconds — then continue even if no notify
+            System.out.println(&quot;Main thread got notification&quot;); // or timed out
+            System.out.println(b.total);
+            // with timed wait, main can continue; total may already be 5050
+            // because child finished earlier
+        }
+    }
+}</pre>
+<p>Guidance he gives:</p>
+<h3>51:23 — Producer–consumer problem (standard ITC example)</h3>
+<p>“Standard program / standard problem” for inter-thread communication: producer–consumer.</p>
+<ul><li>Common object: a queue (like the morning post-box).</li></ul>
+<ul><li>Producer thread: produce items into the queue.</li></ul>
+<ul><li>Consumer thread: consume items from the queue.</li></ul>
+<ul><li>At a time, either producer or consumer accesses the queue → both work in `synchronized (queue)`.</li></ul>
+<p>Who expects update? Consumer (needs items) → calls `wait` when queue is empty.</p>
+<p>Who performs update? Producer (adds items) → after producing, calls `notify`.</p>
+<p>Waiting consumer gets notification and continues with updated items.</p>
+<p>Pseudo-code style as on the board (basic idea; full production code “when time permits” / reference):</p>
+<pre class='code'>// Board pseudo-structure (basic idea only — not a full buffer impl)
+class ProducerThread {
+    Object queue; // common object between producer &amp; consumer
+
+    public void produce() {
+        synchronized (queue) {
+            // produce items to the queue
+            queue.notify(); // after performing update
+        }
+    }
+}
+
+class ConsumerThread {
+    Object queue;
+
+    public void consume() throws InterruptedException {
+        synchronized (queue) {
+            if (/* queue is empty */) {
+                queue.wait(); // expecting update / items
+            } else {
+                // consume items from the queue
+            }
+        }
+    }
+}</pre>
+<p>Flow he repeats on the board:</p>
+<ol><li>Consumer finds queue empty → wait → waiting state.</li></ol>
+<ol><li>Producer produces items into queue.</li></ol>
+<ol><li>Producer calls notify.</li></ol>
+<ol><li>Waiting consumer gets notification and continues with updated items.</li></ol>
+<p>Producer–consumer is the best classic example of inter-thread communication in this context.</p>
+<h3>1:02:30 — When to use timed vs untimed wait (summary)</h3>
+<ul><li>Update is compulsory and a notifier will call notify → prefer `wait()` without time.</li></ul>
+<ul><li>No guarantee someone will notify → prefer `wait` with time period.</li></ul>
+<p>Up to here: how threads communicate with wait / notify / notifyAll, with full example + producer–consumer idea.</p>
+<h3>1:03:46 — Difference between `notify` and `notifyAll` (top level)</h3>
+<p>One-line answer students first give (acceptable at top level):</p>
+<ul><li>`notify` → notification for one waiting thread.</li></ul>
+<ul><li>`notifyAll` → notification for all waiting threads.</li></ul>
+<p>He insists on deeper / loophole-aware clarity (SCJP).</p>
+<h3>1:04:49 — `notify` in detail (multiple waiters)</h3>
+<p>Suppose many threads are in waiting state because they called wait on the same object.</p>
+<p>If 10 threads wait for update of an object and someone calls `notify` once:</p>
+<ul><li>Only one waiting thread is notified.</li></ul>
+<ul><li>Remaining threads stay waiting for further notification.</li></ul>
+<ul><li>Which one of the 10 gets notified? You can’t expect — depends on JVM / thread scheduler.</li></ul>
+<p>You are not saying “this notify is for T2 specifically” — only “someone waiting for this object’s update: here is a notification.”</p>
+<pre class='code'>/*
+notify():
+- Gives notification to only ONE waiting thread
+- If multiple threads are waiting on the same object:
+  only one is notified; others wait for further notification
+- Which thread is chosen? We can&#x27;t expect — depends on JVM
+*/
+class DemoNotify {
+    public synchronized void wakeOne() {
+        notify(); // one waiter only
+    }
+}</pre>
+<h3>1:09:40 — `notifyAll` in detail + “particular object” twist</h3>
+<p>Simple line: use `notifyAll` to notify multiple waiting threads.</p>
+<p>Twist: not “all waiting threads in the JVM,” but all waiting threads of a particular object.</p>
+<p>Scenario on the board:</p>
+<ul><li>100 threads waiting in total.</li></ul>
+<ul><li>60 called o1.wait() → waiting for `o1` update.</li></ul>
+<ul><li>40 called o2.wait() → waiting for `o2` update.</li></ul>
+<ul><li>Someone calls `o1.notifyAll()`.</li></ul>
+<p>How many get notified? Only 60 (those waiting on o1), not 100.</p>
+<pre class='code'>class NotifyAllScope {
+    public static void main(String[] args) throws InterruptedException {
+        final Object o1 = new Object();
+        final Object o2 = new Object();
+
+        // imagine 60 threads: synchronized(o1) { o1.wait(); }
+        // imagine 40 threads: synchronized(o2) { o2.wait(); }
+
+        synchronized (o1) {
+            o1.notifyAll();
+            // notifies the 60 waiting on o1 only — not the 40 on o2
+        }
+    }
+}</pre>
+<p>Hyderabad bus-travels analogy (Keshani / Sandhya style office): many people waiting for different buses (Vijayawada, Kakinada, …). When Vijayawada bus arrives, staff notify Vijayawada passengers only — not everyone in the office. Same for Kakinada. → notification is per particular bus / particular object.</p>
+<h3>1:13:45 — Even after `notifyAll`, execution is still one-by-one</h3>
+<p>After o1.notifyAll(), those 60 leave waiting-for-notification and move toward getting the lock — like 60 people running to the bus door.</p>
+<p>But the bus has one small door / the object has only one lock:</p>
+<ul><li>All 60 may be notified.</li></ul>
+<ul><li>They still enter / execute one by one, because each needs the lock and only one lock is available.</li></ul>
+<pre class='code'>/*
+notifyAll():
+- Notification for ALL waiting threads of THAT particular object
+- Even if many threads are notified, further execution happens
+  one by one because they require the lock and only one lock exists
+*/
+class DemoNotifyAll {
+    public synchronized void wakeAll() {
+        notifyAll();
+        // all waiters on &#x27;this&#x27; notified;
+        // they still re-enter synchronized one at a time
+    }
+}</pre>
+<h3>1:17:38 — Exam loophole: lock ownership must match the wait target</h3>
+<p>SCJP-style trap with two Stack objects:</p>
+<pre class='code'>import java.util.Stack;
+
+class LockOwnershipDemo {
+    public static void main(String[] args) throws InterruptedException {
+        Stack s1 = new Stack();
+        Stack s2 = new Stack();
+
+        // INVALID — owner of s1, but wait called on s2
+        synchronized (s1) {
+            s2.wait();
+            // Runtime: IllegalMonitorStateException
+            // you have lock of s1, but wait needs lock of s2
+        }
+
+        // VALID — owner of s1, wait on s1
+        synchronized (s1) {
+            s1.wait(); // OK
+        }
+
+        // same rule for notify / notifyAll
+        synchronized (s1) {
+            s1.notify(); // OK
+            // s2.notify(); // IllegalMonitorStateException
+        }
+    }
+}</pre>
+<p>Rule (repeat until clear):</p>
+<p>If you call wait / notify / notifyAll on `s1`, the thread must hold the lock of `s1`, not of some other object s2.</p>
+<p>Mismatch → `IllegalMonitorStateException`.</p>
+<h3>1:22:08 — Closing emphasis</h3>
+<p>He asks students to repeat: calling wait on s1 requires getting the lock of s1 (not s2). Same ownership idea for notify family. Keep terminology crystal-clear for SCJP.</p>
+<p>Session closes on that ownership loophole after covering:</p>
+<ol><li>Racey sum demo</li></ol>
+<ol><li>Sleep / join vs wait-notify</li></ol>
+<ol><li>Full synchronized wait-notify sequence</li></ol>
+<ol><li>Missed-notify forever-wait + timed wait</li></ol>
+<ol><li>Producer–consumer sketch</li></ol>
+<ol><li>notify vs notifyAll (one vs all-of-object; then one-by-one for lock)</li></ol>
+<ol><li>Wrong-object wait exam trap</li></ol>
+<h2>Quick reference (this video)</h2>
+<h2>Java fenced block count</h2>
+<p>```java blocks in this file: 15</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 91 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 11</td></tr>
+<tr><td>Topic</td><td>Inter Thread Communication Part-2</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 24m 46s</td></tr>
+<tr><td>Video ID</td><td>2z218xjvw1M</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=2z218xjvw1M</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Who gets CPU first</th><th>Typical result</th></tr>
+<tr><td>Main runs print before child updates</td><td>0</td></tr>
+<tr><td>Child finishes loop, then main prints</td><td>5050</td></tr>
+<tr><td>Main prints while loop is mid-way</td><td>some intermediate value (e.g. demo runs showed 4851, 1653, …)</td></tr>
+</table>
+<table>
+<tr><th>Situation</th><th>Prefer</th></tr>
+<tr><td>Compulsory update will come; someone will notify</td><td>wait() (no args) — don’t wait even one extra ns after notify</td></tr>
+<tr><td>No guarantee a notifier exists</td><td>wait(ms) / wait(ms, ns) — continue after timeout</td></tr>
+</table>
+<table>
+<tr><th>Approach when main expects total update</th><th>Verdict in lecture</th></tr>
+<tr><td>Print immediately after start</td><td>Race: 0 / 5050 / middle</td></tr>
+<tr><td>Thread.sleep(fixed)</td><td>Works only by luck of timing — not recommended</td></tr>
+<tr><td>b.join()</td><td>Waits until child dies — may over-wait — not recommended</td></tr>
+<tr><td>b.wait() + child notify() (same lock, synchronized)</td><td>Recommended</td></tr>
+<tr><td>wait(ms) if notify not guaranteed</td><td>Avoid forever wait</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Effect on waiters of that object</th></tr>
+<tr><td>notify()</td><td>Exactly one waiter (which one? JVM-dependent)</td></tr>
+<tr><td>notifyAll()</td><td>All waiters of that object; still run one-by-one for the lock</td></tr>
+</table>
+</body></html>

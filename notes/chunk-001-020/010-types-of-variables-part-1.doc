@@ -1,0 +1,430 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>010-types-of-variables-part-1</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 010 — Types of variables part 1</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-10 || Types of Variables :  part-1</p>
+<h2>What this lecture covers</h2>
+<ol><li>Why “types of variables” is an interview + day-to-day programming topic</li></ol>
+<ol><li>Division 1 — based on the type of value a variable represents: primitive vs reference</li></ol>
+<ol><li>Division 2 — based on position of declaration and behaviour: instance vs static vs local (local is started here, finished in video 011)</li></ol>
+<ol><li>Instance variables: definition, Student example, copies, declaration place, creation/destruction/scope, heap, access rules, default values, other names</li></ol>
+<ol><li>Static variables: college-name example, why not instance, copies, declaration place, class-loading cinema, method area, access rules, default values, other names</li></ol>
+<ol><li>The classic exam program: change t1.x / t1.y, print t2.x / t2.y</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:05] Why this topic exists</h3>
+<p>Next topic in Language Fundamentals. Durga flags it as the most valuable topic for the interview room, and also for day-to-day programming.</p>
+<p>There are two divisions of variables:</p>
+<ol><li>Based on the type of value represented by a variable</li></ol>
+<ol><li>Based on position of declaration and behaviour / functionality (this second division is the one interviewers and daily coding actually care about)</li></ol>
+<h3>[00:41] Division 1 — based on the type of value</h3>
+<p>Based on the type of value represented by a variable, all variables are divided into two types. Other than these two, nothing else exists in this division.</p>
+<h4>Primitive variables</h4>
+<p>Variables used to represent primitive values.</p>
+<pre class='code'>int x = 10;</pre>
+<p>x exists to hold the int primitive value 10. This kind of variable is a primitive variable.</p>
+<pre class='code'>Board wording: can be used to represent primitive values. Example: int x = 10;</pre>
+<h4>Reference variables</h4>
+<p>Variables used to refer to objects (to represent a reference / object address).</p>
+<pre class='code'>Student s = new Student();</pre>
+<p>s points to a Student object. This kind of variable is a reference variable.</p>
+<p>Board diagram: s → (Student object)</p>
+<pre class='code'>Board wording: can be used to refer objects. Example: Student s = new Student();</pre>
+<p>That is the entire first division. Every variable is one of these two.</p>
+<h3>[05:35] Division 2 — based on position and behaviour</h3>
+<p>More important than division 1 — for interviews and for writing real programs.</p>
+<p>Based on where you declare a variable (inside the class directly? inside a method?) and on its behaviour, all variables are divided into three types:</p>
+<ol><li>Instance variables</li></ol>
+<ol><li>Static variables</li></ol>
+<ol><li>Local variables</li></ol>
+<p>This video finishes instance + static. Local variables continue in video 011.</p>
+<h3>[07:47] Instance variables — the Student example</h3>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+}</pre>
+<p>For every student, a name is compulsory and a roll number is compulsory. Create many objects:</p>
+<p>The value of name is different from object to object. The value of rollNumber is different from object to object.</p>
+<p>Definition Durga wants recited: if the value of a variable is varied from object to object, such a type of variable is called an instance variable.</p>
+<p>Copies: for every object, a separate copy of instance variables will be created.</p>
+<p>Classroom check: 600 students in the room → 600 names, 600 roll numbers. 600 objects → 600 copies of name and 600 copies of rollNumber.</p>
+<p>Two points to lock in:</p>
+<ol><li>Value varies from object to object → instance variable</li></ol>
+<ol><li>For every object, a separate copy of the instance variable will be created</li></ol>
+<h3>[12:34] Where instance variables must be declared</h3>
+<p>Instance variables should be declared within the class directly, but outside of any method or block or constructor.</p>
+<pre class='code'>class Test {
+    int x = 10;   // instance variable — declared in the class directly
+}</pre>
+<p>Contrast — if you declare inside a method / constructor / block, it is local, not instance:</p>
+<pre class='code'>class Test {
+    void m1() {
+        int x = 10;          // local (inside a method)
+    }
+
+    Test() {
+        int x = 10;          // local (inside a constructor)
+    }
+
+    {
+        int x = 10;          // local (inside an instance block)
+    }
+
+    static {
+        int x = 10;          // local (inside a static block)
+    }
+
+    void m2() {
+        for (int i = 0; i &lt; 10; i++) {   // i is local to the for loop (a block)
+        }
+    }
+}</pre>
+<p>Any variable declared inside a method, constructor, or block (static block, instance block, for loop, if block, …) is a local variable. That is why instance variables must sit in the class body itself, not nested in those constructs.</p>
+<h3>[14:47] Creation, destruction, and scope of instance variables</h3>
+<ul><li>An instance variable is created at the time of object creation.</li></ul>
+<ul><li>It is destroyed at the time of object destruction.</li></ul>
+<p>Why: the instance variable is always part of the object. When the student object is created, that student’s name and rollNumber come into existence. When the object is gone, those variables are gone.</p>
+<p>Hence: the scope of an instance variable is exactly the same as the scope of the object.</p>
+<p>If the object is in memory, the instance variable is there. If the object is not there, the instance variable is gone.</p>
+<h3>[17:10] Where instance variables are stored</h3>
+<p>Objects live in heap memory. An instance variable is part of the object, so it is stored in the heap memory as a part of the object.</p>
+<p>Interview line: In which memory area are instance variables stored? → heap, as part of the object.</p>
+<h3>[18:13] How to access instance variables (static area vs instance area)</h3>
+<p>This is the access-rules block. Take special care — compile-error questions live here.</p>
+<pre class='code'>class Test {
+    int x = 10;
+
+    public static void main(String[] args) {
+        System.out.println(x);   // INVALID
+    }
+}</pre>
+<p>Invalid. Compile-time error:</p>
+<p>non-static variable x cannot be referenced from a static context</p>
+<p>Why: main is a static method. A static method is no way related to an object. An instance variable is always part of an object. main can run without any object existing. Without an object there is no instance variable. Direct x from main is therefore illegal.</p>
+<p>Fix — access via object reference from the static area:</p>
+<pre class='code'>class Test {
+    int x = 10;
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(t.x);   // valid — prints 10
+    }
+}</pre>
+<p>From the static area you cannot access instance variables directly, but you can access them by using an object reference.</p>
+<p>From the instance area you can access instance variables directly:</p>
+<pre class='code'>class Test {
+    int x = 10;
+
+    public void m1() {                 // instance method — always called on an object
+        System.out.println(x);         // valid — that object&#x27;s x
+    }
+}</pre>
+<p>An instance method is always related to an object, so the object’s x is available with no extra reference.</p>
+<p>Board conclusions:</p>
+<ul><li>We can’t access instance variables directly from static area</li></ul>
+<ul><li>But we can access them by using object reference</li></ul>
+<ul><li>We can access instance variables directly from instance area</li></ul>
+<h3>[25:02] Default values for instance variables</h3>
+<p>For instance variables we are not required to perform initialization explicitly. The JVM always provides default values.</p>
+<pre class='code'>class Test {
+    int x;
+    double d;
+    boolean b;
+    String s;
+
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        System.out.println(t1.x);   // 0
+        System.out.println(t1.d);   // 0.0
+        System.out.println(t1.b);   // false
+        System.out.println(t1.s);   // null
+    }
+}</pre>
+<p>No explicit initialization, still prints:</p>
+<p>Board wording: For instance variables, JVM will always provide default values, and we are not required to perform initialization explicitly.</p>
+<h3>[28:57] Other names for instance variables</h3>
+<p>Instance variables are also known as:</p>
+<ul><li>object-level variables</li></ul>
+<ul><li>attributes (C++-style word; every object has state and behaviour; state = values of attributes)</li></ul>
+<ul><li>properties (attributes ≈ properties)</li></ul>
+<h3>[30:21] Static variables — the college-name example</h3>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+    String collegeName;
+}</pre>
+<p>Create 600 student objects:</p>
+<p>name and rollNumber vary from object to object. collegeName is fixed for all objects.</p>
+<p>If the value of a variable is not varied from object to object, it is never recommended to declare that variable as an instance variable.</p>
+<p>Problem if you still make collegeName instance: instance means a separate copy per object. 600 objects → 600 copies of the same &quot;DurgaSoft&quot; string. Unnecessary memory waste, performance down.</p>
+<p>Declare it `static` at class level. Then only one copy is created at class level, and that copy is shared by every object of the class.</p>
+<pre class='code'>class Student {
+    String name;                 // instance — varies per object
+    int rollNumber;              // instance — varies per object
+    static String collegeName;   // static — one copy, shared
+}</pre>
+<p>One shared &quot;DurgaSoft&quot; vs 600 separate copies: if the value is fixed, there is no need of a separate copy per object.</p>
+<p>First static-variable point (board):</p>
+<p>If the value of a variable is not varied from object to object, then it is not recommended to declare that variable as an instance variable. We have to declare such a type of variable at class level by using the `static` modifier.</p>
+<h3>[36:12] Copies: instance vs static</h3>
+<p>That is the basic difference Durga asks you to recite.</p>
+<h3>[38:04] Where static variables must be declared</h3>
+<p>Same place as instance variables, plus the word static:</p>
+<p>Static variables should be declared within the class directly, but outside of any method or block or constructor.</p>
+<pre class='code'>class Test {
+    static int x = 10;   // correct place
+}</pre>
+<p>Not inside a method, constructor, or block. The difference from instance is only the modifier static.</p>
+<h3>[39:17] Creation, destruction, and scope of static variables</h3>
+<ul><li>Static variables are created at the time of class loading</li></ul>
+<ul><li>Static variables are destroyed at the time of class unloading</li></ul>
+<p>Hence: the scope of a static variable is exactly the same as the scope of the `.class` file (he first misspeaks “scope of object”, then corrects: scope of `.class` file).</p>
+<p>Immediate student doubt: when does the class load and unload? That is the next cinema.</p>
+<h3>[41:25] The `java Test` cinema — when static variables are born and die</h3>
+<p>Command: java Test (he also says java Tester for class Test / Tester — same idea: execute this class).</p>
+<p>Internally, this is not “one step”. Sequence Durga writes:</p>
+<ol><li>Start JVM — JVM is responsible for the whole job, so it must start first</li></ol>
+<ol><li>Create and start the main thread — JVM creates and starts the main thread; the main thread does the remaining work for the JVM</li></ol>
+<ol><li>Locate `Test.class` — the main thread searches for the class file</li></ol>
+<ul><li>If it is not there:</li></ul>
+<p>Exception in thread &quot;main&quot; NoClassDefFoundError: Test</p>
+<p>(main is in the message because the main thread is responsible)</p>
+<ol><li>Load `Test.class` — once located, load it</li></ol>
+<ul><li>Static variables are created at this load step</li></ul>
+<ol><li>Execute `main` method</li></ol>
+<ol><li>Unload `Test.class` — once main finishes, the job with that class file is done</li></ol>
+<ul><li>Static variables are destroyed at this unload step</li></ul>
+<ol><li>Terminate the main thread — JVM terminates it because its job is complete</li></ol>
+<ol><li>Shut down JVM</li></ol>
+<p>Map the static-variable lifecycle onto that cinema:</p>
+<ul><li>Creation = after locate, at load `Test.class`</li></ul>
+<ul><li>Destruction = at unload `Test.class`</li></ul>
+<p>So: created at class loading, destroyed at class unloading. When the class loads/unloads is now concrete, not magic.</p>
+<h3>[49:50] Where static variables are stored — method area, not stack</h3>
+<p>Interview trap Durga calls out by name: do not say stack just because the words “static” and “stack” sound similar. If anyone says stack, “I will give you left and right.”</p>
+<ul><li>Static variables → method area (another memory area, like heap is a memory area)</li></ul>
+<ul><li>Local variables → stack (preview of the next lecture; that is why locals are also called stack variables)</li></ul>
+<ul><li>Instance variables → heap, as part of the object (already covered)</li></ul>
+<p>Board: Static variables will be stored in method area.</p>
+<h3>[51:15] How to access static variables</h3>
+<pre class='code'>class Test {
+    static int x = 10;
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(t.x);      // valid — via object reference
+        System.out.println(Test.x);   // valid — via class name (recommended)
+        System.out.println(x);        // valid — same class, directly
+    }
+}</pre>
+<p>All three are valid.</p>
+<p>Rules:</p>
+<ol><li>Static variables can be accessed either by object reference or by class name</li></ol>
+<ol><li>Recommended: class name. Using an object reference is the usual way to reach an instance variable. Using it for a static variable hurts readability (looks like instance data)</li></ol>
+<ol><li>Within the same class, you are not required to use the class name. You can access the static variable directly</li></ol>
+<h3>[55:32] Static variables from static area and from instance area</h3>
+<pre class='code'>class Test {
+    static int x = 10;
+
+    public static void main(String[] args) {
+        System.out.println(x);   // valid — static variable from static area
+    }
+
+    public void m1() {
+        System.out.println(x);   // valid — static variable from instance area
+    }
+}</pre>
+<p>Both valid. Static variables are created at the beginning (class loading), so they are already there before main runs and before any object exists. You can access them from anywhere: instance area or static area.</p>
+<p>Board: We can access static variables directly from both instance and static areas.</p>
+<p>Contrast with instance variables: instance variables cannot be accessed directly from static area.</p>
+<h3>[58:21] Default values for static variables</h3>
+<p>Same story as instance variables. Do not keep a doubt that “static is more standard so maybe JVM does not bother.” JVM provides even more support for static (class-level) data.</p>
+<pre class='code'>class Test {
+    static int x;
+    static double d;
+    static String s;
+
+    public static void main(String[] args) {
+        System.out.println(x);   // 0
+        System.out.println(d);   // 0.0
+        System.out.println(s);   // null
+    }
+}</pre>
+<p>Board: For static variables, JVM will provide default values, and we are not required to perform initialization explicitly.</p>
+<h3>[1:01:36] Other names for static variables</h3>
+<p>Static variables are also known as:</p>
+<ul><li>class-level variables</li></ul>
+<ul><li>fields</li></ul>
+<p>(Instance = object-level / attributes. Static = class-level / fields.)</p>
+<h3>[1:02:31] Exam program — one static copy vs a separate instance copy</h3>
+<p>Keep in mind:</p>
+<ul><li>Instance variable = object-level; separate copy for every object</li></ul>
+<ul><li>Static variable = class-level; one copy for all objects, shared</li></ul>
+<pre class='code'>class Test {
+    static int x = 10;
+    int y = 20;
+
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        t1.x = 888;
+        t1.y = 999;
+        Test t2 = new Test();
+        System.out.println(t2.x + &quot;...&quot; + t2.y);
+    }
+}</pre>
+<p>Output: `888...20`</p>
+<p>Walk-through the way he draws it:</p>
+<ol><li>Which is created first? Static. At class loading, x = 10 already exists (one class-level copy).</li></ol>
+<ol><li>Test t1 = new Test(); — object t1 is created. For every object a separate copy of instance variable y is created, so this object’s y is 20.</li></ol>
+<ol><li>t1.x = 888 — there is only one x. Changing it through t1 changes the shared copy. Class-level x is now 888.</li></ol>
+<ol><li>t1.y = 999 — this changes only `t1`’s y. Other objects are not affected.</li></ol>
+<ol><li>Test t2 = new Test(); — a new object. New copy of instance y, initialized to 20. No new copy of `x`. t2.x still sees the shared 888.</li></ol>
+<ol><li>t2.x → 888. t2.y → 20.</li></ol>
+<p>Multiple-choice style options he throws at the room (same idea; board numbers may be written as 888/999):</p>
+<ul><li>888 and 20 ← correct</li></ul>
+<ul><li>10 and 20 (as if t1.x = 888 did not affect t2)</li></ul>
+<ul><li>888 and 999 (as if y were also shared)</li></ul>
+<ul><li>10 and 999 (backwards mix-up)</li></ul>
+<p>Exam line he repeats:</p>
+<ul><li>Static variable: only one copy. Change it using any object reference, the change is reflected for all.</li></ul>
+<ul><li>Instance variable: separate copy per object. Change it for one object, it will not reflect for other objects, because every object has its own instance variable.</li></ul>
+<p>Very important question for the exam.</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Test {
+    int x = 10;              // instance
+    static int sx = 10;      // static
+
+    public static void main(String[] args) {
+        // System.out.println(x);           // CE: non-static variable x cannot be referenced from a static context
+        Test t = new Test();
+        System.out.println(t.x);            // 10 — instance via object reference
+        System.out.println(t.sx);           // 10 — legal but not recommended
+        System.out.println(Test.sx);        // 10 — recommended
+        System.out.println(sx);             // 10 — same class, directly
+        t.m1();
+    }
+
+    public void m1() {
+        System.out.println(x);              // 10 — instance from instance area
+        System.out.println(sx);             // 10 — static from instance area
+    }
+}
+class Test {
+    int x;
+    double d;
+    boolean b;
+    String s;
+
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        System.out.println(t1.x);   // 0
+        System.out.println(t1.d);   // 0.0
+        System.out.println(t1.b);   // false
+        System.out.println(t1.s);   // null
+    }
+}
+class Test {
+    static int x;
+    static double d;
+    static String s;
+
+    public static void main(String[] args) {
+        System.out.println(x);   // 0
+        System.out.println(d);   // 0.0
+        System.out.println(s);   // null
+    }
+}
+class Test {
+    static int x = 10;
+    int y = 20;
+
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        t1.x = 888;
+        t1.y = 999;
+        Test t2 = new Test();
+        System.out.println(t2.x + &quot;...&quot; + t2.y);   // 888...20
+    }
+}
+class Student {
+    String name;                 // instance — object level
+    int rollNumber;              // instance
+    static String collegeName;   // static — class level, one shared copy
+}</pre>
+<h2>Exam / interview traps</h2>
+<ul><li>Two independent divisions: (primitive | reference) and (instance | static | local). A variable is always one from each division (combinations are in video 011).</li></ul>
+<ul><li>Instance ≠ “declared in a class file.” If it is inside a method / constructor / block, it is local.</li></ul>
+<ul><li>System.out.println(x); for instance x inside main → CE, not runtime. Message: non-static variable x cannot be referenced from a static context.</li></ul>
+<ul><li>From main, t.x is the legal way to reach an instance variable.</li></ul>
+<ul><li>Instance default values do exist. Local default values do not (next video). Do not mix these.</li></ul>
+<ul><li>boolean default is false, not 0. Reference default is null.</li></ul>
+<ul><li>Static is not stored in stack. Stack is for local variables. Static → method area. Instance → heap.</li></ul>
+<ul><li>t.x for a static x compiles. It is legal and wrong style. Prefer Test.x.</li></ul>
+<ul><li>Within the same class, x alone is enough for a static variable — including from instance methods.</li></ul>
+<ul><li>java Test with no Test.class → NoClassDefFoundError on the main thread, not a compile error.</li></ul>
+<ul><li>Static created at class load, not at new. That is why main can print a static field with no object.</li></ul>
+<ul><li>t1.x = 888; t1.y = 999; then print t2.x and t2.y → `888` and `20`, not 999. Static change is global; instance change is per object.</li></ul>
+<ul><li>Instance variables = object-level variables / attributes / properties. Static variables = class-level variables / fields.</li></ul>
+<h2>Recap</h2>
+<p>Division 1 is primitive vs reference. Division 2 is instance vs static vs local. This lecture defined instance (per-object, heap, created with the object, no direct use from static context, JVM defaults) and static (one class-level copy, method area, created at class load, usable from both areas, JVM defaults). Local variables are the remaining type.</p>
+<p>Next video: 011-types-of-variables-part-2.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 10 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 10 of 16</td></tr>
+<tr><td>Topic</td><td>Types of variables part 1 — primitive vs reference; instance vs static</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 08m 38s</td></tr>
+<tr><td>Video ID</td><td>Nw7NyvuwOTM</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=Nw7NyvuwOTM</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Kind</th><th>Used for</th><th>Example</th></tr>
+<tr><td>Primitive variable</td><td>a primitive value</td><td>int x = 10;</td></tr>
+<tr><td>Reference variable</td><td>referring to an object</td><td>Student s = new Student();</td></tr>
+</table>
+<table>
+<tr><th>Object</th><th>name</th><th>rollNumber</th></tr>
+<tr><td>s1</td><td>&quot;Ravi&quot;</td><td>101</td></tr>
+<tr><td>s2</td><td>&quot;Durga&quot;</td><td>102</td></tr>
+<tr><td>…</td><td>…</td><td>…</td></tr>
+<tr><td>s600</td><td>&quot;Shiva&quot;</td><td>600</td></tr>
+</table>
+<table>
+<tr><th>Variable</th><th>Type</th><th>Default</th></tr>
+<tr><td>t1.x</td><td>int</td><td>0</td></tr>
+<tr><td>t1.d</td><td>double</td><td>0.0</td></tr>
+<tr><td>t1.b</td><td>boolean</td><td>false</td></tr>
+<tr><td>t1.s</td><td>String (reference)</td><td>null</td></tr>
+</table>
+<table>
+<tr><th>Object</th><th>name</th><th>rollNumber</th><th>collegeName</th></tr>
+<tr><td>first</td><td>&quot;Durga&quot;</td><td>101</td><td>&quot;DurgaSoft&quot;</td></tr>
+<tr><td>second</td><td>&quot;Shiva&quot;</td><td>102</td><td>&quot;DurgaSoft&quot;</td></tr>
+<tr><td>third</td><td>&quot;Ravi&quot;</td><td>103</td><td>&quot;DurgaSoft&quot;</td></tr>
+<tr><td>…</td><td>…</td><td>…</td><td>&quot;DurgaSoft&quot;</td></tr>
+</table>
+<table>
+<tr><th></th><th>Instance</th><th>Static</th></tr>
+<tr><td>Copies</td><td>For every object, a separate copy will be created</td><td>A single copy will be created at class level and shared by every object of the class</td></tr>
+</table>
+</body></html>

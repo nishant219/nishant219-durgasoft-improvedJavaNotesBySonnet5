@@ -1,0 +1,276 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>089-synchronized-block</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 089 — Synchronized block</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-9 || synchronized block</p>
+<p>Source: real YouTube auto-captions (.transcripts/089-ORzmjiYmOJg.txt). ASR decoded in place: diluk / dagar / D nagar / dilik = Dilsukhnagar; Bomb BL / blurs = bomb blasts; synchronizer = synchronized; threats = threads; Viada / vij / Vijay = Vijayawada; kada / kod = Kodad (narrow bridge place); one lak / Lakh = 1,00,000 lines; Vish / wish = wish; Don / D = Dhoni; Yas / you / your = Yuvi; vo / wi = void; lack = lock; inex / in x = int x; compartive / compar = compile; risk condition = race condition; keep subing = keep writing; inter = interview.</p>
+<p>Last session: synchronized method, object-level lock, class-level lock. This session: synchronized block — need, declaration forms, demo vs full sync method, FAQs.</p>
+<h3>00:09 — Why synchronized block? (Dilsukhnagar bomb analogy)</h3>
+<p>Last session covered synchronization, synchronized method, object-level lock, class-level lock. Now: synchronized block.</p>
+<p>Analogy: bomb blasts at Dilsukhnagar (Hyderabad). Worst “programming”:</p>
+<ul><li>Because blast at Dilsukhnagar → no flights from New York</li></ul>
+<ul><li>No city buses in London</li></ul>
+<ul><li>No local trains in Sydney</li></ul>
+<p>People would laugh. Correct response: block Dilsukhnagar area (or at most Hyderabad), not the whole world.</p>
+<p>Same anti-pattern in code:</p>
+<ul><li>Method has ~10,000 lines</li></ul>
+<ul><li>Only ~10 lines (e.g. DB update) need synchronization</li></ul>
+<ul><li>Many programmers: declare entire method synchronized</li></ul>
+<ul><li>Waiting time explodes → performance down</li></ul>
+<p>If very few lines require synchronization, never recommended to declare entire method synchronized. Enclose those few lines in a synchronized block — recommended practice.</p>
+<p>Advantage of synchronized block over synchronized method: performance improves (waiting time reduced). Outside the block, multiple threads can run freely; only the small critical section is exclusive.</p>
+<p>Rule of thumb:</p>
+<ul><li>Few lines need sync → synchronized block (local)</li></ul>
+<ul><li>Whole method needs sync → declare method synchronized (global to that method)</li></ul>
+<h3>08:22 — Hyderabad → Vijayawada / narrow bridge analogy</h3>
+<p>Hyderabad to Vijayawada ~300 km (~6 hours old days / ~4 hours now).</p>
+<p>In the middle (Kodad area): a narrow bridge — at a time only one vehicle.</p>
+<p>Worst government rule analogy: “because of that bridge, only one vehicle allowed for the entire Hyderabad–Vijayawada journey” → ~4 vehicles/day → lifetime may not reach Vijayawada.</p>
+<p>Correct: many vehicles on the highway; only the bridge portion is synchronized. Wait maybe ~1 minute at the bridge, not 6 hours for the whole route.</p>
+<p>Same moral: don’t sync 300 km when only the bridge needs mutual exclusion.</p>
+<h3>13:26 — Board dictation: advantage</h3>
+<pre class='code'>/*
+If very few lines of the code required synchronization
+then it is not recommended to declare entire method as synchronized
+We have to enclose those few lines of the code by using synchronized block
+
+Main advantage of synchronized block over synchronized method:
+  it reduces waiting time of threads
+  and improves performance of the system / application
+*/</pre>
+<h3>15:48 — How to declare synchronized block (3 forms)</h3>
+<p>1) Lock of current object — `synchronized(this)`</p>
+<p>synchronized (this) {
+    // if a thread got lock of current object
+    // then only it is allowed to execute this area
+}</p>
+<p>2) Lock of a particular object `b`</p>
+<p>synchronized (b) {
+    // if a thread got lock of particular object b
+    // then only it is allowed to execute this area
+}</p>
+<p>3) Class-level lock — `synchronized(Display.class)`</p>
+<p>synchronized (Display.class) {
+    // if a thread got class level lock of Display class
+    // then only it is allowed to execute this area
+}</p>
+<p>Display.class represents the Class object of Display — its lock is the class-level lock.</p>
+<h3>25:03 — Same wish demo, but only the for-loop in a block</h3>
+<p>Assume wish has one lakh lines before the loop and one lakh lines after — only the for-loop needs sync.</p>
+<pre class='code'>class Display {
+    public void wish(String name) {
+        // ..... 1 lakh lines of code .....
+        // (multiple threads OK here)
+
+        synchronized (this) {
+            for (int i = 0; i &lt; 10; i++) {
+                System.out.print(&quot;Good Morning: &quot;);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                }
+                System.out.println(name);
+            }
+        }
+
+        // ..... another 1 lakh lines of code .....
+        // (multiple threads OK here)
+    }
+}
+
+class MyThread extends Thread {
+    Display d;
+    String name;
+
+    MyThread(Display d, String name) {
+        this.d = d;
+        this.name = name;
+    }
+
+    public void run() {
+        d.wish(name);
+    }
+}
+
+class SynchronizedDemo {
+    public static void main(String[] args) {
+        Display d = new Display();
+        MyThread t1 = new MyThread(d, &quot;Dhoni&quot;);
+        MyThread t2 = new MyThread(d, &quot;Yuvi&quot;);
+        t1.start();
+        t2.start();
+    }
+}</pre>
+<p>Without any synchronized keyword → irregular output.</p>
+<p>Two ways to fix:</p>
+<ol><li>Declare entire wish synchronized → syncs 2 lakh + loop (unnecessary wait on the huge non-critical parts)</li></ol>
+<ol><li>`synchronized(this)` around only the for-loop → regular output for the wish cycle, better performance</li></ol>
+<p>He runs with block → regular output (Good Morning: Dhoni × 10 then Yuvi, or reverse).</p>
+<h3>41:29 — Change: two Display objects + `synchronized(this)`</h3>
+<pre class='code'>class SynchronizedDemo {
+    public static void main(String[] args) {
+        Display d1 = new Display();
+        Display d2 = new Display();
+        MyThread t1 = new MyThread(d1, &quot;Dhoni&quot;);
+        MyThread t2 = new MyThread(d2, &quot;Yuvi&quot;);
+        t1.start();
+        t2.start();
+    }
+}</pre>
+<p>With synchronized(this) inside wish:</p>
+<ul><li>For T1, current object = d1</li></ul>
+<ul><li>For T2, current object = d2</li></ul>
+<ul><li>Different locks → both can enter their blocks simultaneously → irregular output</li></ul>
+<h3>45:37 — Fix with class-level lock in the block</h3>
+<p>Requirement: still regular even with two Display objects → need class-level lock:</p>
+<pre class='code'>class Display {
+    public void wish(String name) {
+        // ..... 1 lakh lines .....
+
+        synchronized (Display.class) {
+            for (int i = 0; i &lt; 10; i++) {
+                System.out.print(&quot;Good Morning: &quot;);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                }
+                System.out.println(name);
+            }
+        }
+
+        // ..... 1 lakh lines .....
+    }
+}</pre>
+<p>Only one class-level lock for Display. First thread takes it; second waits → regular output even when d1 ≠ d2.</p>
+<h3>47:50 — Important conclusion: no lock for primitives</h3>
+<p>Java has two kinds of locks: object-level and class-level. Lock applies to objects and classes — not to primitive values.</p>
+<pre class='code'>class Test {
+    public void m1() {
+        int x = 10;
+        synchronized (x) {
+            // ...
+        }
+        // CE: unexpected type
+        // found   : int
+        // required: reference
+    }
+}
+/*
+Lock concept applicable for object types and class types
+but not for primitives
+
+Hence we can&#x27;t pass primitive type as argument to synchronized block
+otherwise we will get compile time error saying
+unexpected type found int required reference
+*/</pre>
+<h3>53:04 — FAQs (interview / SCJP style)</h3>
+<p>He lists FAQs and expected answers:</p>
+<p>1. What is synchronized keyword? Where can we apply?</p>
+<p>Modifier applicable for methods and blocks, not for variables and classes.</p>
+<p>2. Advantage of synchronized?</p>
+<p>Resolve data inconsistency problems.</p>
+<p>3. Disadvantage?</p>
+<p>Increases waiting time of threads and creates performance problems.</p>
+<p>4. What is race condition?</p>
+<p>(He says he covered the concept without always naming the word.)</p>
+<p>If multiple threads operate simultaneously on the same Java object and cause data inconsistency → race condition. Overcome with synchronized modifier/keyword.</p>
+<pre class='code'>/*
+If multiple threads are operating simultaneously on same Java object
+then there may be a chance of data inconsistency problem
+This is called race condition
+We can overcome this problem by using synchronized keyword
+*/</pre>
+<p>5. What is object lock and when required?</p>
+<p>Every object has a unique lock (object lock). Required when a thread wants to execute instance synchronized method (or sync block on that object).</p>
+<p>6. What is class-level lock and when required?</p>
+<p>Every class has a unique lock. Required when a thread wants to execute static synchronized method (or synchronized(ClassName.class)).</p>
+<p>7. Difference class-level vs object-level lock?</p>
+<p>Static synchronized → class lock; instance synchronized → object lock.</p>
+<p>8. While a thread executes synchronized method on an object, can remaining threads execute any other synchronized method on same object simultaneously?</p>
+<p>No.</p>
+<p>9. What is synchronized block?</p>
+<p>(As taught.)</p>
+<p>10. How to declare block for current-object lock?</p>
+<p>synchronized(this) { }</p>
+<p>11. How to declare block for class-level lock?</p>
+<p>synchronized(Display.class) { } (any ClassName.class)</p>
+<p>12. Advantage of synchronized block over method?</p>
+<p>Performance improved; waiting time reduced.</p>
+<h3>1:03:19 — Can a thread acquire multiple locks simultaneously?</h3>
+<p>Answer: Yes — from different objects.</p>
+<pre class='code'>class X {
+    public synchronized void m1() {
+        Y y = new Y();
+        synchronized (y) {
+            Z z = new Z();
+            synchronized (z) {
+                // ...
+            }
+        }
+    }
+}
+
+class Y { }
+class Z { }
+
+class Demo {
+    public static void main(String[] args) {
+        X x = new X();
+        x.m1();
+        // thread needs lock of x to enter m1
+        // then lock of y to enter synchronized(y)
+        // then lock of z to enter synchronized(z)
+        // so thread holds locks of x, y, and z (different objects)
+    }
+}</pre>
+<p>Board checkpoints he marks:</p>
+<pre class='code'>// thread has lock of X object
+// synchronized (y) → thread has locks of X and Y
+// synchronized (z) → thread has locks of X, Y, Z
+/*
+Is a thread can acquire multiple locks simultaneously?
+Yes of course from different objects
+*/</pre>
+<h3>1:09:56 — What is “synchronized statement”?</h3>
+<p>As per Java specification, there is no such official terminology. Interview people coined it.</p>
+<p>According to them: statements present inside a synchronized method or synchronized block are called synchronized statements — statements that can be executed by only one thread at a time (for that lock).</p>
+<pre class='code'>/*
+Interview people created terminology:
+The statements present in synchronized method
+and synchronized block
+are called synchronized statements
+*/</pre>
+<h3>1:12:28 — Close</h3>
+<p>Clarity expected: synchronized method vs block; object vs class lock; when block is preferred; FAQ set including race condition and multiple locks.</p>
+<p>Java fenced blocks in this file: 14</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 89 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 9</td></tr>
+<tr><td>Topic</td><td>synchronized block</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 12m 47s</td></tr>
+<tr><td>Video ID</td><td>ORzmjiYmOJg</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=ORzmjiYmOJg</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

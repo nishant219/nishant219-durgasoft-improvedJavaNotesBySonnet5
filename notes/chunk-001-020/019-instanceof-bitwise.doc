@@ -1,0 +1,343 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>019-instanceof-bitwise</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 019 — instanceof and bitwise operators</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Operators &amp; Assignments Part-3 || instanceof, bitwise operator</p>
+<p>Captions are auto-generated. ASR writes inance of, runable, in convertable types, till symbol, zerox. These notes restore instanceof, Runnable, inconvertible types, tilde ~, and the board binaries.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Recap (equality / concatenation / arithmetic) and today’s two topics</li></ol>
+<ol><li>Why instanceof exists (mixed collection, get() returns Object)</li></ol>
+<ol><li>Keyword is all lowercase (instanceof, not instanceOf)</li></ol>
+<ol><li>Syntax: r instanceof X — reference vs class/interface name</li></ol>
+<ol><li>Example 1: Thread vs Thread / Object / Runnable (all true)</li></ol>
+<ol><li>Example 2: Thread vs String → CE inconvertible types (relation required)</li></ol>
+<ol><li>null instanceof X is always `false` for any class or interface X</li></ol>
+<ol><li>Bitwise &amp; | ^ on boolean: when each returns true</li></ol>
+<ol><li>Same operators on integrals: 4 &amp; 5, 4 | 5, 4 ^ 5 → 4, 5, 1 (not true/false)</li></ol>
+<ol><li>Why 3-bit board math is enough for &amp; | ^ but ~ needs 32 bits</li></ol>
+<ol><li>Bitwise complement ~ (tilde): integrals only; ~true CE; ~4 is `-5`, not 3</li></ol>
+<ol><li>Sign bit, two’s complement, why ~4 == -5</li></ol>
+<ol><li>Boolean complement !: boolean only; !4 CE; !false is true</li></ol>
+<ol><li>Summary table: which operators apply to boolean vs integral</li></ol>
+<ol><li>Q&amp;A: bitwise on a negative number still uses 32-bit two’s complement</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:11] Recap and agenda</h3>
+<p>Already covered: arithmetic, concatenation, equality. Next operator: `instanceof`.</p>
+<h3>[00:21] `instanceof` — spelling and purpose</h3>
+<p>Spelling: the keyword is all lowercase: instanceof.</p>
+<p>If you write instanceOf (capital O) you get a compile-time error. It is a keyword, not a method name in camelCase.</p>
+<p>Purpose: check whether a given object is of a particular type or not.</p>
+<p>“I have an object. Is it a Student? A Customer? A String?” That is instanceof.</p>
+<h4>Why you would not already know the type</h4>
+<p>Typical scenario: a collection / `ArrayList` / `List` holding mixed objects.</p>
+<p>list:  [ obj0, obj1, obj2, obj3, ... ]</p>
+<p>You cannot say “index 0 is always String” or “always Student.” It might be String, Integer, Student, Customer, anything.</p>
+<p>List.get(int) is declared to return `Object` (this lecture is OCJP-era collections, before / aside from generics as the main story). Parent type Object can hold any object.</p>
+<p>Object o = l.get(0);</p>
+<p>Now you must test the runtime type before you type-cast and call type-specific methods.</p>
+<p>if (o instanceof Student) {
+    Student s = (Student) o;
+    // perform student-specific functionality
+} else if (o instanceof Customer) {
+    Customer c = (Customer) o;
+    // perform customer-specific functionality
+}
+// ...</p>
+<p>Without instanceof, a blind cast ((Student) o) can throw ClassCastException if the object is a Customer.</p>
+<p>One-line purpose (dictated):</p>
+<p>We can use instanceof operator to check whether the given object is of a particular type or not.</p>
+<h3>[07:39] Syntax and what `r` / `X` mean</h3>
+<p>r instanceof X</p>
+<p>Result type: boolean.</p>
+<h3>[08:56] Example 1 — Thread, Object, Runnable (all true)</h3>
+<p>Thread t = new Thread();
+
+System.out.println(t instanceof Thread);    // true
+System.out.println(t instanceof Object);    // true
+System.out.println(t instanceof Runnable);  // true</p>
+<p>Facts on the board (still not a multithreading chapter):</p>
+<ul><li>Thread is a child class of `Object`</li></ul>
+<ul><li>Thread implements `Runnable`</li></ul>
+<p>So:</p>
+<ul><li>t instanceof Thread → the object is a Thread → true</li></ul>
+<ul><li>t instanceof Object → every child object is-a parent type → true</li></ul>
+<ul><li>t instanceof Runnable → every implementing-class object is-a that interface type → true</li></ul>
+<p>All three print true.</p>
+<h3>[12:06] Example 2 — relation required, or *inconvertible types*</h3>
+<pre class='code'>Thread t = new Thread();
+System.out.println(t instanceof String);</pre>
+<p>Class guess: false (a Thread is not a String).</p>
+<p>Wrong. You do not get false. You get a compile-time error.</p>
+<p>Rule:</p>
+<p>To use instanceof, compulsory there should be some relation between argument types</p>
+<p>(either child to parent, or parent to child, or same type).</p>
+<p>Otherwise compile-time error: inconvertible types.</p>
+<p>Thread and String have no such relation (both sit under Object, but that is not enough for instanceof between those two compile-time types).</p>
+<p>Compiler checks: can this type be converted to that type? Thread cannot convert to String.</p>
+<p>Typical message:</p>
+<p>inconvertible types
+found   : java.lang.Thread
+required: java.lang.String</p>
+<p>(ASR: “in convertable types.”)</p>
+<p>He compiles example 1 (Thread / Object / Runnable) — valid, output true true true. Then t instanceof String — CE.</p>
+<p>Same rule for predefined and user-defined types. Parent↔child or same type. No relation → CE.</p>
+<p>Contrast with last video: equality used incomparable types for String == Thread. instanceof uses inconvertible types. Related idea, different wording.</p>
+<h3>[18:10] Last conclusion — `null instanceof X` is always false</h3>
+<p>For any class or interface X:</p>
+<p>null instanceof X   // always false</p>
+<p>It compiles. It is not a CE. Runtime result is `false`.</p>
+<p>System.out.println(null instanceof Thread);    // false
+System.out.println(null instanceof Object);    // false
+System.out.println(null instanceof Runnable);  // false</p>
+<p>null is not an instance of anything. Comparing null with any class or interface via instanceof is always false.</p>
+<p>That closes instanceof.</p>
+<h3>[21:07] Bitwise operators `&amp;` `|` `^`</h3>
+<p>Board: bitwise operators (and, or, xor / exclusive or).</p>
+<p>Symbols:</p>
+<h4>Boolean meaning (first)</h4>
+<p>`&amp;` (AND) returns true if and only if both arguments are `true`.</p>
+<p>`|` (OR) returns true if and only if at least one argument is `true`. (“Either this or this” — including both.)</p>
+<p>`^` (XOR / exclusive OR) — he contrasts with normal OR:</p>
+<ul><li>Normal OR: first, or second, or both</li></ul>
+<ul><li>Exclusive OR: first but not second, or second but not first → either first or second but not both</li></ul>
+<p>Book analogy: an animal can be a dog or a cat, but not both simultaneously. There is no animal that is cat and dog at once.</p>
+<p>So XOR returns true if and only if both arguments are different.</p>
+<h4>Boolean examples on the board</h4>
+<p>System.out.println(true &amp; false);  // false  — not both true
+System.out.println(true | false);  // true   — at least one true
+System.out.println(true ^ false);  // true   — arguments different</p>
+<p>He says exam/interview may ask these rarely, but OCJP/SCJP can.</p>
+<h3>[27:29] Same operators on integral types — not true/false</h3>
+<pre class='code'>System.out.println(4 &amp; 5);
+System.out.println(4 | 5);
+System.out.println(4 ^ 5);</pre>
+<p>He makes people who already have xerox notes close them so they think. First question is not the number — valid or invalid?</p>
+<p>Valid. Do not mark CE.</p>
+<p>Wrong class answers: true / false for each line.</p>
+<p>Correct results (numbers, not booleans):</p>
+<p>Rule:</p>
+<p>If we apply these operators for boolean, the result is boolean.</p>
+<p>If we apply them for number / integral types, the result is a number.</p>
+<p>We can apply &amp; | ^ for integral types also (byte, short, int, long).</p>
+<h4>Why 4, 5, 1 — bitwise on the bits</h4>
+<p>These are bitwise operators: they work bit by bit.</p>
+<p>On the board he first uses the low bits of 4 and 5:</p>
+<p>4  →  1 0 0
+5  →  1 0 1</p>
+<p>AND (1 only if both 1; else 0):</p>
+<p>1 0 0
+1 0 1
+-----
+1 0 0   →  4</p>
+<p>(0&amp;1=0, 0&amp;0=0, 1&amp;1=1)</p>
+<p>OR (1 if at least one 1):</p>
+<p>1 0 0
+1 0 1
+-----
+1 0 1   →  5</p>
+<p>XOR (1 if bits differ, 0 if same):</p>
+<p>1 0 0
+1 0 1
+-----
+0 0 1   →  1</p>
+<p>(1 vs 1 same → 0; 0 vs 0 same → 0; 0 vs 1 different → 1)</p>
+<p>So: 4, 5, 1.</p>
+<h3>[33:51] Bitwise complement operator `~` (tilde)</h3>
+<p>Spoken “tilde” (ASR: “till symbol”). Unary operator.</p>
+<h4>Not for boolean</h4>
+<pre class='code'>System.out.println(~true);</pre>
+<p>Looks like “negation of true → false.” Wrong. Compile-time error.</p>
+<p>Bitwise complement operator is applicable only for integral types, not for boolean.</p>
+<p>operator ~ cannot be applied to boolean</p>
+<h4>For integrals it compiles — but the result is not “flip three bits”</h4>
+<pre class='code'>System.out.println(~4);</pre>
+<p>Valid (integral).</p>
+<p>Wrong class answer: 4 is 100, flip bits → 011 → `3`. Most people feel this.</p>
+<p>Actual output: `-5`. He compiles it so you believe him.</p>
+<h3>[39:03] Why `~4` is `-5` (32-bit, sign bit, two’s complement)</h3>
+<p>4 is an int literal. Every integral number is by default `int`.</p>
+<p>int = 4 bytes = 32 bits.</p>
+<p>You must complement 32 bits, not 3 bits.</p>
+<h4>How 4 sits in memory</h4>
+<p>Most significant bit (MSB) = sign bit:</p>
+<p>Remaining 31 bits represent magnitude.</p>
+<p>Positive 4:</p>
+<p>sign = 0,  remaining bits = ...000100</p>
+<p>(32-bit: 0000…0100)</p>
+<h4>Apply `~` to all 32 bits</h4>
+<p>Every 0 becomes 1, every 1 becomes 0:</p>
+<p>1111…1011</p>
+<p>MSB is now `1` → negative number.</p>
+<h4>Positive vs negative representation (dictate this)</h4>
+<p>The most significant bit acts as sign bit.</p>
+<p>0 means positive number. 1 means negative number.</p>
+<p>Positive numbers will be represented directly in memory.</p>
+<p>Negative numbers will be represented indirectly in memory, in two’s complement form.</p>
+<p>So after ~, you have a negative pattern. The value of the remaining bits is the two’s complement of that pattern.</p>
+<p>Two’s complement = one’s complement, then add 1.</p>
+<p>Working the value of those remaining bits:</p>
+<ol><li>One’s complement of the value bits → you get back a pattern whose magnitude is 4’s “almost 5”</li></ol>
+<ol><li>Add 1 → magnitude 5</li></ol>
+<ol><li>Sign is negative → `-5`</li></ol>
+<p>Thumb formula (same result, not dictated as a formula but useful): ~x == -x - 1, so ~4 == -5.</p>
+<p>He wants the 32-bit story, not the formula only: “not three bits, 32 bits.”</p>
+<h3>[46:08] Twist — why `&amp;` `|` `^` boards used 3 bits, but `~` used 32</h3>
+<p>Student objection: for 4 &amp; 5 you used three bits; for ~4 you suddenly used 32 bits. Inconsistent?</p>
+<p>Strictly, `&amp;` `|` `^` are also 32-bit operations. Leading bits of positive 4 and 5 are all zeros.</p>
+<p>4  →  000…0100
+5  →  000…0101</p>
+<p>0 &amp; 0 = 0, 0 | 0 = 0, 0 ^ 0 = 0. Extra high bits do not change the numeric result. That is why the 3-bit board is enough for `&amp;` `|` `^` on these positives.</p>
+<p>For ~, those high zeros flip to ones, MSB becomes 1, and the result does change (you get a negative). So you must think 32 bits for complement.</p>
+<h3>[48:18] Boolean complement operator `!`</h3>
+<p>Symbol ! (boolean complement / logical NOT). Opposite of ~.</p>
+<p>System.out.println(!4);      // CE
+System.out.println(!false);  // true</p>
+<p>!4: people guess true/false. Compile-time error.</p>
+<p>operator ! cannot be applied to int</p>
+<p>!false → true. No long explanation.</p>
+<p>We can apply ! only for boolean types, not for integral types.</p>
+<h3>[51:27] Summary of bitwise-family operators</h3>
+<p>Recite:</p>
+<ul><li>&amp; | ^ — applicable for both boolean and integral types</li></ul>
+<ul><li>~ — applicable only for integral types, not for boolean</li></ul>
+<ul><li>! — applicable only for boolean, not for integral types</li></ul>
+<h3>[54:19] Classroom Q&amp;A — `4` with a negative (e.g. `4 &amp; -5` / `4 | -5`)</h3>
+<p>Someone asks about mixing 4 and -5. He does not run a full new example; the point is:</p>
+<ul><li>-5 is stored in 32-bit two’s complement (sign bit 1)</li></ul>
+<ul><li>4 has sign bit 0</li></ul>
+<ul><li>Bitwise &amp; | ^ still run on those 32 bits</li></ul>
+<ul><li>For OR, 0 | 1 on the sign bit yields 1 → the result is a negative number</li></ul>
+<p>Do not try 3-bit arithmetic once a negative is involved. Use the 32-bit picture from the ~ section.</p>
+<h2>Code from the lecture</h2>
+<h3>instanceof</h3>
+<pre class='code'>class InstanceofDemo {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        System.out.println(t instanceof Thread);    // true
+        System.out.println(t instanceof Object);    // true
+        System.out.println(t instanceof Runnable);  // true
+        // System.out.println(t instanceof String);
+        // CE: inconvertible types, found Thread, required String
+
+        System.out.println(null instanceof Thread);    // false
+        System.out.println(null instanceof Object);    // false
+        System.out.println(null instanceof Runnable);  // false
+    }
+}</pre>
+<h3>Scenario where instanceof is required (board sketch)</h3>
+<pre class='code'>import java.util.ArrayList;
+
+class Student {}
+class Customer {}
+
+class InstanceofUse {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        // l.add(new Student()); l.add(new Customer()); ... mixed
+        Object o = l.get(0);
+        if (o instanceof Student) {
+            Student s = (Student) o;
+            // perform student-specific functionality
+        } else if (o instanceof Customer) {
+            Customer c = (Customer) o;
+            // perform customer-specific functionality
+        }
+    }
+}</pre>
+<h3>Bitwise boolean and integral; complements</h3>
+<pre class='code'>class BitwiseDemo {
+    public static void main(String[] args) {
+        System.out.println(true &amp; false);  // false
+        System.out.println(true | false);  // true
+        System.out.println(true ^ false);  // true
+
+        System.out.println(4 &amp; 5);  // 4
+        System.out.println(4 | 5);  // 5
+        System.out.println(4 ^ 5);  // 1
+
+        // System.out.println(~true);
+        // CE: operator ~ cannot be applied to boolean
+        System.out.println(~4);     // -5
+
+        // System.out.println(!4);
+        // CE: operator ! cannot be applied to int
+        System.out.println(!false); // true
+    }
+}</pre>
+<h2>Exam / interview traps</h2>
+<ul><li>instanceof is a keyword, all lowercase. instanceOf does not compile.</li></ul>
+<ul><li>t instanceof String is CE, not false. Need parent/child/same-type relation.</li></ul>
+<ul><li>null instanceof Thread compiles and is `false`. Always, for any class or interface.</li></ul>
+<ul><li>Child object instanceof parent type → true. Implementing class instanceof interface → true.</li></ul>
+<ul><li>4 &amp; 5 is valid and equals `4`, not a boolean.</li></ul>
+<ul><li>XOR true iff operands differ. “Either A or B but not both.”</li></ul>
+<ul><li>~true is CE; ~4 is `-5`, not 3. Complement 32 bits, then two’s complement for the negative.</li></ul>
+<ul><li>MSB: 0 positive (value stored directly); 1 negative (value in two’s complement).</li></ul>
+<ul><li>!4 is CE; ! is boolean-only; ~ is integral-only; &amp; | ^ are both.</li></ul>
+<h2>Recap</h2>
+<p>instanceof tests runtime type, but only if the compile-time types could possibly be related; null is never an instance of anything. &amp; | ^ are bitwise on ints (and logical on booleans). ~ flips all 32 bits of an int and that is why ~4 is -5. ! is the boolean twin of ~.</p>
+<p>Next video: 020-short-circuit-type-cast.md — short-circuit &amp;&amp; || vs bitwise &amp; |, then type cast.</p>
+<table>
+<tr><th>Field</th><th>Detail</th><th></th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td><td></td></tr>
+<tr><td>Position</td><td>Video 19 of 203</td><td></td></tr>
+<tr><td>Series</td><td>Operators &amp; Assignments · Part 3 of 7</td><td></td></tr>
+<tr><td>Topic</td><td>instanceof; bitwise &amp; `\</td><td> ^; bitwise complement ~; boolean complement !`</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td><td></td></tr>
+<tr><td>Duration</td><td>55m 14s (3314 seconds)</td><td></td></tr>
+<tr><td>Video ID</td><td>dW_yjiVRlqQ</td><td></td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=dW_yjiVRlqQ</td><td></td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td><td></td></tr>
+</table>
+<table>
+<tr><th>Token</th><th>Meaning</th></tr>
+<tr><td>r</td><td>object reference</td></tr>
+<tr><td>X</td><td>class name or interface name</td></tr>
+</table>
+<table>
+<tr><th>Symbol</th><th>Name</th><th>Spoken</th><th></th></tr>
+<tr><td>&amp;</td><td>AND</td><td>“and operator”</td><td></td></tr>
+<tr><td>`\</td><td>`</td><td>OR</td><td>“or operator”</td></tr>
+<tr><td>^</td><td>XOR</td><td>“exclusive or” / “xor” / “cap symbol”</td><td></td></tr>
+</table>
+<table>
+<tr><th>Pair</th><th>&amp;</th><th>`\</th><th>`</th><th>^</th></tr>
+<tr><td>different (true/false or false/true)</td><td>false</td><td>true</td><td>`true`</td><td></td></tr>
+<tr><td>same (true/true or false/false)</td><td>depends</td><td>depends</td><td>`false`</td><td></td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>Result</th><th></th></tr>
+<tr><td>4 &amp; 5</td><td>`4`</td><td></td></tr>
+<tr><td>`4 \</td><td>5`</td><td>`5`</td></tr>
+<tr><td>4 ^ 5</td><td>`1`</td><td></td></tr>
+</table>
+<table>
+<tr><th>MSB</th><th>Meaning</th></tr>
+<tr><td>0</td><td>positive number</td></tr>
+<tr><td>1</td><td>negative number</td></tr>
+</table>
+<table>
+<tr><th>Operator(s)</th><th>Boolean?</th><th>Integral?</th><th></th></tr>
+<tr><td>&amp; `\</td><td> ^`</td><td>yes</td><td>yes (result is a number)</td></tr>
+<tr><td>~ (tilde, bitwise complement)</td><td>no (CE)</td><td>yes only</td><td></td></tr>
+<tr><td>! (boolean complement)</td><td>yes only</td><td>no (CE)</td><td></td></tr>
+</table>
+</body></html>

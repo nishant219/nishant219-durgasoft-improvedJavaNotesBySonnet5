@@ -1,0 +1,306 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>060-static-control-flow</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 060 — Static control flow</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-10 ||static control flow</p>
+<p>Source: real YouTube auto-captions (.transcripts/060-B_tYO3Yn61U.txt). ASR decoded in place: keep subing = keep writing (notes); static in I / static inj / static IND = static int i / static int j; sop / s of / print Ln / LM = System.out.println; FSB / P static block = first static block; public static vo / wide / y / qu = public static void; Legend listen = listen; JM / jbm / J / JVM = JVM; read indirectly write only / r i w / RIWO / read and directly write only = RIWO (Read Indirectly Write Only); P activity / PO activity = first activity; illegal for what reference = illegal forward reference; No Such method error colum main = NoSuchMethodError: main; 1.6 vers = Java 1.6; postmart = postmortem (word-by-word board copy); compil meod / compil error = compile-time error.</p>
+<p>This video is OOPs Part 10. New topic: static control flow — if everything is static, in which order do identification, assignments, static blocks, and main run. He walks one class Base with numbered steps 1–15, live javac/java, then defines direct read vs indirect read and RIWO, then three loopholes (10 then NoSuchMethodError: main; illegal forward reference; 0 then NoSuchMethodError: main) demonstrated on JDK 1.6. He explicitly defers 1.7 changes. Next heading at the end: postmortem on static block.</p>
+<h3>00:04 — Topic: static control flow</h3>
+<p>Next topic: “the most valuable topic. It is not a traditional topic.” Static control flow. If everything is static, in which order will the things be executed? That part we have to discuss.</p>
+<p>Keep writing: static control flow.</p>
+<p>If everything is static — static variable, static block, static method — in which order will they execute? We should be aware.</p>
+<h3>00:50 — Board program: `class Base`</h3>
+<p>He starts to write class Test, then switches: “or other, class Base.” One class only.</p>
+<pre class='code'>class Base {
+    static int i = 10;
+
+    static {
+        m1();
+        System.out.println(&quot;First static block&quot;);
+    }
+
+    public static void main(String[] args) {
+        m1();
+        System.out.println(&quot;Main method&quot;);
+    }
+
+    public static void m1() {
+        System.out.println(j);
+    }
+
+    static {
+        System.out.println(&quot;Second static block&quot;);
+    }
+
+    static int j = 20;
+}</pre>
+<p>Order on the board, matching how he built it:</p>
+<ol><li>static int i = 10 — static variable.</li></ol>
+<ol><li>First static block: call m1(), then print &quot;First static block&quot; (he says FSB).</li></ol>
+<ol><li>public static void main(String[] args) — call m1() again, then print the main line. He first says &quot;Base main&quot;, then on the live run the printed line is main method.</li></ol>
+<ol><li>public static void m1() — also static, because they call it directly from the static area. Inside: System.out.println(j). Students ask where j is. “J not yet declared. I will declare soon.”</li></ol>
+<ol><li>Second static block: print &quot;Second static block&quot;.</li></ol>
+<ol><li>static int j = 20.</li></ol>
+<h3>03:31 — Everything is static; do not expect a compile error</h3>
+<p>Have you observed: in this example everything is static — static variable, static block, main is static, m1 is static, second static block, static int j = 20. So in which order are the things going to be executed?</p>
+<p>If I run this code, what output will I get? Don’t tell compile-time error. Perfectly the code compiles and runs fine. Don’t keep any doubt in that.</p>
+<p>Students start guessing: 20… first static block… 20… main method… second static block… He is not satisfied. “What exact answer I required? Don’t take the program, just tell the answer.” Two static blocks and a main method — in which order?</p>
+<p>“Majority of the people, I’m sure your answer is wrong. Don’t keep any doubt in that. In which order the things are going to be executed, compulsory you people should have clear clarity.”</p>
+<h3>05:31 — Three activities when we execute a Java class</h3>
+<p>“Listen this one first.” Whenever we are executing a Java class:</p>
+<p>He compiles: how many .class files? One — Base.class. Then run: java Base. Which things are going to happen?</p>
+<p>First activity: identification of static members from top to bottom. How many static members are there? Identify them.</p>
+<p>Second: execution of static variable assignments and static blocks from top to bottom. Before main only, static blocks will be executed (together with the assignments, top to bottom).</p>
+<p>Third: execution of main method.</p>
+<p>Whenever we are executing a Java class, these three things you should be aware of:</p>
+<ol><li>Identification of static members from top to bottom</li></ol>
+<ol><li>Execution of static variable assignments and static blocks from top to bottom</li></ol>
+<ol><li>Execution of main method (last)</li></ol>
+<h3>08:05 — `main` is last, not first</h3>
+<p>Most people feel main is the starting point of program execution. Strictly speaking, in static control flow, main method is the last thing which is going to be executed.</p>
+<p>Now he proves the output from these steps.</p>
+<h3>08:25 — Step 1: identification (steps 1–6) and RIWO default `0`</h3>
+<p>First step: identification of static members from top to bottom.</p>
+<ol><li>First static member: static variable i. If it is a variable, JVM assigns the default value at the time of identification. Original value 10 is not assigned yet. i becomes 0. That state is called read indirectly write only (RIWO). He will explain RIWO in detail later; don’t worry yet.</li></ol>
+<ol><li>First static block — also a static member — identify it.</li></ol>
+<ol><li>main is also static — identify.</li></ol>
+<ol><li>m1 is also static — identify.</li></ol>
+<ol><li>Second static block — identify.</li></ol>
+<ol><li>Static variable j — also a variable, so j = 0, RIWO.</li></ol>
+<p>Six static members. Steps 1 to 6 are the first activity. “I spent for the first activity.”</p>
+<h3>10:38 — Step 2: assignments and static blocks (steps 7–12)</h3>
+<p>Second activity: execution of static variable assignments and static blocks from top to bottom. Identification 1–6 already completed, so numbering continues at 7.</p>
+<ol><li>Execute the assignment i = 10. Original value is now assigned. State becomes read and write. i is 10.</li></ol>
+<ol><li>Execute the first static block: call m1().</li></ol>
+<ol><li>Inside m1: System.out.println(j). What is j now? Zero. Original value of j is not assigned yet (still sitting at step 6’s default). First thing we are going to get: 0.</li></ol>
+<ol><li>After m1 returns: print First static block.</li></ol>
+<ol><li>Next static thing that must run: second static block (skip main and m1 as declarations — those are not “variable assignment or static block”). Print Second static block.</li></ol>
+<ol><li>Assignment j = 20. Now j is 20, read and write.</li></ol>
+<p>Steps 7 to 12 complete the second activity.</p>
+<h3>13:34 — Step 3: `main` (steps 13–15)</h3>
+<p>Third step: execution of main method.</p>
+<ol><li>main calls m1().</li></ol>
+<ol><li>m1 prints j. What is j now? 20.</li></ol>
+<ol><li>Print Main method.</li></ol>
+<p>Last step numbers: 13 to 15.</p>
+<p>Full output, in order:</p>
+<p>0
+First static block
+Second static block
+20
+Main method</p>
+<p>“I hope the terminology is very clear for you people. Any explanation is required? Make sure you people should be aware: if everything is static, in which order the things are going to be executed” — the three steps.</p>
+<h3>15:13 — Live compile and run: `javac Base.java` then `java Base`</h3>
+<p>Same example he took on the board, now in Base.java. javac Base.java — compile is fine. java Base.</p>
+<p>Have you observed? 0, first static block, second static block, 20, main method. Same output they just derived. “Zero first static block second static block 20 followed by main method.”</p>
+<p>One word is still abstract: read indirectly write only. He will explain in detail. First add the heading and the three-step theory to the notes.</p>
+<h3>16:43 — Dictate the three-step theory (with this example’s step numbers)</h3>
+<p>Keep writing: static control flow. Under that, the point:</p>
+<p>Whenever we are executing a Java class, the following sequence of steps will be executed as the part of static control flow.</p>
+<ol><li>Identification of static members from top to bottom (in this example: 1 to 6)</li></ol>
+<ol><li>Execution of static variable assignments and static blocks from top to bottom (in this example: 7 to 12)</li></ol>
+<ol><li>Execution of main method (in this example: 13 to 15)</li></ol>
+<p>He repeats each line several times for dictation.</p>
+<h3>19:32 — Copy the colourful numbered `Base` example</h3>
+<p>“Take this example. Take clearly. Class Base. Even numbers also I kept, even multiple colours I used, so that full colourful example.” Long board-copy pause (~19:47–22:13).</p>
+<p>He wants the numbers followed in sequence — don’t take blindly 7, 8, 10 and skip. Identification from top to bottom; then assignments and static blocks from top to bottom; then main.</p>
+<pre class='code'>class Base {
+    static int i = 10;                          // 1 identify (i=0 RIWO); 7 assign i=10 (read/write)
+
+    static {                                    // 2 identify
+        m1();                                   // 8
+        System.out.println(&quot;First static block&quot;); // 10
+    }
+
+    public static void main(String[] args) {    // 3 identify; 13 run main
+        m1();
+        System.out.println(&quot;Main method&quot;);      // 15
+    }
+
+    public static void m1() {                   // 4 identify
+        System.out.println(j);                  // 9 prints 0; 14 prints 20
+    }
+
+    static {                                    // 5 identify
+        System.out.println(&quot;Second static block&quot;); // 11
+    }
+
+    static int j = 20;                          // 6 identify (j=0 RIWO); 12 assign j=20 (read/write)
+}</pre>
+<h3>23:00 — Output line for the notes</h3>
+<p>“Take even output also.”</p>
+<p>0
+First static block
+Second static block
+20
+Main method</p>
+<p>“Zero first static block second static block 20 followed by main method.” Copy pause to ~25:06. “Everything is clear. Just only one word we have to discuss in detail: read indirectly write only. What it means, that part I will discuss. First take this one. Numbers also — better to follow the sequence.”</p>
+<p>He restates the three steps once more while they finish numbering.</p>
+<h3>25:15 — Heading: Read Indirectly Write Only (RIWO)</h3>
+<p>Keep writing: read indirectly write only.</p>
+<p>Observe very carefully. Take special care. Among all, which thing will be executed by default? Static block — we are not required to call it; automatically static block will be executed.</p>
+<h3>25:53 — Direct read vs indirect read</h3>
+<p>Within the static block, if we are trying to read any variable directly — System.out.println(i) — this is called direct read.</p>
+<p>If we are calling a method, and within that method we try to read a variable: a method won’t be executed by default; we have to call it. That read operation is called indirect read.</p>
+<p>First you people should be aware: what is a direct read, what is an indirect read.</p>
+<ul><li>Inside a static block, reading a variable directly → direct read</li></ul>
+<ul><li>Calling a method from the static block, and inside that method reading a variable → indirect read</li></ul>
+<h3>27:37 — Mini example: same `println(i)` in the block vs in `m1`</h3>
+<p>“Better to take up to this just in the notes style.” class Test, static int i = 10, static block with println(i) and a call to m1, and m1 also prints i.</p>
+<pre class='code'>class Test {
+    static int i = 10;
+
+    static {
+        System.out.println(i); // direct read
+        m1();
+    }
+
+    public static void m1() {
+        System.out.println(i); // indirect read
+    }
+}</pre>
+<p>Which println(i) is direct, which is indirect? The one inside the static block is direct read. Calling a method and reading i inside the method is indirect read. Observe the difference.</p>
+<h3>28:41 — Dictate: direct read vs indirect read</h3>
+<p>He dictates slowly:</p>
+<p>Inside a static block, if we are trying to read a variable, that read operation is called direct read.</p>
+<p>Next, if we are calling a method, and within that method if we are trying to read a variable, that read operation is called indirect read.</p>
+<p>Copy the Test example so direct vs indirect is labelled on the board. Pause ~31:03.</p>
+<h3>31:16 — When is a variable in RIWO state?</h3>
+<p>“If a variable is just identified but original value not assigned, now the variable is said to be in read indirectly write only state.”</p>
+<p>If a variable is in RIWO state, we can perform read operation indirectly. If we try to perform read operation directly, immediately we get a compile-time error.</p>
+<p>Take special care: if a variable is in RIWO, we can’t perform direct read; we can perform indirect read. Direct read → compile error saying illegal forward reference.</p>
+<h3>32:31 — Dictate the RIWO rules</h3>
+<p>First point (he repeats each clause):</p>
+<p>If a variable is just identified by the JVM and original value not yet assigned, then the variable is said to be in read indirectly write only state (RIWO).</p>
+<p>Second:</p>
+<p>If a variable is in read indirectly write only state, then we can’t perform direct read, but we can perform indirect read.</p>
+<p>Third:</p>
+<p>If we are trying to read directly, then we will get compile error saying illegal forward reference.</p>
+<p>“That’s all. I hope you people got clearly what is illegal forward reference. Now based on this small thing let me explain multiple examples.”</p>
+<p>Recap in his own words: which is direct read, which is indirect read; if a variable is just identified, RIWO; in RIWO we can’t perform read directly, otherwise compile error illegal forward reference.</p>
+<h3>36:32 — Three loophole examples on the board</h3>
+<p>“Take a bit special care.” Three class Test snippets — “various loopholes.”</p>
+<p>Example 1 — variable first, then static block reads `x`:</p>
+<pre class='code'>class Test {
+    static int x = 10;
+    static {
+        System.out.println(x);
+    }
+}</pre>
+<p>Example 2 — static block reads `x`, variable declared after:</p>
+<pre class='code'>class Test {
+    static {
+        System.out.println(x); // direct read of x
+    }
+    static int x = 10;
+}</pre>
+<p>Example 3 — static block calls `m1`, `m1` reads `x`, variable declared after:</p>
+<pre class='code'>class Test {
+    static {
+        m1();
+    }
+
+    public static void m1() {
+        System.out.println(x);
+    }
+
+    static int x = 10;
+}</pre>
+<p>“Which is valid, which is invalid, what output we will get?”</p>
+<h3>38:17 — Example 1: valid; prints `10` then `NoSuchMethodError: main`</h3>
+<p>First one valid or not? Simple.</p>
+<ul><li>Identification of static members: the variable is identified, then the static block is identified.</li></ul>
+<ul><li>Second step: execution of static variable assignment and static block. x value 10 is assigned. Now the variable is read and write. You can perform read operation directly also — no problem. println(x) → 10.</li></ul>
+<ul><li>After completing static-block execution, JVM always searches for main. Main method is not there. Runtime: `NoSuchMethodError: main`.</li></ul>
+<p>(He calls it a “runtime exception”; it is an Error.)</p>
+<pre class='code'>class Test {
+    static int x = 10;
+    static {
+        System.out.println(x);
+        // prints 10
+    }
+}
+// no main
+// then Error: NoSuchMethodError: main   (Java 1.6 — he runs this JVM next)</pre>
+<h3>39:30 — Example 2: compile error `illegal forward reference`</h3>
+<p>Second one valid or not?</p>
+<ul><li>Identification: static block first, then x. At identification, x is 0, RIWO.</li></ul>
+<ul><li>Second step: execute static blocks and assignments from top to bottom. He wants to execute the static block. Is println(x) direct or indirect? Direct read. But the variable is still in RIWO (assignment x = 10 has not run yet). Direct read in RIWO → compile-time error: illegal forward reference.</li></ul>
+<pre class='code'>class Test {
+    static {
+        System.out.println(x); // direct read while x is RIWO
+    }
+    static int x = 10;
+}
+// CE: illegal forward reference</pre>
+<h3>40:36 — Example 3: indirect read is OK; prints `0` then `NoSuchMethodError: main`</h3>
+<p>Third: identification 1, 2, 3. x is 0, RIWO.</p>
+<p>Second step: execute the static block — it calls m1. Inside m1, println(x) — direct or indirect? Indirect read. No problem, because within the static block you are calling a method; within that method you read a variable. Indirect read is allowed in RIWO. Answer printed: 0. Then x becomes 10. Then JVM searches for main — not there — `NoSuchMethodError: main`.</p>
+<pre class='code'>class Test {
+    static {
+        m1();
+    }
+
+    public static void m1() {
+        System.out.println(x);
+        // prints 0   (indirect read while x is still RIWO)
+    }
+
+    static int x = 10;
+}
+// then Error: NoSuchMethodError: main   (Java 1.6)</pre>
+<p>“What read indirectly write only state you people should have clear clarity.”</p>
+<h3>41:55 — This explanation is with respect to Java 1.6</h3>
+<p>“Whatever I’m explaining this concept with respect to 1.6 version. Remember this one. Whatever concept I’m explaining with respect to 1.6. But in the 1.7 small small changes are there. That part I will discuss at last.” He does not teach the 1.7 change in this video.</p>
+<h3>42:13 — Live JDK 1.6: set `PATH`, run all three</h3>
+<p>He sets the JVM explicitly to 1.6: Program Files → Java → jdk 1.6 → bin. set path= to 1.6. Then current working location. Opens Test.java already on the system.</p>
+<p>Live example 1: static int x = 10, static block System.out.println(x). Valid. Output: 10 followed by runtime error. javac Test.java fine. java Test: 10, then `NoSuchMethodError: main`. “10 got printed anyway at the beginning, and then no such method.”</p>
+<p>Live example 2: first static block, then variable declaration. “If I declare a variable at end, what will happen? This is the best example.” Compile: illegal forward reference. Case two / example two is a syntactical mistake — compile error.</p>
+<p>Live example 3: static block calls m1; public static void m1 prints x; static int x = 10. “The code compiles fine because is it direct or indirect read? Indirect. That’s why the answer by default we are going to get zero, followed by `NoSuchMethodError: main`.”</p>
+<p>“Make sure you people should be aware. Take this example. Take all the three examples. What is a direct read, what is indirect read, you people should have clear clarity.”</p>
+<h3>45:01 — Copy all three examples (long notes pause)</h3>
+<p>Board-copy through ~48:22. He restates:</p>
+<ul><li>Direct read vs indirect read — clear clarity.</li></ul>
+<ul><li>Example 1: static int x = 10, static block, then runtime `NoSuchMethodError: main`.</li></ul>
+<ul><li>Example 2: illegal forward reference — compile error.</li></ul>
+<ul><li>“Completed right.”</li></ul>
+<h3>48:28 — End of RIWO; next heading</h3>
+<p>“That’s all. This is about read indirectly write only state. Now we have to perform postmortem on static block.”</p>
+<p>That next heading is not this video. This lecture stops at RIWO plus the three 1.6 loopholes.</p>
+<h2>What this video actually taught (not a generic “static” lecture)</h2>
+<ol><li>Executing a class is three steps: identify static members top→bottom (variables get defaults, RIWO); execute assignments + static blocks top→bottom; then main. main is last in static control flow.</li></ol>
+<ol><li>The Base program’s output is `0` / First static block / Second static block / `20` / Main method because m1 reads j once while j is still default 0 (from the first static block) and once after j = 20 (from main).</li></ol>
+<ol><li>Direct read = read a variable inside a static block. Indirect read = call a method from that block and read the variable inside the method.</li></ol>
+<ol><li>RIWO: identified, original value not yet assigned. Indirect read OK; direct read → `illegal forward reference`.</li></ol>
+<ol><li>On Java 1.6, a class with a static block but no main can still run the static phase, then fail with `NoSuchMethodError: main`. Example 1 prints 10 then that error; example 3 prints 0 then that error; example 2 never runs. 1.7 changes are deferred.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 60 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 10</td></tr>
+<tr><td>Topic</td><td>static control flow</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>48m 45s</td></tr>
+<tr><td>Video ID</td><td>B_tYO3Yn61U</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=B_tYO3Yn61U</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

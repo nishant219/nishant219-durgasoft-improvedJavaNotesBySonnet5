@@ -1,0 +1,291 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>092-deadlock-starvation</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 092 — DeadLock || Starvation</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-12 || DeadLock || Starvation</p>
+<p>Source: real YouTube auto-captions (.transcripts/092-4U9FUlpvg_U.txt). ASR decoded in place: keep subing = keep writing (board); dead luck / luck = deadlock / lock; synchronizer / synchronizer keyword / synchronizer keyboard = synchronized; threats = threads; d one / v method / d1 = d1 method; d2 / to method = d2; last method = last; ch lock / as lock / ss luck / bs lock = A&#x27;s lock / B&#x27;s lock; religious / release = release; Inf wait = infinite waiting; r na y = right or not; ENT = interview; Control C = kill JVM process.</p>
+<p>This lecture defines deadlock, stresses that synchronized is the cause (not the cure), shows there are no resolution techniques (only prevention), builds the classic A/B dual-lock demo on the board and as executable code (Deadlock / DeadlockDemo), proves removing any one synchronized removes deadlock, then contrasts deadlock vs starvation.</p>
+<h3>00:06 — Topic: Deadlock (keep writing)</h3>
+<p>Board heading: Deadlock. Interview-heavy. He jokes with the informal line “lock without key is nothing but deadlock / dead end — you cannot proceed further,” then moves to the programming definition.</p>
+<h3>00:25 — Informal “lock without key” then programming definition</h3>
+<p>Spoken informal: lock without key ≈ deadlock / dead end.</p>
+<p>Programming definition (repeated until board is clear):</p>
+<p>If two threads are waiting for each other forever, that type of infinite waiting is called deadlock.</p>
+<p>Dialogue he acts out:</p>
+<ul><li>Ask first thread: why waiting? → “I am waiting for second thread’s activity.”</li></ul>
+<ul><li>Ask second thread: why waiting? → “I am waiting for first thread’s activity.”</li></ul>
+<ul><li>Both wait for each other forever → deadlock.</li></ul>
+<pre class='code'>// Board definition (dictated repeatedly):
+// If two threads are waiting for each other forever,
+ // such type of infinite waiting is called deadlock.</pre>
+<h3>03:15 — Common wrong conclusion students give</h3>
+<p>Student-style wrong statement: “By using synchronized keyword we can resolve / overcome deadlock.”</p>
+<p>He rejects that. Correct teaching:</p>
+<ul><li>synchronized is not the solution.</li></ul>
+<ul><li>synchronized is the problem creator — the only reason a program enters deadlock in this classic model.</li></ul>
+<ul><li>If you never use synchronized, your program never enters this kind of deadlock situation.</li></ul>
+<ul><li>If there is no specific requirement, it is never recommended to use synchronized carelessly — it is a dangerous keyword; take special care.</li></ul>
+<pre class='code'>// Board conclusion:
+// synchronized keyword is the only reason for deadlock situation
+ // (in the traditional synchronized model)
+// → while using synchronized we have to take special care
+// → if no specific requirement, never recommended to use synchronized</pre>
+<h3>04:38 — Once program entered deadlock — what can programmer do?</h3>
+<p>Once the program is in deadlock:</p>
+<ul><li>As a programmer you cannot do anything useful inside the running process.</li></ul>
+<ul><li>There are no resolution techniques for deadlock.</li></ul>
+<ul><li>There are several prevention techniques.</li></ul>
+<ul><li>Slogan: prevention is better than cure.</li></ul>
+<ul><li>“Punishment” joke if you misuse synchronized: program hangs — “hanging by the hand.”</li></ul>
+<pre class='code'>// Board:
+ // There are no resolution techniques for deadlock
+ // but several prevention techniques are available
+ // (prevention is better than cure)</pre>
+<p>OS-level prevention details are not required for a Java programmer in this session. What is required: show how misuse of synchronized causes deadlock, with a program interviewers may ask you to write.</p>
+<h3>07:32 — Rough design on board before code (class A / class B)</h3>
+<p>Rough app he will convert to program:</p>
+<p>Class A</p>
+<ul><li>method d1 taking B type argument</li></ul>
+<ul><li>method last</li></ul>
+<p>Class B</p>
+<ul><li>method d2 taking A type argument</li></ul>
+<ul><li>method last</li></ul>
+<p>Cross calls:</p>
+<ul><li>Inside A’s d1: call b.last()</li></ul>
+<ul><li>Inside B’s d2: call a.last()</li></ul>
+<p>Create one A object and one B object. Two threads:</p>
+<ul><li>Thread 1 calls a.d1(b)</li></ul>
+<ul><li>Thread 2 calls b.d2(a)</li></ul>
+<h3>10:00 — Case 1: methods NOT synchronized → no deadlock</h3>
+<p>If d1, d2, last are normal (not synchronized):</p>
+<ul><li>T1 gets chance → runs d1 → calls b.last() immediately → finishes → terminates.</li></ul>
+<ul><li>T2 gets chance → runs d2 → calls a.last() immediately → finishes → terminates.</li></ul>
+<ul><li>No deadlock — no locks held across the cross-call.</li></ul>
+<h3>12:20 — Case 2: methods ARE synchronized → deadlock path</h3>
+<p>If methods are synchronized:</p>
+<ol><li>T1 calls d1 → needs lock of A → gets A’s lock → starts d1.</li></ol>
+<ol><li>T2 calls d2 → needs lock of B → gets B’s lock → starts d2.</li></ol>
+<ol><li>While executing d1, T1 must call b.last() which is synchronized on B → T1 needs B’s lock.</li></ol>
+<ol><li>But B’s lock is currently held by T2 → T1 enters waiting for B’s lock, while still holding A’s lock.</li></ol>
+<ol><li>While executing d2, T2 must call a.last() which is synchronized on A → T2 needs A’s lock.</li></ol>
+<ol><li>But A’s lock is held by T1 → T2 enters waiting for A’s lock, while still holding B’s lock.</li></ol>
+<pre class='code'>// Spoken lock story (decoded):
+ // T1 holds A&#x27;s lock, waiting for B&#x27;s lock
+ // T2 holds B&#x27;s lock, waiting for A&#x27;s lock
+ // → both wait for each other forever → DEADLOCK</pre>
+<p>He acts out the comic negotiation: “Please release your lock for one minute and I’ll give both locks” / “First give me your lock, then I’ll release in half a minute” — neither releases → deadlock.</p>
+<h3>20:09 — Convert rough idea to executable code</h3>
+<p>He starts writing the full program on board / IDE.</p>
+<p>Class A — both methods synchronized:</p>
+<pre class='code'>class A {
+    public synchronized void d1(B b) {
+        System.out.println(&quot;Thread-1 starts execution of d1 method&quot;);
+        try {
+            Thread.sleep(5000); // force T2 to start meanwhile
+        } catch (InterruptedException e) {
+        }
+        System.out.println(&quot;Thread-1 trying to call B&#x27;s last method&quot;);
+        b.last();
+    }
+
+    public synchronized void last() {
+        System.out.println(&quot;Inside A, this is last method&quot;);
+    }
+}</pre>
+<p>Class B — same pattern:</p>
+<pre class='code'>class B {
+    public synchronized void d2(A a) {
+        System.out.println(&quot;Thread-2 starts execution of d2 method&quot;);
+        try {
+            Thread.sleep(5000); // intention: demonstrate deadlock
+        } catch (InterruptedException e) {
+        }
+        System.out.println(&quot;Thread-2 trying to call A&#x27;s last method&quot;);
+        a.last();
+    }
+
+    public synchronized void last() {
+        System.out.println(&quot;Inside B, this is last method&quot;);
+    }
+}</pre>
+<p>Why sleep(5000)? If there is no sleep, deadlock is not guaranteed (one thread might finish the whole cross-call before the other starts). Sleep makes both hold their object locks while the other is also sleeping holding the other lock.</p>
+<h3>26:24 — Thread class that drives both sides</h3>
+<p>He introduces a class extending Thread (names vary on board: MyThread → later renamed meaningfully to Deadlock / DeadlockDemo).</p>
+<p>Need both A and B as instance fields so both main and child can use them.</p>
+<pre class='code'>class Deadlock extends Thread {
+    A a = new A();
+    B b = new B();
+
+    public void m1() {
+        this.start();          // starts child thread → run()
+        a.d1(b);               // executed by MAIN thread
+    }
+
+    public void run() {
+        b.d2(a);               // executed by CHILD thread
+    }
+
+    public static void main(String[] args) {
+        Deadlock d = new Deadlock();
+        d.m1();
+        // Cannot put this.start() then a.d1(b) only in static main
+        // without instance — a,b are instance variables
+    }
+}</pre>
+<h3>28:26 — Thread count walkthrough after `this.start()`</h3>
+<p>Before start: only main thread.</p>
+<p>After this.start():</p>
+<ul><li>Two threads exist.</li></ul>
+<ul><li>Child executes run() → b.d2(a).</li></ul>
+<ul><li>Main continues and executes a.d1(b).</li></ul>
+<p>So:</p>
+<ul><li>Main ≈ T1: holds lock of A, sleeps, then waits for B.</li></ul>
+<ul><li>Child ≈ T2: holds lock of B, sleeps, then waits for A.</li></ul>
+<ul><li>Both wait forever → deadlock.</li></ul>
+<h3>31:22 — Why not put everything only in static main?</h3>
+<p>If you try start then call d1 from static context without an instance, a and b as instance variables are not directly accessible. Hence the m1() instance method pattern (or create object and call).</p>
+<p>He may rename class to Deadlock for a meaningful name — behavior unchanged.</p>
+<h3>33:32 — Full board summary of the deadlock program</h3>
+<pre class='code'>class A {
+    public synchronized void d1(B b) {
+        System.out.println(&quot;Thread-1 starts execution of d1 method&quot;);
+        try { Thread.sleep(5000); } catch (InterruptedException e) {}
+        System.out.println(&quot;Thread-1 trying to call B last method&quot;);
+        b.last();
+    }
+    public synchronized void last() {
+        System.out.println(&quot;Inside A, this is last method&quot;);
+    }
+}
+
+class B {
+    public synchronized void d2(A a) {
+        System.out.println(&quot;Thread-2 starts execution of d2 method&quot;);
+        try { Thread.sleep(5000); } catch (InterruptedException e) {}
+        System.out.println(&quot;Thread-2 trying to call A last method&quot;);
+        a.last();
+    }
+    public synchronized void last() {
+        System.out.println(&quot;Inside B, this is last method&quot;);
+    }
+}
+
+class Deadlock extends Thread {
+    A a = new A();
+    B b = new B();
+
+    public void m1() {
+        this.start();
+        a.d1(b); // main
+    }
+
+    public void run() {
+        b.d2(a); // child
+    }
+
+    public static void main(String[] args) {
+        new Deadlock().m1();
+    }
+}</pre>
+<h3>33:59 — Experiment: remove ALL synchronized → no deadlock</h3>
+<p>Remove synchronized from all four methods → compile and run:</p>
+<pre class='code'>// Typical run (order may vary slightly):
+Thread-1 starts execution of d1 method
+Thread-2 starts execution of d2 method
+Thread-1 trying to call B last method
+Inside B, this is last method
+Thread-2 trying to call A last method
+Inside A, this is last method
+// program ends — NO deadlock</pre>
+<h3>34:47 — Experiment: only `d1` and `d2` synchronized; `last` not synchronized</h3>
+<p>If only d1/d2 are synchronized and last methods are not:</p>
+<ul><li>T1 holds A, calls b.last() — last is not synchronized → gets chance immediately → completes.</li></ul>
+<ul><li>T2 similarly completes.</li></ul>
+<ul><li>No deadlock (because the cross-call does not require the other object’s lock).</li></ul>
+<h3>35:28 — All four synchronized → cursor blinks forever</h3>
+<p>With all four synchronized + sleep: after the “trying to call last” lines, cursor keeps blinking — program hung.</p>
+<pre class='code'>// prints (then hangs — cursor blinking):
+Thread-1 starts execution of d1 method
+Thread-2 starts execution of d2 method
+Thread-1 trying to call B&#x27;s last method
+Thread-2 trying to call A&#x27;s last method
+// ... forever waiting — deadlock</pre>
+<p>Only “solution” once hung: Ctrl+C / kill the program — not recommended as a real solution; there is no in-process resolution technique. “After 10 days you can come and the cursor is still blinking.”</p>
+<h3>36:34 — Why sleep matters for the demo</h3>
+<p>If you remove sleep:</p>
+<ul><li>No guarantee of deadlock.</li></ul>
+<ul><li>Possible schedule: main gets chance, runs entire d1 including b.last() and finishes in ~one second span, then child starts d2 — no overlapping lock hold → no deadlock.</li></ul>
+<p>With sleep:</p>
+<ul><li>T1 got lock of A and entered sleeping.</li></ul>
+<ul><li>T2 got lock of B and entered sleeping.</li></ul>
+<ul><li>Both hold locks; each then needs the other’s lock → deadlock shown reliably.</li></ul>
+<h3>38:41 — He rewrites / cleans the same example again on board</h3>
+<p>He redraws the same A/B/Deadlock program cleanly (same structure: synchronized d1/d2/last, sleep(5000) or sleep(6000), child via run, main via m1).</p>
+<h3>44:44 — Expected output with blinking cursor noted</h3>
+<p>Board output he wants students to write:</p>
+<p>Thread-1 starts execution of d1 method
+Thread-2 starts execution of d2 method
+Thread-1 trying to call B&#x27;s last method
+Thread-2 trying to call A&#x27;s last method
+// cursor blinking  ← also write this on notes</p>
+<p>“After 10 years also cursor is blinking” because both wait forever.</p>
+<h3>45:58 — Critical interview conclusion about synchronized</h3>
+<p>In this program: if we remove at least one synchronized keyword, the program will not enter deadlock.</p>
+<p>Therefore again:</p>
+<pre class='code'>// Board (dictated many times):
+ // synchronized keyword is the only reason for deadlock situation
+ // Due to this, while using synchronized keyword
+ // we have to take special care</pre>
+<p>(Interview ask: “What is deadlock? Explain with a program.” — this example.)</p>
+<h3>48:13 — Next related word: Starvation (Deadlock vs Starvation)</h3>
+<p>Deadlock vs Starvation — related OS/programming terms with a small minor difference.</p>
+<h3>49:05 — Definitions contrasted</h3>
+<p>Deadlock:</p>
+<ul><li>Long waiting of a thread where waiting never ends.</li></ul>
+<ul><li>That infinite long waiting is deadlock.</li></ul>
+<p>Starvation:</p>
+<ul><li>Long waiting of a thread where waiting ends at a certain point (maybe after a very long time — “10 years, 20 years, 100 years” — but it does end).</li></ul>
+<ul><li>Long waiting that eventually ends = starvation.</li></ul>
+<pre class='code'>// Board:
+ // Long waiting of a thread where waiting never ends → DEADLOCK
+ // Long waiting of a thread where waiting ends at certain point → STARVATION</pre>
+<h3>50:07 — Example for starvation</h3>
+<p>Best example he points to: a low-priority thread that keeps waiting while high-priority threads keep getting the CPU / resource. Waiting is long, but eventually (when high-priority work finishes) the low-priority thread may get a chance → starvation, not deadlock.</p>
+<p>(Transcript has heavy ASR repetition on “low priority thread” through ~54:20; the teaching point is: low-priority thread starved by continuous high-priority activity.)</p>
+<h3>51:37 — Difference restated</h3>
+<ul><li>Deadlock: waiting never ends.</li></ul>
+<ul><li>Starvation: waiting ends at a certain point.</li></ul>
+<h3>54:42 — Close</h3>
+<p>Students must have clear clarity on deadlock and starvation. End of Part-12.</p>
+<p>` ```java ` block count: 10</p>
+<table>
+<tr><th>Field</th><th>Detail</th><th></th><th></th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td><td></td><td></td></tr>
+<tr><td>Position</td><td>Video 92 of 203</td><td></td><td></td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 12</td><td></td><td></td></tr>
+<tr><td>Topic</td><td>DeadLock</td><td></td><td>Starvation</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>55m 06s</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>4U9FUlpvg_U</td><td></td><td></td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=4U9FUlpvg_U</td><td></td><td></td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td><td></td><td></td></tr>
+</table>
+</body></html>

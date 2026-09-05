@@ -1,0 +1,301 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>108-object-class-part-4</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 108 — Object class Part-4: `getClass()`, `finalize()`, `wait()` / `notify()` / `notifyAll()`</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This lecture completes the fifth Object-class method in depth (getClass()), then gives a high-level preview of the remaining Object methods that belong to other topics:</p>
+<ol><li>`getClass()` — runtime class definition, Class object, Reflection API, JDBC vendor-class discovery (main content)</li></ol>
+<ol><li>`finalize()` — Garbage Collector cleanup hook (basic idea only; full GC series later)</li></ol>
+<ol><li>`wait()` / `notify()` / `notifyAll()` — inter-thread communication one-liner + producer–consumer sketch (detailed coverage deferred to Multi Threading)</li></ol>
+<p>Object methods completed before this video: toString(), hashCode(), equals(), clone().</p>
+<p>After this video, the Object-class survey is complete at overview level; Strings begin in Video 109.</p>
+<h2>Part A — `getClass()` method</h2>
+<h3>00:05 — Transition: next Object method is `getClass()`</h3>
+<p>Durga Sir continues the Object-class method tour. The next method after clone() is `getClass()`.</p>
+<p>Purpose (board definition):</p>
+<p>Returns the runtime class definition of an object.</p>
+<p>If you hold an object reference but do not know which concrete class it belongs to, getClass() gives you the `Class` object representing that class at runtime.</p>
+<h3>00:47 — Motivating scenario: `ArrayList` holding unknown element type</h3>
+<p>Setup:</p>
+<p>ArrayList list = new ArrayList();
+Object obj = list.get(0);   // element could be Student, Customer, String, anything</p>
+<ul><li>ArrayList can hold any type of object.</li></ul>
+<ul><li>After get(0), you receive an `Object` reference because the element type is unknown at compile time.</li></ul>
+<ul><li>Requirement: discover the object&#x27;s class — class name, method count, constructors, fields, parent class, etc.</li></ul>
+<p>Solution:</p>
+<p>Class c = obj.getClass();   // runtime Class object for that instance</p>
+<p>Once you have the Class object, you can query class-level properties.</p>
+<h3>02:14 — What you can ask the `Class` object</h3>
+<p>Example — print class name:</p>
+<p>System.out.println(c.getName());
+// e.g. &quot;Student&quot; or &quot;java.lang.String&quot;</p>
+<p>Example — list declared methods:</p>
+<pre class='code'>Method[] m = c.getDeclaredMethods();
+for (Method m1 : m) {
+    System.out.println(m1.getName());
+}</pre>
+<p>Example — count methods:</p>
+<pre class='code'>int count = 0;
+for (Method m1 : m) {
+    count++;
+}
+System.out.println(&quot;The number of methods: &quot; + count);</pre>
+<p>Package note: Method is in java.lang.reflect — may require import java.lang.reflect.*; when using Method[] explicitly.</p>
+<h3>04:36 — Reflection API connection</h3>
+<p>Durga Sir names this concept Reflection. In advanced Java / frameworks, `getClass()` plays a central role in the Reflection API.</p>
+<p>Exam/board summary:</p>
+<ul><li>We can use `getClass()` to obtain the runtime class definition of an object.</li></ul>
+<ul><li>Using the returned `Class` object, we access class-level properties: fully qualified name, methods, constructors, variables, parent class, etc.</li></ul>
+<h3>05:00 — JVM creates one `Class` object per loaded class</h3>
+<p>For every loaded `.class` file (Test, Customer, Student, String, Connection implementation, …), the JVM creates one object of type `java.lang.Class` on the heap.</p>
+<p>After loading Test.class     → one Class object for Test
+After loading String.class   → one Class object for String
+After loading Student.class  → one Class object for Student</p>
+<p>Programmers use this `Class` object to read class-level metadata at runtime.</p>
+<p>`getClass()` usage frequency: very common in Reflection API code.</p>
+<h3>06:25 — Complete signature</h3>
+<pre class='code'>public final Class&lt;?&gt; getClass()</pre>
+<ul><li>`public` — callable from anywhere</li></ul>
+<ul><li>`final` — cannot be overridden (subclasses always use Object&#x27;s implementation tied to actual runtime type)</li></ul>
+<ul><li>Return type: Class&lt;?&gt; (lecture writes Class c for simplicity)</li></ul>
+<h3>08:21 — Example 1: introspect a `String` object</h3>
+<pre class='code'>import java.lang.reflect.*;
+
+class Test {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+
+        Class c = o.getClass();
+
+        System.out.println(&quot;Fully qualified name of class:&quot;);
+        System.out.println(c.getName());
+
+        Method[] m = c.getDeclaredMethods();
+        System.out.println(&quot;Methods information:&quot;);
+        for (Method m1 : m) {
+            System.out.println(m1.getName());
+        }
+
+        int count = 0;
+        for (Method m1 : m) {
+            count++;
+        }
+        System.out.println(&quot;The number of methods: &quot; + count);
+    }
+}</pre>
+<p>Representative output (lecture run):</p>
+<p>Fully qualified name of class:
+java.lang.String
+Methods information:
+hashCode
+equals
+...
+The number of methods: 73</p>
+<p>(String declares many methods — lecture counts 73.)</p>
+<p>Key takeaway: From a plain Object reference o, o.getClass() reveals the real runtime type (java.lang.String) and its members.</p>
+<h3>12:34 — Example 2: JDBC — discover vendor-specific `Connection` class</h3>
+<p>Problem: Connection is an interface. Code uses portable API:</p>
+<p>Connection con = DriverManager.getConnection(url, user, password);</p>
+<p>The actual object is a vendor implementation (MySQL driver class, Oracle driver class, …). You should not hard-code vendor class names — program would work only for one database.</p>
+<p>Portable discovery:</p>
+<pre class='code'>Connection con = DriverManager.getConnection(/* url, user, password */);
+
+System.out.println(con.getClass().getName());</pre>
+<p>Method chaining: con.getClass() → Class object → .getName() → fully qualified implementation class name.</p>
+<ul><li>MySQL environment → MySQL driver class name printed</li></ul>
+<ul><li>Oracle environment → Oracle driver class name printed</li></ul>
+<p>Same pattern works whenever you have an object but need underlying class information without naming the vendor class in source code.</p>
+<h3>22:50 — Object methods completed so far (checkpoint)</h3>
+<p>After getClass(), these five Object methods are done in the java.lang Object series:</p>
+<p>Remaining Object methods get brief preview here; deep dives are in GC and Multi Threading modules.</p>
+<h2>Part B — `finalize()` method (Garbage Collection preview)</h2>
+<h3>23:07 — Not full GC context, but basic idea required</h3>
+<p>finalize() relates to Garbage Collection. Full finalization/GC internals (~2.5–3 hours) come in the Garbage Collection module; here only the story + contract.</p>
+<h3>23:27 — Eligibility for GC</h3>
+<p>An object with no reference variables pointing to it is eligible for garbage collection — a &quot;useless&quot; object.</p>
+<h3>24:03 — Durga Sir&#x27;s GC narrative (memory hook)</h3>
+<ol><li>GC finds eligible object → &quot;happy&quot; (found food — useless objects).</li></ol>
+<ol><li>GC prepares to destroy the object.</li></ol>
+<ol><li>Object &quot;panics&quot; / has resources still open (DB connection, network socket, …).</li></ol>
+<ol><li>Compassionate GC asks: &quot;Do you have any last wish?&quot;</li></ol>
+<ol><li>Object asks to close connections before death.</li></ol>
+<ol><li>GC calls `finalize()` on the object to perform cleanup activities.</li></ol>
+<ol><li>After finalize() completes → GC destroys the object.</li></ol>
+<h3>26:19 — Contract (board notes)</h3>
+<p>protected void finalize() throws Throwable</p>
+<p>Interview one-liner: Just before destroying an object, GC calls finalize() to perform cleanup; once finalize completes, the object is destroyed.</p>
+<p>Modern note (outside lecture): finalize() is deprecated since Java 9 and removed in recent JDKs; prefer try-with-resources / Cleaner / explicit close(). Durga Sir teaches the SCJP-era model for exam history and conceptual link to GC.</p>
+<h2>Part C — `wait()`, `notify()`, `notifyAll()` (Multi Threading preview)</h2>
+<h3>28:44 — Remaining Object methods</h3>
+<p>Object class still has: `wait()` (3 overloads), `notify()`, `notifyAll()`.</p>
+<p>Full treatment (~3 hours) belongs in Multi Threading; here: purpose in one line.</p>
+<h3>29:17 — Inter-thread communication</h3>
+<p>These methods can be used for inter-thread communication.</p>
+<h3>29:26 — Producer–consumer sketch</h3>
+<pre class='code'>// Shared resource (e.g. Queue)
+Queue q = ...;
+
+// Thread T1 = Consumer — expects items in queue
+// Thread T2 = Producer — adds items to queue</pre>
+<p>Flow:</p>
+<ol><li>Consumer expects update but queue is empty → calls `wait()` → thread enters WAITING state (&quot;notify me when someone updates&quot;).</li></ol>
+<ol><li>Producer produces item → calls `notify()` or `notifyAll()` → waiting consumer receives notification → continues with updated queue.</li></ol>
+<p>Responsibilities:</p>
+<p>Board summary:</p>
+<ul><li>We can use wait(), notify(), notifyAll() for inter-thread communication.</li></ul>
+<ul><li>Thread expecting updation → `wait()` → waiting state.</li></ul>
+<ul><li>Thread that performed updation → `notify()` → waiting thread gets notification and continues execution with those updates.</li></ul>
+<h3>34:15 — Session close</h3>
+<p>At this stage, all 11 public Object methods (excluding private registerNatives()) have been introduced across the java.lang Object series. Next topic in playlist: String class (Video 109).</p>
+<h2>Quick reference card</h2>
+<p>getClass()
+├── Signature: public final Class&lt;?&gt; getClass()
+├── Returns: runtime Class object for object&#x27;s actual type
+├── Use: Reflection — name, methods, constructors, superclass, ...
+├── JVM: one Class object per loaded class file on heap
+└── JDBC pattern: con.getClass().getName() → vendor driver class
+
+finalize()
+├── Called by: Garbage Collector (not normal application code)
+├── When: just before object destruction
+├── Purpose: cleanup activities (close resources)
+└── After finalize(): object destroyed by GC
+
+wait() / notify() / notifyAll()
+├── Purpose: inter-thread communication
+├── wait(): thread expecting update → WAITING state
+└── notify()/notifyAll(): updater wakes waiting thread(s)</p>
+<h2>Exam traps &amp; interview lines</h2>
+<h2>Full transcript coverage (timestamp index)</h2>
+<h2>ASR decode notes (Whisper STT corrections)</h2>
+<p>End of Video 108 notes — java.lang Part-4: getClass(), finalize(), wait/notify preview</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: java.lang.package Part-4 \</td><td>\</td><td>object class \</td><td>\</td><td>finalize() \</td><td>\</td><td>getclass() \</td><td>\</td><td>notify()</td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Position</td><td>108 of 203</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Series</td><td>java.lang.package Part-4 (Object class methods — continues Part-3 equals())</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Topic</td><td>getClass(), Reflection intro, Class objects, finalize(), inter-thread communication preview</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Duration</td><td>34m 29s</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>3gQdOltJ89k</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=3gQdOltJ89k</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Transcript source</td><td>Local Whisper STT (.transcripts/108-3gQdOltJ89k.txt)</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>API (examples)</th></tr>
+<tr><td>Fully qualified class name?</td><td>c.getName()</td></tr>
+<tr><td>How many methods?</td><td>c.getDeclaredMethods()</td></tr>
+<tr><td>Method names?</td><td>loop + m.getName()</td></tr>
+<tr><td>Constructors, fields, superclass?</td><td>other Class APIs (mentioned conceptually)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Method</th><th>Status in series</th></tr>
+<tr><td>1</td><td>toString()</td><td>covered (Part-1)</td></tr>
+<tr><td>2</td><td>hashCode()</td><td>covered (Part-2)</td></tr>
+<tr><td>3</td><td>equals()</td><td>covered (Part-3)</td></tr>
+<tr><td>4</td><td>clone()</td><td>covered (Part-13 video 118)</td></tr>
+<tr><td>5</td><td>getClass()</td><td>this video</td></tr>
+</table>
+<table>
+<tr><th>Point</th><th>Detail</th></tr>
+<tr><td>Who calls?</td><td>Garbage Collector (not the programmer directly in normal code)</td></tr>
+<tr><td>When?</td><td>Just before destroying an object</td></tr>
+<tr><td>Why?</td><td>To perform cleanup activities (close files, sockets, release native resources)</td></tr>
+<tr><td>After finalize()?</td><td>GC automatically destroys the object</td></tr>
+</table>
+<table>
+<tr><th>Thread role</th><th>Calls</th><th>Effect</th></tr>
+<tr><td>Expecting update (consumer)</td><td>wait()</td><td>Enters waiting state until notified</td></tr>
+<tr><td>Performing update (producer)</td><td>notify() / notifyAll()</td><td>Waiting thread(s) wake and continue</td></tr>
+</table>
+<table>
+<tr><th>Trap / question</th><th>Answer</th></tr>
+<tr><td>Return type of getClass()?</td><td>Class&lt;?&gt; (runtime class object)</td></tr>
+<tr><td>Can we override getClass()?</td><td>No — final</td></tr>
+<tr><td>Why Object obj = list.get(0) then obj.getClass()?</td><td>Discover real runtime type when compile-time type is only Object</td></tr>
+<tr><td>One Class object or many per class?</td><td>One Class object per loaded class</td></tr>
+<tr><td>Who calls finalize()?</td><td>Garbage Collector before destruction</td></tr>
+<tr><td>Purpose of finalize()?</td><td>Cleanup activities</td></tr>
+<tr><td>Where are wait/notify used?</td><td>Inter-thread communication (Multi Threading)</td></tr>
+<tr><td>How many Object methods for exam?</td><td>11 (exclude private registerNatives())</td></tr>
+</table>
+<table>
+<tr><th>Time</th><th>Topic</th></tr>
+<tr><td>00:05</td><td>Introduce getClass()</td></tr>
+<tr><td>00:32</td><td>Returns runtime class definition of an object</td></tr>
+<tr><td>00:47</td><td>ArrayList / unknown element type scenario</td></tr>
+<tr><td>01:29</td><td>Hold as Object; use getClass() for class info</td></tr>
+<tr><td>02:14</td><td>Class c = obj.getClass()</td></tr>
+<tr><td>02:49</td><td>c.getName(), c.getDeclaredMethods()</td></tr>
+<tr><td>04:36</td><td>Reflection API; role of getClass()</td></tr>
+<tr><td>05:00</td><td>JVM creates one Class object per loaded class</td></tr>
+<tr><td>06:15</td><td>Board: use getClass for runtime class definition</td></tr>
+<tr><td>06:25</td><td>Signature public final Class getClass()</td></tr>
+<tr><td>07:04</td><td>Class-level properties via Class object</td></tr>
+<tr><td>08:21</td><td>Example 1: String introspection program</td></tr>
+<tr><td>11:13</td><td>Method in java.lang.reflect</td></tr>
+<tr><td>11:45</td><td>Output: java.lang.String, 73 methods</td></tr>
+<tr><td>12:34</td><td>Example 2: JDBC Connection vendor class</td></tr>
+<tr><td>13:18</td><td>Do not hard-code vendor class names</td></tr>
+<tr><td>19:07</td><td>con.getClass().getName() chaining</td></tr>
+<tr><td>19:59</td><td>Board: JVM Class object creation on class load</td></tr>
+<tr><td>22:34</td><td>getClass used frequently in Reflection</td></tr>
+<tr><td>22:50</td><td>Five methods done: toString, hashCode, equals, clone, getClass</td></tr>
+<tr><td>23:07</td><td>Introduce finalize()</td></tr>
+<tr><td>23:24</td><td>Related to Garbage Collector</td></tr>
+<tr><td>23:40</td><td>Eligible object (no references)</td></tr>
+<tr><td>24:03</td><td>GC narrative — last wish / cleanup</td></tr>
+<tr><td>26:19</td><td>GC calls finalize for cleanup before destroy</td></tr>
+<tr><td>27:10</td><td>Full GC/finalization deferred to later module</td></tr>
+<tr><td>28:44</td><td>Remaining: wait, notify, notifyAll</td></tr>
+<tr><td>29:17</td><td>Inter-thread communication purpose</td></tr>
+<tr><td>29:26</td><td>Producer–consumer / Queue analogy</td></tr>
+<tr><td>30:07</td><td>Consumer calls wait() → waiting state</td></tr>
+<tr><td>30:18</td><td>Producer calls notify() after update</td></tr>
+<tr><td>32:07</td><td>Board: wait vs notify responsibilities</td></tr>
+<tr><td>34:00</td><td>Preview only; detail in Multi Threading</td></tr>
+<tr><td>34:15</td><td>All 11 Object methods surveyed — session end</td></tr>
+</table>
+<table>
+<tr><th>Heard (Whisper)</th><th>Intended</th></tr>
+<tr><td>get the class / get a class</td><td>getClass()</td></tr>
+<tr><td>Uralist / URL list</td><td>ArrayList</td></tr>
+<tr><td>getaf0 / get ab 0</td><td>get(0)</td></tr>
+<tr><td>object bo / O be J</td><td>Object obj</td></tr>
+<tr><td>java dot length / Jawarat Lange</td><td>java.lang</td></tr>
+<tr><td>class class object</td><td>Class object (type java.lang.Class)</td></tr>
+<tr><td>reflections / reflection</td><td>Reflection API</td></tr>
+<tr><td>Javiyam</td><td>JVM</td></tr>
+<tr><td>Kanese / con</td><td>Connection con</td></tr>
+<tr><td>my skill / vehicle</td><td>MySQL / Oracle (database vendors)</td></tr>
+<tr><td>varicule</td><td>Oracle</td></tr>
+<tr><td>APN names</td><td>API names</td></tr>
+<tr><td>Pushing meta / hash core meta</td><td>toString(), hashCode()</td></tr>
+<tr><td>Finalize meta / ice-mether</td><td>finalize() method</td></tr>
+<tr><td>Carveic / Garbe / Gorbis collector</td><td>Garbage Collector</td></tr>
+<tr><td>keep sabading / subtering</td><td>listen carefully</td></tr>
+<tr><td>Aisium / conjomer / produsor</td><td>assume / consumer / producer</td></tr>
+<tr><td>Weight method</td><td>wait() method</td></tr>
+<tr><td>notified method</td><td>notify() method</td></tr>
+<tr><td>eighth notified</td><td>wait(), notify()</td></tr>
+</table>
+</body></html>

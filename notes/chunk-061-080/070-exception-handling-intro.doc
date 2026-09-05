@@ -1,0 +1,799 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>070-exception-handling-intro</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 070 — Exception handling introduction</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Exception Handling Part-1 || Introduction</p>
+<p>Source: real YouTube auto-captions (.transcripts/070-zg4jYJjNEYI.txt). ASR decoded in place: exception ending / exceptional handling = exception handling; entry room / entryum = interview; comp / comps / compile errors = compile-time errors; finally PL = finally block; T with resources = try-with-resources; keep supporting / keep subing = keep copying (board); Wanastali purum = Vanasthalipuram; atagar / asanagar / Saranagar = Ameerpet; Mipiatam / Maidipam / Adipatam / Modiam / miatam = Madhapur; massup tank = Masab Tank; two-heer bike = two-wheeler; tire got punched / punchured / punchard = tire got punctured; power gun = power gone; slipping exception = SleepingException (classroom name, not in the API); locating get London = located at London; file not found exception = FileNotFoundException; SQL exception = SQLException; public static v / y main string array accept = public static void main(String[] args); do stuff / do stop = doStuff(); do more stuff / do more of = doMoreStuff(); SOP / system.out.print print len = System.out.println; runtime ST / step = runtime stack; cmd = created (runtime stack for main thread); class test analy = class Test only; huh m = matinee (morning-show vs evening-show ticket joke).</p>
+<p>This video is only introduction + runtime stack mechanism on a happy-path program. He announces default exception handling as the next heading at 54:26 and stops. Do not invent JVM default-handler / printStackTrace / main dying details here.</p>
+<h3>00:04 — Next topic: exception handling (his favorite)</h3>
+<p>Next topic: exception handling. He calls it the most valuable concept in the total Java. It is one of his favorite topics. After this series you should get each and every point related to exception handling.</p>
+<p>He starts with the agenda — he says the agenda itself is strong; you can cross-check against it later.</p>
+<h3>00:37 — Spoken agenda (the full series, not this video)</h3>
+<p>He lists what the whole exception-handling series will cover. This Part-1 video does not teach items after introduction + runtime stack. He is only spelling the map:</p>
+<ol><li>What is exception and what is the meaning of exception handling.</li></ol>
+<ol><li>Runtime stack mechanism — for every thread a runtime stack is created; how that stack plays a role in exception handling.</li></ol>
+<ol><li>Default exception handling in Java — if you are not handling any exception, what is Java doing by default.</li></ol>
+<ol><li>Exception hierarchy — most valuable: Throwable is the parent; Exception and Error are children. Difference between exception and error. Checked exception vs unchecked exception.</li></ol>
+<ol><li>Customized exception handling by using try-catch — role of try and catch.</li></ol>
+<ol><li>Control flow in try-catch — within try, if an exception rises and catch matches, what happens; if catch does not match, what happens; if there is no exception, what is the flow.</li></ol>
+<ol><li>Methods to print exception information — three methods.</li></ol>
+<ol><li>try with multiple catch blocks — you can take multiple catch blocks for the same try; in which situation, and which rules.</li></ol>
+<ol><li>finally block.</li></ol>
+<ol><li>Interview favorite: difference between `final`, `finally`, `finalize`.</li></ol>
+<ol><li>Control flow in try-catch-finally (he already listed control flow in try-catch; this is the finally version).</li></ol>
+<ol><li>Control flow in nested try-catch-finally — within try another try-catch-finally.</li></ol>
+<ol><li>Various possible combinations of try-catch-finally — almost 24 or 25 combinations: try-catch-finally, try without catch, finally without try, try-catch inside finally, and so on.</li></ol>
+<ol><li>`throw` and `throws` — throw keyword, throws keyword.</li></ol>
+<ol><li>Exception-handling keyword summary — what are the various exception-handling keywords.</li></ol>
+<ol><li>Various possible compile errors in exception handling — almost eight or nine compile errors; every compile error itself is an important interview question.</li></ol>
+<ol><li>Customized / user-defined exceptions (our own exceptions) — how to define, how to use.</li></ol>
+<ol><li>Ten exception case studies — ten commonly occurring exceptions. Example he names: NullPointerException — when do we get it, explain with an example, checked or unchecked, behavior.</li></ol>
+<ol><li>Java 1.7 enhancements — two things: try-with-resources, and multi-catch block.</li></ol>
+<p>He slips “this is about agenda for multi-threading” then immediately talks 20 / 21 / 22 exception subtopics. Decode: this agenda is for exception handling, not multi-threading.</p>
+<p>Guarantee he gives: after these ~20 topics you can declare yourself king in exception handling.</p>
+<h3>04:56 — Board time: copy the agenda (long pause)</h3>
+<p>Classroom copy. He says “take clearly.” Applause / silence while the board is written. Same list as above, now as a board heading list:</p>
+<ul><li>Introduction</li></ul>
+<ul><li>Runtime stack mechanism</li></ul>
+<ul><li>Default exception handling in Java</li></ul>
+<ul><li>Exception hierarchy</li></ul>
+<ul><li>Customized exception handling by using try-catch</li></ul>
+<ul><li>Control flow in try-catch</li></ul>
+<ul><li>Methods to print exception information</li></ul>
+<ul><li>try with multiple catch blocks</li></ul>
+<ul><li>finally block</li></ul>
+<ul><li>(final vs finally vs finalize was spoken earlier; he is still on the same agenda)</li></ul>
+<ul><li>Control flow in try-catch-finally / nested try-catch-finally / combinations</li></ul>
+<ul><li>throw / throws / keyword summary / compile errors / user-defined exceptions / 10 case studies</li></ul>
+<ul><li>Java 1.7: try-with-resources, multi-catch</li></ul>
+<h3>08:32 — Agenda is itself a big topic</h3>
+<p>He says the agenda itself looks like a big topic. Count on the board: 17 subtopics, then he says almost 20 subtopics. Time estimate: around 15 to 20 hours on exception handling.</p>
+<p>He re-reads the first block slowly so they copy:</p>
+<ul><li>Introduction</li></ul>
+<ul><li>Runtime stack mechanism</li></ul>
+<ul><li>Default exception handling in Java</li></ul>
+<ul><li>Exception hierarchy</li></ul>
+<ul><li>Customized exception handling by using try-catch</li></ul>
+<ul><li>Control flow in try-catch</li></ul>
+<ul><li>Methods to print exception information</li></ul>
+<ul><li>try with multiple catch blocks</li></ul>
+<ul><li>finally block</li></ul>
+<h3>09:51 — First four subtopics are theory (a bit boring)</h3>
+<p>First four subtopics are purely theoretical. Take special care. A bit boring, a bit theory. After those four, the remaining things become more interesting.</p>
+<p>The four theory items (this video starts #1 and finishes #2; #3 is only announced):</p>
+<ol><li>Introduction (definitions).</li></ol>
+<ol><li>Runtime stack mechanism.</li></ol>
+<ol><li>Default exception handling in Java (next video).</li></ol>
+<ol><li>Exception hierarchy (later).</li></ol>
+<h3>10:17 — Java 1.7 two enhancements (agenda only)</h3>
+<p>In the 1.7 version:</p>
+<ul><li>try-with-resources came</li></ul>
+<ul><li>multi-catch block</li></ul>
+<p>He writes on the board: “T with resources. Multi catch block.” Agenda only — no 1.7 syntax in this video.</p>
+<h3>11:08 — Introduction: “Can you define what is an exception?”</h3>
+<p>Heading: Introduction.</p>
+<p>He asks the class: What is an exception? He wants a definition so complete that the other person should not need to ask a follow-up.</p>
+<p>Student answers he accepts as relevant (not the exact definition yet):</p>
+<ul><li>runtime</li></ul>
+<ul><li>unexpected situation</li></ul>
+<ul><li>abnormal termination of the program</li></ul>
+<ul><li>runtime error</li></ul>
+<p>All relevant. Now he wants the exact definition, via stories, then a technical example.</p>
+<h3>12:01 — Story 1: Vanasthalipuram student, 7:00 Ameerpet class, then SleepingException</h3>
+<p>To attend this session, one person came from Vanasthalipuram — Hyderabad outskirts, he says around 30 km or 40 km.</p>
+<p>Schedule he builds:</p>
+<ul><li>Class at 7:00 morning in Ameerpet</li></ul>
+<ul><li>So the person must start by 6:00 minimum</li></ul>
+<ul><li>To start at 6:00 he must wake at 5:30 a.m.</li></ul>
+<ul><li>To wake at 5:30 he keeps the alarm at 2:00 (snooze, snooze, snooze)</li></ul>
+<ul><li>2:00 alarm → snoozing → at 5:30 he gets out of bed</li></ul>
+<ul><li>5:30–6:00 get ready, bus stop, luckily at 6:00 he got the bus</li></ul>
+<ul><li>By 7:00 he is in the classroom in Ameerpet</li></ul>
+<p>Everything according to the flow. After class starts, remaining flow: whatever faculty is telling, listen carefully, use that concept in the interview or on the job — that remaining flow is the point of coming.</p>
+<p>Then: class started at 7:00; after 5 to 10 minutes this person is getting sleep. Total purpose is disturbed.</p>
+<p>The event: sleeping. An unexpected, unwanted event that disturbs the normal flow of execution.</p>
+<p>In this example the exception is SleepingException.</p>
+<p>He immediately: do not ask in which Java package `SleepingException` is. It is our own created name. It is not there in the API.</p>
+<pre class='code'>class SleepingExceptionDemo {
+    public static void main(String[] args) {
+        // normal flow of the 7:00 Ameerpet class (Vanasthalipuram student):
+        // 02:00 alarm → 05:30 wake → 06:00 bus → 07:00 classroom
+        System.out.println(&quot;class started — listen to faculty&quot;);
+        System.out.println(&quot;use the concept in interview / job&quot;);
+
+        // after 5–10 minutes: unexpected unwanted event
+        // SleepingException — classroom name only, NOT in the Java API
+        System.out.println(&quot;SleepingException — remaining flow disturbed&quot;);
+    }
+}
+class SleepingExceptionDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;class started — listen to faculty&quot;);
+        System.out.println(&quot;use the concept in interview / job&quot;);
+        System.out.println(&quot;SleepingException — remaining flow disturbed&quot;);
+    }
+}
+// prints class started — listen to faculty
+// prints use the concept in interview / job
+// prints SleepingException — remaining flow disturbed</pre>
+<h3>15:26 — Story 2: Madhapur, two-wheeler, Masab Tank, TirePuncturedException</h3>
+<p>Second person starts from Madhapur — nearby compared with Vanasthalipuram. For 7:00 class he can start at 6:30; ~20 minutes is enough Madhapur → Ameerpet.</p>
+<p>He started at 6:30 from his room on a two-wheeler. After class at 9:00 he should go to the office. That is the day’s schedule.</p>
+<p>After crossing Masab Tank, they take a left turn. Suddenly the tire got punctured. Early morning — no repair shop. By walk he has to go back to the room. That day he misses the class.</p>
+<p>The event that disturbs the normal flow: TirePuncturedException.</p>
+<p>Same definition: any unwanted unexpected event that disturbs the normal flow of the program is an exception — SleepingException, TirePuncturedException, or a real Java one next.</p>
+<pre class='code'>class TirePuncturedExceptionDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;6:30 start from Madhapur on two-wheeler&quot;);
+        System.out.println(&quot;after Masab Tank take left — 7:00 class, 9:00 office&quot;);
+        // unexpected unwanted event — classroom name, not in the API
+        System.out.println(&quot;TirePuncturedException — walk back, miss the class&quot;);
+    }
+}
+// prints 6:30 start from Madhapur on two-wheeler
+// prints after Masab Tank take left — 7:00 class, 9:00 office
+// prints TirePuncturedException — walk back, miss the class</pre>
+<h3>17:19 — Technical example: remote file at London → FileNotFoundException</h3>
+<p>Now a Java example so the definition is technical.</p>
+<p>Requirement: read data from a remote file located at London.</p>
+<p>Program started normally. At runtime, whenever he tries to read that London file, the remote file is not there. Unwanted unexpected event that disturbs the normal flow — he requires the data in that file, it is not available.</p>
+<p>Immediately: `FileNotFoundException`.</p>
+<p>Because the file is not there he is not having the data; he cannot continue further; the program will be terminated abnormally.</p>
+<p>Exception may be SleepingException, TirePuncturedException, `FileNotFoundException`, `SQLException`, any exception. Exception means: that which disturbs the normal flow of the program.</p>
+<pre class='code'>import java.io.FileNotFoundException;
+import java.io.FileReader;
+
+class ReadLondonFile {
+    public static void main(String[] args) throws FileNotFoundException {
+        // requirement: read data from remote file located at London
+        System.out.println(&quot;program started normally&quot;);
+        FileReader fr = new FileReader(&quot;london-file.txt&quot;); // file not there at runtime
+        System.out.println(&quot;this line is not reached&quot;);
+    }
+}
+// runtime: FileNotFoundException — program terminated abnormally
+// (he has not taught try-catch yet; this is the unhandled case he is describing)</pre>
+<p>If that throws clause is omitted, FileNotFoundException is checked and the compiler stops you — he has not taught checked vs unchecked yet. The runtime story he wants is: London file missing → FileNotFoundException → abnormal termination.</p>
+<pre class='code'>class LondonFileStory {
+    public static void main(String[] args) {
+        System.out.println(&quot;program started normally&quot;);
+        System.out.println(&quot;try to read remote file located at London&quot;);
+        // at runtime London file is not available
+        // FileNotFoundException — cannot continue, terminated abnormally
+    }
+}
+// prints program started normally
+// prints try to read remote file located at London</pre>
+<h3>18:54 — Board definition (he dictates it many times)</h3>
+<p>He writes, repeating for copy:</p>
+<p>An unexpected unwanted event that disturbs the normal flow of the program is called exception.</p>
+<p>Examples on the same board:</p>
+<ul><li>TirePuncturedException</li></ul>
+<ul><li>SleepingException</li></ul>
+<ul><li>FileNotFoundException</li></ul>
+<ul><li>etc.</li></ul>
+<p>Interview shape he wants:</p>
+<ul><li>What is an exception? An unwanted unexpected event that disturbs the normal flow of a program is called exception.</li></ul>
+<ul><li>Give an example. FileNotFoundException, SleepingException, TirePuncturedException.</li></ul>
+<pre class='code'>class ExceptionDefinitionBoard {
+    public static void main(String[] args) {
+        // BOARD:
+        // An unexpected unwanted event that disturbs
+        // the normal flow of the program is called exception.
+        //
+        // Example: TirePuncturedException, SleepingException,
+        //          FileNotFoundException etc.
+        System.out.println(&quot;exception = unexpected unwanted event that disturbs normal flow&quot;);
+    }
+}
+// prints exception = unexpected unwanted event that disturbs normal flow</pre>
+<h3>20:46 — Is it recommended to handle exceptions? Highly recommended</h3>
+<p>Is it recommended to handle exceptions? Yes. Highly recommended — the topic name is exception handling.</p>
+<p>Then: what is the purpose of exception handling?</p>
+<h3>21:21 — “Something goes wrong” is very common</h3>
+<p>If everything happened according to our expectation, he says he would not be here and you would not be here. Something goes wrong — very common.</p>
+<p>Even if something goes wrong: we should not miss anything, we should not lose anything, and we have to continue normally. That is how we have to handle.</p>
+<p>Life example: you are typing a project report on the system. Two hours adjusting that diagram, typing, a big activity. Suddenly power gone. You did not save. At least once in a lifetime. After 10–15 minutes power comes; all typed data is gone. You blame yourself. You have to retype. You missed something because of that exception.</p>
+<p>Handle exceptions such that we should not miss anything.</p>
+<pre class='code'>class ProjectReportUnsaved {
+    public static void main(String[] args) {
+        System.out.println(&quot;type project report for 2 hours&quot;);
+        System.out.println(&quot;diagram adjusted — not saved&quot;);
+        // power gone
+        System.out.println(&quot;typed data gone — have to retype — we missed something&quot;);
+    }
+}
+// prints type project report for 2 hours
+// prints diagram adjusted — not saved
+// prints typed data gone — have to retype — we missed something</pre>
+<h3>23:00 — Programmatic purpose: open DB, read, SQLException, leaked connection</h3>
+<p>Board-style program (three steps):</p>
+<ol><li>Open DB connection</li></ol>
+<ol><li>Read the data</li></ol>
+<ol><li>Close the database</li></ol>
+<p>He successfully opens the connection. While reading data, suddenly `SQLException`.</p>
+<p>If he is not handling `SQLException`: the program is terminated here only. Who is going to close the database connection? No one. One connection stays open — wasted.</p>
+<p>If this type of program happens 10 times, 10 connections are wasted.</p>
+<p>His database server can support only 10 connections. The 11th person came to communicate with the database and cannot. Entire application is going to be down.</p>
+<pre class='code'>class OpenDbReadClose {
+    public static void main(String[] args) {
+        openDbConnection();
+        readTheData();          // SQLException here if not handled
+        closeTheDatabase();     // NEVER reached — connection wasted
+    }
+
+    static void openDbConnection() {
+        System.out.println(&quot;open DB connection&quot;);
+    }
+
+    static void readTheData() {
+        System.out.println(&quot;read the data&quot;);
+        // suddenly SQLException — program terminated here only
+        // who closes the connection? no one
+    }
+
+    static void closeTheDatabase() {
+        System.out.println(&quot;close the database&quot;);
+    }
+}
+// prints open DB connection
+// prints read the data
+// (if SQLException is unhandled: close the database is NOT printed)</pre>
+<p>Ten leaks then the 11th client fails — same idea as his spoken numbers:</p>
+<pre class='code'>class TenConnectionsWasted {
+    public static void main(String[] args) {
+        int serverLimit = 10;
+        int leaked = 10; // 10 runs, 10 unclosed connections
+        int eleventhPerson = 1;
+        if (leaked + eleventhPerson &gt; serverLimit) {
+            System.out.println(&quot;11th person cannot communicate — entire application down&quot;);
+        }
+    }
+}
+// prints 11th person cannot communicate — entire application down</pre>
+<h3>24:29 — Main purpose: graceful termination (close, then stop)</h3>
+<p>Main purpose of exception handling: if an exception occurs, first close the database connection and then stop the program. Close, then stop.</p>
+<p>Because of the exception we should not miss anything and should not block any resources.</p>
+<p>Graceful termination of the program is the main objective.</p>
+<p>If while reading data some exception got raised: no problem — close the database connection and then stop, so that connection is available for the next person. He is not going to block any resource.</p>
+<pre class='code'>class OpenDbGraceful {
+    public static void main(String[] args) {
+        openDbConnection();
+        try {
+            readTheData();
+            closeTheDatabase();
+        } catch (Exception e) { // he named SQLException
+            closeTheDatabase(); // first close
+            // then stop the program — connection free for the next person
+            return;
+        }
+    }
+
+    static void openDbConnection() {
+        System.out.println(&quot;open DB connection&quot;);
+    }
+
+    static void readTheData() {
+        System.out.println(&quot;read the data&quot;);
+        throw new RuntimeException(&quot;SQLException while reading&quot;);
+    }
+
+    static void closeTheDatabase() {
+        System.out.println(&quot;close the database&quot;);
+    }
+}
+// prints open DB connection
+// prints read the data
+// prints close the database</pre>
+<p>He has not taught catch syntax yet in this Part-1 — the idea on the board is: exception while read → still close, then stop. finally is a later agenda item; he does not write finally here.</p>
+<h3>25:16 — Laptop UPS analogy (5 minutes): save, then shut down</h3>
+<p>Suppose power gone. He has some 5 minutes backup. Whatever work he did, he saves all that work and then shuts down the system. When power comes, open the document and continue. This type of arrangement is exception handling.</p>
+<p>Graceful termination meaning: we should not miss anything, we should not lose anything.</p>
+<pre class='code'>class FiveMinuteBackup {
+    public static void main(String[] args) {
+        System.out.println(&quot;power gone — 5 minutes backup&quot;);
+        System.out.println(&quot;save all work&quot;);
+        System.out.println(&quot;shut down the system&quot;);
+        // when power comes: open document and continue
+    }
+}
+// prints power gone — 5 minutes backup
+// prints save all work
+// prints shut down the system</pre>
+<h3>25:50 — Board: highly recommended + main objective</h3>
+<p>He dictates (many repetitions):</p>
+<p>It is highly recommended to handle exceptions.</p>
+<p>The main objective of exception handling is graceful termination of the program.</p>
+<p>Two questions he wants you to answer:</p>
+<ol><li>What is exception?</li></ol>
+<ol><li>What is the purpose of exception handling? → graceful termination; we should not miss/lose anything.</li></ol>
+<h3>26:56 — Meaning of exception handling: can we *repair* the exception?</h3>
+<p>Next: what is the meaning of exception handling? Can he use the word as repairing an exception? Can he repair that exception?</p>
+<h3>27:12 — Same Madhapur puncture at 6:45 — three approaches (only #3 is handling)</h3>
+<p>Person from Madhapur. In the middle, tire punctured early morning 6:45 a.m. Three options:</p>
+<p>Approach 1: Leave the bike there, take an auto, come to the class. You attend the class, but after class if you go back the bike may be there or may not. You are missing something. Not good. Not exception handling.</p>
+<p>Approach 2: Take the bike back to the room. By that time class is over — you miss the class. Also not good. You are missing something.</p>
+<p>Approach 3 (recommended): Tire punctured → immediately (~1 minute) park at a known place nearby. Friend’s room is just beside, two lanes later. Intimate the friend: “I am keeping my bike here; after class I will come back and take it.” Place it in a safe place, take the auto, come to class.</p>
+<p>Among these, third approach is good: you are not going to miss the bike, you are not going to miss the class. Maybe one or two minutes delay — nothing will happen.</p>
+<pre class='code'>class ThreeApproachesAt645 {
+    public static void main(String[] args) {
+        System.out.println(&quot;6:45 TirePuncturedException&quot;);
+
+        // 1. leave bike on road + auto to class
+        //    attend class, but bike may not be there later — missing something — NOT handling
+
+        // 2. walk bike back to room
+        //    miss the class — missing something — NOT handling
+
+        // 3. park at friend room, intimate friend, auto to class, collect later
+        System.out.println(&quot;park at friend room + auto to class&quot;);
+        System.out.println(&quot;do not miss bike, do not miss class&quot;);
+    }
+}
+// prints 6:45 TirePuncturedException
+// prints park at friend room + auto to class
+// prints do not miss bike, do not miss class</pre>
+<h3>29:12 — Definition: alternative way to continue rest of the program normally</h3>
+<p>Defining alternative way to continue rest of the program normally is the concept of exception handling.</p>
+<ul><li>Bike is not working → take the auto and continue the journey.</li></ul>
+<ul><li>Did not get bus ticket → try train ticket; if not possible, try flight ticket — journey should not be stopped. Arranging a special bus is not his job; he is not responsible to provide the bus ticket.</li></ul>
+<ul><li>Something goes wrong — very common. Have some alternative and continue rest of the program normally.</li></ul>
+<pre class='code'>class BusThenTrain {
+    public static void main(String[] args) {
+        try {
+            takeBus();
+        } catch (Exception busTicketNotAvailable) {
+            takeTrain(); // alternative way — journey is not stopped
+        }
+    }
+
+    static void takeBus() {
+        throw new RuntimeException(&quot;bus ticket not available&quot;);
+    }
+
+    static void takeTrain() {
+        System.out.println(&quot;train ticket — continue rest of the journey normally&quot;);
+    }
+}
+// prints train ticket — continue rest of the journey normally</pre>
+<p>He has not taught try/catch/throw as syntax yet; this is the meaning he is about to write as a try/catch sketch for the London file.</p>
+<h3>29:53 — Classroom UPS: power gone, class still continues (5 hours backup)</h3>
+<p>A few minutes before (in the classroom) power gone. Is the class still in continuation? Yes — they have 5 hours power backup. Even power gone (very common), class should still continue. Having an alternative way to continue the program normally = exception handling.</p>
+<p>(This is a different UPS number from the laptop “5 minutes save then shut down” story. Laptop = graceful save/stop. Classroom generator = continue via alternative power.)</p>
+<pre class='code'>class ClassroomPowerBackup {
+    public static void main(String[] args) {
+        System.out.println(&quot;power gone&quot;);
+        System.out.println(&quot;5 hours backup — class continues&quot;);
+    }
+}
+// prints power gone
+// prints 5 hours backup — class continues</pre>
+<h3>30:17 — Programmatic meaning: London file missing → use local file (try/catch sketch)</h3>
+<p>Requirement: read data from remote file located at London.</p>
+<p>At runtime if London file is not available, the program should not be terminated abnormally. He defines a catch block: if FileNotFoundException occurs, use a local file he kept on the safe side in his system, and continue rest of the program normally.</p>
+<p>Defining this alternative way is exception handling.</p>
+<p>Exception handling does not mean we are repairing that exception. If London file is not available he cannot do anything — he is not responsible to place the London file. Safe side: use local file and continue.</p>
+<p>Same idea: morning-show ticket not available → try matinee or evening show. Having an alternative way to continue rest of the program normally.</p>
+<pre class='code'>import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
+class ReadLondonOrLocal {
+    public static void main(String[] args) {
+        try {
+            readDataFromRemoteFileLocatedAtLondon();
+        } catch (FileNotFoundException e) {
+            useLocalFileAndContinueRestOfTheProgramNormally();
+        }
+    }
+
+    static void readDataFromRemoteFileLocatedAtLondon() throws FileNotFoundException {
+        FileReader fr = new FileReader(&quot;london-file.txt&quot;);
+        try {
+            fr.close();
+        } catch (IOException ignored) {
+        }
+    }
+
+    static void useLocalFileAndContinueRestOfTheProgramNormally() {
+        System.out.println(&quot;use local file and continue rest of the program normally&quot;);
+    }
+}
+// prints use local file and continue rest of the program normally</pre>
+<p>Board sketch he actually writes (comments, not a full FileReader yet — he is still in introduction):</p>
+<pre class='code'>class BoardTryCatchSketch {
+    public static void main(String[] args) {
+        try {
+            // read data from remote file located at London
+            System.out.println(&quot;read data from remote file located at London&quot;);
+        } catch (Exception e) { // catch (FileNotFoundException e)
+            // use local file and continue rest of the program normally
+            System.out.println(&quot;use local file and continue rest of the program normally&quot;);
+        }
+    }
+}</pre>
+<p>On the happy path (London file present) catch does not run — he is describing the missing-file path in this intro.</p>
+<h3>32:39 — Board dictation: handling ≠ repairing</h3>
+<p>He writes (repeats until they copy):</p>
+<p>Exception handling doesn’t mean repairing an exception.</p>
+<p>We have to provide alternative way to continue rest of the program normally.</p>
+<p>That is the concept of exception handling.</p>
+<h3>33:54 — Board example under that definition (London + local file)</h3>
+<p>He writes the same requirement again as the official example:</p>
+<p>For example, our programming requirement is to read data from remote file locating at London.</p>
+<p>At runtime, if London file is not available, our program should not be terminated abnormally.</p>
+<p>We have to provide some local file to continue rest of the program normally.</p>
+<p>This way of defining alternative is nothing but exception handling.</p>
+<pre class='code'>import java.io.FileNotFoundException;
+import java.io.FileReader;
+
+class ProgrammingRequirementLondon {
+    public static void main(String[] args) {
+        try {
+            new FileReader(&quot;london-file.txt&quot;); // remote file locating at London
+        } catch (FileNotFoundException e) {
+            System.out.println(&quot;provide some local file — continue rest of the program normally&quot;);
+        }
+        System.out.println(&quot;rest of the program&quot;);
+    }
+}
+// prints provide some local file — continue rest of the program normally
+// prints rest of the program</pre>
+<h3>36:22 — Same try/catch written on the board (copy this)</h3>
+<p>He says “take this example”:</p>
+<pre class='code'>class BoardExampleCopyThis {
+    public static void main(String[] args) {
+        try {
+            // read data from remote file locating at London
+            readDataFromRemoteFileLocatingAtLondon();
+        } catch (Exception e) { // FileNotFoundException e
+            // use local file and continue rest of the program normally
+            System.out.println(&quot;use local file and continue rest of the program normally&quot;);
+        }
+    }
+
+    static void readDataFromRemoteFileLocatingAtLondon() {
+        System.out.println(&quot;read data from remote file locating at London&quot;);
+        throw new RuntimeException(&quot;FileNotFoundException&quot;);
+    }
+}
+// prints read data from remote file locating at London
+// prints use local file and continue rest of the program normally</pre>
+<p>Clarity he wants on the two lines:</p>
+<ul><li>try: read data from remote file located at London</li></ul>
+<ul><li>catch: use local file and continue rest of the program normally</li></ul>
+<h3>37:29 — Recap of the whole Introduction (three Q&amp;As)</h3>
+<p>This total thing is introduction. Three answers:</p>
+<p>1. What is an exception?</p>
+<p>An unwanted unexpected event that disturbs the normal flow of the program is called exception.</p>
+<p>2. What is the purpose of exception handling?</p>
+<p>Graceful termination of the program. We should not miss anything / we should not lose anything.</p>
+<p>3. What is the meaning of exception handling?</p>
+<p>Exception handling doesn’t mean repairing an exception. We have to define alternative way to continue rest of the program normally.</p>
+<pre class='code'>class IntroductionThreeAnswers {
+    public static void main(String[] args) {
+        System.out.println(&quot;exception = unexpected unwanted event that disturbs normal flow&quot;);
+        System.out.println(&quot;purpose = graceful termination — do not miss / lose anything&quot;);
+        System.out.println(&quot;meaning = alternative way to continue normally — not repairing&quot;);
+    }
+}
+// prints exception = unexpected unwanted event that disturbs normal flow
+// prints purpose = graceful termination — do not miss / lose anything
+// prints meaning = alternative way to continue normally — not repairing</pre>
+<p>He says “keep copying.” Introduction is done.</p>
+<h3>38:25 — Runtime stack mechanism (heading)</h3>
+<p>Next heading: Runtime stack mechanism.</p>
+<h3>38:50 — For every thread, JVM creates one runtime stack</h3>
+<p>For every thread, JVM is going to create one runtime stack.</p>
+<p>He wants a small example so the stack picture is clear. He asks for space on the board because a big diagram will come.</p>
+<h3>39:02 — Board program: `class Test`, `main` → `doStuff` → `doMoreStuff` → `&quot;Hello&quot;`</h3>
+<pre class='code'>class Test.</pre>
+<ul><li>public static void main(String[] args) calls `doStuff()`</li></ul>
+<ul><li>public static void doStuff() internally calls `doMoreStuff()`</li></ul>
+<ul><li>public static void doMoreStuff() has System.out.println(&quot;Hello&quot;)</li></ul>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+    }
+}</pre>
+<p>Output? Don’t think too much: main calls doStuff, doStuff calls doMoreStuff, doMoreStuff prints Hello.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+// prints Hello</pre>
+<h3>40:32 — How many threads? Only main thread — and that thread’s stack</h3>
+<p>In this program, how many threads? Only one thread — the main thread.</p>
+<p>For every thread JVM creates one runtime stack. For the main thread also, JVM created one runtime stack. He draws that stack.</p>
+<p>Each and every method call performed by that thread will be stored in the corresponding stack.</p>
+<p>First method called by main thread: `main`. Main thread is responsible to call main. That call is stored in the stack.</p>
+<p>main internally calls `doStuff` — that method call is also stored in the same stack (main thread’s stack).</p>
+<p>doStuff internally calls `doMoreStuff` — stored on the same stack.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) { // pushed first
+        doStuff();
+    }
+
+    public static void doStuff() { // pushed second
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() { // pushed third
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+// runtime stack for main thread (after doMoreStuff is called, before it returns):
+//   [ doMoreStuff ]   ← top
+//   [ doStuff     ]
+//   [ main        ]   ← bottom</pre>
+<h3>42:01 — Each stack entry = activation record / stack frame</h3>
+<p>Each entry in the stack is called activation record or stack frame.</p>
+<p>By default they will use those two names.</p>
+<pre class='code'>class StackFrameNames {
+    public static void main(String[] args) {
+        // each entry in the runtime stack is called:
+        //   stack frame
+        //   or activation record
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+// prints Hello</pre>
+<h3>42:23 — Happy path: print Hello, pop each frame, destroy empty stack</h3>
+<p>main calls doStuff, doStuff calls doMoreStuff. Inside doMoreStuff, SOP of Hello — Hello printed.</p>
+<p>After completing that SOP, is there any other statement to execute in doMoreStuff? Nothing. So doMoreStuff completed normally (no exception — normal termination, not abnormal).</p>
+<p>After completing a method, the corresponding entry from the stack will be removed. doMoreStuff completed → pop doMoreStuff. Control comes back to doStuff.</p>
+<p>After the doMoreStuff() call in doStuff, any other statement? No. So doStuff also completed normally → remove `doStuff` from the stack. Control goes back to main.</p>
+<p>After the doStuff() call in main, nothing else → main also completed normally → remove `main` from the stack. Now the stack is empty.</p>
+<p>Just before terminating this program / just before terminating the main thread, this empty stack will be destroyed by the JVM.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+        // after doStuff returns: pop doStuff; then pop main; stack empty
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+        // after doMoreStuff returns: pop doMoreStuff
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+        // method completed normally — corresponding stack entry removed
+    }
+}
+// prints Hello
+// then: empty runtime stack destroyed by JVM just before terminating main thread</pre>
+<p>Any doubt? He recaps without a new program:</p>
+<ul><li>For every thread, JVM creates one runtime stack.</li></ul>
+<ul><li>Each method call performed by that thread is stored in the corresponding stack.</li></ul>
+<ul><li>After completing every method call, the corresponding entry is removed.</li></ul>
+<ul><li>After completing all method calls, the stack becomes empty.</li></ul>
+<ul><li>That empty stack is destroyed by JVM just before terminating that thread.</li></ul>
+<p>This is runtime stack mechanism — for the case everything goes fine.</p>
+<h3>44:33 — Same story as numbered stack pictures (copy the diagram)</h3>
+<p>He walks it step by step on the board:</p>
+<ol><li>First, JVM creates an empty runtime stack for the main thread.</li></ol>
+<ol><li>Main thread’s first call is main → `main` frame is there. Each entry = stack frame / activation record.</li></ol>
+<ol><li>main internally calls doStuff → push `doStuff`.</li></ol>
+<ol><li>doStuff internally calls doMoreStuff → push `doMoreStuff`. Stack is now main, doStuff, doMoreStuff.</li></ol>
+<ol><li>Inside doMoreStuff: SOP Hello → Hello printed.</li></ol>
+<ol><li>doMoreStuff completed normally → remove that entry. Stack is main + doStuff.</li></ol>
+<ol><li>Control back; nothing left in doStuff → doStuff completed normally → remove. Stack is only main.</li></ol>
+<ol><li>Nothing left in main → main completed normally → remove. Stack empty.</li></ol>
+<ol><li>This empty stack will be destroyed by JVM.</li></ol>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+// 1 empty stack created for main thread
+// 2 push main
+// 3 push doStuff
+// 4 push doMoreStuff
+// 5 prints Hello
+// 6 pop doMoreStuff (normal completion)
+// 7 pop doStuff (normal completion)
+// 8 pop main (normal completion)
+// 9 empty stack destroyed by JVM (just before terminating the thread)</pre>
+<p>Push order as three tiny programs (same class, comments show only that instant of the diagram):</p>
+<pre class='code'>class StackAfterMainPushed {
+    public static void main(String[] args) {
+        // runtime stack for main thread:
+        //   [ main ]
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+class StackAfterDoStuffPushed {
+    public static void main(String[] args) {
+        doStuff();
+        // while inside doStuff, before doMoreStuff returns:
+        //   [ doStuff ]
+        //   [ main    ]
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+class StackAfterDoMoreStuffPushed {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+        //   [ doMoreStuff ]  ← activation record / stack frame
+        //   [ doStuff     ]
+        //   [ main        ]
+    }
+}</pre>
+<h3>47:32 — Theory dictation (write this under the heading)</h3>
+<p>Heading: Runtime stack mechanism. Under that, he dictates slowly (many repeats):</p>
+<p>For every thread, JVM will create a runtime stack.</p>
+<p>Each and every method call performed by that thread will be stored in the corresponding stack.</p>
+<p>Each entry in the stack is called stack frame or activation record.</p>
+<p>After completing every method call, the corresponding entry from the stack will be removed.</p>
+<p>After completing all method calls, the stack will become empty, and that empty stack will be destroyed by JVM just before terminating the thread.</p>
+<pre class='code'>class RuntimeStackMechanismTheory {
+    public static void main(String[] args) {
+        // 1. For every thread JVM will create a runtime stack.
+        // 2. Each method call performed by that thread is stored in that stack.
+        // 3. Each entry = stack frame OR activation record.
+        // 4. After completing every method call, that entry is removed.
+        // 5. After all method calls, stack is empty.
+        // 6. Empty stack is destroyed by JVM just before terminating the thread.
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+// prints Hello</pre>
+<h3>50:42 — Copy the program, the output, and the stack pictures</h3>
+<p>“Take this program, output, and stack trace.” In this program everything goes fine. This is the flow.</p>
+<p>Long classroom pause (diagram of push/pop). He repeats:</p>
+<ul><li>main → doStuff → doMoreStuff</li></ul>
+<ul><li>after completing every method call, corresponding entry removed</li></ul>
+<ul><li>after all method calls, empty stack destroyed by JVM</li></ul>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+// prints Hello
+class CopyTheStackPictures {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;);
+    }
+}
+// runtime stack for main thread — stack frame / activation record
+// push: main, doStuff, doMoreStuff → prints Hello
+// pop:  doMoreStuff, doStuff, main → empty
+// empty stack destroyed by JVM</pre>
+<h3>53:54 — If something goes wrong: that is the *next* concept (not this video)</h3>
+<p>If everything goes fine, this is the normal flow.</p>
+<p>If something goes wrong, what will happen? That is the next concept.</p>
+<p>Here everything goes fine — no problem. Something goes wrong — by default what will happen in Java? That is default exception handling.</p>
+<p>Keep copying the next heading. He writes:</p>
+<p>Default exception handling in Java.</p>
+<p>Video ends at 54:53 on that heading. He does not explain default handling, Throwable, or the uncaught case in Part-1.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        doStuff();
+    }
+
+    public static void doStuff() {
+        doMoreStuff();
+    }
+
+    public static void doMoreStuff() {
+        System.out.println(&quot;Hello&quot;); // this video: everything goes fine
+        // next video: if something goes wrong here, default exception handling
+    }
+}
+// prints Hello</pre>
+<h2>Board rules from this video (keep these)</h2>
+<p>Exception: an unexpected unwanted event that disturbs the normal flow of the program. Examples he used: SleepingException (not in API), TirePuncturedException (not in API), FileNotFoundException, SQLException.</p>
+<p>Highly recommended to handle exceptions.</p>
+<p>Main objective of exception handling: graceful termination of the program — do not miss anything, do not lose anything, do not block resources (close the DB connection, then stop).</p>
+<p>Exception handling does not mean repairing the exception. If the London file is missing, you are not responsible to create it. Provide an alternative way to continue rest of the program normally (local file; auto instead of punctured bike; train if no bus ticket).</p>
+<p>Runtime stack mechanism (happy path only):</p>
+<ol><li>For every thread, JVM creates one runtime stack.</li></ol>
+<ol><li>Every method call performed by that thread is stored in that stack.</li></ol>
+<ol><li>Each entry = stack frame or activation record.</li></ol>
+<ol><li>After a method completes, its entry is removed.</li></ol>
+<ol><li>After all method calls, the stack is empty; JVM destroys that empty stack just before terminating the thread.</li></ol>
+<p>This video’s only full Java program: Test with main → doStuff → doMoreStuff → print Hello. Output: Hello. Next heading (not taught here): default exception handling in Java.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 70 of 203</td></tr>
+<tr><td>Series</td><td>Exception Handling · Part 1</td></tr>
+<tr><td>Topic</td><td>Introduction</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>54m 53s</td></tr>
+<tr><td>Video ID</td><td>zg4jYJjNEYI</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=zg4jYJjNEYI</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

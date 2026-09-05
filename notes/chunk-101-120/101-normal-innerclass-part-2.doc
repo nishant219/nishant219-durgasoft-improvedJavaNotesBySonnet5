@@ -1,0 +1,407 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>101-normal-innerclass-part-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 101</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Innerclass  Part- 2||normal innerclass</p>
+<h3>00:05 — Recap: accessing inner class code</h3>
+<p>Durga Sir resumes after Part 1. Already covered:</p>
+<ul><li>Calling inner-class code from the static area of the outer class</li></ul>
+<ul><li>From the instance area of the outer class</li></ul>
+<ul><li>From outside the outer class</li></ul>
+<p>This session adds more properties of normal (regular) inner classes.</p>
+<h3>00:27 — Inner class accessing outer static and instance members</h3>
+<pre class='code'>class Outer {
+    int x = 10;          // instance variable of Outer
+    static int y = 20;   // static variable of Outer
+
+    class Inner {
+        public void m1() {
+            System.out.println(x); // prints 10
+            System.out.println(y); // prints 20
+        }
+    }
+
+    public static void main(String[] args) {
+        new Outer().new Inner().m1();
+    }
+}
+// prints 10
+// prints 20</pre>
+<p>Common trap: Students see SOP of y (static member) inside inner class and think invalid, because they recall: &quot;Inner classes cannot have static declarations.&quot;</p>
+<p>Clarification:</p>
+<ul><li>Declaring static members inside a normal inner class → not allowed</li></ul>
+<ul><li>Accessing static and non-static members of the outer class from inner class → allowed directly</li></ul>
+<p>Whether the outer member is static, instance, private, or public — from a normal inner class you can access both static and non-static members of the outer class directly.</p>
+<p>Shortcut one-liner to call inner method from main:</p>
+<pre class='code'>new Outer().new Inner().m1();</pre>
+<h3>06:19 — The naming-conflict twist: three variables named `x`</h3>
+<pre class='code'>class Outer {
+    int x = 10; // instance variable of Outer
+
+    class Inner {
+        int x = 100; // instance variable of Inner
+
+        public void m1() {
+            int x = 1000; // local variable of m1
+            System.out.println(x); // prints 1000
+        }
+    }
+
+    public static void main(String[] args) {
+        new Outer().new Inner().m1();
+    }
+}
+// prints 1000</pre>
+<p>Three variables, all named x, different contexts:</p>
+<p>Nearest match wins: bare x in m1() resolves to the local variable → 1000.</p>
+<h3>08:43 — Printing inner instance variable (100)</h3>
+<p>Requirement: print 100 (inner class instance x), not 1000.</p>
+<p>Within inner class, `this` always refers to the current inner class object:</p>
+<p>System.out.println(this.x); // prints 100</p>
+<p>this.x → inner class object&#x27;s instance variable.</p>
+<h3>09:50 — Printing outer instance variable (10)</h3>
+<p>Requirement: print 10 (outer class instance x).</p>
+<p>Cannot use `super.x`: Outer is not the parent class; Inner is not a child class in inheritance terms. super is wrong here.</p>
+<p>An outer object must already exist — you cannot enter inner instance code without a current outer object. To refer to the current outer class object&#x27;s instance member:</p>
+<p>System.out.println(Outer.this.x); // prints 10</p>
+<p>Rules (naming conflict):</p>
+<p>Same style applies: this = current inner object; Outer.this = current outer object tied to this inner instance.</p>
+<p>Full shadowing example:</p>
+<pre class='code'>class Outer {
+    int x = 10;
+
+    class Inner {
+        int x = 100;
+
+        public void m1() {
+            int x = 1000;
+            System.out.println(x);            // prints 1000
+            System.out.println(this.x);       // prints 100
+            System.out.println(Outer.this.x); // prints 10
+        }
+    }
+
+    public static void main(String[] args) {
+        new Outer().new Inner().m1();
+    }
+}
+// prints 1000
+// prints 100
+// prints 10</pre>
+<h3>15:42 — Modifiers: outer class vs inner class</h3>
+<p>Outer (top-level) class — applicable modifiers (5):</p>
+<ul><li>public (or default / package-private)</li></ul>
+<ul><li>final</li></ul>
+<ul><li>abstract</li></ul>
+<ul><li>strictfp</li></ul>
+<p>Inner class — applicable modifiers (8):</p>
+<p>All outer-class modifiers plus:</p>
+<ul><li>private</li></ul>
+<ul><li>protected</li></ul>
+<ul><li>static (→ static nested class; covered later)</li></ul>
+<p>Summary:</p>
+<h3>18:43 — Nesting of inner classes</h3>
+<p>Question: Can we declare an inner class inside another inner class?</p>
+<p>Answer: Yes — nesting of inner classes is possible (any number of levels).</p>
+<pre class='code'>class A {
+    class B {
+        class C {
+            public void m1() {
+                System.out.println(&quot;innermost class method&quot;);
+            }
+        }
+    }
+}</pre>
+<p>To call C.m1() from outside:</p>
+<ol><li>Create A object</li></ol>
+<ol><li>Using A, create B object</li></ol>
+<ol><li>Using B, create C object</li></ol>
+<ol><li>Call m1() on C</li></ol>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        A a = new A();
+        A.B b = a.new B();
+        A.B.C c = b.new C();
+        c.m1(); // prints innermost class method
+    }
+}
+// prints innermost class method</pre>
+<p>Dependency chain: No C without B; no B without A.</p>
+<h3>25:07 — Second category: method-local inner classes</h3>
+<p>Four types of inner classes (this session introduces #2):</p>
+<ol><li>Normal / regular inner class (Part 1)</li></ol>
+<ol><li>Method-local inner class (this section)</li></ol>
+<ol><li>Anonymous inner class</li></ol>
+<ol><li>Static nested class</li></ol>
+<p>Definition: Sometimes we declare an inner class inside a method. Such classes are method-local inner classes.</p>
+<h3>27:26 — Purpose: method-specific repeated functionality (nested-method workaround)</h3>
+<p>Scenario: large method m1() (~50,000 lines). Some functionality (e.g. sum) is needed repeatedly inside `m1` only, not elsewhere.</p>
+<p>Attempt — nested method (invalid):</p>
+<pre class='code'>class Test {
+    public void m1() {
+        public void sum(int x, int y) { // CE: method inside method not allowed
+            System.out.println(&quot;The sum is: &quot; + (x + y));
+        }
+        sum(10, 20);
+    }
+}
+// CE: illegal start of expression (nested method)</pre>
+<p>Java rule: Nested methods are not allowed.</p>
+<p>Option 1: Declare sum at class level and call it — works, but pollutes the class if needed only inside m1.</p>
+<p>Option 2 (method-local inner class): Inside m1, declare a class; inside that class, declare the method:</p>
+<pre class='code'>class Test {
+    public void m1() {
+        class Inner {
+            public void sum(int x, int y) {
+                System.out.println(&quot;The sum is: &quot; + (x + y));
+            }
+        }
+        Inner i = new Inner();
+        i.sum(10, 20);
+        i.sum(100, 200);
+        i.sum(1000, 2000);
+    }
+
+    public static void main(String[] args) {
+        new Test().m1();
+    }
+}
+// prints The sum is: 30
+// prints The sum is: 300
+// prints The sum is: 3000</pre>
+<p>Main purpose of method-local inner class: Define method-specific, repeatedly required functionality.</p>
+<p>Best choice when: You need nested method behavior — method-local inner classes meet that requirement.</p>
+<h3>34:20 — Scope: rarely used</h3>
+<p>Local variable of m1 → accessible only inside m1.</p>
+<p>Method-local inner class declared inside m1 → accessible only within that method, not outside.</p>
+<p>Because scope is very small, method-local inner classes are the most rarely used type of inner class.</p>
+<p>Most commonly used: Anonymous inner classes (covered later).</p>
+<p>Conclusions written on board:</p>
+<ul><li>Access method-local inner class only within the method where declared</li></ul>
+<ul><li>Outside that method → cannot access</li></ul>
+<ul><li>Because of lesser scope → most rarely used type</li></ul>
+<h3>38:37 — Full executable example (sum)</h3>
+<p>Complete program compiled and run live (Test1.java):</p>
+<pre class='code'>class Test {
+    public void m1() {
+        class Inner {
+            public void sum(int x, int y) {
+                System.out.println(&quot;The sum is: &quot; + (x + y));
+            }
+        }
+        Inner i = new Inner();
+        i.sum(10, 20);
+        i.sum(100, 200);
+        i.sum(1000, 2000);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1();
+    }
+}
+// prints The sum is: 30
+// prints The sum is: 300
+// prints The sum is: 3000</pre>
+<p>Confirmed output on execution: 30, 300, 3000.</p>
+<h3>45:38 — Instance method vs static method hosting method-local inner class</h3>
+<p>Question: Can inner class be declared inside a static method?</p>
+<p>Answer: Yes — method-local inner class can be declared inside both instance and static methods. But behavior differs.</p>
+<pre class='code'>class Test {
+    int x = 10;
+    static int y = 20;
+
+    public void m1() { // instance method
+        class Inner {
+            public void m2() {
+                System.out.println(x); // prints 10
+                System.out.println(y); // prints 20
+            }
+        }
+        Inner i = new Inner();
+        i.m2();
+    }
+
+    public static void main(String[] args) {
+        new Test().m1();
+    }
+}
+// prints 10
+// prints 20</pre>
+<p>If `m1` is static:</p>
+<pre class='code'>class Test {
+    int x = 10;
+    static int y = 20;
+
+    public static void m1() { // static method — entire block is static context
+        class Inner {
+            public void m2() {
+                System.out.println(x); // CE: non-static variable x cannot be referenced from a static context
+                System.out.println(y); // prints 20
+            }
+        }
+        Inner i = new Inner();
+        i.m2();
+    }
+}
+// CE: non-static variable x cannot be referenced from a static context</pre>
+<p>Rules:</p>
+<h3>58:18 — &quot;Most dangerous point&quot;: local variables of enclosing method</h3>
+<pre class='code'>class Test {
+    public void m1() {
+        int x = 10; // local variable of m1
+
+        class Inner {
+            public void m2() {
+                System.out.println(x); // CE: local variable x accessed from within inner class needs to be declared final
+            }
+        }
+        Inner i = new Inner();
+        i.m2();
+    }
+
+    public static void main(String[] args) {
+        new Test().m1();
+    }
+}
+// CE: Local variable x is accessed from within inner class; needs to be declared final</pre>
+<p>Rule: From method-local inner class, we cannot access local variables of the enclosing method unless that local variable is `final`.</p>
+<p>Fix:</p>
+<p>final int x = 10;
+// ... Inner.m2() can now use x — compiles; prints 10</p>
+<h3>1:09:36 — Internal reason (stack vs heap, final constant folding)</h3>
+<p>Hints for deep understanding:</p>
+<ol><li>Every `final` variable is replaced by its value at compile time</li></ol>
+<ol><li>Local variables → stack memory</li></ol>
+<ol><li>Objects → heap memory</li></ol>
+<p>Timeline when `t.m1()` runs:</p>
+<ul><li>Local x = 10 created on stack</li></ul>
+<ul><li>Inner i = new Inner() → object on heap</li></ul>
+<ul><li>While m1 executes, m2() can read stack x — OK</li></ul>
+<p>Problem scenario:</p>
+<ul><li>After m1() completes, local x is destroyed (stack frame gone)</li></ul>
+<ul><li>Inner object may still exist on heap</li></ul>
+<ul><li>If someone later calls i.m2() directly (without re-entering m1), m2 tries to read x from stack — x no longer exists</li></ul>
+<p>That&#x27;s why non-final local variables are forbidden.</p>
+<p>Why `final` works:</p>
+<ul><li>final int x = 10 → compiler replaces x with literal `10` in inner class bytecode at compile time</li></ul>
+<ul><li>No runtime dependency on stack variable</li></ul>
+<ul><li>After m1 ends, m2 still prints 10 from embedded constant</li></ul>
+<h3>1:15:40 — OCJP-style variable access quiz</h3>
+<pre class='code'>class Test {
+    int i = 10;
+    static int j = 20;
+
+    public void m1() {
+        int k = 30;
+        final int m = 40;
+
+        class Inner {
+            public void m2() {
+                // line 1 — which can we access directly?
+                System.out.println(i); // OK — outer instance var; m1 is instance method
+                System.out.println(j); // OK — outer static var
+                System.out.println(k); // CE: local variable k needs to be final
+                System.out.println(m); // OK — final local variable
+            }
+        }
+    }
+}</pre>
+<p>Question 1 — `m1` instance method, at line 1:</p>
+<p>Question 2 — if `m1` is `static`:</p>
+<p>Question 3 — if `m2` is declared `static` inside Inner:</p>
+<pre class='code'>public static void m2() { ... }</pre>
+<p>→ Compile-time error first — cannot declare static members inside normal (non-static nested) inner class:</p>
+<pre class='code'>// CE: modifier &#x27;static&#x27; not allowed here (inner class static method)
+// CE: Inner classes cannot have static declarations</pre>
+<p>Don&#x27;t analyze variable access until code compiles — static m2 fails before i/j/k/m logic matters.</p>
+<h3>1:26:19 — Modifiers for method-local inner classes</h3>
+<p>Parallel to local variables:</p>
+<ul><li>Local variables: only modifier allowed is `final` (not public/private/protected)</li></ul>
+<ul><li>Method-local inner class: public, private, protected, default, static → NOT applicable</li></ul>
+<p>Only applicable modifiers for method-local inner classes:</p>
+<ul><li>final</li></ul>
+<ul><li>abstract (not simultaneously with final)</li></ul>
+<ul><li>strictfp</li></ul>
+<p>Any other modifier → compile-time error.</p>
+<h3>1:29:36 — Session summary</h3>
+<p>Normal inner class (this + prior session):</p>
+<ul><li>Access outer static &amp; instance members directly</li></ul>
+<ul><li>this = inner object; Outer.this = enclosing outer object (shadowing)</li></ul>
+<ul><li>More modifiers than top-level class (private, protected, static)</li></ul>
+<ul><li>Nesting of inner classes allowed (A → B → C)</li></ul>
+<p>Method-local inner class:</p>
+<ul><li>Class declared inside a method</li></ul>
+<ul><li>Purpose: method-specific repeated logic; nested-method substitute</li></ul>
+<ul><li>Accessible only in declaring method → rarely used</li></ul>
+<ul><li>Can host in instance or static method (static → only outer static members)</li></ul>
+<ul><li>Cannot read enclosing local vars unless `final`</li></ul>
+<ul><li>Modifiers: final, abstract, strictfp only</li></ul>
+<ul><li>Most dangerous exam point: final local variable rule + stack/heap lifetime</li></ul>
+<p>Java block count: 18</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>101 of 203</td></tr>
+<tr><td>Series</td><td>Inner Classes · Part 2</td></tr>
+<tr><td>Topic</td><td>Normal / regular inner class (continued), nesting, method-local inner classes</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 30m 28s</td></tr>
+<tr><td>Video ID</td><td>pRsqR3vQvBM</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=pRsqR3vQvBM</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Variable</th><th>Context</th></tr>
+<tr><td>Outer.x</td><td>Instance variable of outer class</td></tr>
+<tr><td>Inner.x</td><td>Instance variable of inner class</td></tr>
+<tr><td>m1&#x27;s x</td><td>Local variable of m1</td></tr>
+</table>
+<table>
+<tr><th>Need</th><th>Syntax</th></tr>
+<tr><td>Local variable</td><td>x</td></tr>
+<tr><td>Inner instance variable</td><td>this.x</td></tr>
+<tr><td>Outer instance variable</td><td>OuterName.this.x</td></tr>
+</table>
+<table>
+<tr><th>Outer class</th><th>Inner class</th></tr>
+<tr><td>public, default, final, abstract, strictfp</td><td>Same + private, protected, static</td></tr>
+</table>
+<table>
+<tr><th>Declared inside</th><th>From method-local inner class can access</th></tr>
+<tr><td>Instance method</td><td>Both static and non-static members of outer class</td></tr>
+<tr><td>Static method</td><td>Only static members of outer class directly</td></tr>
+</table>
+<table>
+<tr><th>Variable</th><th>Accessible?</th><th>Reason</th></tr>
+<tr><td>i</td><td>Yes</td><td>Instance var of outer; instance context</td></tr>
+<tr><td>j</td><td>Yes</td><td>Static var of outer</td></tr>
+<tr><td>k</td><td>No</td><td>Local var of m1, not final</td></tr>
+<tr><td>m</td><td>Yes</td><td>Local var declared final</td></tr>
+</table>
+<table>
+<tr><th>Variable</th><th>Accessible?</th></tr>
+<tr><td>i</td><td>No — instance variable</td></tr>
+<tr><td>j</td><td>Yes</td></tr>
+<tr><td>k</td><td>No (not final)</td></tr>
+<tr><td>m</td><td>Yes (final)</td></tr>
+</table>
+</body></html>

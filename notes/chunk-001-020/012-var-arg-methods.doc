@@ -1,0 +1,454 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>012-var-arg-methods</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 012 — var-arg methods</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-12 || var-arg methods</p>
+<h2>What this lecture covers</h2>
+<ol><li>What var-arg means: variable number of argument methods</li></ol>
+<ol><li>Why 1.5 added them: sum(int,int), sum(int,int,int), … explodes length and kills readability</li></ol>
+<ol><li>Declaration: m1(int... x) — exactly three dots</li></ol>
+<ol><li>Calls with 0, 1, 2, 4, … arguments (including zero)</li></ol>
+<ol><li>Internally a 1-D array; differentiate values by index; x.length</li></ol>
+<ol><li>Meaningful sum example with for-each (also 1.5)</li></ol>
+<ol><li>SCJP loopholes / cases:</li></ol>
+<ul><li>Case 1 — which declarations are valid (int... x vs int x...; spaces; three dots are “best friends”)</li></ul>
+<ul><li>Case 2 — mix var-arg with a normal parameter</li></ul>
+<ul><li>Case 3 — var-arg must be last</li></ul>
+<ul><li>Case 4 — only one var-arg parameter</li></ul>
+<ul><li>Case 5 — cannot declare var-arg and the matching 1-D array method in the same class</li></ul>
+<ul><li>Case 6 — overload var-arg vs general method; least priority (like default in switch); old concept wins</li></ul>
+<ol><li>Equivalence with 1-D arrays: array → var-arg is a valid replacement (including main(String... args)); reverse is not</li></ol>
+<ol><li>int[]... x means a group of 1-D arrays → x is 2-D; exam program printing a[0] and b[0]</li></ol>
+<p>Next topics he announces: postmortem on main (about two sessions), command-line arguments, Java coding standards.</p>
+<h2>Detailed notes</h2>
+<h3>[00:06] Name and version</h3>
+<p>Next subtopic — important for the interview room and the exam; it gives more flexibility to the programmer.</p>
+<p>var-arg methods = variable number of argument methods.</p>
+<p>Spell it out: Variable number of argument methods. In speech he says “where-are methods”; on the board it is var-arg.</p>
+<p>This is a new concept in Java 1.5.</p>
+<h3>[01:13] The problem until 1.4 — too many `sum` methods</h3>
+<p>Requirement: find the sum of two numbers.</p>
+<pre class='code'>public static void sum(int a, int b) {
+    System.out.println(a + b);
+}
+sum(10, 20);</pre>
+<p>Later: sum of three numbers sum(10, 20, 30). Can you reuse the two-argument method? No — that method takes two values, you are passing three. You must write a new method:</p>
+<pre class='code'>public static void sum(int a, int b, int c) {
+    System.out.println(a + b + c);
+}</pre>
+<p>Later: four numbers sum(10, 20, 30, 40). First method? No (two params). Second? No (three params). New method:</p>
+<pre class='code'>public static void sum(int a, int b, int c, int d) {
+    System.out.println(a + b + c + d);
+}</pre>
+<p>Five numbers → another method. Six numbers → another method. How many sum methods? Several. Increases length of the code and reduces readability.</p>
+<p>The requirement is the same (sum some ints). Only the number of arguments changes, and until 1.4 that still forces a new method.</p>
+<h3>[04:36] The 1.5 fix</h3>
+<p>In 1.5 you do not need those many sum methods. One sum method can be called by passing any number of `int` values — 2, 3, 4, 5, 6, 10, one lakh values — no problem.</p>
+<p>Such methods, which accept a variable number of arguments, came in 1.5. They are var-arg methods.</p>
+<p>Declaration:</p>
+<pre class='code'>public static void sum(int... a) {
+    // ...
+}</pre>
+<p>Exactly three dots. If by mistake you take a fourth dot, the compiler will not accept it.</p>
+<p>From 1.5 onwards you can call this one method with two values, three, four, any number of `int` values, including zero number also.</p>
+<h3>[06:01] Board theory — until 1.4 vs 1.5</h3>
+<p>Until 1.4 version: we can’t declare a method with a variable number of arguments. If there is a change in the number of arguments, compulsory we should go for a new method. It increases length of the code and reduces readability.</p>
+<p>To overcome this problem, var-arg methods were introduced in 1.5.</p>
+<p>According to this we can declare a method which can take a variable number of arguments. Such methods are called var-arg methods.</p>
+<h3>[09:03] How to declare and how to call</h3>
+<p>m1(int... x)</p>
+<p>We can call this method by passing any number of `int` values, including zero number also.</p>
+<p>Around [11:29] he recaps the same idea (“in the last session we covered the basic idea”) and then codes a full class.</p>
+<h3>[11:50] First runnable example</h3>
+<pre class='code'>class Test {
+    public static void m1(int... x) {
+        System.out.println(&quot;var-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        m1();
+        m1(10);
+        m1(10, 20);
+        m1(10, 20, 30, 40);
+    }
+}</pre>
+<p>javac Test.java — compiles. java Test — output:</p>
+<p>var-arg method
+var-arg method
+var-arg method
+var-arg method</p>
+<p>Four calls → printed four times. How to declare a var-arg method, and how you can call it, is now clear. Big advantage for the programmer.</p>
+<h3>[16:32] Internally a 1-D array — differentiate by index</h3>
+<p>You can pass zero numbers, one, two, four, one lakh. Inside the method, how do you tell first value from second from third?</p>
+<p>A group of `int` values becomes a one-dimensional array. Internally the var-arg parameter is converted into a 1-D array.</p>
+<p>Inside the method, differentiate array elements by index — that is the only way. Hence: within the var-arg method we can differentiate values by using index.</p>
+<p>Number of arguments:</p>
+<pre class='code'>public static void m1(int... x) {
+    System.out.println(&quot;Number of arguments: &quot; + x.length);
+}</pre>
+<p>x.length is the array property. Calls:</p>
+<p>Board:</p>
+<ul><li>Internally the var-arg parameter will be converted into a one-dimensional array</li></ul>
+<ul><li>Hence within the var-arg method we can differentiate values by using index</li></ul>
+<h3>[20:26] Meaningful example — one `sum` for 0, 2, 3, 4 arguments</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        sum();
+        sum(10, 20);
+        sum(10, 20, 30);
+        sum(10, 20, 30, 40);
+    }
+
+    public static void sum(int... x) {
+        int total = 0;
+        for (int x1 : x) {          // for-each, also 1.5
+            total = total + x1;
+        }
+        System.out.println(&quot;The sum: &quot; + total);
+    }
+}</pre>
+<p>Expected output he writes before coding:</p>
+<p>Without var-arg you would need four sum methods. With var-arg, one.</p>
+<p>x is the var-arg parameter → internally a 1-D int array. for-each (for (int x1 : x)) came in 1.5 as well: for every int value x1 in x, total = total + x1.</p>
+<p>He compiles and runs: 0, 30, 60, 100. Best example of where var-arg is the right choice.</p>
+<h3>[27:25] SCJP loopholes — case 1: valid declarations (syntax)</h3>
+<p>First he reminds you of array parameter styles (all valid):</p>
+<p>m1(int[] x)     // valid
+m1(int []x)     // valid — same method, space/bracket style
+m1(int x[])     // valid for arrays (C-style)</p>
+<p>People want the same styles for the var-arg parameter. Which of the following are valid var-arg method declarations? Compulsory syntax-checking question.</p>
+<p>Valid (spaces around the ... token are ignored by the compiler; the three dots stay together):</p>
+<p>m1(int... x)     // valid
+m1(int ...x)     // valid — space ignored
+m1(int...x)      // valid — no space in the middle</p>
+<p>Invalid:</p>
+<p>m1(int x...)     // INVALID — you cannot put ... after the identifier
+m1(int. ..x)     // INVALID — dots split (one dot, then two)
+m1(int ..x)      // INVALID — not three dots together</p>
+<p>The three dots are best friends. You cannot separate them. Always together. He compares them to three stars in the sky that are always together (childhood navigation joke: go to a new place, look up, those three stars are there). Village-student flavour; the technical point is: ... is one token.</p>
+<p>Why int x... fails: array allows int x[] (brackets after the name). Var-arg does not allow that mirror. If the compiler ignored the dots the way it ignores some spaces, x itself would not form a legal var-arg parameter. Do not copy `int x[]` style onto var-arg.</p>
+<p>Case 1 = syntactical loophole. Three dots always together, attached to the type, not to the name.</p>
+<h3>[32:33] Case 2 — mix var-arg with a normal parameter</h3>
+<p>m1(int x, int... y)           // VALID
+m1(String s, double... y)     // VALID</p>
+<p>First method: one `int` is compulsory, then any number of extra `int`s (including zero extra).</p>
+<p>Second: one `String` is mandatory, then any number of `double`s.</p>
+<p>We can mix a var-arg parameter with a normal parameter. You are not required to take only a var-arg parameter. Normal + var-arg together is acceptable.</p>
+<h3>[35:01] Case 3 — if you mix them, var-arg must be **last**</h3>
+<p>If case 2 is valid, the reverse is invalid:</p>
+<p>m1(double... d, String s)     // INVALID</p>
+<p>“Any number of doubles, but compulsory the last one should be String” — invalid, because you put the var-arg first.</p>
+<p>m1(String s, double... d)     // VALID — var-arg is last</p>
+<p>If we mix a normal parameter with a var-arg parameter, the var-arg parameter should be the last parameter. Taking var-arg at the beginning is invalid.</p>
+<h3>[38:03] Case 4 — only **one** var-arg parameter</h3>
+<p>m1(int... x, double... d)     // INVALID</p>
+<p>Joke in the room: “both are last only, one by one last only” — still invalid.</p>
+<p>Inside a method we can take only one var-arg parameter. We cannot take more than one.</p>
+<p>m1(int x, double... d)        // VALID (one normal + one var-arg last)
+m1(int... x, double... d)     // INVALID (two var-args)</p>
+<h3>[40:36] Case 5 — var-arg vs the corresponding 1-D array method</h3>
+<p>Warm-up (OOP / overloading rule, even if not fully covered yet):</p>
+<p>Inside a class, two methods with the same signature are not allowed. Return type is not part of the signature.</p>
+<pre class='code'>class Test {
+    public void m1(int i) { }
+    public int m1(int i) { return 10; }   // INVALID — both are m1(int)
+}</pre>
+<p>Signature of both is m1(int). If tomorrow you call m1(10), which one runs? Compiler rejects it at the start.</p>
+<p>Same rule for var-arg, because internally int... x is int[].</p>
+<pre class='code'>class Test {
+    public static void m1(int... x) {
+        System.out.println(&quot;var-arg&quot;);
+    }
+
+    public static void m1(int[] x) {
+        System.out.println(&quot;int[]&quot;);
+    }
+}</pre>
+<p>Signature of the first: m1(int[]). Signature of the second: m1(int[]). Same signature. Compile-time error.</p>
+<p>Inside a class we cannot declare a var-arg method and the corresponding one-dimensional array method simultaneously.</p>
+<p>Typical message:</p>
+<p>cannot declare both m1(int[]) and m1(int...) in Test</p>
+<p>You are allowed to declare only one of them.</p>
+<h3>[47:35] Case 6 — overloading: general method vs var-arg (least priority)</h3>
+<p>These two are allowed together, because signatures differ (m1(int) vs m1(int[])):</p>
+<pre class='code'>class Test {
+    public static void m1(int... x) {
+        System.out.println(&quot;var-arg method&quot;);
+    }
+
+    public static void m1(int x) {
+        System.out.println(&quot;general method&quot;);
+    }
+
+    public static void main(String[] args) {
+        m1();
+        m1(10, 20);
+        m1(10);
+    }
+}</pre>
+<p>m1(10): first method matches, second also matches. You will not get a compile error for ambiguity. Only one method gets the chance. Who?</p>
+<p>Story: the two methods meet at a common place to fight. In that fight, general method always wins. Why? 19+ years of industry experience.</p>
+<ul><li>General method concept exists from Java 1.0 / 1995</li></ul>
+<ul><li>Var-arg came in 1.5 (he says 2004/2005; “2010 fresher”)</li></ul>
+<ul><li>Experienced vs fresher — experience wins</li></ul>
+<p>Two rules to remember:</p>
+<ol><li>If anywhere there is a fight between old concept and new concept, the old concept always wins — to provide compatibility with old versions. Old concept has higher priority than new. “Old is gold.”</li></ol>
+<ol><li>Speciality of var-arg: it gets the least priority. If no other method matched, then only the var-arg method gets the chance.</li></ol>
+<p>Analogy: `default` inside `switch`. Several cases, then default. When does default run? If no other case matched. Var-arg is exactly that: if no other method matched, then only var-arg gets the chance.</p>
+<p>In general, if var-arg fights with someone else, the opponent wins. Var-arg has least priority in Java.</p>
+<p>Output of the program:</p>
+<p>var-arg method
+var-arg method
+general method</p>
+<p>Board theory:</p>
+<ul><li>In general, var-arg method will get least priority</li></ul>
+<ul><li>That is: if no other method matched, then only var-arg method will get the chance</li></ul>
+<ul><li>It is exactly the same as the default case inside a switch</li></ul>
+<p>This is case 6 of var-arg methods.</p>
+<h3>[57:31] Equivalence between var-arg parameter and 1-D array</h3>
+<p>Question: you have a method that takes a 1-D array. Can you replace it with a var-arg parameter? You have a var-arg method. Can you replace it with a 1-D array method? What is the equivalence?</p>
+<h4>Case 1 — 1-D array **can** be replaced with var-arg (valid replacement)</h4>
+<p>m1(int[] x)</p>
+<p>Call style for an array parameter:</p>
+<pre class='code'>m1(new int[]{10});
+m1(new int[]{10, 20});
+m1(new int[]{10, 20, 30});</pre>
+<p>Someone says: 1-D array — happily replace with var-arg, new concept.</p>
+<p>m1(int... x)</p>
+<p>Now all of these work:</p>
+<p>m1(new int[]{10});      // still valid — you can call a var-arg method by passing an array
+m1();                   // NEW — zero arguments
+m1(10);                 // NEW
+m1(10, 20, 30);         // NEW</p>
+<p>Existing array-passing still works, plus new combinations. Wherever a one-dimensional array is present, we can replace it with a var-arg parameter. This replacement is a valid replacement.</p>
+<h4>`main` itself — `String... args`</h4>
+<p>main’s argument is String[]. Just now: wherever 1-D array, happily replace with var-arg.</p>
+<pre class='code'>class Test {
+    public static void main(String... args) {
+        System.out.println(&quot;var-arg main&quot;);
+    }
+}</pre>
+<p>Perfectly valid from 1.5 onwards. He compiles and runs: javac Test.java, java Test — works. You may declare main in this style. (Stringer in the captions is `String`.)</p>
+<p>Board:</p>
+<ul><li>Wherever one-dimensional array present, we can replace with var-arg parameter</li></ul>
+<ul><li>m1(int[] x) replaced with m1(int... x) — valid</li></ul>
+<ul><li>main(String[] args) replaced with main(String... args) — valid</li></ul>
+<h4>Case 2 — reverse is **not** possible (invalid replacement)</h4>
+<p>Start with var-arg:</p>
+<p>m1(int... x)</p>
+<p>Valid calls: m1(), m1(10), m1(10, 20, 30), and also m1(new int[]{...}).</p>
+<p>Someone says: replace the var-arg parameter with a 1-D array.</p>
+<p>m1(int[] x)</p>
+<p>Some combinations stop working. Therefore this replacement is invalid.</p>
+<p>Wherever a var-arg parameter is present, we cannot replace it with a one-dimensional array. Reverse is not possible.</p>
+<h3>[1:08:47] Exam bit — var-arg of arrays (1-D, 2-D, 3-D)</h3>
+<p>Do not feel var-arg is always int.... Purely SCJP point of view.</p>
+<p>m1(int... x)</p>
+<p>Call by passing any number of int values; `x` becomes a 1-D `int` array.</p>
+<p>m1(String... x)</p>
+<p>Call by passing any number of String values; `x` becomes a 1-D `String` array.</p>
+<p>m1(int[]... x)</p>
+<p>Call by passing a group of one-dimensional `int` arrays. A group of 1-D arrays is a 2-D array. `x` becomes a 2-D `int` array.</p>
+<p>m1(int[][]... x)</p>
+<p>A group of 2-D arrays → `x` becomes a 3-D `int` array.</p>
+<p>Board notes:</p>
+<p>Sometimes you need m1(int[]... x), not only m1(int... x).</p>
+<h3>[1:14:36] Last exam program — `int[]... x` and print first elements</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int[] a = {10, 20, 30};    // 1-D array
+        int[] b = {40, 50, 60};    // 1-D array
+        m1(a, b);
+    }
+
+    public static void m1(int[]... x) {
+        for (int[] x1 : x) {
+            System.out.println(x1[0]);
+        }
+    }
+}</pre>
+<p>Is m1(int[]... x) valid for this call? Yes. We pass a group of 1-D arrays (two of them: a and b). `x` becomes a 2-D array.</p>
+<p>Base size of that 2-D structure: 2 (two 1-D arrays). First element’s size: 10, 20, 30. Second: 40, 50, 60.</p>
+<p>x contains 1-D arrays; each 1-D array contains int values.</p>
+<p>for-each: for every 1-D array x1 in x — loop runs twice. Each time print x1[0] (first element of that 1-D array).</p>
+<p>Output:</p>
+<p>10
+40</p>
+<p>Chance this appears on the exam. Do not feel var-arg always means int.... Analyse what x becomes.</p>
+<h3>[1:18:47] What comes next in Language Fundamentals</h3>
+<p>Last example related to var-arg. Next they will perform postmortem on the `main` method — almost two sessions — then command-line arguments, then Java coding standards (he says that last piece is about one class).</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Test {
+    public static void m1(int... x) {
+        System.out.println(&quot;var-arg method&quot;);
+        System.out.println(&quot;Number of arguments: &quot; + x.length);
+    }
+
+    public static void main(String[] args) {
+        m1();
+        m1(10);
+        m1(10, 20);
+        m1(10, 20, 30, 40);
+    }
+}
+class Test {
+    public static void sum(int... x) {
+        int total = 0;
+        for (int x1 : x) {
+            total = total + x1;
+        }
+        System.out.println(&quot;The sum: &quot; + total);
+    }
+
+    public static void main(String[] args) {
+        sum();                      // The sum: 0
+        sum(10, 20);                // The sum: 30
+        sum(10, 20, 30);            // The sum: 60
+        sum(10, 20, 30, 40);        // The sum: 100
+    }
+}
+class Test {
+    public static void m1(int... x) {
+        System.out.println(&quot;var-arg method&quot;);
+    }
+
+    public static void m1(int x) {
+        System.out.println(&quot;general method&quot;);
+    }
+
+    public static void main(String[] args) {
+        m1();          // var-arg method
+        m1(10, 20);    // var-arg method
+        m1(10);        // general method  (old concept wins; var-arg least priority)
+    }
+}
+class Test {
+    public static void main(String... args) {   // valid from 1.5
+        System.out.println(&quot;var-arg main&quot;);
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int[] a = {10, 20, 30};
+        int[] b = {40, 50, 60};
+        m1(a, b);                   // prints 10 then 40
+    }
+
+    public static void m1(int[]... x) {
+        for (int[] x1 : x) {
+            System.out.println(x1[0]);
+        }
+    }
+}</pre>
+<h2>Valid / invalid declaration drill (as on the board)</h2>
+<h2>Exam / interview traps</h2>
+<ul><li>Came in 1.5. Until 1.4, change in arity ⇒ new method.</li></ul>
+<ul><li>Exactly three dots. Four dots = compile error.</li></ul>
+<ul><li>Including zero arguments is legal: m1() is a valid call to m1(int... x).</li></ul>
+<ul><li>Internally `int... x` is `int[] x`. Use index / x.length / for-each.</li></ul>
+<ul><li>for-each used in the sum example is also 1.5.</li></ul>
+<ul><li>int x... looks like int x[] and is wrong.</li></ul>
+<ul><li>Spaces around ... are fine; splitting ... is not.</li></ul>
+<ul><li>At most one var-arg, and it must be the last parameter.</li></ul>
+<ul><li>Var-arg + matching 1-D array method = duplicate signature.</li></ul>
+<ul><li>m1(10) when both m1(int) and m1(int...) exist → general method, not CE, not var-arg. Var-arg = least priority = default in switch. Old vs new → old wins (compatibility).</li></ul>
+<ul><li>Replacing int[] with int... is valid (including main(String... args) from 1.5). Replacing int... with int[] is invalid because m1() and m1(10) break.</li></ul>
+<ul><li>int[]... x means x is 2-D. Passing two 1-D arrays a and b, then x1[0] prints 10 and 40, not 10 20 30 40 50 60.</li></ul>
+<h2>Recap</h2>
+<p>Var-arg (m1(int... x)) is a 1.5 feature: one method, any arity including zero, implemented as a 1-D array. Syntax: three dots on the type, last parameter, only one, not simultaneously with m1(int[]). In overloading it loses to older, more specific methods. You may widen a 1-D array parameter to var-arg (even main); you may not narrow var-arg back to array without breaking calls. T[]... is a var-arg of arrays.</p>
+<p>Next video: 013-main-method-part-1.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 12 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 12 of 16</td></tr>
+<tr><td>Topic</td><td>var-arg methods (int... x) — syntax, restrictions, vs arrays, overloading</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 20m 36s</td></tr>
+<tr><td>Video ID</td><td>sjsq5UL5oFs</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=sjsq5UL5oFs</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Valid?</th></tr>
+<tr><td>m1()</td><td>yes (zero ints)</td></tr>
+<tr><td>m1(10)</td><td>yes</td></tr>
+<tr><td>m1(10, 20)</td><td>yes</td></tr>
+<tr><td>m1(10, 20, 30, 40)</td><td>yes</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>x.length</th></tr>
+<tr><td>m1()</td><td>0</td></tr>
+<tr><td>m1(10)</td><td>1</td></tr>
+<tr><td>m1(10, 20)</td><td>2</td></tr>
+<tr><td>m1(10, 20, 30, 40)</td><td>4</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Expected</th></tr>
+<tr><td>sum()</td><td>The sum: 0 (no values)</td></tr>
+<tr><td>sum(10, 20)</td><td>The sum: 30</td></tr>
+<tr><td>sum(10, 20, 30)</td><td>The sum: 60</td></tr>
+<tr><td>sum(10, 20, 30, 40)</td><td>The sum: 100</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Which method?</th><th>Why</th></tr>
+<tr><td>m1()</td><td>var-arg</td><td>general method expects one int; you passed zero. Var-arg accepts any number including zero</td></tr>
+<tr><td>m1(10, 20)</td><td>var-arg</td><td>general method does not match two ints</td></tr>
+<tr><td>m1(10)</td><td>general method</td><td>both match, then general wins</td></tr>
+</table>
+<table>
+<tr><th>Call that used to work</th><th>After replacement</th></tr>
+<tr><td>m1()</td><td>invalid — method expects a 1-D array; you passed nothing</td></tr>
+<tr><td>m1(10)</td><td>invalid — expects array, you passed an int</td></tr>
+<tr><td>m1(10, 20, 30)</td><td>invalid</td></tr>
+<tr><td>m1(new int[]{10, 20})</td><td>valid — you are passing an array</td></tr>
+</table>
+<table>
+<tr><th>Direction</th><th>Valid replacement?</th></tr>
+<tr><td>1-D array → var-arg</td><td>yes (old calls still work, new calls appear)</td></tr>
+<tr><td>var-arg → 1-D array</td><td>no (zero-arg and loose-int calls break)</td></tr>
+</table>
+<table>
+<tr><th>Declaration</th><th>We can call by passing</th><th>x becomes</th></tr>
+<tr><td>m1(int... x)</td><td>a group of int values</td><td>1-D int array</td></tr>
+<tr><td>m1(int[]... x)</td><td>a group of 1-D int arrays</td><td>2-D int array</td></tr>
+<tr><td>m1(int[][]... x)</td><td>a group of 2-D int arrays</td><td>3-D int array</td></tr>
+</table>
+<table>
+<tr><th>Iteration</th><th>x1</th><th>x1[0]</th></tr>
+<tr><td>1</td><td>{10, 20, 30}</td><td>10</td></tr>
+<tr><td>2</td><td>{40, 50, 60}</td><td>40</td></tr>
+</table>
+<table>
+<tr><th>Declaration</th><th>Result</th><th>Why</th></tr>
+<tr><td>m1(int... x)</td><td>valid</td><td>standard</td></tr>
+<tr><td>m1(int ...x)</td><td>valid</td><td>space ignored</td></tr>
+<tr><td>m1(int...x)</td><td>valid</td><td>no space needed</td></tr>
+<tr><td>m1(int x...)</td><td>CE</td><td>... cannot follow the name (unlike int x[])</td></tr>
+<tr><td>m1(int. ..x)</td><td>CE</td><td>three dots must stay together (“best friends”)</td></tr>
+<tr><td>m1(int x, int... y)</td><td>valid</td><td>mix normal + var-arg</td></tr>
+<tr><td>m1(String s, double... y)</td><td>valid</td><td>mix; var-arg last</td></tr>
+<tr><td>m1(double... d, String s)</td><td>CE</td><td>var-arg must be last</td></tr>
+<tr><td>m1(int... x, double... d)</td><td>CE</td><td>only one var-arg allowed</td></tr>
+<tr><td>m1(int... x) and m1(int[] x) in one class</td><td>CE</td><td>cannot declare both m1(int[]) and m1(int...)</td></tr>
+<tr><td>m1(int... x) and m1(int x) in one class</td><td>valid</td><td>different signatures; overload</td></tr>
+</table>
+</body></html>

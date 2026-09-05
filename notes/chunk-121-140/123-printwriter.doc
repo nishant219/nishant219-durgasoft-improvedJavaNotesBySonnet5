@@ -1,0 +1,502 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>123-printwriter</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 123</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: File I/O Part-4 || PrintWriter</p>
+<p>Position: 123 of 203</p>
+<p>Duration: 1h 08m 13s</p>
+<p>Video ID: JN7-L3ZEnTw</p>
+<p>Watch: https://www.youtube.com/watch?v=JN7-L3ZEnTw</p>
+<p>Playlist: Java tutorial by Durga Sir — https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</p>
+<p>Transcript source: Local Whisper STT (.transcripts/123-JN7-L3ZEnTw.txt)</p>
+<p>ASR decode key: file letter / FW → FileWriter; buffer writer / bufford writer / BW → BufferedWriter; print writer / PW → PrintWriter; print off / print of → print(); print line / print ln / printelen → println(); new line → newLine(); athima / atima → automatically; CE → compile-time error; five / 5 → file; redder / radar → reader; file niche / file midge / file netch → file merge; Tribulier / 3-Bull → sample line labels on board (a, b, c / 312, 313…).</p>
+<h2>Session overview</h2>
+<p>This video completes the writer side of File I/O by introducing PrintWriter — the third and most enhanced writer after FileWriter and BufferedWriter. Durga Sir also:</p>
+<ul><li>Recaps why FileWriter/BufferedWriter are insufficient for everyday programming</li></ul>
+<ul><li>Covers PrintWriter constructors, inherited methods, and the powerful print() / println() overloads</li></ul>
+<ul><li>Runs PrintWriterDemo1 with a critical print() vs println() vs write() exam trap</li></ul>
+<ul><li>Revisits character data vs binary data and the Reader/Writer vs Stream split</li></ul>
+<ul><li>Draws the full java.io hierarchy (Object → Writer/Reader → concrete classes)</li></ul>
+<ul><li>Implements two file merge applications (sequential merge + alternating line-by-line merge with null-checking)</li></ul>
+<p>Exam one-liner: Wherever writing character/text data is required → use PrintWriter. Wherever reading character/text data is required → use BufferedReader.</p>
+<h3>00:04 — Why PrintWriter when Writer already exists?</h3>
+<p>Student question: FileWriter and BufferedWriter already exist — why one more writer?</p>
+<p>Two unresolved problems even after BufferedWriter:</p>
+<h4>Problem 1 — Line separator is still awkward</h4>
+<p>BufferedWriter solved the portable-newline problem with newLine(), but:</p>
+<ul><li>Programmer must still call a separate method for every line break</li></ul>
+<ul><li>Manually writing \ + n in a string is still possible but platform-dependent and error-prone</li></ul>
+<ul><li>Calling newLine() per line is better than `\n`, but still extra work on every line</li></ul>
+<h4>Problem 2 — Cannot write primitive values directly (FileWriter &amp; BufferedWriter)</h4>
+<p>FileWriter (and BufferedWriter, which inherits Writer API) exposes only three `write` overloads:</p>
+<p>There is no write(int i), write(double d), write(boolean b), etc.</p>
+<p>Consequence — numeric trap (exam favorite):</p>
+<p>FileWriter fw = new FileWriter(&quot;abc.txt&quot;);
+fw.write(100);        // writes &#x27;d&#x27; (Unicode 100), NOT the number 100
+fw.write(10.5);       // CE — no write(double)
+fw.write(true);       // CE — no write(boolean)</p>
+<p>To write the numeric value 100, 10.5, or true as text, you must convert to String first:</p>
+<p>fw.write(String.valueOf(100));   // works but creates String object
+fw.write(&quot;10.5&quot;);                // works
+fw.write(&quot;true&quot;);                // works</p>
+<p>Problems with String conversion:</p>
+<ul><li>Extra String object creation → performance hit</li></ul>
+<ul><li>Extra memory usage</li></ul>
+<ul><li>Programmer&#x27;s intent was &quot;write 100&quot;, not &quot;create a String and write it&quot;</li></ul>
+<p>PrintWriter solves both problems — next level / most enhanced writer for character output.</p>
+<h3>03:50 — PrintWriter introduction</h3>
+<p>Class: java.io.PrintWriter</p>
+<p>Main advantage over FileWriter and BufferedWriter:</p>
+<p>We can write any type of primitive data (and String, char, Object via print/println) directly to the file — no mandatory String conversion.</p>
+<p>The magic method: print(...)</p>
+<p>PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+pw.print(100);       // writes 100 (not &#x27;d&#x27;)
+pw.print(10.5);      // writes 10.5
+pw.print(true);      // writes true
+pw.print(&#x27;c&#x27;);       // writes c
+pw.print(&quot;Durga&quot;);   // writes Durga</p>
+<p>Why the name &quot;PrintWriter&quot;? Because of the `print()` method family — formatted, convenient output (similar spirit to System.out.print).</p>
+<p>Second problem solved — automatic line separator with `println()`:</p>
+<p>pw.println(100);     // writes 100 AND appends platform line separator
+pw.println(&quot;Durga&quot;); // writes Durga AND newline — no separate newLine() or &quot;\n&quot;</p>
+<p>No need to call newLine() or embed \n manually when using println().</p>
+<h3>06:17 — Three levels of Writers (recommendation)</h3>
+<p>Durga Sir&#x27;s rule:</p>
+<ul><li>Writing character data → PrintWriter (hands should go here)</li></ul>
+<ul><li>Reading character data → BufferedReader (only two reader levels: FileReader, BufferedReader — BufferedReader is the top reader)</li></ul>
+<p>Readers have two levels; writers have three levels.</p>
+<h3>08:25 — PrintWriter constructors (3 total)</h3>
+<p>Key difference from BufferedWriter: BufferedWriter cannot communicate directly with a file — it must wrap another Writer. PrintWriter offers both direct file access and wrapping.</p>
+<p>Board notes:</p>
+<pre class='code'>// Constructor 1 — String file name
+PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+
+// Constructor 2 — File reference
+File f = new File(&quot;abc.txt&quot;);
+PrintWriter pw = new PrintWriter(f);
+
+// Constructor 3 — via another Writer (e.g. FileWriter)
+FileWriter fw = new FileWriter(&quot;abc.txt&quot;);
+PrintWriter pw = new PrintWriter(fw);</pre>
+<p>PrintWriter can communicate directly with a file AND can communicate via some Writer object also.</p>
+<p>Because PrintWriter can open a file directly, you do not always need an intermediate FileWriter — unlike BufferedWriter.</p>
+<h3>12:22 — Methods in PrintWriter</h3>
+<h4>Inherited from Writer hierarchy (same as FileWriter / BufferedWriter)</h4>
+<p>All FileWriter/BufferedWriter write/flush/close methods are available on PrintWriter too.</p>
+<h4>PrintWriter-specific power methods</h4>
+<p>`print(...)` overloads — write data without trailing line separator:</p>
+<p>`println(...)` overloads — same set as print, but after writing the value, automatically appends the platform-specific line separator:</p>
+<p>Legend on board: For every print(X) there is a matching println(X).</p>
+<h3>16:22 — Demo 1: PrintWriterDemo1.java</h3>
+<p>Purpose: Show write() vs print() vs println() behavior and expected file content.</p>
+<pre class='code'>import java.io.*;
+
+class PrintWriterDemo1 {
+    public static void main(String[] args) throws Exception {
+        FileWriter fw = new FileWriter(&quot;abc.txt&quot;);
+        PrintWriter out = new PrintWriter(fw);
+
+        out.write(100);           // writes &#x27;d&#x27; (Unicode 100)
+        out.print(100);             // writes literal 100 — SAME LINE continues
+        out.print(true);            // writes true — SAME LINE continues
+        out.println(&#x27;c&#x27;);           // writes c + line separator
+        out.println(&quot;Durga&quot;);       // writes Durga + line separator
+
+        out.flush();
+        out.close();
+    }
+}</pre>
+<p>Alternative (PrintWriter direct to file — also valid):</p>
+<pre class='code'>PrintWriter out = new PrintWriter(&quot;abc.txt&quot;);</pre>
+<p>Trace — what lands in `abc.txt`:</p>
+<p>Expected file content:</p>
+<p>d100truec
+Durga</p>
+<p>Critical exam clarification — `print()` vs `println()`:</p>
+<ul><li>`print()` → writes data; cursor stays on same line</li></ul>
+<ul><li>`println()` → writes data; then inserts line separator (moves to next line)</li></ul>
+<ul><li>`println()` is NOT the same as `print()` alone — the `ln` part adds the newline</li></ul>
+<p>Common wrong answer: &quot;After print(100), the 100 goes to the next line.&quot; → False. Only println adds the separator.</p>
+<p>Compile &amp; run:</p>
+<p>&gt; javac PrintWriterDemo1.java
+&gt; java PrintWriterDemo1</p>
+<p>No console output — data goes to abc.txt. Open abc.txt to verify.</p>
+<h3>22:53 — Exam question: `write(100)` vs `print(100)`</h3>
+<p>Question (board): What is the difference between write(100) and print(100)?</p>
+<p>out.write(100);   // &#x27;d&#x27;
+out.print(100);   // &quot;100&quot;</p>
+<p>Must-have exam clarity — this distinction has appeared repeatedly across FileWriter and PrintWriter sessions.</p>
+<h3>25:22 — Best reader vs best writer (summary note)</h3>
+<p>Do not confuse PrintWriter (writing) with a non-existent &quot;PrintReader&quot; — readers top out at BufferedReader.</p>
+<h3>27:17 — Character data vs Binary data (revision)</h3>
+<p>All Java data falls into two categories for I/O:</p>
+<h4>1. Character / Text data</h4>
+<p>Examples: &quot;Durga&quot;, 10.5 as text, true as text, normal .txt content.</p>
+<p>Handle with: Readers and Writers</p>
+<h4>2. Binary data</h4>
+<p>Examples: images, PDF, JAR, audio, video — any non-text file.</p>
+<p>Handle with: Streams (InputStream / OutputStream)</p>
+<p>Board summary:</p>
+<p>In general, we can use Readers &amp; Writers to handle character data (text data).</p>
+<p>We can use Streams to handle binary data (images, video files, audio files, etc.).</p>
+<p>More specifically:</p>
+<p>Streams topic comes later; this video mentions it so students know why Readers/Writers exist and when not to use them.</p>
+<h3>32:40 — java.io class hierarchy (Object → Writer/Reader tree)</h3>
+<p>Root: Object class — parent of all Java classes.</p>
+<p>Object
+├── Writer (abstract)
+│   └── OutputStreamWriter
+│       └── FileWriter
+│           ├── BufferedWriter
+│           └── PrintWriter   ← most enhanced writer
+│
+└── Reader (abstract)
+    └── InputStreamReader
+        └── FileReader
+            └── BufferedReader   ← most enhanced reader</p>
+<p>Writer side (3 concrete levels under FileWriter path):</p>
+<ol><li>FileWriter</li></ol>
+<ol><li>BufferedWriter</li></ol>
+<ol><li>PrintWriter</li></ol>
+<p>Reader side (2 concrete levels):</p>
+<ol><li>FileReader</li></ol>
+<ol><li>BufferedReader — no PrintReader</li></ol>
+<p>Exam tip: Know parent/child relationships — PrintWriter extends Writer (via PrintWriter → Writer chain; internally may wrap FileWriter but IS-A Writer).</p>
+<h3>36:26 — File I/O exam content complete; applications begin</h3>
+<p>Core File I/O syllabus for certification is done after this hierarchy. Remaining time converts concepts into small applications showing effective read/write patterns.</p>
+<h2>Application 1 — Merge data from two files into a third file</h2>
+<h3>36:50 — Problem statement</h3>
+<p>Write a program to merge data from two files into a third file.</p>
+<p>Sample input files:</p>
+<p>file1.txt:</p>
+<p>aaa
+bbb
+ccc</p>
+<p>file2.txt:</p>
+<p>312
+313
+314
+315</p>
+<p>Expected `file3.txt` (all of file1, then all of file2):</p>
+<p>aaa
+bbb
+ccc
+312
+313
+314
+315</p>
+<p>(ASR heard &quot;3 billier / 3-Bull&quot; — board used aaa, bbb, ccc and numeric lines.)</p>
+<h3>38:33 — Design: BufferedReader to read, PrintWriter to write</h3>
+<p>Pattern: BufferedReader to read, PrintWriter to write.</p>
+<h3>39:09 — Solution: FileMerger.java (sequential merge)</h3>
+<pre class='code'>import java.io.*;
+
+class FileMerger {
+    public static void main(String[] args) throws Exception {
+        PrintWriter pw = new PrintWriter(&quot;file3.txt&quot;);
+
+        // --- Merge file1.txt ---
+        BufferedReader br = new BufferedReader(new FileReader(&quot;file1.txt&quot;));
+        String line = br.readLine();
+        while (line != null) {
+            pw.println(line);
+            line = br.readLine();
+        }
+
+        // --- Merge file2.txt (reuse same BufferedReader variable) ---
+        br = new BufferedReader(new FileReader(&quot;file2.txt&quot;));
+        line = br.readLine();
+        while (line != null) {
+            pw.println(line);
+            line = br.readLine();
+        }
+
+        pw.flush();
+        pw.close();
+    }
+}</pre>
+<p>Logic walkthrough:</p>
+<ol><li>Open one PrintWriter on file3.txt</li></ol>
+<ol><li>Read file1.txt line-by-line with BufferedReader; each non-null line → pw.println(line)</li></ol>
+<ol><li>When readLine() returns null, file1 is exhausted</li></ol>
+<ol><li>Reuse br — open new BufferedReader on file2.txt; repeat read/write loop</li></ol>
+<ol><li>flush() and close() PrintWriter</li></ol>
+<p>Run:</p>
+<p>&gt; javac FileMerger.java
+&gt; java FileMerger</p>
+<p>Open file3.txt — file1 content followed by file2 content.</p>
+<h3>50:21 — Why append happened without `append` mode?</h3>
+<p>Student doubt: Data from file2 is appended after file1 in file3, but we never passed append true anywhere.</p>
+<p>Answer:</p>
+<ul><li>Only one PrintWriter object was used for the entire operation</li></ul>
+<ul><li>First loop writes file1 data</li></ul>
+<ul><li>Second loop continues writing with the same PrintWriter → natural continuation (append behavior)</li></ul>
+<ul><li>If you opened a new PrintWriter on the same file for file2, it would overwrite file3 by default</li></ul>
+<p>One PrintWriter → continuation. New PrintWriter on same file → overwrite (unless append constructor).</p>
+<h2>Application 2 — Merge line-by-line alternatively</h2>
+<h3>51:24 — Problem statement</h3>
+<p>Write a program to perform file merge where merging is done line-by-line alternatively.</p>
+<p>Take one line from file1, one from file2, alternate until one or both files end.</p>
+<p>Same file1 / file2 as before. Expected `file3.txt`:</p>
+<p>aaa
+312
+bbb
+313
+ccc
+314
+315</p>
+<p>(if file2 has an extra line 316, it appears after file1 exhausted — see trace below)</p>
+<p>With file2 having lines through `315` and an extra `316`:</p>
+<p>aaa
+312
+bbb
+313
+ccc
+314
+315
+316</p>
+<h3>53:25 — Design: two BufferedReaders + one PrintWriter</h3>
+<p>Must read both files simultaneously — open both readers at the start.</p>
+<h3>53:33 — First attempt (WRONG — prints literal &quot;null&quot;)</h3>
+<pre class='code'>// BUGGY VERSION — DO NOT USE AS-IS
+PrintWriter pw = new PrintWriter(&quot;file3.txt&quot;);
+BufferedReader br1 = new BufferedReader(new FileReader(&quot;file1.txt&quot;));
+BufferedReader br2 = new BufferedReader(new FileReader(&quot;file2.txt&quot;));
+
+String line1 = br1.readLine();
+String line2 = br2.readLine();
+
+while (line1 != null || line2 != null) {
+    pw.println(line1);          // BUG: prints &quot;null&quot; when line1 is null
+    line1 = br1.readLine();
+    pw.println(line2);          // BUG: prints &quot;null&quot; when line2 is null
+    line2 = br2.readLine();
+}
+pw.flush();
+pw.close();</pre>
+<p>What goes wrong:</p>
+<p>When file1 finishes first, line1 becomes null but file2 still has data.</p>
+<p>pw.println(null) writes the string `&quot;null&quot;` to the file — not what we want.</p>
+<p>Observed bad output (example):</p>
+<p>aaa
+312
+bbb
+313
+ccc
+314
+null
+315
+null
+316</p>
+<h3>59:54 — Correct solution: null-check before each write</h3>
+<pre class='code'>import java.io.*;
+
+class FileMerger2 {
+    public static void main(String[] args) throws Exception {
+        PrintWriter pw = new PrintWriter(&quot;file3.txt&quot;);
+        BufferedReader br1 = new BufferedReader(new FileReader(&quot;file1.txt&quot;));
+        BufferedReader br2 = new BufferedReader(new FileReader(&quot;file2.txt&quot;));
+
+        String line1 = br1.readLine();
+        String line2 = br2.readLine();
+
+        while (line1 != null || line2 != null) {
+            if (line1 != null) {
+                pw.println(line1);
+                line1 = br1.readLine();
+            }
+            if (line2 != null) {
+                pw.println(line2);
+                line2 = br2.readLine();
+            }
+        }
+
+        pw.flush();
+        pw.close();
+    }
+}</pre>
+<p>Loop condition: line1 != null || line2 != null — continue while at least one file still has data.</p>
+<p>Write rules:</p>
+<ul><li>If line1 != null → write line1, advance br1</li></ul>
+<ul><li>If line2 != null → write line2, advance br2</li></ul>
+<ul><li>If line1 == null → skip write for file1 (don&#x27;t print &quot;null&quot;)</li></ul>
+<ul><li>When both null → stop</li></ul>
+<p>Manual trace (aaa/bbb/ccc vs 312/313/314/315/316):</p>
+<p>Final file3.txt:</p>
+<p>aaa
+312
+bbb
+313
+ccc
+314
+315
+316</p>
+<p>Compile &amp; run:</p>
+<p>&gt; javac FileMerger2.java
+&gt; java FileMerger2</p>
+<h3>1:07:30 — Session wrap-up</h3>
+<p>Covered in Video 123:</p>
+<ol><li>Limitations of FileWriter/BufferedWriter (primitives + line separators)</li></ol>
+<ol><li>PrintWriter advantages — print / println overloads</li></ol>
+<ol><li>Three PrintWriter constructors (direct file OR via Writer)</li></ol>
+<ol><li>Inherited write/flush/close + print method family</li></ol>
+<ol><li>PrintWriterDemo1 — write(100) vs print(100) vs println</li></ol>
+<ol><li>Character vs binary data; Readers/Writers vs Streams</li></ol>
+<ol><li>Full I/O hierarchy diagram</li></ol>
+<ol><li>File merge app (sequential) — one PrintWriter, reuse BufferedReader</li></ol>
+<ol><li>Alternate merge app — two BufferedReaders, null-check before println</li></ol>
+<p>Next video (124): More PrintWriter examples (file extraction, duplicate removal, business scenarios).</p>
+<h2>Quick reference tables</h2>
+<h3>PrintWriter vs FileWriter / BufferedWriter</h3>
+<h3>PrintWriter constructors</h3>
+<h3>Key methods summary</h3>
+<h3>Exam traps checklist</h3>
+<h3>Video metadata</h3>
+<p>Java code block count: 12</p>
+<table>
+<tr><th>Method</th><th>Argument type</th></tr>
+<tr><td>write(int ch)</td><td>single character (Unicode int)</td></tr>
+<tr><td>write(char[] c)</td><td>char array</td></tr>
+<tr><td>write(String s)</td><td>String</td></tr>
+</table>
+<table>
+<tr><th>Level</th><th>Class</th><th>Role</th></tr>
+<tr><td>1</td><td>FileWriter</td><td>Basic character writing to file</td></tr>
+<tr><td>2</td><td>BufferedWriter</td><td>Buffering + newLine() for portable line breaks</td></tr>
+<tr><td>3</td><td>PrintWriter</td><td>Most enhanced — print/println for all primitive types + auto newline</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Constructor</th><th>Meaning</th></tr>
+<tr><td>1</td><td>PrintWriter(String fileName)</td><td>Direct communication with file by name</td></tr>
+<tr><td>2</td><td>PrintWriter(File f)</td><td>Direct communication via File reference (like FileWriter)</td></tr>
+<tr><td>3</td><td>PrintWriter(Writer w)</td><td>Communication via some Writer object (like BufferedWriter pattern)</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Purpose</th></tr>
+<tr><td>write(int ch)</td><td>Single character (Unicode int) — still writes char, not int value</td></tr>
+<tr><td>write(char[] c)</td><td>Char array</td></tr>
+<tr><td>write(String s)</td><td>String</td></tr>
+<tr><td>flush()</td><td>Push buffered data to destination</td></tr>
+<tr><td>close()</td><td>Close writer, release resources</td></tr>
+</table>
+<table>
+<tr><th>Overload</th><th>Example</th></tr>
+<tr><td>print(char ch)</td><td>pw.print(&#x27;a&#x27;);</td></tr>
+<tr><td>print(int i)</td><td>pw.print(100);</td></tr>
+<tr><td>print(double d)</td><td>pw.print(10.5);</td></tr>
+<tr><td>print(boolean b)</td><td>pw.print(true);</td></tr>
+<tr><td>print(String s)</td><td>pw.print(&quot;Durga&quot;);</td></tr>
+<tr><td>…</td><td>(and more: long, float, char[], Object, etc.)</td></tr>
+</table>
+<table>
+<tr><th>Overload</th><th>Example</th></tr>
+<tr><td>println(char ch)</td><td>pw.println(&#x27;c&#x27;);</td></tr>
+<tr><td>println(int i)</td><td>pw.println(100);</td></tr>
+<tr><td>println(double d)</td><td>pw.println(10.5);</td></tr>
+<tr><td>println(boolean b)</td><td>pw.println(true);</td></tr>
+<tr><td>println(String s)</td><td>pw.println(&quot;Durga&quot;);</td></tr>
+<tr><td>println()</td><td>blank line (separator only)</td></tr>
+</table>
+<table>
+<tr><th>Statement</th><th>Effect on file</th></tr>
+<tr><td>out.write(100)</td><td>Writes character `d` (not number 100)</td></tr>
+<tr><td>out.print(100)</td><td>Appends `100` on same line as d → so far: d100</td></tr>
+<tr><td>out.print(true)</td><td>Appends `true` on same line → d100true</td></tr>
+<tr><td>out.println(&#x27;c&#x27;)</td><td>Appends `c` then newline → line 1: d100truec</td></tr>
+<tr><td>out.println(&quot;Durga&quot;)</td><td>New line: `Durga` then newline</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>What gets written to file</th></tr>
+<tr><td>write(100)</td><td>Corresponding character &#x27;d&#x27; (Unicode value 100)</td></tr>
+<tr><td>print(100)</td><td>Integer value `100` as text (not a single char)</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>Most enhanced class</th></tr>
+<tr><td>Write character/text data to file</td><td>PrintWriter</td></tr>
+<tr><td>Read character/text data from file</td><td>BufferedReader</td></tr>
+</table>
+<table>
+<tr><th>Task</th><th>API</th></tr>
+<tr><td>Write binary data to file</td><td>OutputStream</td></tr>
+<tr><td>Read binary data from file</td><td>InputStream</td></tr>
+</table>
+<table>
+<tr><th>Role</th><th>Class</th></tr>
+<tr><td>Write merged output to file3.txt</td><td>PrintWriter</td></tr>
+<tr><td>Read lines from file1.txt, file2.txt</td><td>BufferedReader</td></tr>
+</table>
+<table>
+<tr><th>Component</th><th>Count</th><th>Target</th></tr>
+<tr><td>PrintWriter</td><td>1</td><td>file3.txt</td></tr>
+<tr><td>BufferedReader br1</td><td>1</td><td>file1.txt</td></tr>
+<tr><td>BufferedReader br2</td><td>1</td><td>file2.txt</td></tr>
+</table>
+<table>
+<tr><th>Iteration</th><th>line1</th><th>line2</th><th>Written</th></tr>
+<tr><td>Start</td><td>aaa</td><td>312</td><td>aaa, 312</td></tr>
+<tr><td></td><td>bbb</td><td>313</td><td>bbb, 313</td></tr>
+<tr><td></td><td>ccc</td><td>314</td><td>ccc, 314</td></tr>
+<tr><td></td><td>null</td><td>315</td><td>315 only</td></tr>
+<tr><td></td><td>null</td><td>316</td><td>316 only</td></tr>
+<tr><td>End</td><td>null</td><td>null</td><td>stop</td></tr>
+</table>
+<table>
+<tr><th>Feature</th><th>FileWriter / BufferedWriter</th><th>PrintWriter</th></tr>
+<tr><td>Write int 100 as number</td><td>No — write(100) → &#x27;d&#x27;</td><td>Yes — print(100) → 100</td></tr>
+<tr><td>Write double/boolean directly</td><td>No (CE or String only)</td><td>Yes — print(10.5), print(true)</td></tr>
+<tr><td>Line separator</td><td>Manual \n or newLine()</td><td>println() auto-adds separator</td></tr>
+<tr><td>Talk to file directly</td><td>FileWriter yes; BufferedWriter no</td><td>Yes (constructors 1 &amp; 2)</td></tr>
+<tr><td>Via another Writer</td><td>BufferedWriter only</td><td>Constructor 3</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Signature</th><th>Direct to file?</th></tr>
+<tr><td>1</td><td>PrintWriter(String fileName)</td><td>Yes</td></tr>
+<tr><td>2</td><td>PrintWriter(File f)</td><td>Yes</td></tr>
+<tr><td>3</td><td>PrintWriter(Writer w)</td><td>Via wrapped Writer</td></tr>
+</table>
+<table>
+<tr><th>Category</th><th>Methods</th></tr>
+<tr><td>From Writer</td><td>write(int), write(char[]), write(String), flush(), close()</td></tr>
+<tr><td>PrintWriter-specific</td><td>print(...) overloads, println(...) overloads</td></tr>
+</table>
+<table>
+<tr><th>Trap</th><th>Correct understanding</th></tr>
+<tr><td>write(100) on any Writer</td><td>Writes char &#x27;d&#x27;, not integer 100</td></tr>
+<tr><td>print(100) on PrintWriter</td><td>Writes text 100</td></tr>
+<tr><td>print vs println</td><td>Only println adds line separator</td></tr>
+<tr><td>println(null)</td><td>Writes literal &quot;null&quot; string</td></tr>
+<tr><td>Alternate merge without null check</td><td>&quot;null&quot; appears in output file</td></tr>
+<tr><td>Two PrintWriters same file</td><td>Second opens in overwrite mode</td></tr>
+<tr><td>BufferedWriter constructor</td><td>Cannot take filename alone — needs Writer</td></tr>
+<tr><td>PrintWriter constructor</td><td>Can take filename directly</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Java tutorial by Durga Sir</td></tr>
+<tr><td>Position</td><td>123 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>File I/O — Part 4 (PrintWriter)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 08m 13s</td></tr>
+<tr><td>Video ID</td><td>JN7-L3ZEnTw</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=JN7-L3ZEnTw</td></tr>
+</table>
+</body></html>

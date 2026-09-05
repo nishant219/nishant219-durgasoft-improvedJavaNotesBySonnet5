@@ -1,0 +1,1088 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>052-inheritance-is-a</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 052 — Inheritance (IS-A)</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-2 || Inheritance||is a relationship</p>
+<p>Source: real YouTube auto-captions (.transcripts/052-7m5WIj3lpcE.txt). ASR decoded in place — whoops = OOPs; keep subing = board heading (keep writing); easier / isier / EAS / e relationship = IS-A relationship; EXT / externs / ex keybord / extend keyword = extends; Loop Pooles / Loop holes = loopholes; public vo / voice / why / word / War = public void; sop / system.out.PR = System.out.println; inner tense / inance / in tense / your tense / linear tense = inheritance; V loan = VehicleLoan; PKA = pakka (100%); Ines / Inas / interes / inace / interace = interfaces; ENT person / interv person = interview person; abish ban = Abhishek Bachchan; CH bachan / chachan = next-generation Bachchan; cylic / cyclick / multi click = cyclic; Java C A do Java = javac A.java.</p>
+<p>This is OOPs Part 2, module 2 after the security module (data hiding, abstraction, encapsulation). He does not teach HAS-A, polymorphism, or overriding here — follow the board.</p>
+<h3>00:05 — Recap: last session started OOPs; module 1 was security</h3>
+<p>Last session they started OOPs. The first block of features was related to security. He is not starting inheritance until that recap is sitting in the notes.</p>
+<p>Four things already covered. He treats them as module one. All four talk about one word only: security.</p>
+<h3>00:20 — Recap: data hiding</h3>
+<p>Data hiding: outside person can’t access our internal data directly. Internal data should not go out directly.</p>
+<p>He does not re-write the Account example in this video. He only names the concept so module 2 has a start line.</p>
+<h3>00:36 — Recap: abstraction</h3>
+<p>Abstraction: hiding internal implementation, and just highlighting the set of services we are offering.</p>
+<h3>00:54 — Recap: encapsulation and tightly encapsulated class</h3>
+<p>Data hiding + abstraction is nothing but encapsulation. After encapsulation they covered tightly encapsulated class.</p>
+<p>These four things = module one. One word: security. Up to this, very clear. Now he is ready to start second module.</p>
+<h3>01:40 — Module 2 starts: IS-A relationship = inheritance</h3>
+<p>Second module: IS-A relationship. That is the inheritance concept. What is the benefit, and what loopholes are there — he will start explaining that.</p>
+<h3>01:54 — Keep writing: IS-A relationship</h3>
+<p>Board heading (he says keep subing):</p>
+<p>IS-A relationship</p>
+<p>He writes it several times: is a / is a relationship. Copy the heading first.</p>
+<h3>02:17 — Three outline points before any example</h3>
+<p>He outlines theory first. No internals yet.</p>
+<ol><li>IS-A relationship is also known as inheritance. First word you should be aware: inheritance.</li></ol>
+<ol><li>How do we implement IS-A? By using `extends` keyword.</li></ol>
+<ol><li>Biggest advantage: parent class members are by default available to the child. If you write a method in the parent, we can call it on the child object without rewriting. That advantage is reusability.</li></ol>
+<pre class='code'>class Parent {
+    void inherited() {
+        System.out.println(&quot;written once in parent&quot;);
+    }
+}
+
+class Child extends Parent {
+    // inherited() is here by default — do not rewrite
+}
+
+class Test {
+    public static void main(String[] args) {
+        new Child().inherited();
+        // prints written once in parent
+    }
+}</pre>
+<h3>03:02 — Biggest advantage is reusability</h3>
+<p>Once in the parent, automatically you can call that method on any child object. Main biggest advantage of IS-A relationship: reusability. He will explain with examples. First take the three points.</p>
+<h3>04:10 — Board: three theoretical outline conclusions</h3>
+<p>He dictates slowly (lots of ASR repeats — same three lines).</p>
+<p>IS-A relationship</p>
+<ol><li>It is also known as inheritance.</li></ol>
+<ol><li>The main advantage of IS-A relationship is code reusability.</li></ol>
+<ol><li>By using `extends` keyword we can implement IS-A relationship.</li></ol>
+<p>That’s all for the outline. He is not talking internal things yet.</p>
+<pre class='code'>class P {
+    void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P { // extends implements IS-A
+}
+
+class Test {
+    public static void main(String[] args) {
+        new C().m1(); // reuse — not rewritten in C
+        // prints parent
+    }
+}</pre>
+<p>Clear for all? Now: what it means, and what loopholes. Next ~10 minutes are very very important. Take special care.</p>
+<h3>06:19 — First example: class P with m1, class C extends P with m2</h3>
+<p>He takes `class P` (parent). Parent contains one method: `public void m1()`, System.out.println(&quot;parent&quot;).</p>
+<p>Parent class contains how many methods? Only one — m1.</p>
+<p>Then `class C extends P`. Child method: `public void m2()`, print child.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+class C extends P {
+    public void m2() {
+        System.out.println(&quot;child&quot;);
+    }
+}</pre>
+<p>Parent class contain how many methods? One — m1.</p>
+<p>Child class contain how many methods? Two. Parent’s m1 is by default available to the child. That is inheritance. Child of parent: parent class members by default available to the child.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m2() {
+        System.out.println(&quot;child&quot;);
+    }
+    // C has m1 (inherited) + m2 (own) = 2 methods
+}</pre>
+<h3>07:46 — Big B analogy (Amitabh → Abhishek → next child)</h3>
+<p>Whatever property your parent has, whatever fame your parent has, by default available to the child.</p>
+<p>Best example: Big B (Amitabh Bachchan) in India is very famous. Whatever fame Big B has, Abhishek Bachchan is going to get that fame. Abhishek is not required to define it anywhere — he is the kid of Big B, so by default it comes.</p>
+<p>Suppose tomorrow a child of Abhishek comes: whatever fame Big B has, whatever fame Abhishek has, automatically comes to that child. Every TV channel, every newspaper — compulsory this news should be there.</p>
+<p>Even in the middle if another person is also born, that person is more popular / more fame when compared with all these, because all these people’s fame by default will come into the picture.</p>
+<p>Whatever fame parent has, whatever property parent has, whatever assets parent has — by default available to the child. We are not required to rewrite. Automatically available. Same for methods: whatever method parent has, automatically by default available to the child. This concept is inheritance. Any explanation required?</p>
+<pre class='code'>class Amitabh {
+    public void fame() {
+        System.out.println(&quot;Big B fame&quot;);
+    }
+}
+
+class Abhishek extends Amitabh {
+    // fame() by default available — not rewritten
+}
+
+class NextBachchan extends Abhishek {
+    // fame() from Amitabh + anything Abhishek has — by default
+}
+
+class Test {
+    public static void main(String[] args) {
+        new NextBachchan().fame();
+        // prints Big B fame
+    }
+}</pre>
+<h3>09:35 — Loopholes start: class Test, four cases</h3>
+<p>What various loopholes are there — observe this terminology. `class Test`. Take a bit very very special care. `public static void main(String[] args)`.</p>
+<p>Four cases. Every case itself is an important conclusion. After completing the example he will give the notes also.</p>
+<h3>10:10 — Case 1: parent reference, parent object</h3>
+<pre class='code'>P p = new P();
+p.m1();
+p.m2();</pre>
+<p>`p.m1()` — valid or not? On the parent object he is calling parent class method. Parent reference, parent object, p.m1() — 100% valid.</p>
+<p>`p.m2()` — valid or not?</p>
+<p>Whatever methods parent has, by default available to the child — but whatever methods child has, by default not available to the parent. That’s why p.m1() is perfectly valid, but m2 is a child-specific method, by default not available to the parent. `p.m2()` immediately compile-time error.</p>
+<p>Compiler: cannot find symbol — which symbol? method m2 — location: class P. In the P class there is no method named m2.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m2() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1();
+        // prints parent
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m2();
+        // CE: cannot find symbol
+        // symbol: method m2()
+        // location: class P
+    }
+}</pre>
+<p>On the parent reference, child-specific methods we can’t call. That is case one.</p>
+<h3>12:12 — Case 2: child reference, child object</h3>
+<pre class='code'>C c = new C();
+c.m1();
+c.m2();</pre>
+<p>Child reference, child object. `c.m1()` valid or not? On the child reference can I call parent class method? Yes — whatever method parent has, by default available to the child. No problem. Valid.</p>
+<p>`c.m2()` — child reference, child object, child method. No problem at all. Valid.</p>
+<p>Any explanation required about this one? No.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        c.m1();
+        c.m2();
+        // prints parent
+        // prints child
+    }
+}</pre>
+<h3>12:54 — Case 3: parent reference holding child object (dangerous)</h3>
+<p>A bit dangerous. Take special care.</p>
+<pre class='code'>P p1 = new C();</pre>
+<p>Parent reference can be used to hold child object — no problem at all. Valid.</p>
+<p>`p1.m1()` — valid. Parent class method, by default available to the child. No problem.</p>
+<p>`p1.m2()` — valid or invalid? 100% invalid. Compile-time error.</p>
+<p>Very important conclusion: parent reference can be used to hold child object, but by using that reference we can call only the methods available in the parent class. We can’t call child-specific methods.</p>
+<p>Student question he plants: even though it is a child object, you can’t call child-specific method — then what is the advantage of this approach? This approach is polymorphism. Big benefit is there. That part he will discuss soon. At this point just make sure: immediately compile-time error if you call m2 on p1.</p>
+<p>Why? You are calling m2 on p1. p1 is what type? P type. In P, is there any m2 method? Not there. Compiler: in class P there is no m2 method.</p>
+<p>Repeat: parent reference can be used to hold child object, but by using that reference we can’t call child-specific methods. We can call only the methods available in parent class.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        P p1 = new C(); // parent ref holding child object — valid
+        p1.m1();
+        // prints parent
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.m2();
+        // CE: cannot find symbol
+        // symbol: method m2()
+        // location: class P
+        // runtime object is C, but compiler looks at reference type P
+    }
+}</pre>
+<h3>15:05 — Case 4: child reference holding parent object</h3>
+<p>Very easy.</p>
+<pre class='code'>C c1 = new P();</pre>
+<p>Valid or invalid? Parent reference can be used to hold child object, but child reference cannot be used to hold parent object. Immediately compile-time error: incompatible types — found: P, required: C.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        C c1 = new P();
+        // CE: incompatible types
+        // found: P
+        // required: C
+    }
+}</pre>
+<p>That’s all. Four conclusions. Very dangerous point is the third point. Most people feel case 3 should be valid because the runtime object is the child object. No: parent reference can hold child object, but by using that reference we can call only parent methods. Child-specific methods we can’t call.</p>
+<h3>16:30 — Board: he writes the full P / C / Test example</h3>
+<p>He writes it clearly so you have clarity. Music / pause while the class copies.</p>
+<p>m1 present in parent class. m2 present in child class.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m2() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1();
+        p.m2();
+        // CE: cannot find symbol
+        // symbol: method m2()
+        // location: class P
+
+        C c = new C();
+        c.m1();
+        c.m2();
+        // prints parent
+        // prints child
+
+        P p1 = new C();
+        p1.m1();
+        p1.m2();
+        // CE: cannot find symbol
+        // symbol: method m2()
+        // location: class P
+
+        C c1 = new P();
+        // CE: incompatible types
+        // found: P
+        // required: C
+    }
+}</pre>
+<p>He says: in both of the m2-on-P-reference cases we are going to get the same compile-time error. Take special care.</p>
+<p>You should have clear clarity about this terminology.</p>
+<h3>20:08 — Add the theory conclusions</h3>
+<p>Now add theory conclusions. Listen.</p>
+<h3>20:24 — Conclusion 1 (he dictates)</h3>
+<p>Whatever methods parent has, by default available to the child. That’s why on the child reference we can call parent method, we can call child method. No problem. That is conclusion one.</p>
+<p>Board (repeats until it is copied):</p>
+<p>Whatever methods parent has, by default available to the child, and hence on the child reference we can call both parent and child class methods.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        c.m1(); // parent method on child reference
+        c.m2(); // child method on child reference
+        // prints parent
+        // prints child
+    }
+}</pre>
+<h3>22:04 — Conclusion 2 (he dictates)</h3>
+<p>Whatever methods a child has, by default not available to the parent, and hence on the parent reference we can’t call child-specific methods.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1(); // OK
+        p.m2();
+        // CE: cannot find symbol
+        // symbol: method m2()
+        // location: class P
+        // child-specific method — not available to parent
+    }
+}</pre>
+<h3>23:15 — Conclusion 3 (dangerous — he repeats)</h3>
+<p>Parent reference can be used to hold child object, but by using that reference we can call only the methods available in parent class. Child-specific methods we can’t call. By mistake if you try to call child-specific method → immediately compile-time error.</p>
+<p>If you can’t call child-specific method, what is the advantage of this approach? This approach is polymorphism. Big advantage is there. He will discuss soon. Make sure you remember this point.</p>
+<p>Board:</p>
+<p>Parent reference can be used to hold child object, but by using that reference we can’t call child-specific methods, but we can call the methods present in parent class.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        P p1 = new C(); // hold child object — allowed
+        p1.m1();        // parent method — allowed
+        // prints parent
+        p1.m2();
+        // CE: cannot find symbol
+        // symbol: method m2()
+        // location: class P
+        // polymorphism benefit — later session
+    }
+}</pre>
+<h3>25:16 — Conclusion 4 (he dictates)</h3>
+<p>Parent reference can be used to hold child object, but child reference cannot be used to hold parent object.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        P p1 = new C(); // OK
+        C c1 = new P();
+        // CE: incompatible types
+        // found: P
+        // required: C
+    }
+}</pre>
+<p>That’s all. What is inheritance, what important loopholes — he hopes it is clear.</p>
+<p>Four conclusions as he left them on the board:</p>
+<h3>26:31 — Advantage of inheritance, and when we should go for it</h3>
+<p>Biggest advantage is code reusability. Can he explain with an example what is the use / impact of reusability from this inheritance concept? And when we should go for inheritance?</p>
+<h3>27:37 — Without inheritance vs with inheritance (loan module)</h3>
+<p>Board headings:</p>
+<p>without inheritance | with inheritance</p>
+<p>He wants to design a loan module. He pretends he does not know inheritance / extends / reusability. First: how we write the code without inheritance, then the difference.</p>
+<p>Different types of loans: vehicle loan, personal loan, home loan, several loans.</p>
+<h3>28:09 — Without inheritance: three classes, 300 methods each</h3>
+<pre class='code'>class VehicleLoan {
+    // 300 methods
+}
+
+class HomeLoan {
+    // around 300 methods
+}
+
+class PersonalLoan {
+    // 300 methods
+}</pre>
+<p>Three types of loans to handle. How many methods to write? 300 + 300 + 300 = 900 methods. Assume (rough values) 90 hours of development time.</p>
+<pre class='code'>class VehicleLoan {
+    void m1() { }
+    // ... 299 more methods (300 total)
+}
+
+class HomeLoan {
+    void m1() { }
+    // ... 299 more methods (300 total)
+}
+
+class PersonalLoan {
+    void m1() { }
+    // ... 299 more methods (300 total)
+}
+
+// 900 methods, ~90 hours of development time</pre>
+<h3>29:22 — He calls an expert programmer</h3>
+<p>He wrote a big loan module: is it a good programming practice? Expert: do you know inheritance? If you know inheritance, this much lengthy code is not required, this much development time is also not required. Why don’t you use inheritance?</p>
+<h3>30:06 — With inheritance: 250 common methods into class Loan</h3>
+<p>Out of these 300 methods, is there any common method applicable for every type? All are loan types. Around 250 methods are common.</p>
+<p>Most common methods which are applicable for any type of loan: separate those methods and write in a separate class named `Loan`.</p>
+<pre class='code'>class Loan {
+    // 250 common methods — applicable for any type of loan
+    void calculateInterest() {
+        System.out.println(&quot;common loan interest logic&quot;);
+    }
+}</pre>
+<h3>31:12 — VehicleLoan extends Loan — only 50 specific methods</h3>
+<p>`class VehicleLoan extends Loan`. Those 250 methods without rewriting automatically by default available, because it is the child. Remaining specific methods: only 50. Write those 50 specific methods.</p>
+<pre class='code'>class VehicleLoan extends Loan {
+    // 250 parent methods by default available — do not rewrite
+    void registerVehicle() {
+        System.out.println(&quot;vehicle-loan specific&quot;);
+    }
+    // ... 49 more specific methods (50 total)
+}</pre>
+<h3>32:00 — HousingLoan and PersonalLoan extend Loan</h3>
+<p>Second type: `class HousingLoan extends Loan`. Once it is child of Loan, those 250 methods by default available. Write 50 specific methods.</p>
+<p>`class PersonalLoan extends Loan`. Once again 50 specific methods.</p>
+<pre class='code'>class HousingLoan extends Loan {
+    void registerHouse() {
+        System.out.println(&quot;housing-loan specific&quot;);
+    }
+    // 50 specific methods
+}
+
+class PersonalLoan extends Loan {
+    void checkSalary() {
+        System.out.println(&quot;personal-loan specific&quot;);
+    }
+    // 50 specific methods
+}</pre>
+<h3>33:02 — 400 methods, 40 hours — which practice is good?</h3>
+<p>Total methods to write: 250 + 50 + 50 + 50 = 400 methods. Development time: just 40 hours.</p>
+<p>Which is good programming practice? Second, because within less time, with less code, we can develop the same requirement. Compulsory we should go for this approach.</p>
+<pre class='code'>class Loan {
+    // 250 common methods — written ONCE
+    void common1() { }
+    // ...
+}
+
+class VehicleLoan extends Loan {
+    // 50 specific
+}
+
+class HousingLoan extends Loan {
+    // 50 specific
+}
+
+class PersonalLoan extends Loan {
+    // 50 specific
+}
+
+class Test {
+    public static void main(String[] args) {
+        new VehicleLoan().common1();
+        new HousingLoan().common1();
+        new PersonalLoan().common1();
+        // 250 written once, reused on every child
+        // 400 methods total, ~40 hours
+        // vs 900 methods / 90 hours without inheritance
+    }
+}</pre>
+<h3>33:45 — Meaning of code reusability; redundancy problem</h3>
+<p>Without inheritance, 250 common methods: how many times to write? Here, here, and here — three times. Code redundancy. Tomorrow if there is a problem in the common, or a small change: change here, here, and here. Code redundancy is always a big problem (even in databases — update problems if redundancy is there).</p>
+<p>With inheritance: 250 common methods written only one time. Automatically by default available to every child. Parent methods by default available to the child. We are not required to rewrite.</p>
+<p>Practically what is code reusability: write 250 common methods one time, use three times (vehicle, housing, personal). Write once in the parent, automatically you can reuse that method on any child without rewriting. That is code reusability.</p>
+<pre class='code'>class Loan {
+    void common() {
+        System.out.println(&quot;written once&quot;);
+    }
+}
+
+class VehicleLoan extends Loan { }
+class HousingLoan extends Loan { }
+class PersonalLoan extends Loan { }
+
+class Test {
+    public static void main(String[] args) {
+        new VehicleLoan().common();
+        new HousingLoan().common();
+        new PersonalLoan().common();
+        // prints written once
+        // prints written once
+        // prints written once
+        // write once, reuse three times
+    }
+}</pre>
+<h3>35:07 — Board: without inheritance | with inheritance</h3>
+<p>Very very important terminology. He copies both columns (music / pause).</p>
+<p>Without inheritance</p>
+<pre class='code'>class VehicleLoan {
+    // 300 methods
+}
+
+class HousingLoan {
+    // 300 methods
+}
+
+class PersonalLoan {
+    // 300 methods
+}
+
+// 900 methods, 90 hours of development time</pre>
+<p>With inheritance</p>
+<pre class='code'>class Loan {
+    // 250 common methods
+}
+
+class VehicleLoan extends Loan {
+    // 50 specific methods
+}
+
+class HousingLoan extends Loan {
+    // 50 specific methods
+}
+
+class PersonalLoan extends Loan {
+    // 50 specific methods
+}
+
+// 400 methods, 40 hours of development time</pre>
+<p>Completed. He hopes it is clear.</p>
+<h3>38:16 — Note: where to define common vs specific methods</h3>
+<p>Most common methods which are applicable for any type of child — parent class or child class? In the parent class.</p>
+<p>Specific methods which are applicable only for a particular child — define those methods in the child class.</p>
+<p>Take a note (he dictates):</p>
+<p>The most common methods which are applicable for any type of child we have to define in parent class.</p>
+<p>The specific methods which are applicable for a particular child we have to define in child class.</p>
+<p>With this approach you can see the advantage of IS-A / inheritance: same 900-method requirement achieved with only 400. 90 hours reduced to 40 hours. Obviously this approach is always a good programming practice.</p>
+<pre class='code'>class Loan {
+    void commonForAnyLoan() {
+        System.out.println(&quot;parent — any type of child&quot;);
+    }
+}
+
+class VehicleLoan extends Loan {
+    void vehicleOnly() {
+        System.out.println(&quot;child — particular child only&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        VehicleLoan v = new VehicleLoan();
+        v.commonForAnyLoan();
+        v.vehicleOnly();
+        // prints parent — any type of child
+        // prints child — particular child only
+    }
+}</pre>
+<h3>40:20 — Total Java API is implemented based on inheritance</h3>
+<p>Java API: Object class, String class, StringBuffer class, … Total Java API (Object, String, Thread, …) is implemented based on inheritance concept only.</p>
+<p>Which class acts as root for all Java classes? Object class.</p>
+<h3>40:48 — Board sketch: Object, String, StringBuffer, Throwable</h3>
+<p>Object class contains several child classes: String, StringBuffer, … Also Throwable is a child of Object.</p>
+<p>Two child classes of Throwable: first Exception, second Error.</p>
+<p>Under Exception: RuntimeException — then ArithmeticException, NullPointerException, … Also IOException. Several child classes.</p>
+<p>Under Error: OutOfMemoryError, …</p>
+<pre class='code'>// board diagram of API he drew (these are java.lang / java.io types)
+class Object { }
+
+class String extends Object { }
+class StringBuffer extends Object { }
+class Throwable extends Object { }
+
+class Exception extends Throwable { }
+class Error extends Throwable { }
+
+class RuntimeException extends Exception { }
+class IOException extends Exception { }
+
+class ArithmeticException extends RuntimeException { }
+class NullPointerException extends RuntimeException { }
+
+class OutOfMemoryError extends Error { }</pre>
+<p>Total Java API is implemented based on inheritance only. How can you prove?</p>
+<h3>42:13 — Object’s 11 methods written once for 5000+ classes</h3>
+<p>The most common methods which are applicable for any type of object / any type of Java class are defined in Object class.</p>
+<p>How many methods present in Object class? 11 methods. Those methods we define once in Object class. Automatically these 11 methods by default available to every child class. We are not required to rewrite once again in every child.</p>
+<p>Around 5000+ Java classes are there. 11 methods: how many times is he writing? Only once in Object class. Automatically available to every child.</p>
+<p>Suppose inheritance concept is not there in Java: then how many times we have to write these 11 methods? In every class — 5000 times. How much lengthy would the API be, how much development time to develop Java API?</p>
+<p>Total Java API is implemented based on inheritance concept only.</p>
+<pre class='code'>class Object {
+    // 11 methods defined ONCE
+    // most common methods for any Java object
+    // (he does not list the 11 names on this board)
+}
+
+class String extends Object {
+    // do not rewrite those 11
+}
+
+class StringBuffer extends Object {
+    // do not rewrite those 11
+}
+
+class Test {
+    public static void main(String[] args) {
+        String s = &quot;durga&quot;;
+        System.out.println(s.hashCode());
+        // Object method — available without rewriting in String
+        // (prints some int)
+    }
+}
+// if Java had NO inheritance (his thought experiment — not legal Java)
+class String {
+    // would have to rewrite all 11 Object methods here
+}
+class StringBuffer {
+    // rewrite all 11 again
+}
+// × 5000+ classes</pre>
+<h3>43:45 — Why Object class acts as root</h3>
+<p>Interview person may ask: why Object class acts as a root?</p>
+<p>Because for any type of Java object / any type of Java class, the most common methods are defined in Object class. If we make this one as parent, automatically these methods by default available to every child class without rewriting.</p>
+<h3>44:11 — Why Throwable acts as root for Java exception hierarchy</h3>
+<p>Very important point. Throwable acts as root for Java exception hierarchy. Why?</p>
+<p>Simple:</p>
+<ul><li>Most common methods applicable for any type of exception → defined in Exception class.</li></ul>
+<ul><li>Most common methods applicable for any type of error → defined in Error class.</li></ul>
+<ul><li>Most common methods applicable for exception or error → defined in Throwable class.</li></ul>
+<p>That’s why Throwable class acts as root for the exception hierarchy (he said “root for all Java classes” once in ASR — meaning this exception/error tree under Object).</p>
+<pre class='code'>class Throwable extends Object {
+    // common methods for exception AND error
+}
+
+class Exception extends Throwable {
+    // common methods for any exception
+}
+
+class Error extends Throwable {
+    // common methods for any error
+}
+
+class ArithmeticException extends RuntimeException { }
+class OutOfMemoryError extends Error { }</pre>
+<p>Make sure you have clear picture: Object acts as root; Throwable acts as root for Java exception hierarchy.</p>
+<h3>45:04 — Board: total Java API is implemented based on inheritance</h3>
+<p>He dictates:</p>
+<p>Total Java API is implemented based on inheritance concept.</p>
+<p>The most common methods which are applicable for any Java object are defined in Object class, and hence every class in Java is the child class of Object either directly or indirectly, so that Object class methods by default available to every Java class without rewriting. Due to this, Object class acts as root for all Java classes.</p>
+<pre class='code'>class A {
+    // does not extend anyone → still child of Object (directly)
+}
+
+class B extends A {
+    // child of A, grandchild of Object (indirectly)
+}
+
+class Test {
+    public static void main(String[] args) {
+        A a = new A();
+        B b = new B();
+        a.hashCode(); // Object method, no rewrite
+        b.hashCode(); // Object method, no rewrite
+        System.out.println(&quot;Object methods available without rewriting&quot;);
+        // prints Object methods available without rewriting
+    }
+}</pre>
+<h3>48:01 — Board: Throwable as root for exception hierarchy</h3>
+<p>Throwable class defines the most common methods which are required for every exception and error classes. Hence this class acts as root for Java exception hierarchy.</p>
+<pre class='code'>class Throwable extends Object {
+    // most common methods required for every Exception and Error
+}
+
+class Exception extends Throwable { }
+class Error extends Throwable { }</pre>
+<p>Take the diagram clearly. What is inheritance, how Java API is implemented — based on this concept only.</p>
+<h3>49:29 — Does Java provide multiple inheritance?</h3>
+<p>Important loopholes for the exam, and for interview room also.</p>
+<p>Does Java provide support for multiple inheritance or not? Answer: No. Because a Java class can’t extend more than one class at a time. That’s why Java won’t provide support for multiple inheritance.</p>
+<pre class='code'>class A extends B, C {
+}
+// CE: syntactical mistake
+// a class cannot extend two classes at a time</pre>
+<p>Compiler is ready to give left and right. Syntactical mistake. Clear?</p>
+<h3>50:18 — Board: multiple inheritance (classes)</h3>
+<p>Heading: multiple inheritance</p>
+<p>A Java class can’t extend more than one class at a time, hence Java won’t provide support for multiple inheritance in classes (with respect to classes).</p>
+<p>Example:</p>
+<pre class='code'>class A extends B, C {
+}
+// invalid — compile-time error
+// syntactical mistake</pre>
+<h3>51:51 — Interview trap: “A extends B, and every class extends Object, so multiple inheritance exists”</h3>
+<p>Sometimes interview person may create confusion: is Java providing support for multiple inheritance in classes or not? Answer: no. Then indirectly: Java provides support for multiple inheritance even in classes also. Observe:</p>
+<p>Every class in Java is the child class of Object. He takes `class A extends B`. A is child of B. Every class is also child of Object. So A is child of B and child of Object — “a Java class can extend more than one class simultaneously, so multiple inheritance is there even in classes.”</p>
+<p>If interview person is explaining like this: first thing — give left and right to that person. It is not the thing which is going to happen.</p>
+<pre class='code'>class B { }
+
+class A extends B { }
+
+class Test {
+    public static void main(String[] args) {
+        A a = new A();
+        // A is child of B only (one extends)
+        // Object is in the chain ABOVE B — not a second extends on A
+        System.out.println(a instanceof B);
+        System.out.println(a instanceof Object);
+        // prints true
+        // prints true
+        // instanceof Object is true because of the chain, not because of &quot;class A extends B, Object&quot;
+    }
+}
+class A extends B, Object {
+}
+// CE: syntactical mistake — this is NOT what Java does</pre>
+<h3>53:23 — Direct child of Object vs indirect child of Object</h3>
+<p>If our class doesn’t extend any other class, then only our class is the direct child class of Object.</p>
+<pre class='code'>class A {
+    // that&#x27;s all — does not extend any other
+    // then only A is DIRECT child class of Object
+}</pre>
+<p>If our class extends any other class, then our class is not a direct child class of Object. A is the child of B; B is the child of Object. This is the thing which is going to happen. This type of inheritance is known as multi-level inheritance. You have to tell multi-level inheritance.</p>
+<p>In classes, either directly or indirectly, Java won’t provide support for multiple inheritance.</p>
+<pre class='code'>class B { }
+
+class A extends B {
+    // A is INDIRECT child of Object
+    // A → B → Object  = multi-level inheritance
+    // NOT multiple inheritance
+}</pre>
+<h3>54:29 — Board note 1: no other extends → direct child of Object</h3>
+<p>Sometimes interview person may create confusion. Note:</p>
+<p>If our class doesn’t extend any other class, then only our class is direct child class of Object.</p>
+<p>Example:</p>
+<pre class='code'>class A {
+}
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(new A() instanceof Object);
+        // prints true
+        // A is direct child of Object
+    }
+}</pre>
+<h3>55:46 — Board note 2: extends some other class → indirect child of Object</h3>
+<p>If our class extends any other class, then our class is indirect child class of Object.</p>
+<p>Example:</p>
+<pre class='code'>class B { }
+
+class A extends B {
+}
+
+class Test {
+    public static void main(String[] args) {
+        A a = new A();
+        System.out.println(a instanceof B);
+        System.out.println(a instanceof Object);
+        // prints true
+        // prints true
+        // A child of B, B child of Object — multi-level
+    }
+}</pre>
+<p>Wrong picture (give the cross mark — invalid — not the thing which happens):</p>
+<pre class='code'>// WRONG interview story: A child of B AND A child of Object as two parents
+class A extends B, Object {
+}
+// CE
+// give the cross mark — multiple inheritance — invalid</pre>
+<p>Correct picture:</p>
+<pre class='code'>class Object { } // root
+class B extends Object { }
+class A extends B { }
+// A the child of B, B the child of Object
+// this is multi-level inheritance</pre>
+<h3>57:17 — Either directly or indirectly, no multiple inheritance for classes</h3>
+<p>Take a note:</p>
+<p>Either directly or indirectly, Java won’t provide support for multiple inheritance with respect to classes.</p>
+<p>Clear clarity: what is inheritance, what is multiple inheritance, what is multi-level inheritance.</p>
+<h3>58:27 — Why Java won’t provide support for multiple inheritance</h3>
+<p>Chance to ask in interview room: why Java won’t provide support for multiple inheritance. Internal reason.</p>
+<p>Board heading:</p>
+<p>Why Java won’t provide support for multiple inheritance</p>
+<h3>59:10 — Ambiguity: C extends P1 and P2, both have m1()</h3>
+<p>Parent P1 is there, parent P2 is there. Child C extends P1 and C extends P2. Assume — of course it’s not possible — assume.</p>
+<p>P1 contains m1 method. P2 also contains m1 method. Parent class methods by default available to the child. Tomorrow on the child object if I’m calling m1: which method is going to execute — P1’s m1 or P2’s m1? Always a problem or not? Yes. There may be a chance of ambiguity problem. There is no way to resolve this problem. That’s why Java won’t provide support for multiple inheritance.</p>
+<pre class='code'>class P1 {
+    public void m1() {
+        System.out.println(&quot;P1 m1&quot;);
+    }
+}
+
+class P2 {
+    public void m1() {
+        System.out.println(&quot;P2 m1&quot;);
+    }
+}
+
+class C extends P1, P2 {
+}
+// CE: a class cannot extend two classes
+// even if it could: new C().m1() — P1.m1 or P2.m1? ambiguity
+class C extends P1, P2 {
+}
+
+class Test {
+    public static void main(String[] args) {
+        new C().m1();
+        // which m1? P1 or P2?
+        // ambiguity problem — no way to resolve
+        // hence Java won&#x27;t provide multiple inheritance in classes
+    }
+}</pre>
+<h3>1:00:28 — Board: chance of ambiguity problem</h3>
+<p>There may be a chance of ambiguity problem, hence Java won’t provide support for multiple inheritance.</p>
+<p>Diagram: C extends P1 and P2. P1 contain m1, P2 contain m1. On the child object if I call m1 method — maybe ambiguity problem.</p>
+<p>Take this diagram. Any explanation required? Make sure.</p>
+<pre class='code'>class P1 {
+    void m1() {
+        System.out.println(&quot;P1&quot;);
+    }
+}
+
+class P2 {
+    void m1() {
+        System.out.println(&quot;P2&quot;);
+    }
+}
+
+// C extends P1 and P2 — not legal
+// new C().m1();  // ambiguity</pre>
+<h3>1:01:52 — But with interfaces: C extends A, B is 100% valid</h3>
+<p>With respect to interface concept. Best example:</p>
+<p>interface A and interface B. interface C extends A, B. Valid or invalid? 100% pakka valid. Don’t keep any doubt.</p>
+<p>An interface can extend any number of interfaces simultaneously. That’s why Java provides support for multiple inheritance with respect to interfaces.</p>
+<p>Not required to worry.</p>
+<p>interface A { }
+
+interface B { }
+
+interface C extends A, B {
+    // 100% valid
+    // interface can extend any number of interfaces simultaneously
+}</p>
+<h3>1:02:55 — Board: interface can extend any number of interfaces</h3>
+<p>But interface can extend any number of interfaces simultaneously, hence Java provides support for multiple inheritance with respect to interfaces.</p>
+<p>Example:</p>
+<p>interface A { }
+
+interface B { }
+
+interface C extends A, B {
+}</p>
+<p>Completed. Right?</p>
+<h3>1:04:26 — Why ambiguity problem won’t come in interfaces</h3>
+<p>Chance to ask: you said ambiguity is the reason Java won’t provide multiple inheritance in classes, but in interfaces it is allowed — why ambiguity problem won’t be there?</p>
+<p>Board heading:</p>
+<p>Why ambiguity problem won’t be there in interfaces</p>
+<h3>1:05:18 — Multiple declarations, unique implementation</h3>
+<p>Parent interface 1, parent interface 2, child interface. For the interface, compulsory implementation class should be there.</p>
+<p>Parent interface one contains m1 — just only declaration, but not implementation, because interface method never contains implementation, only declaration.</p>
+<p>Parent interface two contains same m1 method. Automatically should come for the child also. Declaration here, declaration here, automatically will come on the child interface.</p>
+<p>Who is responsible to provide implementation for this m1? Implementation class. In the implementation class, m1 implementation is there.</p>
+<p>Even though multiple method declarations are there, how many implementations? Only one. That’s why if you call m1, which method is required to execute? Only this one — because those people just have declaration. Implementation is only one. If unique implementation is there, is there any chance of ambiguity? No.</p>
+<p>Even multiple method declarations are there, implementation is unique. That’s why no chance of ambiguity problem in the case of interfaces.</p>
+<pre class='code'>interface ParentInterface1 {
+    void m1(); // declaration only — no body
+}
+
+interface ParentInterface2 {
+    void m1(); // same m1 — still declaration only
+}
+
+interface ChildInterface extends ParentInterface1, ParentInterface2 {
+    // m1 declaration comes from both parents — still no body
+}
+
+class ImplementationClass implements ChildInterface {
+    public void m1() {
+        System.out.println(&quot;unique implementation&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        ChildInterface c = new ImplementationClass();
+        c.m1();
+        ParentInterface1 p1 = new ImplementationClass();
+        p1.m1();
+        ParentInterface2 p2 = new ImplementationClass();
+        p2.m1();
+        // prints unique implementation
+        // prints unique implementation
+        // prints unique implementation
+        // whoever &quot;comes&quot; — only one implementation
+    }
+}</pre>
+<h3>1:07:21 — Board diagram: two parent interfaces + child + implementation class</h3>
+<p>Take this diagram first.</p>
+<p>Parent interface 1 contains m1. Parent interface 2 also contains m1. Child interface also contains m1. Then implementation class.</p>
+<p>Both parents: only declaration. This person is coming: “where is my implementation?” — I can show: this is your requirement’s implementation. If this other person is coming: same — this is your implementation. For both people, how many implementations? Only one.</p>
+<p>Either this person is coming or this person is coming or this person is coming — for all these people: boss, this is your required implementation.</p>
+<p>If implementations were different, then different implementation classes we would require to write — for this one separate implementation class, for that one separate implementation class.</p>
+<pre class='code'>interface PI1 {
+    void m1(); // declaration
+}
+
+interface PI2 {
+    void m1(); // declaration
+}
+
+interface CI extends PI1, PI2 {
+    void m1(); // still declaration
+}
+
+class ImplementationClass implements CI {
+    public void m1() {
+        System.out.println(&quot;only one implementation for all declarations&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        new ImplementationClass().m1();
+        // prints only one implementation for all declarations
+    }
+}</pre>
+<h3>1:08:51 — Board: multiple declarations, unique implementation, no ambiguity</h3>
+<p>He dictates:</p>
+<p>Even though multiple method declarations are available, but implementation is unique, and hence there is no chance of ambiguity problem in interfaces.</p>
+<pre class='code'>interface A {
+    void m1();
+}
+
+interface B {
+    void m1();
+}
+
+interface C extends A, B { }
+
+class Impl implements C {
+    public void m1() {
+        System.out.println(&quot;unique&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        new Impl().m1();
+        // prints unique
+        // multiple declarations, unique implementation — no ambiguity
+    }
+}</pre>
+<p>That’s all. Any explanation required about this terminology? Make sure you have clear clarity.</p>
+<h3>1:10:05 — Strictly speaking: through interfaces we don’t get inheritance</h3>
+<p>One small terminology. Even though most of the people consider (including interview-room person) “yes, multiple inheritance is allowed in interfaces” — strictly speaking, through interfaces whatever we are getting is not inheritance.</p>
+<p>Why? He is getting this method declaration, this method declaration. Code reusability means: without rewriting, that method implementation is available. Is there any method implementation available here? Just only declarations. That’s why strictly speaking through interfaces we can’t get any inheritance and we can’t get any multiple inheritance.</p>
+<p>But most of the people: after extends keyword, multiple interfaces — extends A, B — by seeing this, after extends multiple, that’s why “multiple inheritance is allowed in interfaces.” Strictly speaking, whatever we are getting is not inheritance / not multiple inheritance. Majority of the people still consider it as multiple inheritance. Even we are following the same style. Make sure you take a note.</p>
+<pre class='code'>interface A {
+    void m1(); // declaration only — no implementation to reuse
+}
+
+interface B {
+    void m1(); // declaration only
+}
+
+interface C extends A, B {
+    // still no implementation
+    // strictly speaking: not inheritance (nothing to reuse without rewriting)
+}
+
+class Impl implements C {
+    public void m1() {
+        System.out.println(&quot;implementation is here — not inherited from A or B&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        new Impl().m1();
+        // prints implementation is here — not inherited from A or B
+    }
+}</pre>
+<h3>1:11:14 — Board: strictly speaking we won’t get any inheritance through interfaces</h3>
+<p>Strictly speaking, through interfaces we won’t get any inheritance.</p>
+<p>That’s all strictly speaking. But generally people accept yes, because after extends, multiple things you can take.</p>
+<h3>1:11:54 — Cyclic inheritance: class A extends A</h3>
+<p>Another loophole related to inheritance. Take special care.</p>
+<pre class='code'>class A extends A {
+}</pre>
+<p>A is child class of A. Allowed or not? Sometimes chance to ask in interview room: class extending the same class — valid or not in Java?</p>
+<p>Also:</p>
+<pre class='code'>class A extends B { }
+
+class B extends A { }</pre>
+<p>A is child of B, B is child of A. Valid or not?</p>
+<p>This type of inheritance is called cyclic inheritance. Cyclic inheritance is not allowed in Java. Of course not allowed — not required first.</p>
+<pre class='code'>class A extends A {
+}
+// CE: cyclic inheritance involving A</pre>
+<h3>1:13:26 — Why cyclic is useless / not required</h3>
+<p>`class A extends A`: A class methods by default available to the A class — because we are in the same class. A class methods by default available to A. Then what is the need of `extends A`? Useless.</p>
+<p>`class A extends B`: B class methods by default available to A class. If we also take `class B extends A`: for B class, A class methods are required. If that is the requirement, already we can meet this requirement through the first class — then what is the need of the second extends? That’s why cyclic inheritance is not allowed in Java. Of course it is not required in any programming language.</p>
+<p>If B class methods are required for A class, and A class methods are required for B class — then total methods you can define in a single class. Why take two separate classes? Unnecessary, useless syntax.</p>
+<p>That’s why cyclic inheritance is not allowed in Java. Of course it is not required first.</p>
+<p>In both cases we are going to get compile-time error saying cyclic inheritance involving A.</p>
+<pre class='code'>class A extends B { }
+
+class B extends A { }
+// CE: cyclic inheritance involving A
+// if A needs B&#x27;s methods and B needs A&#x27;s methods → put all methods in ONE class
+class Combined {
+    void fromWouldBeA() {
+        System.out.println(&quot;A&#x27;s methods&quot;);
+    }
+    void fromWouldBeB() {
+        System.out.println(&quot;B&#x27;s methods&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Combined x = new Combined();
+        x.fromWouldBeA();
+        x.fromWouldBeB();
+        // prints A&#x27;s methods
+        // prints B&#x27;s methods
+        // one class — no cycle needed
+    }
+}</pre>
+<h3>1:15:18 — Live compile: `javac A.java`</h3>
+<p>He shows the compiler so you are aware.</p>
+<p>First file:</p>
+<pre class='code'>class A extends A {
+}</pre>
+<p>Saves as `A.java`. Compile: `javac A.java`. Observe compile-time error: cyclic inheritance involving A. At which line the problem came: class A extends A.</p>
+<p>Then he changes:</p>
+<pre class='code'>class A extends B { }
+
+class B extends A { }</pre>
+<p>Same problem: cyclic inheritance involving A. At which line: class A extends B.</p>
+<p>Cyclic inheritance not allowed in Java. Of course it is not required first.</p>
+<pre class='code'>class A extends A {
+}
+// javac A.java
+// CE: cyclic inheritance involving A
+class A extends B { }
+
+class B extends A { }
+// javac A.java
+// CE: cyclic inheritance involving A</pre>
+<h3>1:16:31 — Board: cyclic inheritance is not allowed</h3>
+<p>Heading: cyclic inheritance</p>
+<p>Cyclic inheritance is not allowed in Java. Of course it is not required.</p>
+<p>Examples:</p>
+<pre class='code'>class A extends A {
+    // A the child of A
+}
+// CE: cyclic inheritance involving A
+class A extends B { }
+
+class B extends A { }</pre>
+<p>In both cases, same compile-time error. Cyclic inheritance is not allowed in Java, of course it’s not required.</p>
+<p>Completed. Cyclic inheritance not allowed in Java, of course it’s not required.</p>
+<h3>1:18:29 — Close: IS-A loopholes</h3>
+<p>That’s it. These are various important loopholes you people should be aware about IS-A relationship, which is also known as inheritance. That’s all.</p>
+<pre class='code'>// end of video 052 — IS-A / inheritance loopholes from this lecture
+class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m2() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        c.m1();
+        c.m2();
+        // prints parent
+        // prints child
+        P p1 = new C();
+        p1.m1();
+        // prints parent
+        // p1.m2();  // CE: cannot find symbol method m2() location class P
+        // C c1 = new P();  // CE: incompatible types found P required C
+        // class A extends B, C {}  // CE: no multiple inheritance in classes
+        // class A extends A {}     // CE: cyclic inheritance involving A
+    }
+}</pre>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 52 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 2</td></tr>
+<tr><td>Topic</td><td>Inheritance, IS-A relationship</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 18m 49s</td></tr>
+<tr><td>Video ID</td><td>7m5WIj3lpcE</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=7m5WIj3lpcE</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Conclusion</th></tr>
+<tr><td>1</td><td>Parent methods by default available to child → on child reference we can call both parent and child methods</td></tr>
+<tr><td>2</td><td>Child methods by default not available to parent → on parent reference we can’t call child-specific methods</td></tr>
+<tr><td>3</td><td>Parent reference can hold child object, but through that reference only parent methods (polymorphism later)</td></tr>
+<tr><td>4</td><td>Parent reference can hold child object, but child reference cannot hold parent object</td></tr>
+</table>
+</body></html>

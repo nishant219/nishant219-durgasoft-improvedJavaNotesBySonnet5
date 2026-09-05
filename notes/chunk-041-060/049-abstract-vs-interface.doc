@@ -1,0 +1,296 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>049-abstract-vs-interface</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 049 — Abstract class vs Interface</h1>
+<h2>Video info</h2>
+<p>Title: Java -  Interface and Abstract class Loopholes Part-6 || Abstract class Vs Interface</p>
+<p>Source: real YouTube auto-captions (.transcripts/049-uNwIQ-mJPCI.txt). ASR decoded in place: entropies / interp / interprise / interpace / interace / entropy = interface; abstracted / obstructor = abstract; increments = implements; compar = compiler; foroft = Durga Soft; one yard / burg = one ad / wanted; I officer / gun officer / US officer = IAS officer; speaking purpose = sweeping purpose; engineering = interview; 1.8% = 1.8 version; keep paralleling = write the two columns in parallel; left and right = compiler error / cross it out.</p>
+<p>This is the loophole he listed in Part-1: inside an interface we can take only abstract methods, but inside an abstract class we can also take only abstract methods — then what is the need of interface? Can we replace interface with abstract class?</p>
+<h3>00:27 — Two columns: only-abstract in both</h3>
+<p>He says take this parallelly — interface on one side of the board, abstract class on the other.</p>
+<p>Have you observed: inside interfaces we can take only abstract methods (he is still on the Java 1.7 rule for this comparison). But in an abstract class also we can take only abstract methods, based on our requirement. If you want an abstract class that contains only abstract methods, no problem at all.</p>
+<p>That is the whole setup of this loophole:</p>
+<pre class='code'>interface X {
+    void m1();
+    void m2();
+}
+abstract class X {
+    abstract void m1();
+    abstract void m2();
+}</pre>
+<p>Both sides can look the same: everything abstract. Then what is the need of interface?</p>
+<h3>00:50 — Can we replace interface with abstract class?</h3>
+<p>The interview-style question (he says this type of tricky thing can come in the interview / “engineering” room): is it possible to replace the interface concept with abstract class or not?</p>
+<p>Make sure you people are aware clearly. As of now, up to 1.7, inside an interface we can take only abstract methods. In 1.8 there are small changes; he will take that later in this same lecture, but the comparison first is the 1.7 picture.</p>
+<p>If everything is abstract in an abstract class also, then: can I replace interface with abstract class? Yes or no?</p>
+<h3>01:39 — Why did Java people give two concepts?</h3>
+<p>Simple first cut: if you could replace them, Java people provided two concepts — why? They could combine and introduce only one concept. Still two concepts are there, means we cannot treat them as the same thing.</p>
+<p>Then he gives the answer he actually wants in the notebook.</p>
+<h3>02:00 — Answer: yes, but not good programming practice</h3>
+<p>Can I replace interface concept with abstract class?</p>
+<p>Yes. Yes. But it is not a good programming practice.</p>
+<p>He can replace every interface with an abstract class, but it is not a good programming practice. Why? What is the problem? Take a bit of special care. Small analogy first, then technical reasons.</p>
+<h3>02:29 — Analogy: Durga Soft classrooms need sweeping</h3>
+<p>Suppose Durga Soft: assume at least 19 or 20 classrooms. At the end of the day all these classrooms should be swept. Must be required or not? If for two or three days they are not going to sweep, automatically it is horrible to stand in the class.</p>
+<p>Sweepers are required, because almost 20 rooms are there. He wants to keep in the newspaper one ad: Wanted — recruiting sweepers.</p>
+<h3>03:21 — Eligibility: IAS officer with 20+ years</h3>
+<p>See the eligibility carefully. What eligibility is he putting for this sweeping job?</p>
+<ul><li>Must be IAS officer</li></ul>
+<ul><li>Minimum 20+ years of government service experience</li></ul>
+<p>This requirement — for sweeping activity. If he publishes this in the newspaper / newsletter, definitely within one or two hours he will get a phone call from some officer.</p>
+<p>His “duty” in this joke: recruiting IAS officer for sweeping purpose.</p>
+<h3>04:06 — Will the IAS officer sweep? Yes. Is it good? No.</h3>
+<p>It is not a good programming practice. But if he keeps an IAS officer: can you please sweep the room? Is the person going to sweep or not?</p>
+<p>Listen: officer, can you sweep the room? He can. But we are misusing the role of officer. Officer range is big. He has to do a number of top-level activities. Recruiting that officer for low-level activity is nothing.</p>
+<h3>04:36 — Map the analogy onto interface vs abstract class</h3>
+<p>Can I replace interface concept with abstract class?</p>
+<ul><li>Interface never talks about implementation. It is the below-level / low-level concept (specification only).</li></ul>
+<ul><li>Abstract class can talk about implementation also.</li></ul>
+<p>In the place of interface, using abstract class = misusing the role of abstract class. This is something like recruiting IAS officer for sweeping purpose. Is it a good programming practice? Remember this.</p>
+<p>He adds: maybe 2 years or 3 years or 10 years before, that person became IAS; before that, as a normal person, he could sweep. Performing the sweeping is possible. That is not the point. The point is role. Replacing interface with abstract class is the same misuse.</p>
+<h3>05:36 — Recap before technical reasons</h3>
+<p>Can I replace interface with abstract class? Yes. Is it a good programming practice? No.</p>
+<p>Students may say “example is good, but I want technical reasons.” Why is abstract class not recommended in the place of interface? He explains for a couple of minutes. Observe carefully.</p>
+<h3>06:02 — If everything is abstract: two options, one recommendation</h3>
+<p>If everything is abstract, how many options are there in your hand? Two options.</p>
+<p>You can go for interface, or you can go for abstract class.</p>
+<p>If everything is abstract, which is recommended? Interface concept is recommended. Never recommended to go for abstract class.</p>
+<pre class='code'>// everything abstract — two legal shapes; only one is recommended
+interface InterX {
+    void m1();
+    void m2();
+}
+
+abstract class AbsX {
+    abstract void m1();
+    abstract void m2();
+}</pre>
+<p>Among these, interface is the recommended. If everything is abstract, never recommended to go for abstract class. What is the problem? Very simple. Problem number one.</p>
+<h3>06:48 — Problem 1: inheritance benefit</h3>
+<p>Assume: if everything is abstract, if I choose interface, what is the advantage? If I choose abstract class, what is the problem?</p>
+<p>Problem number one. If I choose interface: while implementing interface X, can I extend any other class? Yes.</p>
+<pre class='code'>class A {
+}
+
+interface X {
+    void m1();
+}
+
+class Test extends A implements X {
+    public void m1() {
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+    }
+}
+class Test extends A implements X — possible or not? Yes. While implementing the interface, if you want you can extend some other class. We are not going to miss inheritance benefit.</pre>
+<h3>07:36 — Abstract class: you cannot extend some other class</h3>
+<p>But if I choose abstract class: while extending the abstract class, is there any chance of extending some other class? No. Compiler will give left and right (compile-time error). We are missing inheritance benefit. Yes. First technical reason.</p>
+<p>If everything is abstract, better to go for the interface, but not the abstract class — because while implementing interface we can extend some other class, but by extending abstract class we cannot extend any other. By mistake if we are trying to take it, compiler.</p>
+<pre class='code'>abstract class X {
+    abstract void m1();
+}
+
+class J {
+}
+
+class Test extends X, J {
+    // CE: class cannot extend multiple classes
+    public void m1() {
+    }
+}</pre>
+<p>Point number one: we are missing inheritance benefit on the abstract-class side. We will not miss it on the interface side.</p>
+<h3>08:20 — Problem 2: object-creation cost</h3>
+<pre class='code'>Second problem. He takes class Test implements X and he wants to create a Test object: Test t = new Test();
+Same idea on the other column: class Test extends X and Test t = new Test();</pre>
+<p>Do you know: whenever we are creating the child-class object —</p>
+<p>Interface never contains any instance variable, never contains any constructor, and so on. That is why whenever he is creating a Test object, interface instance blocks / interface constructor are not required to execute. That is why object creation is not costly in this case.</p>
+<p>Just assume for idea: 2 minutes is enough to create an object — assume 2 minutes or 2 seconds or 2 nanoseconds; two units is enough.</p>
+<pre class='code'>interface X {
+    void m1();
+}
+
+class Test implements X {
+    public void m1() {
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        // object creation is not costly (his &quot;2 minutes&quot; / 2 units)
+        // no interface constructor, no interface instance block to run
+    }
+}</pre>
+<h3>09:32 — Extending abstract class: parent constructor and instance block run</h3>
+<p>But if he is creating an object for Test class that extends abstract X, automatically:</p>
+<ul><li>parent-class constructor will execute</li></ul>
+<ul><li>parent-class instance block will execute</li></ul>
+<ul><li>parent-class “dot dot” and so on</li></ul>
+<p>Whenever we are creating the class object, that parent-type machinery should come into the picture. That is why object creation is costly — almost around 20 minutes of time is required in this case (again: teaching units, not a real clock).</p>
+<pre class='code'>abstract class X {
+    {
+        // parent instance block — runs for the child object
+    }
+
+    X() {
+        // parent constructor — runs for the child object
+    }
+
+    abstract void m1();
+}
+
+class Test extends X {
+    public void m1() {
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        // object creation is costly (his &quot;20 minutes&quot;)
+        // parent instance block + parent constructor must run
+    }
+}</pre>
+<h3>09:59 — Recommendation from the two problems</h3>
+<p>If everything is abstract, highly recommended we should go for interface, but not abstract class.</p>
+<p>Can I replace interface concept with abstract class? Yes. Yes. Is it a good programming practice? No. Several problems are there.</p>
+<p>What problems:</p>
+<ol><li>While implementing interface, happily you can extend some other class. While extending abstract class, you cannot extend any other class. Inheritance benefit we are missing (abstract-class side). In the interface case we will not miss any inheritance benefit.</li></ol>
+<ol><li>If I implement interface, object creation is not costly. If I extend abstract class, object creation will become costly.</li></ol>
+<p>Because of these reasons, if everything is abstract, better to go for interface, but not abstract class. In the place of interface, if I go for abstract class — is it recommended? Not recommended. This is something like recruiting the IAS officer for sweeping activity only.</p>
+<h3>11:13 — Java 1.8 doubt: default and static methods</h3>
+<p>Sometimes there is a possibility to ask. Still some people may ask: from 1.8 onwards, inside interface I can take default methods, I can take static methods, so concrete methods you can take inside interface. Then interface and abstract class both are same?</p>
+<p>No. Interface with default method never equal to abstract class. In the 1.8 class new features are there; he will explain in detail later. But interface with the default method never equal to abstract class. There is a clear difference. Number of differences we can tell.</p>
+<pre class='code'>interface X {
+    default void m1() {
+        // 1.8 default — he calls these dummy methods,
+        // not &quot;proper&quot; implementation like an abstract class
+    }
+
+    static void m2() {
+    }
+
+    void m3(); // still can have abstract methods
+}</pre>
+<p>Which person is the rich person — interface or abstract class? Abstract class. Interface is a low-level person: it never talks about implementation. Even interface default methods also are dummy methods — methods not to provide proper implementation. Take this point. Take the theory. Write.</p>
+<h3>12:10 — Board theory: if everything is abstract, go for interface</h3>
+<p>He dictates slowly, repeating, so the class copies.</p>
+<p>If everything is abstract, it is highly recommended to go for interface. But not abstract class. (He repeats “but not abstract class” several times.)</p>
+<h3>12:48 — Board theory: we can replace, but not good practice</h3>
+<p>We can replace interface with abstract class, but it is not a good programming practice.</p>
+<p>Within bracket, this is something like recruiting IAS officer for sweeping purpose.</p>
+<h3>14:00 — Board table: interface X | abstract class X</h3>
+<p>After taking just this part. First half, second half. Take the table from first half.</p>
+<p>Only this part and this part — do not take remaining things (he is boxing just these two headers).</p>
+<pre class='code'>interface X {
+    void m1();
+}
+abstract class X {
+    abstract void m1();
+}</pre>
+<h3>14:24 — Left column theory: implementing interface</h3>
+<p>Under first half, add the theory:</p>
+<p>While implementing interface, we can extend any other class, and hence we will not miss inheritance benefit.</p>
+<pre class='code'>class A {
+}
+
+interface X {
+    void m1();
+}
+
+class Test extends A implements X {
+    public void m1() {
+    }
+}</pre>
+<p>He writes class Test extends A implements X. Valid or valid? Give the tick mark. Valid.</p>
+<h3>15:21 — Right column theory: extending abstract class</h3>
+<p>Add the theory here:</p>
+<p>While extending abstract class, we cannot extend any other class, and hence we are missing inheritance benefit.</p>
+<pre class='code'>abstract class X {
+    abstract void m1();
+}
+
+class J {
+}
+
+class Test extends X, J {
+    // CE: a class can extend only one class
+}</pre>
+<p>He writes class Test extends X, J. Valid or invalid? Invalid. Give a cross mark. Invalid. This is one problem. First point.</p>
+<h3>16:53 — Left column: object creation is not costly</h3>
+<p>Second point. Add the theory.</p>
+<p>In this case, object creation is not costly.</p>
+<p>Add this one:</p>
+<pre class='code'>interface X {
+}
+
+class Test implements X {
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Test t = new Test();
+        // his board timing: just 2 minutes
+    }
+}</pre>
+<p>He writes class Test implements X { } then Test t = new Test();. How much time is required? Just 2 minutes. Spell out 2 minutes. Have you added time? 2 minutes. Just here.</p>
+<p>(On the board he used empty braces. If X still has abstract methods, Test must implement them or the compiler will reject Test. The cost point is: no interface constructor / instance block runs.)</p>
+<h3>18:00 — Right column: object creation is costly</h3>
+<p>In this case, object creation is costly.</p>
+<pre class='code'>abstract class X {
+    X() {
+    }
+}
+
+class Test extends X {
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Test t = new Test();
+        // his board timing: 20 minutes
+    }
+}</pre>
+<p>He writes class Test extends X { } then Test t = new Test();. Here 20 minutes.</p>
+<h3>18:54 — Do not ask how 2 minutes vs 20 minutes</h3>
+<p>Do not ask how exactly he is telling 2 minutes and 20 minutes. Just basic idea purpose and comparison. That is all. Are you able to understand?</p>
+<h3>19:01 — Close: do not misuse the role of abstract class</h3>
+<p>If everything is abstract, highly recommended we should go for interface, but not abstract class. If you are using abstract class here, we are misusing the role of abstract class. Please write.</p>
+<p>Board recap he wants in the notebook</p>
+<ul><li>If everything is abstract → highly recommended: interface, not abstract class.</li></ul>
+<ul><li>We can replace interface with abstract class, but it is not a good programming practice (recruiting IAS officer for sweeping).</li></ul>
+<ul><li>Reason 1: implement interface → can still extend another class (keep inheritance). Extend abstract class → cannot extend another class (miss inheritance). Test extends A implements X tick; Test extends X, J cross.</li></ul>
+<ul><li>Reason 2: new Test() after implements X is not costly; new Test() after extends abstract X is costly (parent constructor + instance blocks).</li></ul>
+<ul><li>Java 1.8 default/static methods do not make interface equal to abstract class. Abstract class is the “rich” type; interface default methods are dummy, not proper implementation.</li></ul>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 49 of 203</td></tr>
+<tr><td>Series</td><td>Interface and Abstract class Loopholes · Part 6</td></tr>
+<tr><td>Topic</td><td>Abstract class Vs Interface</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>19m 41s</td></tr>
+<tr><td>Video ID</td><td>uNwIQ-mJPCI</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=uNwIQ-mJPCI</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>First half</th><th>Second half</th></tr>
+<tr><td>interface X</td><td>abstract class X</td></tr>
+</table>
+</body></html>

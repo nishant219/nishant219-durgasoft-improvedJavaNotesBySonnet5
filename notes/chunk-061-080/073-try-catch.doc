@@ -1,0 +1,636 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>073-try-catch</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 073 — Customized exception handling (try-catch)</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Exception Handling Part-3B|| Customized Exception Haning by try-catch</p>
+<p>Source: real YouTube auto-captions (.transcripts/073-GljHUIBS9YY.txt). ASR decoded in place: Haning = Handling; TR / tri / try catch = try-catch; Artic / arithmatic = Arithmetic; print stct / print St / print Str / print storace / print Stace = printStackTrace(); two string = toString(); get message = getMessage(); sop / s of / print L = System.out.println; public static wired / wir / wi / W / staement = public static void; string AR a / ARR a / array accept / ox = String[] args; plock = block; mination = termination; cut / CAU / being cut = caught; St / Stace = stack trace; orle / verle / orle DB = Oracle DB; my skl / MyQ / My SQL = MySQL; F not found / file not found = FileNotFoundException; JBC = JDBC; ql = SQL / SQLException; JM = JVM; compar meod / compil meod / compa eror / comparitive method = compile-time error; Poston keywords = those keywords; whiskey = joke on “risky”; Sagar orag / AR theread / AR = Erragadda (Hyderabad) mental-hospital joke.</p>
+<h3>00:06 — Recap, then “dance with the keywords”</h3>
+<p>Up to this video the theory of exception handling is done: what an exception is, the hierarchy, checked vs unchecked, partially checked vs fully checked.</p>
+<p>From here the remaining work is the keywords — how to use them, and the syntactical loopholes. He says that is the interesting part; a little theory comes back only near the end of the exception-handling series.</p>
+<p>Keywords in this video: `try` and `catch`. (finally is only named; it is taught in the next part.)</p>
+<h3>00:44 — Default handling vs customized handling</h3>
+<p>Default exception handling was already covered: if something goes wrong and we do nothing, the default exception handler takes over and the program is terminated abnormally.</p>
+<p>He does not want abnormal termination:</p>
+<ul><li>we may miss something (later statements never run)</li></ul>
+<ul><li>we may block / waste resources (a connection opened and never closed)</li></ul>
+<p>So we handle the exception in our customized way by using try-catch. That is the heading he writes (YouTube title ASR “Haning” = Handling):</p>
+<p>Customized exception handling by using try-catch.</p>
+<p>He will put the same cinema on the board without try-catch and with try-catch.</p>
+<h3>01:51 — Without try-catch: `10 / 0` and abnormal termination</h3>
+<p>Class Test, public static void main(String[] args). Three statements: print &quot;statement one&quot;, print 10 / 0, print &quot;statement three&quot;.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;statement one&quot;);
+        System.out.println(10 / 0);
+        System.out.println(&quot;statement three&quot;);
+    }
+}
+// prints
+// statement one
+// then default handler:
+// Exception in thread &quot;main&quot; java.lang.ArithmeticException: / by zero
+//     at Test.main(Test.java:4)</pre>
+<p>What happens:</p>
+<ol><li>&quot;statement one&quot; executes.</li></ol>
+<ol><li>10 / 0 raises `ArithmeticException`.</li></ol>
+<ol><li>Nobody is handling it, so the default exception handler terminates the program abnormally.</li></ol>
+<ol><li>&quot;statement three&quot; never runs.</li></ol>
+<p>Spoken description of the default dump: runtime exception → ArithmeticException → division by zero (the JVM text is / by zero).</p>
+<ul><li>Normal or abnormal? Abnormal termination.</li></ul>
+<ul><li>Recommended? Not recommended.</li></ul>
+<h3>04:03 — Why abnormal termination is not graceful (database cinema)</h3>
+<p>Assume the three lines mean:</p>
+<ol><li>open database connection</li></ol>
+<ol><li>read data</li></ol>
+<ol><li>close database connection</li></ol>
+<pre class='code'>class DbCinema {
+    public static void main(String[] args) {
+        System.out.println(&quot;open database connection&quot;);
+        System.out.println(10 / 0); // stand-in for &quot;read data&quot; raising an exception
+        System.out.println(&quot;close database connection&quot;);
+    }
+}
+// prints
+// open database connection
+// then ArithmeticException: / by zero — abnormal termination
+// close never runs — one connection wasted</pre>
+<p>He opens the connection successfully. While reading, an exception is raised. If it is not handled, the program dies there. No one closes the connection. One resource is blocked / wasted.</p>
+<p>Because of abnormal termination we miss something and we lose something. Abnormal termination is not graceful termination. It is not at all recommended.</p>
+<h3>05:06 — Same cinema **with** try-catch</h3>
+<p>Same class Test. Among those three lines, which line may raise an exception? System.out.println(10 / 0).</p>
+<p>The code which may raise an exception is called risky code. That risky code we have to take inside a try block.</p>
+<p>&quot;statement one&quot; is not risky — write it normally, outside try. Only 10 / 0 goes in try. The corresponding handling code goes in catch.</p>
+<p>Which exception may rise? `ArithmeticException`, because we are performing an arithmetic operation. Catch parameter: ArithmeticException e.</p>
+<p>If that exception occurs, instead of dying, perform alternative arithmetic operations — he prints 10 / 2 (which is 5). Then &quot;statement three&quot; after the try-catch.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;statement one&quot;);
+        try {
+            System.out.println(10 / 0); // risky code
+        } catch (ArithmeticException e) {
+            System.out.println(10 / 2); // alternative arithmetic operations
+        }
+        System.out.println(&quot;statement three&quot;);
+    }
+}
+// prints
+// statement one
+// 5
+// statement three</pre>
+<h3>07:28 — Terminology on the board (and the whiskey joke)</h3>
+<p>He hammers the two boxes:</p>
+<pre class='code'>class TryCatchShape {
+    public static void main(String[] args) {
+        try {
+            // risky code
+            System.out.println(10 / 0);
+        } catch (Exception e) {
+            // handling code
+            System.out.println(10 / 2);
+        }
+    }
+}
+// prints 5</pre>
+<ul><li>Inside try: risky code (not “whiskey” — joke: “whiskey is also risky, right”).</li></ul>
+<ul><li>Inside catch: corresponding handling code for the exception type we named.</li></ul>
+<h3>08:27 — Output with try-catch: normal / graceful termination</h3>
+<p>Flow he walks:</p>
+<ol><li>&quot;statement one&quot; prints normally.</li></ol>
+<ol><li>While executing 10 / 0, `ArithmeticException` is raised.</li></ol>
+<ol><li>Control goes immediately to the matching catch.</li></ol>
+<ol><li>Catch prints 10 / 2 → `5`.</li></ol>
+<ol><li>After catch completes, remaining code runs → &quot;statement three&quot;.</li></ol>
+<p>Even though an exception rose, we handled it and continued. That is normal termination / graceful termination — we are not going to miss &quot;statement three&quot;.</p>
+<p>This is the way we handle exceptions by using try-catch:</p>
+<ul><li>risky code → try block</li></ul>
+<ul><li>corresponding handling code → catch block</li></ul>
+<h3>09:41 — Board dictation: highly recommended + risky code + catch</h3>
+<p>He repeats slowly so the class can copy (several passes of the same sentences):</p>
+<p>It is highly recommended to handle exceptions.</p>
+<p>The code which may raise an exception is called risky code, and we have to define that code inside a try block.</p>
+<p>Corresponding handling code we have to define inside a catch block.</p>
+<p>The boxed picture he wants in the notes first:</p>
+<pre class='code'>class BoxOnBoard {
+    public static void main(String[] args) {
+        try {
+            // risky code
+        } catch (Exception e) {
+            // handling code
+        }
+    }
+}</pre>
+<h3>12:01 — Side by side: without try-catch vs with try-catch</h3>
+<p>He asks them to keep both programs on the page:</p>
+<pre class='code'>class WithoutTryCatch {
+    public static void main(String[] args) {
+        System.out.println(&quot;statement one&quot;);
+        System.out.println(10 / 0);
+        System.out.println(&quot;statement three&quot;);
+    }
+}
+// prints statement one, then ArithmeticException: / by zero
+// abnormal termination — not recommended
+class WithTryCatch {
+    public static void main(String[] args) {
+        System.out.println(&quot;statement one&quot;);
+        try {
+            System.out.println(10 / 0);
+        } catch (ArithmeticException e) {
+            System.out.println(10 / 2);
+        }
+        System.out.println(&quot;statement three&quot;);
+    }
+}
+// prints
+// statement one
+// 5
+// statement three
+// normal termination — highly recommended</pre>
+<p>Long board-copying pause (~12:45–15:01, applause). He rewrites the same two Test programs again: SOP of statement 1, 10 / 0, statement 3 — first abnormal, second normal. “Clear for all of you right.”</p>
+<h3>15:05 — Control flow in try-catch (statements 1 to 5)</h3>
+<p>New heading: control flow in try-catch.</p>
+<p>One try with three statements, one catch with statement 4, then statement 5 after the try-catch. Five statements total. For every case: if an exception rises anywhere, say in which order they execute, and whether termination is normal or abnormal.</p>
+<pre class='code'>class ControlFlow {
+    public static void main(String[] args) {
+        try {
+            // statement 1
+            // statement 2
+            // statement 3
+        } catch (Exception e) {
+            // statement 4
+        }
+        // statement 5
+    }
+}</pre>
+<p>He copies that skeleton twice so everyone has it before the cases.</p>
+<h3>16:53 — Case 1: no exception → `1, 2, 3, 5` (normal)</h3>
+<p>If there is no exception, catch is not executed.</p>
+<p>Order: 1, 2, 3, 5. Normal termination.</p>
+<pre class='code'>class Case1 {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;1&quot;);
+            System.out.println(&quot;2&quot;);
+            System.out.println(&quot;3&quot;);
+        } catch (Exception e) {
+            System.out.println(&quot;4&quot;);
+        }
+        System.out.println(&quot;5&quot;);
+    }
+}
+// prints
+// 1
+// 2
+// 3
+// 5
+// normal termination</pre>
+<h3>17:48 — Case 2: exception at statement 2, corresponding catch **matched**</h3>
+<p>Take special care. Exception at statement 2, and the catch matches.</p>
+<p>Statement 1 runs. At 2 the problem comes; control goes to catch → 4. Then remaining code after try-catch → 5.</p>
+<p>Someone thinks 3 will still run. No.</p>
+<pre class='code'>class Case2 {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;1&quot;);
+            System.out.println(10 / 0); // statement 2 — ArithmeticException
+            System.out.println(&quot;3&quot;);
+        } catch (Exception e) { // matched
+            System.out.println(&quot;4&quot;);
+        }
+        System.out.println(&quot;5&quot;);
+    }
+}
+// prints
+// 1
+// 4
+// 5
+// normal termination</pre>
+<p>Within the try block, if anywhere an exception rises, the corresponding catch is executed. After completing catch, control will not go back to try. Catch is the alternative operation; then continue further. There is no need to go back into try.</p>
+<p>So statement 3 is skipped even though we handled the exception.</p>
+<p>Order: 1, 4, 5. Normal termination.</p>
+<h3>19:11 — Rest of try is dead; length of try should be as less as possible</h3>
+<p>Because the rest of try will not run even after a successful catch:</p>
+<ul><li>inside try take only risky code, not normal code</li></ul>
+<ul><li>length of the try block should be as less as possible</li></ul>
+<p>Best example: in the first Test program he had three statements, but the only line inside try was System.out.println(10 / 0). He did not put &quot;statement one&quot; or &quot;statement three&quot; in try — those are not risky (no arithmetic that can fail).</p>
+<p>He asks: inside that try, how many lines? Only one — that is the only risky code.</p>
+<h3>20:30 — Anti-pattern: wrap the whole `main` in one try</h3>
+<p>First kind of (bad) programming practice most people follow for no good reason: open try at the top of main and put the total method / “total class” inside, with one catch (Exception e) at the bottom.</p>
+<pre class='code'>class WholeMainInTry {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;line 1&quot;);
+            // ... imagine 9,999 more lines of mixed normal + risky code ...
+            System.out.println(&quot;line 10000&quot;);
+        } catch (Exception e) {
+        }
+    }
+}</pre>
+<p>If line 1 already raises, control jumps to catch without executing the remaining 9,999 lines. You cannot expect proper behaviour.</p>
+<p>Don’t take normal code inside the try block. Take only risky code. Length of the try block should be as less as possible.</p>
+<h3>21:32 — Several risky areas → several try-catch, not one giant try</h3>
+<p>If the whole program has three separate risky areas, do not enclose all three in one try. If the first risky area blows up, the other two areas never run.</p>
+<p>Keep each risky area in its own try-catch. That coding practice is highly recommended. He draws three patches on the board (he does not name extra exception types here) and says: keep this one inside try-catch, this one inside try-catch, this one inside try-catch. Notes for the point come “at last” with case 2.</p>
+<pre class='code'>class ThreeRiskyAreas {
+    public static void main(String[] args) {
+        // normal code
+        try {
+            // risky area 1
+        } catch (Exception e) {
+            // handling for area 1
+        }
+        // normal code
+        try {
+            // risky area 2
+        } catch (Exception e) {
+            // handling for area 2
+        }
+        // normal code
+        try {
+            // risky area 3
+        } catch (Exception e) {
+            // handling for area 3
+        }
+    }
+}</pre>
+<h3>22:27 — Case 2 written into the notes</h3>
+<p>He returns to the case heading and dictates it in full:</p>
+<p>Case 2: if an exception is raised at statement 2 and corresponding catch block matched → 1, 4, 5 — normal termination.</p>
+<h3>23:26 — Case 3: exception at statement 2, corresponding catch **not** matched</h3>
+<p>Exception at 2, but catch does not match.</p>
+<p>Statement 1 executes. Then there is no matching catch → stop the program abnormally.</p>
+<p>1, followed by abnormal termination. Statement 3, 4, 5 do not run.</p>
+<pre class='code'>class Case3 {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;1&quot;);
+            System.out.println(10 / 0); // statement 2 — ArithmeticException
+            System.out.println(&quot;3&quot;);
+        } catch (NullPointerException e) { // not matched
+            System.out.println(&quot;4&quot;);
+        }
+        System.out.println(&quot;5&quot;);
+    }
+}
+// prints 1
+// then default handler: ArithmeticException: / by zero
+// 1, followed by abnormal termination</pre>
+<h3>24:38 — Exceptions are **not** only inside try (catch and finally are Java code)</h3>
+<p>Case: exception raised at statement 4 (the catch body).</p>
+<p>Most people feel exceptions rise only inside try. No. Exceptions can be raised inside catch and inside finally also, because those blocks are also Java code.</p>
+<p>Cinema: while using Oracle, a problem came; inside catch you communicate with MySQL. There is no guarantee MySQL always works — MySQL can fail too.</p>
+<p>So: don’t feel exceptions will be raised only in try, not in catch.</p>
+<p>How did we even reach statement 4? Because something in 1 / 2 / 3 failed and catch got a chance. While executing catch, if another exception rises — that is statement 4.</p>
+<h3>26:01 — Thumb rule: exception **outside** try → always abnormal termination</h3>
+<p>Any statement which raises an exception and is not part of a try block → always abnormal termination.</p>
+<p>If that statement were inside try, there might be a catch and then normal termination. If it is not inside try, there is no corresponding catch for that raise → abnormal.</p>
+<p>Statement 4 is not part of any try. No catch for the catch-body failure → abnormal.</p>
+<p>He asks the class:</p>
+<ul><li>exception at statement 4: normal or abnormal? Abnormal.</li></ul>
+<ul><li>exception at statement 5: normal or abnormal? Abnormal — also not part of any try.</li></ul>
+<p>If an exception is raised at statement 4 or statement 5, then it is always abnormal termination.</p>
+<pre class='code'>class CaseStatement4 {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;1&quot;);
+            System.out.println(10 / 0); // needed so catch runs
+            System.out.println(&quot;3&quot;);
+        } catch (Exception e) {
+            System.out.println(10 / 0); // statement 4 — not inside a try
+        }
+        System.out.println(&quot;5&quot;);
+    }
+}
+// 1 runs, then catch raises ArithmeticException
+// always abnormal termination (statement 5 does not run)
+class CaseStatement5 {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;1&quot;);
+            System.out.println(&quot;2&quot;);
+            System.out.println(&quot;3&quot;);
+        } catch (Exception e) {
+            System.out.println(&quot;4&quot;);
+        }
+        System.out.println(10 / 0); // statement 5 — not inside a try
+    }
+}
+// prints
+// 1
+// 2
+// 3
+// then ArithmeticException at statement 5
+// always abnormal termination</pre>
+<p>These four cases are control flow in a simple try-catch: from statements 1 to 5, if an exception is anywhere, decide order and normal vs abnormal.</p>
+<h3>28:25 — Note 1 (dictated): rest of try never runs; keep try short</h3>
+<p>He already said this in case 2; now it is a note.</p>
+<p>Within the try block, if anywhere an exception rises, then rest of the try block won’t be executed even though we handled that exception. Hence within the try block we have to take only risky code, and length of try block should be as less as possible.</p>
+<p>He repeats that block many times while students write.</p>
+<h3>30:32 — Note 2: catch and finally can raise exceptions too</h3>
+<p>In addition to try block, there may be a chance of raising an exception inside catch and finally blocks.</p>
+<p>Do not expect exceptions always only inside try. (finally “we will discuss soon.”)</p>
+<h3>31:41 — Note 3: not part of try + raises → always abnormal</h3>
+<p>If any statement which is not part of try block raises an exception, then it is always abnormal termination.</p>
+<p>He wants clear clarity on control flow in try-catch: if anywhere an exception rises, you should be able to say what runs and whether it is normal or abnormal.</p>
+<h3>33:13 — Methods to print exception information</h3>
+<p>New heading: methods to print exception information.</p>
+<p>Several methods exist (printStackTrace, getMessage, toString). The exam/class need is: exact difference, and when we should go for which method.</p>
+<h3>34:10 — Demo `Test`: try `10 / 0`, then three ways in catch</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0);
+        } catch (ArithmeticException e) {
+            e.printStackTrace();
+            // System.out.println(e);
+            // System.out.println(e.toString());
+            // System.out.println(e.getMessage());
+        }
+    }
+}</pre>
+<p>Three methods to print exception information:</p>
+<ol><li>`printStackTrace()`</li></ol>
+<ol><li>`toString()`</li></ol>
+<ol><li>`getMessage()`</li></ol>
+<p>System.out.println(e) and System.out.println(e.toString()) are the same: whenever we print an object reference, internally `toString()` is called.</p>
+<h3>36:18 — What each method prints (name / description / stack)</h3>
+<p>He uses this exception: name `java.lang.ArithmeticException`, description division by zero (/ by zero on the JVM), location `Test.main`.</p>
+<p>`printStackTrace()` — if you want complete information:</p>
+<ul><li>name of the exception</li></ul>
+<ul><li>colon</li></ul>
+<ul><li>description</li></ul>
+<ul><li>stack trace (where the problem came — Test.main)</li></ul>
+<p>`toString()` / `System.out.println(e)` — name + colon + description; stack trace is not required / not printed.</p>
+<p>`getMessage()` — sometimes you don’t want the name either; just the message / description is enough: division by zero.</p>
+<p>He will execute each one with the others commented.</p>
+<h3>38:54 — He compiles `Test.java` and runs all three</h3>
+<p>javac Test.java then java Test.</p>
+<p>Only `e.printStackTrace()`:</p>
+<pre class='code'>class PrintStackTraceDemo {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0);
+        } catch (ArithmeticException e) {
+            e.printStackTrace();
+        }
+    }
+}
+// prints (default handler uses this same shape)
+// java.lang.ArithmeticException: / by zero
+//     at PrintStackTraceDemo.main(PrintStackTraceDemo.java:4)</pre>
+<p>`System.out.println(e)` or `System.out.println(e.toString())` — compiles fine; output is name + description, no stack:</p>
+<pre class='code'>class ToStringDemo {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0);
+        } catch (ArithmeticException e) {
+            System.out.println(e);
+            // System.out.println(e.toString()); // same
+        }
+    }
+}
+// prints
+// java.lang.ArithmeticException: / by zero</pre>
+<p>`System.out.println(e.getMessage())`:</p>
+<pre class='code'>class GetMessageDemo {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0);
+        } catch (ArithmeticException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+// prints
+// / by zero</pre>
+<p>Three methods. He comments: that is all.</p>
+<h3>40:35 — These methods are in `Throwable` (Exception **and** Error)</h3>
+<p>You can call all three on any exception object or any error object, because the methods are defined in `Throwable`. If the parent contains them, every child can call them.</p>
+<h3>41:03 — Table: method vs printable format</h3>
+<p>He draws method | printable format:</p>
+<p>Same table dictated again from ~43:00 while they copy: “Throwable class defines the following methods to print exception information.”</p>
+<h3>45:03 — Copy the program and the three outputs into the notes</h3>
+<p>Long board pause. He wants the program and corresponding outputs clearly:</p>
+<ul><li>complete information (name + description + stack) → `printStackTrace()`</li></ul>
+<ul><li>name + description, no stack → `toString()` (or SOP(e))</li></ul>
+<ul><li>only description → `getMessage()`</li></ul>
+<p>He writes the java.lang.ArithmeticException: / by zero plus Test.main stack line for printStackTrace, then the shorter two-string line.</p>
+<h3>47:33 — Default exception handler internally uses `printStackTrace()`</h3>
+<p>Doubt from the class: which method does the default exception handler use to print to the console?</p>
+<p>Look at the format of the default dump — it is the printStackTrace format (name, description, stack). So:</p>
+<p>Internally, default exception handler will use `printStackTrace()` method to print exception information to the console.</p>
+<p>That closes “methods to print exception information.”</p>
+<h3>48:49 — Try with multiple catch blocks (name / qualification joke)</h3>
+<p>New subtopic: try with multiple catch blocks.</p>
+<p>Joke: if someone asks “what is your name?” he can say “my name is Durga.” If they then ask qualification, subjects other than SCJP, native place — and every answer is still “my name is Durga,” that is meaningless. The other person will check whether they are at Erragadda (Hyderabad mental hospital).</p>
+<p>The answer should be based on the question. Same answer for every question is OK only in academic exams, not for programming.</p>
+<h3>51:01 — Handling **varies from exception to exception**</h3>
+<p>The way of handling an exception is varied from exception to exception.</p>
+<p>So it is compulsory / recommended to take a separate catch block for every exception type.</p>
+<h3>51:18 — Worst practice: one `catch (Exception e)` for everything</h3>
+<p>What most people actually do — worst kind of programming practice:</p>
+<pre class='code'>class WorstPractice {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0); // risky code
+        } catch (Exception e) {
+            // same handling for ArithmeticException, IOException, SQLException, ...
+        }
+    }
+}</pre>
+<p>Someone says ArithmeticException rose — this catch can handle it. IOException — this catch. SQLException — this catch. Same handling for any type of exception is meaningless.</p>
+<p>Taking a single catch that can handle any exception is the worst worst practice.</p>
+<h3>52:29 — Best practice: one catch per type (plus `Exception` last)</h3>
+<p>For every exception type, better to maintain a separate catch block.</p>
+<p>He asks: SQLException — small L or capital? JDBC. Answer: `SQLException` (SQL capital).</p>
+<pre class='code'>import java.io.FileNotFoundException;
+import java.sql.SQLException;
+
+class BestPractice {
+    public static void main(String[] args) {
+        try {
+            risky();
+        } catch (ArithmeticException e) {
+            System.out.println(&quot;perform alternative arithmetic operations&quot;);
+        } catch (SQLException e) {
+            System.out.println(&quot;use MySQL DB instead of Oracle DB&quot;);
+        } catch (FileNotFoundException e) {
+            System.out.println(&quot;use local file instead of remote file&quot;);
+        } catch (Exception e) {
+            System.out.println(&quot;default exception handling&quot;); // last — worst choice, default
+        }
+    }
+
+    static void risky() throws SQLException, FileNotFoundException {
+        System.out.println(10 / 0);
+    }
+}
+// prints
+// perform alternative arithmetic operations</pre>
+<p>Board meaning of each catch (as he wrote it):</p>
+<ul><li>`ArithmeticException` → perform alternative arithmetic operations</li></ul>
+<ul><li>`SQLException` → use MySQL DB instead of Oracle DB</li></ul>
+<ul><li>`FileNotFoundException` → use local file instead of remote file</li></ul>
+<ul><li>`Exception` at the last → default exception handling (rare leftover types). He calls this last catch the worst choice, used only as a default after the specific ones.</li></ul>
+<p>First approach (single Exception) vs second (multiple specific catches): second is good programming practice, because handling varies — SQL one way, file-not-found another way, arithmetic another way.</p>
+<p>Try with multiple catch blocks is possible and it is always a good programming practice. Second column = best practice; first column = worst kind of programming practice.</p>
+<h3>55:34 — Why many catch blocks if try can raise only **one** exception?</h3>
+<p>At any point of time, within the try block only one exception can rise. So why so many catch blocks?</p>
+<p>Because we don’t know which one it will be — ArithmeticException or SQLException or FileNotFoundException. If we knew exactly, we could take only that catch. If we don’t know the exact type, we take a catch for all possible exceptions.</p>
+<p>Try with multiple catch blocks: possible? Yes. Recommended? Yes — good programming practice.</p>
+<h3>56:16 — Theory dictation (copy this)</h3>
+<p>He dictates slowly (many repeats):</p>
+<p>The way of handling an exception is varied from exception to exception. Hence for every exception type it is highly recommended to take a separate catch block. That is, try with multiple catch blocks is always possible and recommended to use.</p>
+<h3>58:03 — Both examples side by side on the board</h3>
+<p>Left: single catch — worst programming practice. Right: multiple catches — best programming practice.</p>
+<pre class='code'>class WorstSide {
+    public static void main(String[] args) {
+        try {
+            // risky code
+            System.out.println(10 / 0);
+        } catch (Exception e) {
+            // any type of exception — same handling
+        }
+    }
+}
+// worst programming practice
+import java.io.FileNotFoundException;
+import java.sql.SQLException;
+
+class BestSide {
+    public static void main(String[] args) {
+        try {
+            risky();
+        } catch (ArithmeticException e) {
+            System.out.println(&quot;perform alternative arithmetic operations&quot;);
+        } catch (SQLException e) {
+            System.out.println(&quot;use MySQL DB instead of Oracle DB&quot;);
+        } catch (FileNotFoundException e) {
+            System.out.println(&quot;use local file instead of remote file&quot;);
+        } catch (Exception e) {
+            System.out.println(&quot;default exception handling&quot;);
+        }
+    }
+
+    static void risky() throws Exception {
+        System.out.println(10 / 0);
+    }
+}
+// best programming practice
+// try with multiple catch blocks is always a good programming practice and recommended to use</pre>
+<p>Board-copying pause through ~1:00:49. “Completed I hope.”</p>
+<h3>1:00:51 — Loophole 1: **order** of catch blocks</h3>
+<p>“Small small loopholes.” First loophole: two syntaxes on the board — which is valid?</p>
+<p>Invalid (parent then child): catch (Exception e) then catch (ArithmeticException e).</p>
+<p>Valid (child then parent): catch (ArithmeticException e) then catch (Exception e).</p>
+<p>He is not asking recommended vs not recommended. He is asking valid vs invalid. If both were valid, he would not bother writing them on the board — there is a loophole.</p>
+<pre class='code'>class ParentThenChild {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0); // risky code
+        } catch (Exception e) {
+        } catch (ArithmeticException e) {
+        }
+    }
+}
+// CE: exception java.lang.ArithmeticException has already been caught
+class ChildThenParent {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0); // risky code
+        } catch (ArithmeticException e) {
+        } catch (Exception e) {
+        }
+    }
+}
+// compiles; runs with empty catches — ArithmeticException handled by the first catch</pre>
+<h3>1:03:18 — Why parent-then-child is CE (JVM walks catch **top to bottom**)</h3>
+<p>Assume `NullPointerException` came. JVM always contacts catch blocks from top to bottom. First catch (Exception): “can you handle NPE?” Yes. Problem solved.</p>
+<p>Assume `ArithmeticException` rose. JVM asks the first catch (Exception): “can you handle ArithmeticException?” Yes I can. Then when does the second catch (`ArithmeticException`) get a chance? Never.</p>
+<p>The parent is always playing the kid’s game also. The child’s job is already performed by the parent. The second catch is waste — a syntactical mistake.</p>
+<p>Compiler message (as he reads it):</p>
+<p>`exception java.lang.ArithmeticException has already been caught`</p>
+<p>(“has already been cut” in ASR = caught.)</p>
+<h3>1:05:21 — Why child-then-parent **is** valid</h3>
+<p>Now ArithmeticException first, Exception second.</p>
+<ul><li>NPE came → JVM asks ArithmeticException catch: no. Exception catch: yes. Solved.</li></ul>
+<ul><li>ArithmeticException rose → first catch: yes.</li></ul>
+<p>If it is ArithmeticException, the child catch runs; if it is a non-arithmetic exception, the parent catch runs. Both catch blocks can get a chance. Perfectly valid.</p>
+<p>Conclusion: if try with multiple catch blocks, order of catch blocks is very very important. First we have to take child and then parent. By mistake parent then child → compile-time error.</p>
+<h3>1:06:12 — Dictation: child first, then parent; else CE</h3>
+<p>If try with multiple catch blocks present, then the order of catch blocks is very important. We have to take child first and then parent; otherwise we will get compile-time error saying `exception XXX has already been caught`.</p>
+<h3>1:08:27 — He types both orders and compiles</h3>
+<p>First program: try System.out.println(10 / 0), catch Exception, then catch ArithmeticException. Invalid. Compiler: `exception java.lang.ArithmeticException has already been caught`.</p>
+<p>Swap: catch `ArithmeticException` first, then `Exception`. Compiles and runs. He is not printing inside catch, so no extra console line — the point is order.</p>
+<p>Compulsory: child to parent. Parent to child → compile error.</p>
+<p>He copies both examples onto the notes again (CE text written clearly). Valid one: child to parent, but not from parent to child.</p>
+<h3>1:11:07 — Loophole 2: two catch blocks for the **same** exception</h3>
+<p>Same idea, different style. Try + two `catch (ArithmeticException e)` in a row.</p>
+<pre class='code'>class DuplicateCatch {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0); // risky code
+        } catch (ArithmeticException e) {
+        } catch (ArithmeticException e) {
+        }
+    }
+}
+// CE: exception java.lang.ArithmeticException has already been caught</pre>
+<p>Will not compile. If ArithmeticException occurs, the first catch handles it. The second person’s game is already played by the first. No need of the second.</p>
+<p>Same CE: `exception java.lang.ArithmeticException has already been caught`.</p>
+<p>He slips once and says “runtime exception saying like this,” then corrects: compile-time error saying like this.</p>
+<h3>1:13:03 — Dictation: cannot declare two catches for the same exception</h3>
+<p>We can’t declare two catch blocks for the same exception; otherwise we will get compile-time error.</p>
+<p>Board again: try risky code, two ArithmeticException catches, and the CE line `exception java.lang.ArithmeticException has already been caught`.</p>
+<h3>1:14:45 — Close of the video</h3>
+<p>“That’s all this is what you people should aware clearly. Okay so this is a try with multiple catch blocks.”</p>
+<p>Video ends at 1:14:59. Next keyword in the series is `finally` (he already flagged it while discussing exceptions inside catch/finally).</p>
+<h2>Board recap (what he wanted in the notebook)</h2>
+<ol><li>Without try-catch → abnormal, not recommended; with try-catch → normal / graceful, highly recommended.</li></ol>
+<ol><li>Risky code in try; handling code in catch. Try should be as short as possible (only risky lines). If try throws anywhere, rest of that try never runs, even after a matching catch; control does not return into try.</li></ol>
+<ol><li>Exception in catch or finally, or any statement not in try, → always abnormal termination.</li></ol>
+<ol><li>Three Throwable printers: `printStackTrace()` (name : description + stack), `toString()` / SOP(e) (name : description), `getMessage()` (description). Default exception handler uses `printStackTrace()`.</li></ol>
+<ol><li>Handling varies from exception to exception → multiple specific catch blocks (best); one catch (Exception e) for all (worst). Exception only last as default.</li></ol>
+<ol><li>Multiple catches: child then parent. Parent then child, or two catches for the same type → `exception XXX has already been caught`.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 73 of 203</td></tr>
+<tr><td>Series</td><td>Exception Handling · Part 3B</td></tr>
+<tr><td>Topic</td><td>Customized Exception Handling by try-catch</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 14m 59s</td></tr>
+<tr><td>Video ID</td><td>GljHUIBS9YY</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=GljHUIBS9YY</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Without try-catch</th><th>With try-catch</th></tr>
+<tr><td>abnormal termination</td><td>normal termination</td></tr>
+<tr><td>not recommended</td><td>highly recommended / graceful</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Printable format</th></tr>
+<tr><td>printStackTrace()</td><td>name of exception : description followed by stack trace</td></tr>
+<tr><td>toString()</td><td>name of exception : description</td></tr>
+<tr><td>getMessage()</td><td>description only</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,232 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>080-exception-handling-compilation</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 080 — Exception Handling compilation</h1>
+<h2>Video info</h2>
+<p>Title: Java Exception Handling For  Certification &amp; Interviews || Java Exception Handling || by Durga Sir</p>
+<h2>Important: this is a mega compilation, not a new lecture</h2>
+<p>This upload is a ~10-hour re-package of the individual Exception Handling lectures already in the same playlist (videos 070–079). It does not replace those component lectures with new certification content.</p>
+<p>Captions: YouTube has no usable auto-captions for this mega upload (none that can drive timestamped board-level notes). Do not treat this file as a full transcript of the 10h video.</p>
+<p>Where the real notes live: Detailed caption-based lecture notes with Java board examples are in the component videos 070–079 under notes/chunk-061-080/. Study those files (and the shorter part videos) for board timestamps, ASR-decoded board text, and full examples.</p>
+<p>This file is only an index + OCJP study checklist + exam-checklist snippets for the compilation entry at position 80.</p>
+<h2>Mapping: compilation topics → individual playlist videos</h2>
+<p>Watch URLs for component videos: https://www.youtube.com/watch?v=&lt;VideoID&gt; using IDs from notes/playlist.tsv (rows 070–079).</p>
+<h2>OCJP study checklist (topics covered by this compilation)</h2>
+<p>Use this as a revision checklist; tick off after reading the matching component notes.</p>
+<ul><li>[ ] Exception vs Error — Throwable hierarchy; when default handler prints stack and terminates</li></ul>
+<ul><li>[ ] Checked vs unchecked — compiler forces handling for checked; RuntimeException / Error unchecked</li></ul>
+<ul><li>[ ] Fully vs partially checked — e.g. Exception / Throwable partially checked; IOException fully checked</li></ul>
+<ul><li>[ ] try-catch control flow — matching catch, no match → propagate; no exception → skip catch</li></ul>
+<ul><li>[ ] Multiple catch — child before parent; “exception already caught” CE if order wrong</li></ul>
+<ul><li>[ ] finally — cleanup; executes whether exception raised/handled or not (except System.exit)</li></ul>
+<ul><li>[ ] final vs finally vs finalize — modifier vs block vs Object method (GC last wish)</li></ul>
+<ul><li>[ ] try / catch / finally combinations — illegal standalone catch/finally; try needs catch and/or finally</li></ul>
+<ul><li>[ ] throw — throw new …; throwable object required; after throw, statements unreachable</li></ul>
+<ul><li>[ ] throws — mainly for checked; caller must handle or declare; overriding throws rules</li></ul>
+<ul><li>[ ] Custom exceptions — extend Exception (checked) or RuntimeException (unchecked)</li></ul>
+<ul><li>[ ] Top exam exceptions — NullPointerException, ClassCastException, ArrayIndexOutOfBoundsException, StackOverflowError, etc.</li></ul>
+<ul><li>[ ] Java 7+ — try-with-resources (AutoCloseable); multi-catch | syntax</li></ul>
+<h2>Exam-checklist snippets (not board timestamps from this mega video)</h2>
+<p>The following ``java blocks summarize **key OCJP points** from the component Exception Handling lectures (070–079). They are **exam-checklist snippets**, not claimed board timestamps or a transcript of video VHi9PedZCq8`.</p>
+<h3>1) Checked — must catch or declare</h3>
+<pre class='code'>import java.io.PrintWriter;
+import java.io.FileNotFoundException;
+class Test {
+    public static void main(String[] args) throws FileNotFoundException {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+        pw.println(&quot;hello&quot;);
+    }
+}
+// Without throws / try-catch:
+// CE: unreported exception java.io.FileNotFoundException;
+//     must be caught or declared to be thrown</pre>
+<h3>2) Unchecked — ArithmeticException needs no declare</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(10 / 0); // Runtime: ArithmeticException (unchecked)
+    }
+}</pre>
+<h3>3) try-catch — handled path</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0);
+        } catch (ArithmeticException e) {
+            System.out.println(&quot;handled&quot;); // prints handled
+        }
+        System.out.println(&quot;after&quot;); // prints after
+    }
+}</pre>
+<h3>4) Multiple catch — order matters</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(10 / 0);
+        } catch (ArithmeticException e) {
+            System.out.println(&quot;AE&quot;); // prints AE
+        } catch (Exception e) {
+            System.out.println(&quot;E&quot;);
+        }
+        // catch (Exception e) { }
+        // catch (ArithmeticException e) { }
+        // CE: exception java.lang.ArithmeticException has already been caught
+    }
+}</pre>
+<h3>5) finally — always (normal case)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;try&quot;);
+        } catch (Exception e) {
+            System.out.println(&quot;catch&quot;);
+        } finally {
+            System.out.println(&quot;finally&quot;); // prints finally
+        }
+        // prints try
+        // prints finally
+    }
+}</pre>
+<h3>6) final vs finally vs finalize (exam trio)</h3>
+<pre class='code'>final class P { }
+// class C extends P { } // CE: cannot inherit from final class P
+
+class Test {
+    final int x = 10;
+    public static void main(String[] args) {
+        // new Test().x = 20; // CE: cannot assign a value to final variable x
+        try {
+            // risky
+        } catch (Exception e) {
+            // handling
+        } finally {
+            // cleanup associated with try
+        }
+    }
+    public void finalize() {
+        // cleanup before GC destroys object (rarely relied on in modern code)
+    }
+}</pre>
+<h3>7) Illegal combination — catch without try</h3>
+<pre class='code'>class Bad {
+    public static void main(String[] args) {
+        // catch (Exception e) { } // CE: &#x27;catch&#x27; without &#x27;try&#x27;
+        // finally { }             // CE: &#x27;finally&#x27; without &#x27;try&#x27;
+        try {
+            System.out.println(&quot;ok&quot;);
+        } finally {
+            System.out.println(&quot;try-finally is valid&quot;); // prints try-finally is valid
+        }
+    }
+}</pre>
+<h3>8) throw — explicit throwable</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // throw new Test(); // CE: incompatible types: Test cannot be converted to Throwable
+        throw new RuntimeException(&quot;boom&quot;);
+        // System.out.println(&quot;hi&quot;); // CE: unreachable statement
+    }
+}</pre>
+<h3>9) throws — checked propagation</h3>
+<pre class='code'>import java.io.IOException;
+class Test {
+    public static void main(String[] args) throws IOException {
+        doStuff();
+    }
+    public static void doStuff() throws IOException {
+        doMoreStuff();
+    }
+    public static void doMoreStuff() throws IOException {
+        throw new IOException(&quot;checked&quot;);
+    }
+}</pre>
+<h3>10) Custom checked exception</h3>
+<pre class='code'>class TooYoungException extends Exception {
+    TooYoungException(String s) {
+        super(s);
+    }
+}
+class Demo {
+    static void register(int age) throws TooYoungException {
+        if (age &lt; 18) {
+            throw new TooYoungException(&quot;not eligible&quot;);
+        }
+    }
+    public static void main(String[] args) {
+        try {
+            register(16);
+        } catch (TooYoungException e) {
+            System.out.println(e.getMessage()); // prints not eligible
+        }
+    }
+}</pre>
+<h3>11) Multi-catch (Java 7+)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            // risky that may throw AE or NPE
+            String s = null;
+            System.out.println(s.length());
+        } catch (ArithmeticException | NullPointerException e) {
+            System.out.println(&quot;multi-catch&quot;); // prints multi-catch
+        }
+    }
+}</pre>
+<h3>12) try-with-resources (Java 7+)</h3>
+<pre class='code'>import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+class Test {
+    public static void main(String[] args) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(&quot;abc.txt&quot;))) {
+            System.out.println(br.readLine());
+        } // br.close() called automatically
+        // Resource type must implement AutoCloseable / Closeable
+    }
+}</pre>
+<h2>How to use this file</h2>
+<ol><li>Prefer videos 070–079 (and their note files) for board-level study.</li></ol>
+<ol><li>Use this file when you landed on the mega upload at position 80 and need a map + OCJP checklist.</li></ol>
+<ol><li>Do not expect a minute-by-minute transcript here — captions for VHi9PedZCq8 are not usable for that purpose.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 80 of 203</td></tr>
+<tr><td>Series</td><td>Exception Handling (mega compilation)</td></tr>
+<tr><td>Topic</td><td>Java Exception Handling For Certification &amp; Interviews</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>10h 05m 19s (36319 seconds)</td></tr>
+<tr><td>Video ID</td><td>VHi9PedZCq8</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=VHi9PedZCq8</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Compilation topic (Exception Handling stretch)</th><th>Playlist #</th><th>Individual title (short)</th><th>Detailed notes file</th></tr>
+<tr><td>Introduction to exception handling</td><td>070</td><td>Introduction</td><td>notes/chunk-061-080/070-exception-handling-intro.doc / .docx</td></tr>
+<tr><td>Default exception handling</td><td>071</td><td>Default Exception Handling</td><td>Component video 071 (same playlist); notes may be under chunk-061-080 when present</td></tr>
+<tr><td>Checked vs unchecked</td><td>072</td><td>Checked vs Unchecked Exceptions</td><td>notes/chunk-061-080/072-checked-vs-unchecked.doc / .docx</td></tr>
+<tr><td>Customized handling — try-catch</td><td>073</td><td>Customized Exception Handling by try-catch</td><td>notes/chunk-061-080/073-try-catch.doc / .docx</td></tr>
+<tr><td>finally block</td><td>074</td><td>finally block</td><td>notes/chunk-061-080/074-finally-block.doc / .docx</td></tr>
+<tr><td>throw and throws (intro)</td><td>075</td><td>throw and throws</td><td>notes/chunk-061-080/075-throw-and-throws.doc / .docx</td></tr>
+<tr><td>throws keyword (deep)</td><td>076</td><td>throws keyword</td><td>notes/chunk-061-080/076-throws-keyword.doc / .docx</td></tr>
+<tr><td>Customized / user-defined exceptions</td><td>077</td><td>Customized Exceptions</td><td>Component video 077 (same playlist)</td></tr>
+<tr><td>Top-10 exceptions</td><td>078</td><td>Top-10 Exceptions in java</td><td>Component video 078 (same playlist)</td></tr>
+<tr><td>try-with-resources &amp; multi-catch</td><td>079</td><td>try with resources and multi-catch block</td><td>notes/chunk-061-080/079-try-with-resources.doc / .docx</td></tr>
+</table>
+</body></html>

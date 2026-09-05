@@ -1,0 +1,611 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>099-thread-local</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 099 — ThreadLocal</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 5|| java thread local</p>
+<p>ASR decode key: thread local / third local / 3D local → ThreadLocal; serverlet / sublet / Sir Loet → Servlet; Uchithrad / Vichitrad / main threat → main thread; Yaman / yam → method names in a call chain; in here table / in irritable → InheritableThreadLocal; chile / chailet / jail → child; pp / peak → parent-value parameter `parentValue`; Durga / dura → sample string &quot;Durga&quot;; keep subing / keep supporting → keep writing (take notes); legend → listen.</p>
+<h3>00:05 — Topic introduction: ThreadLocal</h3>
+<p>Durga Sir opens Part 5 of Multithreading Enhancement with ThreadLocal — a terminology students may have seen elsewhere but not yet studied in depth.</p>
+<p>Question on the board: What does &quot;thread local&quot; mean?</p>
+<p>Answer: Something local to a thread — data that belongs to one particular thread and is accessible wherever that thread executes, without other threads seeing or sharing it.</p>
+<h3>00:39 — Servlet scope analogy (request, session, application)</h3>
+<p>Before ThreadLocal, Sir uses Servlet attribute scopes (for students who attended the Servlet module):</p>
+<pre class='code'>// Servlet scope analogy (conceptual — not ThreadLocal yet)
+// request.setAttribute(&quot;data&quot;, obj);   // request scope only
+// session.setAttribute(&quot;user&quot;, user);  // entire session
+// context.setAttribute(&quot;config&quot;, cfg); // entire application</pre>
+<p>The Servlet analogy sets up the idea of scope: data visible only within a defined boundary. ThreadLocal defines thread scope — the boundary is the thread, not the HTTP request.</p>
+<h3>02:20 — Why thread scope is needed (method-call chain)</h3>
+<p>Scenario from class discussion:</p>
+<ul><li>main() runs on the main thread.</li></ul>
+<ul><li>Main thread calls yam1().</li></ul>
+<ul><li>yam1() internally calls yam2().</li></ul>
+<ul><li>While executing yam2(), the thread needs some data obtained earlier (e.g., from a database call in an outer method).</li></ul>
+<p>Problem: How do you pass that data deep into the call stack without threading it through every method parameter?</p>
+<p>Solution: Attach the data to the thread itself. Wherever that thread executes — any method in the call chain — it can retrieve the attribute.</p>
+<pre class='code'>// Conceptual call chain — data needed in yam2() by the same thread
+public class CallChainDemo {
+    public static void main(String[] args) {
+        yam1(); // main thread
+    }
+
+    static void yam1() {
+        // communicated with DB, got some data
+        Object dbData = fetchFromDatabase();
+        // attach data to THIS thread (conceptually — ThreadLocal does this)
+        yam2();
+    }
+
+    static void yam2() {
+        // this data required for the main thread while executing yam2()
+        // ThreadLocal: retrieve dbData without passing as parameter
+    }
+
+    static Object fetchFromDatabase() { return &quot;db-result&quot;; }
+}</pre>
+<h3>03:24 — ThreadLocal purpose and definition</h3>
+<p>ThreadLocal can be used to define thread-scope local variables tied to a specific thread.</p>
+<p>Typical requirements:</p>
+<ul><li>For every thread, a separate `Connection` object</li></ul>
+<ul><li>For every thread, a separate counter variable</li></ul>
+<ul><li>For every thread, a separate customer ID</li></ul>
+<p>If you need a separate local copy per thread, use `ThreadLocal`.</p>
+<p>Formal definition (board):</p>
+<p>ThreadLocal can be used to define thread-local variables. Wherever this thread is executing — throughout that code — the thread-local variable can be accessed happily. Once a value is added to the ThreadLocal, wherever that thread goes, it can access that value.</p>
+<h3>04:33 — The &quot;box&quot; analogy: one ThreadLocal, many per-thread copies</h3>
+<p>Example: For every thread, you want a count variable.</p>
+<ol><li>Create one ThreadLocal object.</li></ol>
+<ol><li>That object maintains a separate local copy for each thread that uses it.</li></ol>
+<p>ThreadLocal box
+├── Thread-1 → count = 1   (&quot;Hey, my count value?&quot; → 1)
+├── Thread-2 → count = 2   (&quot;My count value?&quot; → 2)
+└── Thread-3 → count = 3   (&quot;Where is my count?&quot; → 3)</p>
+<pre class='code'>// One ThreadLocal object — separate copy per thread (conceptual)
+ThreadLocal&lt;Integer&gt; countBox = new ThreadLocal&lt;&gt;();
+
+// Thread-1 sets and reads its own copy
+countBox.set(1);
+System.out.println(countBox.get()); // prints 1 (for thread-1)
+
+// Thread-2 sets and reads its own copy — independent of thread-1
+countBox.set(2);
+System.out.println(countBox.get()); // prints 2 (for thread-2)</pre>
+<p>ThreadLocal is a box: for every thread, a separate copy of a count variable, database connection, or any per-thread data — maintained inside the single ThreadLocal instance.</p>
+<h3>05:34 — Without ThreadLocal: programmer burden</h3>
+<p>If ThreadLocal did not exist:</p>
+<ul><li>The programmer must create and maintain a separate copy for every thread manually.</li></ul>
+<ul><li>1000 threads → 1000 counter variables → enormous overhead.</li></ul>
+<p>With ThreadLocal:</p>
+<ul><li>ThreadLocal takes care of per-thread copies.</li></ul>
+<ul><li>The programmer creates one ThreadLocal object; the class handles the rest internally.</li></ul>
+<pre class='code'>// WITHOUT ThreadLocal — programmer manages N variables for N threads (bad)
+int countForThread1;
+int countForThread2;
+int countForThread3;
+// ... 1000 threads → 1000 separate variables
+
+// WITH ThreadLocal — one object, automatic per-thread copies (good)
+ThreadLocal&lt;Integer&gt; count = new ThreadLocal&lt;&gt;();
+// ThreadLocal internally maps each thread → its own Integer copy</pre>
+<p>Purpose summary: Define thread-specific local variables. Separate connection object per thread, separate count object per thread → use `ThreadLocal`.</p>
+<h3>06:19 — ThreadLocal class documentation (board notes)</h3>
+<p>Package: java.lang (no import needed — same as String, Thread).</p>
+<p>Board notes:</p>
+<ol><li>ThreadLocal class provides thread-local variables.</li></ol>
+<ol><li>ThreadLocal class maintains values on a per-thread basis.</li></ol>
+<ol><li>Each ThreadLocal object maintains a separate value (like user ID, transaction ID, etc.) for each thread that accesses that object.</li></ol>
+<ol><li>A thread can access its local value, manipulate its value, and even remove its value.</li></ol>
+<ol><li>In every part of the code executed by the thread, the thread can access its local variable.</li></ol>
+<pre class='code'>// ThreadLocal is in java.lang — no import required
+// ThreadLocal&lt;T&gt; maintains per-thread values internally
+ThreadLocal&lt;String&gt; tl = new ThreadLocal&lt;&gt;();
+// Each thread calling tl.get()/set() sees only ITS copy</pre>
+<h3>09:34 — Real-world example: Servlet transaction ID</h3>
+<p>Scenario:</p>
+<ul><li>Consider a Servlet that invokes several business methods.</li></ul>
+<ul><li>Requirement: Generate a unique transaction ID for each and every request.</li></ul>
+<ul><li>That transaction ID must be passed to all business methods in the call chain.</li></ul>
+<p>Mapping to threads:</p>
+<ul><li>In Servlet&#x27;s single-instance, multi-threaded model, each request gets its own thread.</li></ul>
+<ul><li>One request = one thread → one transaction ID per thread.</li></ul>
+<pre class='code'>// Servlet + ThreadLocal for transaction ID (conceptual pattern)
+public class TransactionServlet extends HttpServlet {
+    // ONE ThreadLocal object — separate transaction ID per request-thread
+    static ThreadLocal&lt;String&gt; transactionId = new ThreadLocal&lt;&gt;();
+
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+        // each request = separate thread
+        transactionId.set(generateUniqueId());
+        businessMethod1();
+        businessMethod2();
+        // transactionId.get() available in every method this thread calls
+    }
+
+    void businessMethod1() {
+        String id = transactionId.get(); // same thread&#x27;s ID
+    }
+
+    void businessMethod2() {
+        String id = transactionId.get(); // still same thread&#x27;s ID
+    }
+
+    String generateUniqueId() { return &quot;TXN-&quot; + System.nanoTime(); }
+}</pre>
+<p>For this requirement → use ThreadLocal to maintain a separate transaction ID for every request (every thread).</p>
+<h3>12:35 — Version history and key theoretical points</h3>
+<p>Point 1: ThreadLocal class was introduced in Java 1.2 (not 1.5).</p>
+<p>Point 2: It was enhanced in Java 1.5 — extra functionality added (notably the `remove()` method).</p>
+<p>Point 3: ThreadLocal can be associated with thread scope.</p>
+<p>Point 4: Total code executed by the thread has access to the corresponding thread-local variables.</p>
+<p>Point 5: A thread can access only its own local variables — not another thread&#x27;s local variables.</p>
+<pre class='code'>// T1&#x27;s count ≠ T2&#x27;s count — threads cannot see each other&#x27;s ThreadLocal values
+ThreadLocal&lt;Integer&gt; tl = new ThreadLocal&lt;&gt;();
+// Thread T1: tl.set(10); tl.get() → 10
+// Thread T2: tl.get() → null (or T2&#x27;s own value, never T1&#x27;s 10)</pre>
+<p>Point 6: Once a thread enters the dead state (terminated), all its local variables (ThreadLocal entries for that thread) are eligible for garbage collection.</p>
+<h3>16:28 — Constructor: creating a ThreadLocal variable</h3>
+<p>Constructor:</p>
+<pre class='code'>ThreadLocal&lt;Object&gt; tl = new ThreadLocal&lt;&gt;();</pre>
+<ul><li>You create one ThreadLocal object.</li></ul>
+<ul><li>Whichever thread accesses this object — that thread gets one copy maintained for it (count, username, connection, anything).</li></ul>
+<p>Board:</p>
+<pre class='code'>Create a thread-local variable: ThreadLocal tl = new ThreadLocal();</pre>
+<h3>17:35 — ThreadLocal API: four methods</h3>
+<p>A thread interacting with a ThreadLocal object uses four methods:</p>
+<p>Method details (board):</p>
+<ol><li>`Object get()` — Returns the value of the thread-local variable associated with the current thread.</li></ol>
+<ol><li>`Object initialValue()` — Returns the initial value for the thread-local variable associated with the current thread. Default implementation returns `null`. To customize, override this method.</li></ol>
+<ol><li>`void set(Object newValue)` — Sets a new value for the current thread.</li></ol>
+<ol><li>`void remove()` — Removes the value of the thread-local variable associated with the current thread. Added in Java 1.5.</li></ol>
+<p>ThreadLocal&lt;String&gt; tl = new ThreadLocal&lt;&gt;();
+
+tl.get();           // null (initialValue default)
+tl.set(&quot;Durga&quot;);    // current thread&#x27;s value = &quot;Durga&quot;
+tl.get();           // &quot;Durga&quot;
+tl.remove();        // remove current thread&#x27;s entry
+tl.get();           // null again (initialValue() invoked internally)</p>
+<h3>22:52 — Walk-through: get → set → get → remove → get</h3>
+<p>Line-by-line analysis (main thread executes everything):</p>
+<pre class='code'>public class ThreadLocalWalkthrough {
+    public static void main(String[] args) {
+        ThreadLocal&lt;String&gt; tl = new ThreadLocal&lt;&gt;();
+
+        // Line 1: tl.get() — executed by main thread
+        // Main thread never set a value → default initialValue() → null
+        System.out.println(tl.get()); // prints null
+
+        // Line 2: tl.set(&quot;Durga&quot;) — main thread stores &quot;Durga&quot;
+        tl.set(&quot;Durga&quot;);
+
+        // Line 3: tl.get() — main thread asks its value → &quot;Durga&quot;
+        System.out.println(tl.get()); // prints Durga
+
+        // Line 4: tl.remove() — main thread removes its entry
+        tl.remove();
+
+        // Line 5: tl.get() after remove
+        // remove() clears entry; get() calls initialValue() again → null
+        System.out.println(tl.get()); // prints null
+    }
+}</pre>
+<p>Key point after `remove()`: If you access the ThreadLocal again, it is re-initialized by invoking `initialValue()` internally (default → null; if overridden → your custom initial value).</p>
+<h3>26:30 — Demo 1: `ThreadLocalDemo1.java`</h3>
+<p>Sir live-codes ThreadLocalDemo1 — basic create, get, set, remove.</p>
+<pre class='code'>class ThreadLocalDemo1 {
+    public static void main(String[] args) {
+        ThreadLocal tl = new ThreadLocal(); // raw type — as on board
+
+        System.out.println(tl.get()); // null
+        tl.set(&quot;Durga&quot;);
+        System.out.println(tl.get()); // Durga
+        tl.remove();
+        System.out.println(tl.get()); // null
+    }
+}</pre>
+<p>Compile &amp; run output:</p>
+<p>null
+Durga
+null</p>
+<p>Board summary (with SOP annotations):</p>
+<pre class='code'>// SOP(tl.get())  → null
+// tl.set(&quot;Durga&quot;)
+// SOP(tl.get())  → Durga
+// tl.remove()
+// SOP(tl.get())  → null
+
+ThreadLocal tl = new ThreadLocal();</pre>
+<h3>30:43 — Demo 1A: overriding `initialValue()`</h3>
+<p>Question: Is it possible to override initialValue()? Yes.</p>
+<p>If you don&#x27;t want default null, provide your own initial value via an anonymous subclass:</p>
+<pre class='code'>class ThreadLocalDemo1A {
+    public static void main(String[] args) {
+        ThreadLocal tl = new ThreadLocal() {
+            public Object initialValue() {
+                return &quot;ABC&quot;;
+            }
+        };
+
+        System.out.println(tl.get()); // ABC (not null!)
+        tl.set(&quot;Durga&quot;);
+        System.out.println(tl.get()); // Durga
+        tl.remove();
+        System.out.println(tl.get()); // ABC (initialValue() called again, NOT null)
+    }
+}</pre>
+<p>Output:</p>
+<p>ABC
+Durga
+ABC</p>
+<p>Board note: Overriding of initialValue method</p>
+<pre class='code'>// Anonymous inner class pattern for custom initial value
+ThreadLocal tl = new ThreadLocal() {
+    public Object initialValue() {
+        return &quot;ABC&quot;;
+    }
+};
+// After remove(), get() → &quot;ABC&quot; again (not null)</pre>
+<h3>34:45 — Demo 2: per-thread customer/transaction ID (`ThreadLocalDemo2.java`)</h3>
+<p>Meaningful multi-thread example:</p>
+<ul><li>4 CustomerThread objects: C1, C2, C3, C4 — all started.</li></ul>
+<ul><li>Requirement: Each customer thread needs a separate transaction/customer ID.</li></ul>
+<ul><li>How many ThreadLocal objects? → ONE. One ThreadLocal maintains separate ID per thread.</li></ul>
+<p>Design:</p>
+<ul><li>Static ThreadLocal with overridden initialValue() returning ++custId (auto-increment).</li></ul>
+<ul><li>First thread&#x27;s get() → ID 1; second → 2; third → 3; fourth → 4.</li></ul>
+<ul><li>1000 threads → 1000 IDs, still one ThreadLocal object.</li></ul>
+<pre class='code'>class ThreadLocalDemo2 {
+    static int custId = 0;
+
+    static ThreadLocal tl = new ThreadLocal() {
+        public Object initialValue() {
+            return ++custId;
+        }
+    };
+
+    public static void main(String[] args) {
+        CustomerThread c1 = new CustomerThread(&quot;CustomerThread-1&quot;);
+        CustomerThread c2 = new CustomerThread(&quot;CustomerThread-2&quot;);
+        CustomerThread c3 = new CustomerThread(&quot;CustomerThread-3&quot;);
+        CustomerThread c4 = new CustomerThread(&quot;CustomerThread-4&quot;);
+
+        c1.start();
+        c2.start();
+        c3.start();
+        c4.start();
+    }
+}
+
+class CustomerThread extends Thread {
+    CustomerThread(String name) {
+        super(name);
+    }
+
+    public void run() {
+        System.out.println(
+            Thread.currentThread().getName()
+            + &quot; executing with customer ID &quot;
+            + ThreadLocalDemo2.tl.get()
+        );
+    }
+}</pre>
+<p>Sample output (order not guaranteed — depends on scheduler):</p>
+<p>CustomerThread-1 executing with customer ID 1
+CustomerThread-3 executing with customer ID 4
+CustomerThread-4 executing with customer ID 3
+CustomerThread-2 executing with customer ID 2</p>
+<p>Important: Each thread gets a unique separate ID, but execution order of threads is not guaranteed — so IDs may appear out of sequence in console output. All 4 threads → 4 IDs generated; one ThreadLocal object used.</p>
+<p>Without ThreadLocal: Programmer would need custId1, custId2, custId3… separate variables — impractical.</p>
+<pre class='code'>// Manual per-thread IDs WITHOUT ThreadLocal (what we avoid)
+int custId1; // for CustomerThread-1
+int custId2; // for CustomerThread-2
+int custId3; // for CustomerThread-3
+int custId4; // for CustomerThread-4
+// 1000 threads → 1000 variables — big difficulty for programmer</pre>
+<p>Board theoretical point:</p>
+<p>In the above program, for every customer thread, a separate customer ID will be maintained by the ThreadLocal object.</p>
+<h3>44:17 — ThreadLocal vs inheritance: preview</h3>
+<p>Topics covered so far:</p>
+<ul><li>What is ThreadLocal</li></ul>
+<ul><li>Purpose of ThreadLocal</li></ul>
+<ul><li>How to create</li></ul>
+<ul><li>What methods to call</li></ul>
+<p>Next section: ThreadLocal behavior with respect to inheritance — parent thread and child thread. Is parent&#x27;s ThreadLocal value available to the child by default?</p>
+<h3>45:12 — Parent thread / child thread: normal ThreadLocal behavior</h3>
+<p>Setup:</p>
+<ul><li>ParentThread extends Thread — has a static ThreadLocal tl.</li></ul>
+<ul><li>In run(): tl.set(&quot;PP&quot;) (parent value), prints parent value, creates and starts ChildThread.</li></ul>
+<ul><li>ChildThread extends Thread — in run(), accesses ParentThread.tl.get() via static variable.</li></ul>
+<pre class='code'>class ParentThread extends Thread {
+    static ThreadLocal tl = new ThreadLocal();
+
+    public void run() {
+        tl.set(&quot;PP&quot;); // parent thread sets &quot;PP&quot;
+        System.out.println(&quot;Parent thread value: &quot; + tl.get()); // PP
+
+        ChildThread ct = new ChildThread();
+        ct.start();
+    }
+}
+
+class ChildThread extends Thread {
+    public void run() {
+        // static tl accessed via class name
+        System.out.println(&quot;Child thread value: &quot; + ParentThread.tl.get());
+    }
+}</pre>
+<p>Question: Child thread asks ThreadLocal for its value. Parent set &quot;PP&quot;. Will child get &quot;PP&quot;?</p>
+<p>Answer: NO → `null`</p>
+<p>Parent thread&#x27;s ThreadLocal variable value is by default NOT available to the child thread.</p>
+<p>Even though tl is static (shared reference), each thread has its own entry inside the ThreadLocal. Parent set value for parent&#x27;s thread entry; child has a separate entry (never set → initialValue() → null).</p>
+<h3>51:14 — Demo 3: `ThreadLocalDemo3.java` (ThreadLocal — child gets null)</h3>
+<pre class='code'>class ThreadLocalDemo3 {
+    public static void main(String[] args) {
+        ParentThread pt = new ParentThread();
+        pt.start();
+    }
+}
+
+class ParentThread extends Thread {
+    static ThreadLocal tl = new ThreadLocal();
+
+    public void run() {
+        tl.set(&quot;PP&quot;);
+        System.out.println(&quot;Parent thread value: &quot; + tl.get());
+
+        ChildThread ct = new ChildThread();
+        ct.start();
+    }
+}
+
+class ChildThread extends Thread {
+    public void run() {
+        System.out.println(&quot;Child thread value: &quot; + ParentThread.tl.get());
+    }
+}</pre>
+<p>Output:</p>
+<p>Parent thread value: PP
+Child thread value: null</p>
+<p>Three threads involved:</p>
+<ol><li>Main thread — creates and starts ParentThread</li></ol>
+<ol><li>Parent thread — sets &quot;PP&quot;, starts ChildThread</li></ol>
+<ol><li>Child thread — gets null</li></ol>
+<h3>54:17 — InheritableThreadLocal: when child needs parent&#x27;s value</h3>
+<p>Requirement: Parent&#x27;s ThreadLocal value should be available to child thread.</p>
+<p>Don&#x27;t use plain ThreadLocal → use `InheritableThreadLocal`.</p>
+<pre class='code'>// Replace ThreadLocal with InheritableThreadLocal
+static InheritableThreadLocal tl = new InheritableThreadLocal();</pre>
+<p>`InheritableThreadLocal` is a child class of ThreadLocal.</p>
+<p>When parent sets &quot;PP&quot; and child calls get() → child receives `&quot;PP&quot;` (inherited from parent at child thread creation time).</p>
+<pre class='code'>class ParentThread extends Thread {
+    static InheritableThreadLocal tl = new InheritableThreadLocal();
+
+    public void run() {
+        tl.set(&quot;PP&quot;);
+        System.out.println(&quot;Parent thread value: &quot; + tl.get()); // PP
+
+        ChildThread ct = new ChildThread();
+        ct.start();
+    }
+}
+
+class ChildThread extends Thread {
+    public void run() {
+        // child inherits parent&#x27;s value &quot;PP&quot;
+        System.out.println(&quot;Child thread value: &quot; + ParentThread.tl.get()); // PP
+    }
+}</pre>
+<p>Output with InheritableThreadLocal (no childValue override):</p>
+<p>Parent thread value: PP
+Child thread value: PP</p>
+<h3>56:26 — Overriding `childValue()` for a custom child value</h3>
+<p>Scenario: Parent has &quot;PP&quot;. You don&#x27;t want child to also get &quot;PP&quot; — you want a separate customized value for the child (e.g., &quot;CC&quot;).</p>
+<p>Override `childValue(Object parentValue)` in an anonymous InheritableThreadLocal subclass.</p>
+<ul><li>Default: child value = same as parent value.</li></ul>
+<ul><li>Override: return whatever you want for the child.</li></ul>
+<pre class='code'>class ParentThread extends Thread {
+    static InheritableThreadLocal tl = new InheritableThreadLocal() {
+        public Object childValue(Object parentValue) {
+            // parentValue is &quot;PP&quot; internally, but we return &quot;CC&quot; for child
+            return &quot;CC&quot;;
+        }
+    };
+
+    public void run() {
+        tl.set(&quot;PP&quot;);
+        System.out.println(&quot;Parent thread value: &quot; + tl.get()); // PP
+
+        ChildThread ct = new ChildThread();
+        ct.start();
+    }
+}
+
+class ChildThread extends Thread {
+    public void run() {
+        System.out.println(&quot;Child thread value: &quot; + ParentThread.tl.get()); // CC
+    }
+}</pre>
+<p>Output:</p>
+<p>Parent thread value: PP
+Child thread value: CC</p>
+<p>`childValue()` method signature (board):</p>
+<pre class='code'>public Object childValue(Object parentValue) {
+    // default implementation: return parentValue (same as parent)
+    // override to customize child&#x27;s inherited value
+    return parentValue;
+}</pre>
+<h3>57:54 — ThreadLocal vs inheritance: three summary points</h3>
+<p>Board heading: ThreadLocal vs Inheritance</p>
+<ol><li>Parent thread&#x27;s ThreadLocal variable value is by default NOT available to the child thread.</li></ol>
+<ol><li>If we want parent&#x27;s value available to child → use `InheritableThreadLocal`.</li></ol>
+<ol><li>By default, child thread value = exactly same as parent thread value (when using InheritableThreadLocal). But we can provide a customized value for child by overriding `childValue()` method.</li></ol>
+<pre class='code'>// Decision tree (comments only)
+// Need per-thread data, NO parent→child sharing?
+//   → ThreadLocal
+
+// Need parent ThreadLocal value inherited by child thread?
+//   → InheritableThreadLocal
+
+// Need child to get DIFFERENT value than parent?
+//   → InheritableThreadLocal + override childValue()</pre>
+<h3>1:01:19 — InheritableThreadLocal class details</h3>
+<p>Constructor:</p>
+<pre class='code'>InheritableThreadLocal tl = new InheritableThreadLocal();</pre>
+<p>Inheritance hierarchy:</p>
+<p>InheritableThreadLocal is the child class of ThreadLocal.</p>
+<p>Methods inherited from ThreadLocal: get(), set(), initialValue(), remove() — all available.</p>
+<p>Additional method in InheritableThreadLocal:</p>
+<p>protected Object childValue(Object parentValue)</p>
+<p>Only one extra method beyond ThreadLocal&#x27;s API.</p>
+<h3>1:04:10 — Complete Demo 3 with InheritableThreadLocal + childValue override</h3>
+<p>Full program (board final version):</p>
+<pre class='code'>class ThreadLocalDemo3 {
+    public static void main(String[] args) {
+        ParentThread pt = new ParentThread();
+        pt.start();
+    }
+}
+
+class ParentThread extends Thread {
+    static InheritableThreadLocal tl = new InheritableThreadLocal() {
+        public Object childValue(Object parentValue) {
+            return &quot;CC&quot;;
+        }
+    };
+
+    public void run() {
+        tl.set(&quot;PP&quot;);
+        System.out.println(&quot;Parent thread value: &quot; + tl.get());
+
+        ChildThread ct = new ChildThread();
+        ct.start();
+    }
+}
+
+class ChildThread extends Thread {
+    public void run() {
+        System.out.println(&quot;Child thread value: &quot; + ParentThread.tl.get());
+    }
+}</pre>
+<p>Output:</p>
+<p>Parent thread value: PP
+Child thread value: CC</p>
+<h3>1:08:22 — Output scenarios summary (three combinations)</h3>
+<p>Scenario A — plain `ThreadLocal`:</p>
+<pre class='code'>// ParentThread uses ThreadLocal (not InheritableThreadLocal)
+// Output:
+// Parent thread value: PP
+// Child thread value: null</pre>
+<p>Scenario B — `InheritableThreadLocal` WITHOUT overriding `childValue()`:</p>
+<pre class='code'>// InheritableThreadLocal, no childValue override
+// Output:
+// Parent thread value: PP
+// Child thread value: PP</pre>
+<p>Scenario C — `InheritableThreadLocal` WITH `childValue()` override returning &quot;CC&quot;:</p>
+<pre class='code'>// InheritableThreadLocal + childValue() → &quot;CC&quot;
+// Output:
+// Parent thread value: PP
+// Child thread value: CC</pre>
+<p>Board final lines:</p>
+<p>Parent thread value: PP
+Child thread value: CC</p>
+<p>And for Scenario B:</p>
+<p>Parent thread value: PP
+Child thread value: PP</p>
+<h3>1:11:20 — Lecture wrap-up</h3>
+<p>Complete topic checklist:</p>
+<p>Version notes:</p>
+<ul><li>ThreadLocal — Java 1.2</li></ul>
+<ul><li>Enhanced — Java 1.5 (remove() added)</li></ul>
+<ul><li>InheritableThreadLocal — also Java 1.2 family (child of ThreadLocal)</li></ul>
+<p>Next video preview: ThreadLocal with respect to inheritance is complete. Students should be clear on:</p>
+<ul><li>What ThreadLocal is</li></ul>
+<ul><li>What InheritableThreadLocal is</li></ul>
+<ul><li>Parent thread&#x27;s ThreadLocal value is not available to child by default (plain ThreadLocal)</li></ul>
+<ul><li>How to make it available (InheritableThreadLocal)</li></ul>
+<ul><li>How to customize child&#x27;s inherited value (childValue())</li></ul>
+<h2>Quick reference — ThreadLocal API</h2>
+<pre class='code'>// Creation
+ThreadLocal&lt;String&gt; tl = new ThreadLocal&lt;&gt;();
+
+// Custom initial value (anonymous subclass)
+ThreadLocal&lt;String&gt; tl2 = new ThreadLocal&lt;String&gt;() {
+    protected String initialValue() { return &quot;ABC&quot;; }
+};
+
+// Core operations (called by current thread)
+String v = tl.get();     // get this thread&#x27;s value
+tl.set(&quot;value&quot;);         // set this thread&#x27;s value
+tl.remove();             // remove this thread&#x27;s entry (Java 1.5+)
+
+// Inheritable — child threads inherit parent&#x27;s value
+InheritableThreadLocal&lt;String&gt; itl = new InheritableThreadLocal&lt;String&gt;() {
+    protected Object childValue(Object parentValue) {
+        return &quot;custom-child-value&quot;;
+    }
+};</pre>
+<h2>OCJP/SCJP exam points</h2>
+<ol><li>ThreadLocal = thread-scoped variable; one object, many per-thread copies.</li></ol>
+<ol><li>Default `initialValue()` returns `null`.</li></ol>
+<ol><li>After `remove()`, next `get()` calls `initialValue()` again.</li></ol>
+<ol><li>`remove()` added in Java 1.5.</li></ol>
+<ol><li>Plain ThreadLocal: parent value NOT visible to child → child gets `null` (or its own initialValue()).</li></ol>
+<ol><li>`InheritableThreadLocal`: child inherits parent&#x27;s value.</li></ol>
+<ol><li>Override `childValue(Object parentValue)` to customize what child receives.</li></ol>
+<ol><li>Package: `java.lang.ThreadLocal` — no import needed.</li></ol>
+<ol><li>Introduced: Java 1.2; enhanced 1.5.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 99 of 203</td></tr>
+<tr><td>Series</td><td>Multithreading Enhancement · Part 5</td></tr>
+<tr><td>Topic</td><td>java thread local</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 11m 48s</td></tr>
+<tr><td>Video ID</td><td>4ZLkbWWpkyk</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=4ZLkbWWpkyk</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Scope</th><th>Availability</th><th>Real-life analogy</th></tr>
+<tr><td>Request scope</td><td>Only for that one HTTP request; gone when request completes</td><td>Data stored on the HttpServletRequest object</td></tr>
+<tr><td>Session scope</td><td>All requests in the same session until logout</td><td>Gmail login — enter username/password once; send 10 mails, check inbox, compose — no re-login until session ends or logout</td></tr>
+<tr><td>Application / Context scope</td><td>Entire web application lifetime</td><td>Global shared data</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Meaning (thread asks…)</th><th>Returns / effect</th></tr>
+<tr><td>`get()`</td><td>&quot;Can you please tell my value?&quot;</td><td>Returns current thread&#x27;s value</td></tr>
+<tr><td>`initialValue()`</td><td>&quot;What&#x27;s my initial value?&quot;</td><td>Called internally when no value set yet</td></tr>
+<tr><td>`set(newValue)`</td><td>&quot;Can you please set a new value?&quot;</td><td>Stores value for current thread</td></tr>
+<tr><td>`remove()`</td><td>&quot;Can you please remove my local variable?&quot;</td><td>Removes current thread&#x27;s entry</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Class</th><th>Key idea</th></tr>
+<tr><td>Per-thread local variable</td><td>ThreadLocal</td><td>Separate copy per thread; one object serves all threads</td></tr>
+<tr><td>Constructor</td><td>new ThreadLocal()</td><td>Creates the thread-local container</td></tr>
+<tr><td>get()</td><td>inherited</td><td>Current thread&#x27;s value</td></tr>
+<tr><td>set(v)</td><td>inherited</td><td>Set current thread&#x27;s value</td></tr>
+<tr><td>initialValue()</td><td>override optional</td><td>Default null; customize via anonymous subclass</td></tr>
+<tr><td>remove()</td><td>Java 1.5+</td><td>Remove current thread&#x27;s entry; next get() re-calls initialValue()</td></tr>
+<tr><td>Parent → child inheritance</td><td>InheritableThreadLocal</td><td>Child inherits parent&#x27;s value at thread creation</td></tr>
+<tr><td>Custom child value</td><td>childValue(parentValue)</td><td>Override to give child a different value than parent</td></tr>
+</table>
+</body></html>

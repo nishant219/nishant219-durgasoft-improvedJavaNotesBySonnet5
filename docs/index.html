@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Durgasoft Notes Reader</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link id="hljs-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script>
+  (function () {
+    var saved = localStorage.getItem("theme");
+    var theme = saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-side: #f6f7f9;
+    --fg: #1a1a1a;
+    --fg-muted: #666;
+    --border: #e2e2e6;
+    --accent: #7c3aed;
+    --accent-bg: #ede9fe;
+    --code-bg: #f2f2f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16161a;
+      --bg-side: #1c1c22;
+      --fg: #e8e8ec;
+      --fg-muted: #9a9aa5;
+      --border: #2c2c34;
+      --accent: #a78bfa;
+      --accent-bg: #2c2440;
+      --code-bg: #24242c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16161a;
+    --bg-side: #1c1c22;
+    --fg: #e8e8ec;
+    --fg-muted: #9a9aa5;
+    --border: #2c2c34;
+    --accent: #a78bfa;
+    --accent-bg: #2c2440;
+    --code-bg: #24242c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #sidebar {
+    width: 300px;
+    min-width: 300px;
+    background: var(--bg-side);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #sidebar-header {
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  #sidebar-header h1 {
+    font-size: 15px;
+    margin: 0 0 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #theme-toggle {
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--fg);
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #theme-toggle:hover { background: var(--accent-bg); }
+  #credits {
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--fg-muted);
+    text-align: center;
+  }
+  #credits a { color: var(--accent); text-decoration: none; }
+  #credits a:hover { text-decoration: underline; }
+  #search {
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 13px;
+  }
+  #tree {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px;
+  }
+  .group { margin-bottom: 2px; }
+  .group-label {
+    padding: 7px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--fg-muted);
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .group-label .count {
+    margin-left: auto;
+    font-weight: 400;
+    opacity: 0.7;
+  }
+  .group-label .arrow {
+    transition: transform 0.15s;
+    font-size: 10px;
+  }
+  .group.collapsed .arrow { transform: rotate(-90deg); }
+  .group.collapsed .notes { display: none; }
+  .note-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px 6px 18px;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--fg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .note-item:hover { background: var(--border); }
+  .note-item.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+  .note-item .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: transparent;
+    flex-shrink: 0;
+  }
+  .note-item.read .dot { background: var(--fg-muted); }
+  .note-item.active .dot { background: var(--accent); }
+  #main {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+  }
+  #content {
+    max-width: 780px;
+    width: 100%;
+    padding: 48px 32px 100px;
+  }
+  #placeholder {
+    color: var(--fg-muted);
+    padding: 48px 32px;
+    text-align: center;
+  }
+  #content h1, #content h2, #content h3 { line-height: 1.3; }
+  #content h1 { font-size: 26px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  #content h2 { font-size: 20px; margin-top: 32px; }
+  #content h3 { font-size: 16px; }
+  #content p, #content li { line-height: 1.65; font-size: 15px; }
+  #content code {
+    background: var(--code-bg);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  #content pre {
+    background: var(--code-bg);
+    padding: 14px;
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  #content pre code { background: none; padding: 0; }
+  #content blockquote {
+    border-left: 3px solid var(--accent);
+    margin: 0;
+    padding: 4px 16px;
+    color: var(--fg-muted);
+  }
+  #content table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  #content th, #content td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+  #content img { max-width: 100%; }
+  #nav-links {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    gap: 12px;
+  }
+  #nav-links button {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-side);
+    color: var(--fg);
+    cursor: pointer;
+    font-size: 13px;
+  }
+  #nav-links button:disabled { opacity: 0.4; cursor: default; }
+  #nav-links button:not(:disabled):hover { background: var(--accent-bg); }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>
+      <span>Durgasoft Notes</span>
+      <button id="theme-toggle" title="Toggle light/dark theme"></button>
+    </h1>
+    <input id="search" placeholder="Search notes..." />
+  </div>
+  <div id="tree"></div>
+  <div id="credits">Notes & UI by <a href="https://github.com/nishant219" target="_blank" rel="noopener">nishant219</a></div>
+</div>
+<div id="main">
+  <div id="placeholder">Pick a note from the sidebar to start studying.</div>
+  <div id="content" style="display:none"></div>
+</div>
+
+<script>
+const REPO_OWNER = "nishant219";
+const REPO_NAME = "durgasoft-improvedNotesBySonnet5";
+const REPO_BRANCH = "main";
+const RAW_BASE = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/`;
+
+const MANIFEST = [{"key": "notes/chunk-001-020", "label": "Core Java 1-20", "notes": [{"path": "notes/chunk-001-020/001-identifiers-reserved-words.md", "title": "Identifiers Reserved Words"}, {"path": "notes/chunk-001-020/002-data-types-part-1.md", "title": "Data Types Part 1"}, {"path": "notes/chunk-001-020/003-data-types-part-2.md", "title": "Data Types Part 2"}, {"path": "notes/chunk-001-020/004-literals-part-1.md", "title": "Literals Part 1"}, {"path": "notes/chunk-001-020/005-literals-part-2.md", "title": "Literals Part 2"}, {"path": "notes/chunk-001-020/006-arrays-part-1.md", "title": "Arrays Part 1"}, {"path": "notes/chunk-001-020/007-arrays-part-2.md", "title": "Arrays Part 2"}, {"path": "notes/chunk-001-020/008-arrays-part-3.md", "title": "Arrays Part 3"}, {"path": "notes/chunk-001-020/009-arrays-part-4.md", "title": "Arrays Part 4"}, {"path": "notes/chunk-001-020/010-types-of-variables-part-1.md", "title": "Types Of Variables Part 1"}, {"path": "notes/chunk-001-020/011-types-of-variables-part-2.md", "title": "Types Of Variables Part 2"}, {"path": "notes/chunk-001-020/012-var-arg-methods.md", "title": "Var Arg Methods"}, {"path": "notes/chunk-001-020/013-main-method-part-1.md", "title": "Main Method Part 1"}, {"path": "notes/chunk-001-020/014-main-method-part-2.md", "title": "Main Method Part 2"}, {"path": "notes/chunk-001-020/015-command-line-arguments.md", "title": "Command Line Arguments"}, {"path": "notes/chunk-001-020/016-java-coding-standards.md", "title": "Java Coding Standards"}, {"path": "notes/chunk-001-020/017-increment-decrement-arithmetic.md", "title": "Increment Decrement Arithmetic"}, {"path": "notes/chunk-001-020/018-concatenation-relational-equality.md", "title": "Concatenation Relational Equality"}, {"path": "notes/chunk-001-020/019-instanceof-bitwise.md", "title": "Instanceof Bitwise"}, {"path": "notes/chunk-001-020/020-short-circuit-type-cast.md", "title": "Short Circuit Type Cast"}, {"path": "notes/chunk-001-020/README.md", "title": "Readme"}]}, {"key": "notes/chunk-021-040", "label": "Core Java 21-40", "notes": [{"path": "notes/chunk-021-040/021-assignment-conditional-new.md", "title": "Assignment Conditional New"}, {"path": "notes/chunk-021-040/022-operator-precedence.md", "title": "Operator Precedence"}, {"path": "notes/chunk-021-040/023-operator-interview-faqs.md", "title": "Operator Interview Faqs"}, {"path": "notes/chunk-021-040/024-flow-control-intro.md", "title": "Flow Control Intro"}, {"path": "notes/chunk-021-040/025-if-else.md", "title": "If Else"}, {"path": "notes/chunk-021-040/026-switch.md", "title": "Switch"}, {"path": "notes/chunk-021-040/027-while-do-while.md", "title": "While Do While"}, {"path": "notes/chunk-021-040/028-for-foreach.md", "title": "For Foreach"}, {"path": "notes/chunk-021-040/029-break-continue.md", "title": "Break Continue"}, {"path": "notes/chunk-021-040/030-source-file-structure.md", "title": "Source File Structure"}, {"path": "notes/chunk-021-040/031-import-static-import.md", "title": "Import Static Import"}, {"path": "notes/chunk-021-040/032-static-import.md", "title": "Static Import"}, {"path": "notes/chunk-021-040/033-package-statement.md", "title": "Package Statement"}, {"path": "notes/chunk-021-040/034-class-modifier-final.md", "title": "Class Modifier Final"}, {"path": "notes/chunk-021-040/035-class-modifier-abstract.md", "title": "Class Modifier Abstract"}, {"path": "notes/chunk-021-040/036-member-modifiers.md", "title": "Member Modifiers"}, {"path": "notes/chunk-021-040/037-final-variables.md", "title": "Final Variables"}, {"path": "notes/chunk-021-040/038-static-modifier.md", "title": "Static Modifier"}, {"path": "notes/chunk-021-040/039-native-static-transient.md", "title": "Native Static Transient"}, {"path": "notes/chunk-021-040/040-interfaces-1.md", "title": "Interfaces 1"}, {"path": "notes/chunk-021-040/README.md", "title": "Readme"}]}, {"key": "notes/chunk-041-060", "label": "Core Java 41-60", "notes": [{"path": "notes/chunk-041-060/041-interfaces-2.md", "title": "Interfaces 2"}, {"path": "notes/chunk-041-060/042-interfaces-3.md", "title": "Interfaces 3"}, {"path": "notes/chunk-041-060/043-interfaces-4.md", "title": "Interfaces 4"}, {"path": "notes/chunk-041-060/044-new-vs-constructor.md", "title": "New Vs Constructor"}, {"path": "notes/chunk-041-060/045-child-vs-parent-constructor-1.md", "title": "Child Vs Parent Constructor 1"}, {"path": "notes/chunk-041-060/046-child-vs-parent-constructor-2.md", "title": "Child Vs Parent Constructor 2"}, {"path": "notes/chunk-041-060/047-need-of-abstract-class-constructor.md", "title": "Need Of Abstract Class Constructor"}, {"path": "notes/chunk-041-060/048-abstract-vs-interface-constructor.md", "title": "Abstract Vs Interface Constructor"}, {"path": "notes/chunk-041-060/049-abstract-vs-interface.md", "title": "Abstract Vs Interface"}, {"path": "notes/chunk-041-060/050-interface-abstract-constructor.md", "title": "Interface Abstract Constructor"}, {"path": "notes/chunk-041-060/051-oops-intro-data-hiding.md", "title": "Oops Intro Data Hiding"}, {"path": "notes/chunk-041-060/052-inheritance-is-a.md", "title": "Inheritance Is A"}, {"path": "notes/chunk-041-060/053-inheritance-has-a.md", "title": "Inheritance Has A"}, {"path": "notes/chunk-041-060/054-overloading.md", "title": "Overloading"}, {"path": "notes/chunk-041-060/055-overriding.md", "title": "Overriding"}, {"path": "notes/chunk-041-060/056-overriding-access-modifiers.md", "title": "Overriding Access Modifiers"}, {"path": "notes/chunk-041-060/057-overriding-varargs.md", "title": "Overriding Varargs"}, {"path": "notes/chunk-041-060/058-coupling.md", "title": "Coupling"}, {"path": "notes/chunk-041-060/059-type-casting.md", "title": "Type Casting"}, {"path": "notes/chunk-041-060/060-static-control-flow.md", "title": "Static Control Flow"}]}, {"key": "notes/chunk-061-080", "label": "Core Java 61-80", "notes": [{"path": "notes/chunk-061-080/061-static-block.md", "title": "Static Block"}, {"path": "notes/chunk-061-080/062-instance-control-flow.md", "title": "Instance Control Flow"}, {"path": "notes/chunk-061-080/063-instance-static-control-flow.md", "title": "Instance Static Control Flow"}, {"path": "notes/chunk-061-080/064-constructors.md", "title": "Constructors"}, {"path": "notes/chunk-061-080/065-default-constructor.md", "title": "Default Constructor"}, {"path": "notes/chunk-061-080/066-overloaded-constructor.md", "title": "Overloaded Constructor"}, {"path": "notes/chunk-061-080/067-singleton-class.md", "title": "Singleton Class"}, {"path": "notes/chunk-061-080/068-oops-concepts-compilation.md", "title": "Oops Concepts Compilation"}, {"path": "notes/chunk-061-080/069-constructors-default-overloading.md", "title": "Constructors Default Overloading"}, {"path": "notes/chunk-061-080/070-exception-handling-intro.md", "title": "Exception Handling Intro"}, {"path": "notes/chunk-061-080/071-default-exception-handling.md", "title": "Default Exception Handling"}, {"path": "notes/chunk-061-080/072-checked-vs-unchecked.md", "title": "Checked Vs Unchecked"}, {"path": "notes/chunk-061-080/073-try-catch.md", "title": "Try Catch"}, {"path": "notes/chunk-061-080/074-finally-block.md", "title": "Finally Block"}, {"path": "notes/chunk-061-080/075-throw-and-throws.md", "title": "Throw And Throws"}, {"path": "notes/chunk-061-080/076-throws-keyword.md", "title": "Throws Keyword"}, {"path": "notes/chunk-061-080/077-customized-exceptions.md", "title": "Customized Exceptions"}, {"path": "notes/chunk-061-080/078-top-10-exceptions.md", "title": "Top 10 Exceptions"}, {"path": "notes/chunk-061-080/079-try-with-resources.md", "title": "Try With Resources"}, {"path": "notes/chunk-061-080/080-exception-handling-compilation.md", "title": "Exception Handling Compilation"}]}, {"key": "notes/chunk-081-100", "label": "Core Java 81-100", "notes": [{"path": "notes/chunk-081-100/081-multithreading-intro.md", "title": "Multithreading Intro"}, {"path": "notes/chunk-081-100/082-defining-thread-part-1.md", "title": "Defining Thread Part 1"}, {"path": "notes/chunk-081-100/083-defining-thread-part-2.md", "title": "Defining Thread Part 2"}, {"path": "notes/chunk-081-100/084-thread-priorities.md", "title": "Thread Priorities"}, {"path": "notes/chunk-081-100/085-yield-join.md", "title": "Yield Join"}, {"path": "notes/chunk-081-100/086-join-sleep-interruption.md", "title": "Join Sleep Interruption"}, {"path": "notes/chunk-081-100/087-synchronization-part-1.md", "title": "Synchronization Part 1"}, {"path": "notes/chunk-081-100/088-synchronization-part-2.md", "title": "Synchronization Part 2"}, {"path": "notes/chunk-081-100/089-synchronized-block.md", "title": "Synchronized Block"}, {"path": "notes/chunk-081-100/090-inter-thread-communication-1.md", "title": "Inter Thread Communication 1"}, {"path": "notes/chunk-081-100/091-inter-thread-communication-2.md", "title": "Inter Thread Communication 2"}, {"path": "notes/chunk-081-100/092-deadlock-starvation.md", "title": "Deadlock Starvation"}, {"path": "notes/chunk-081-100/093-daemon-threads.md", "title": "Daemon Threads"}, {"path": "notes/chunk-081-100/094-green-thread-stop-suspend.md", "title": "Green Thread Stop Suspend"}, {"path": "notes/chunk-081-100/095-thread-group.md", "title": "Thread Group"}, {"path": "notes/chunk-081-100/096-concurrent-package.md", "title": "Concurrent Package"}, {"path": "notes/chunk-081-100/097-concurrent-locks.md", "title": "Concurrent Locks"}, {"path": "notes/chunk-081-100/098-thread-pools.md", "title": "Thread Pools"}, {"path": "notes/chunk-081-100/099-thread-local.md", "title": "Thread Local"}, {"path": "notes/chunk-081-100/100-innerclass-intro.md", "title": "Innerclass Intro"}]}, {"key": "notes/chunk-101-120", "label": "Core Java 101-120", "notes": [{"path": "notes/chunk-101-120/101-normal-innerclass-part-2.md", "title": "Normal Innerclass Part 2"}, {"path": "notes/chunk-101-120/102-anonymous-innerclass-part-3.md", "title": "Anonymous Innerclass Part 3"}, {"path": "notes/chunk-101-120/103-normal-class-vs-innerclass.md", "title": "Normal Class Vs Innerclass"}, {"path": "notes/chunk-101-120/104-nested-classes-part-5.md", "title": "Nested Classes Part 5"}, {"path": "notes/chunk-101-120/105-java-lang-intro.md", "title": "Java Lang Intro"}, {"path": "notes/chunk-101-120/106-hashcode.md", "title": "Hashcode"}, {"path": "notes/chunk-101-120/107-equals.md", "title": "Equals"}, {"path": "notes/chunk-101-120/108-object-class-part-4.md", "title": "Object Class Part 4"}, {"path": "notes/chunk-101-120/109-strings-part-5.md", "title": "Strings Part 5"}, {"path": "notes/chunk-101-120/110-strings-part-6.md", "title": "Strings Part 6"}, {"path": "notes/chunk-101-120/111-strings-constructor.md", "title": "Strings Constructor"}, {"path": "notes/chunk-101-120/112-strings-compilation.md", "title": "Strings Compilation"}, {"path": "notes/chunk-101-120/113-wrapper-classes.md", "title": "Wrapper Classes"}, {"path": "notes/chunk-101-120/114-java-lang-part-9.md", "title": "Java Lang Part 9"}, {"path": "notes/chunk-101-120/115-autoboxing-unboxing.md", "title": "Autoboxing Unboxing"}, {"path": "notes/chunk-101-120/116-autoboxing-unboxing-2.md", "title": "Autoboxing Unboxing 2"}, {"path": "notes/chunk-101-120/117-object-class-part-12.md", "title": "Object Class Part 12"}, {"path": "notes/chunk-101-120/118-object-class-part-13.md", "title": "Object Class Part 13"}, {"path": "notes/chunk-101-120/119-string-class-part-14.md", "title": "String Class Part 14"}, {"path": "notes/chunk-101-120/120-file-io-intro.md", "title": "File Io Intro"}]}, {"key": "notes/chunk-121-140", "label": "Core Java 121-140", "notes": [{"path": "notes/chunk-121-140/121-filewriter.md", "title": "Filewriter"}, {"path": "notes/chunk-121-140/122-filereader.md", "title": "Filereader"}, {"path": "notes/chunk-121-140/123-printwriter.md", "title": "Printwriter"}, {"path": "notes/chunk-121-140/124-printwriter-examples.md", "title": "Printwriter Examples"}, {"path": "notes/chunk-121-140/125-serialization-intro.md", "title": "Serialization Intro"}, {"path": "notes/chunk-121-140/126-serialization-part-2.md", "title": "Serialization Part 2"}, {"path": "notes/chunk-121-140/127-customized-serialization.md", "title": "Customized Serialization"}, {"path": "notes/chunk-121-140/128-customized-serialization-2.md", "title": "Customized Serialization 2"}, {"path": "notes/chunk-121-140/129-inheritance-serialization.md", "title": "Inheritance Serialization"}, {"path": "notes/chunk-121-140/130-externalization.md", "title": "Externalization"}, {"path": "notes/chunk-121-140/131-serialversionuid.md", "title": "Serialversionuid"}, {"path": "notes/chunk-121-140/132-regex-intro.md", "title": "Regex Intro"}, {"path": "notes/chunk-121-140/133-regex-character-matching.md", "title": "Regex Character Matching"}, {"path": "notes/chunk-121-140/134-pattern-class.md", "title": "Pattern Class"}, {"path": "notes/chunk-121-140/135-using-regex.md", "title": "Using Regex"}, {"path": "notes/chunk-121-140/136-collections-intro.md", "title": "Collections Intro"}, {"path": "notes/chunk-121-140/137-collections-9-interfaces.md", "title": "Collections 9 Interfaces"}, {"path": "notes/chunk-121-140/138-collections-list-set.md", "title": "Collections List Set"}, {"path": "notes/chunk-121-140/139-arraylist.md", "title": "Arraylist"}, {"path": "notes/chunk-121-140/140-arraylist-vs-linkedlist.md", "title": "Arraylist Vs Linkedlist"}]}, {"key": "notes/chunk-141-160", "label": "Core Java 141-160", "notes": [{"path": "notes/chunk-141-160/141-collections-limitations-enumerations.md", "title": "Collections Limitations Enumerations"}, {"path": "notes/chunk-141-160/142-set-sortedset.md", "title": "Set Sortedset"}, {"path": "notes/chunk-141-160/143-treeset.md", "title": "Treeset"}, {"path": "notes/chunk-141-160/144-comparator.md", "title": "Comparator"}, {"path": "notes/chunk-141-160/145-treeset-string-examples.md", "title": "Treeset String Examples"}, {"path": "notes/chunk-141-160/146-hashmap-linkedhashmap.md", "title": "Hashmap Linkedhashmap"}, {"path": "notes/chunk-141-160/147-linkedhashmap.md", "title": "Linkedhashmap"}, {"path": "notes/chunk-141-160/148-sortedmap-treemap.md", "title": "Sortedmap Treemap"}, {"path": "notes/chunk-141-160/149-hashtable.md", "title": "Hashtable"}, {"path": "notes/chunk-141-160/150-queue-priorityqueue.md", "title": "Queue Priorityqueue"}, {"path": "notes/chunk-141-160/151-navigableset.md", "title": "Navigableset"}, {"path": "notes/chunk-141-160/152-searching-list.md", "title": "Searching List"}, {"path": "notes/chunk-141-160/153-arrays-class.md", "title": "Arrays Class"}, {"path": "notes/chunk-141-160/154-concurrent-collections-need.md", "title": "Concurrent Collections Need"}, {"path": "notes/chunk-141-160/155-concurrent-collections-diff.md", "title": "Concurrent Collections Diff"}, {"path": "notes/chunk-141-160/156-concurrentmap-methods.md", "title": "Concurrentmap Methods"}, {"path": "notes/chunk-141-160/157-concurrenthashmap-details.md", "title": "Concurrenthashmap Details"}, {"path": "notes/chunk-141-160/158-concurrenthashmap-program-1.md", "title": "Concurrenthashmap Program 1"}, {"path": "notes/chunk-141-160/159-concurrenthashmap-program-2.md", "title": "Concurrenthashmap Program 2"}, {"path": "notes/chunk-141-160/160-hashmap-vs-concurrenthashmap.md", "title": "Hashmap Vs Concurrenthashmap"}]}, {"key": "notes/chunk-161-180", "label": "Core Java 161-180", "notes": [{"path": "notes/chunk-161-180/161-concurrenthashmap-sync-hashtable.md", "title": "Concurrenthashmap Sync Hashtable"}, {"path": "notes/chunk-161-180/162-copyonwritearraylist-properties-1.md", "title": "Copyonwritearraylist Properties 1"}, {"path": "notes/chunk-161-180/163-copyonwritearraylist-properties-2.md", "title": "Copyonwritearraylist Properties 2"}, {"path": "notes/chunk-161-180/166-copyonwritearraylist-program-2.md", "title": "Copyonwritearraylist Program 2"}, {"path": "notes/chunk-161-180/168-copyonwritearraylist-program-4.md", "title": "Copyonwritearraylist Program 4"}, {"path": "notes/chunk-161-180/170-copyonwritearraylist-sync-vector.md", "title": "Copyonwritearraylist Sync Vector"}, {"path": "notes/chunk-161-180/173-generics-introduction.md", "title": "Generics Introduction"}, {"path": "notes/chunk-161-180/174-generics-type-safety-casting.md", "title": "Generics Type Safety Casting"}, {"path": "notes/chunk-161-180/175-generics-type-safety-examples.md", "title": "Generics Type Safety Examples"}, {"path": "notes/chunk-161-180/176-generics-methods-wildcards.md", "title": "Generics Methods Wildcards"}, {"path": "notes/chunk-161-180/177-generics-methods.md", "title": "Generics Methods"}, {"path": "notes/chunk-161-180/178-gc-introduction.md", "title": "Gc Introduction"}, {"path": "notes/chunk-161-180/180-gc-requesting-gc.md", "title": "Gc Requesting Gc"}]}, {"key": "springboot-notes", "label": "Spring Boot", "notes": [{"path": "springboot-notes/001-foundation-of-spring-boot.md", "title": "Foundation Of Spring Boot"}, {"path": "springboot-notes/002-rest-api-and-database.md", "title": "Rest Api And Database"}, {"path": "springboot-notes/README.md", "title": "Readme"}]}];
+
+const flatNotes = MANIFEST.flatMap(g => g.notes);
+
+const treeEl = document.getElementById("tree");
+const contentEl = document.getElementById("content");
+const placeholderEl = document.getElementById("placeholder");
+const searchEl = document.getElementById("search");
+
+function getReadSet() {
+  try { return new Set(JSON.parse(localStorage.getItem("readNotes") || "[]")); }
+  catch { return new Set(); }
+}
+function markRead(path) {
+  try {
+    const s = getReadSet();
+    s.add(path);
+    localStorage.setItem("readNotes", JSON.stringify([...s]));
+  } catch {}
+}
+
+let activePath = null;
+
+function renderTree(filter) {
+  const q = (filter || "").trim().toLowerCase();
+  const readSet = getReadSet();
+  treeEl.innerHTML = "";
+  MANIFEST.forEach(group => {
+    const notes = q
+      ? group.notes.filter(n => n.title.toLowerCase().includes(q))
+      : group.notes;
+    if (q && notes.length === 0) return;
+
+    const groupEl = document.createElement("div");
+    groupEl.className = "group";
+
+    const labelEl = document.createElement("div");
+    labelEl.className = "group-label";
+    labelEl.innerHTML = `<span class="arrow">▾</span><span>${group.label}</span><span class="count">${group.notes.length}</span>`;
+    labelEl.onclick = () => groupEl.classList.toggle("collapsed");
+    groupEl.appendChild(labelEl);
+
+    const notesEl = document.createElement("div");
+    notesEl.className = "notes";
+    notes.forEach(n => {
+      const item = document.createElement("div");
+      item.className = "note-item" + (n.path === activePath ? " active" : "") + (readSet.has(n.path) ? " read" : "");
+      item.innerHTML = `<span class="dot"></span><span>${n.title}</span>`;
+      item.onclick = () => loadNote(n.path);
+      notesEl.appendChild(item);
+    });
+    groupEl.appendChild(notesEl);
+    treeEl.appendChild(groupEl);
+  });
+}
+
+async function loadNote(path) {
+  activePath = path;
+  placeholderEl.style.display = "none";
+  contentEl.style.display = "block";
+  contentEl.innerHTML = "<p style='color:var(--fg-muted)'>Loading…</p>";
+
+  try {
+    const res = await fetch(RAW_BASE + path);
+    if (!res.ok) throw new Error(res.status);
+    const md = await res.text();
+    contentEl.innerHTML = marked.parse(md);
+    contentEl.querySelectorAll("pre code").forEach(el => hljs.highlightElement(el));
+  } catch (e) {
+    contentEl.innerHTML = `<p style="color:#e33">Failed to load note (${e.message}). Check your connection.</p>`;
+  }
+
+  markRead(path);
+  renderTree(searchEl.value);
+  renderNavLinks();
+  contentEl.scrollIntoView();
+  document.getElementById("main").scrollTop = 0;
+
+  const url = new URL(location);
+  url.searchParams.set("note", path);
+  history.replaceState(null, "", url);
+}
+
+function renderNavLinks() {
+  const idx = flatNotes.findIndex(n => n.path === activePath);
+  const existing = document.getElementById("nav-links");
+  if (existing) existing.remove();
+  if (idx === -1) return;
+
+  const nav = document.createElement("div");
+  nav.id = "nav-links";
+  const prev = flatNotes[idx - 1];
+  const next = flatNotes[idx + 1];
+
+  const prevBtn = document.createElement("button");
+  prevBtn.textContent = prev ? `← ${prev.title}` : "← Start";
+  prevBtn.disabled = !prev;
+  if (prev) prevBtn.onclick = () => loadNote(prev.path);
+
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = next ? `${next.title} →` : "End →";
+  nextBtn.disabled = !next;
+  if (next) nextBtn.onclick = () => loadNote(next.path);
+
+  nav.appendChild(prevBtn);
+  nav.appendChild(nextBtn);
+  contentEl.appendChild(nav);
+}
+
+searchEl.addEventListener("input", () => renderTree(searchEl.value));
+
+const themeToggleEl = document.getElementById("theme-toggle");
+const hljsThemeEl = document.getElementById("hljs-theme");
+const HLJS_THEME_URL = {
+  light: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css",
+  dark: "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css",
+};
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  hljsThemeEl.href = HLJS_THEME_URL[theme];
+  themeToggleEl.textContent = theme === "dark" ? "☀️" : "🌙";
+  localStorage.setItem("theme", theme);
+}
+
+themeToggleEl.onclick = () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  applyTheme(current === "dark" ? "light" : "dark");
+};
+
+applyTheme(document.documentElement.getAttribute("data-theme"));
+
+renderTree();
+
+const initialPath = new URL(location).searchParams.get("note");
+if (initialPath && flatNotes.some(n => n.path === initialPath)) {
+  loadNote(initialPath);
+}
+</script>
+</body>
+</html>

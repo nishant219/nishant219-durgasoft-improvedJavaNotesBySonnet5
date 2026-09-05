@@ -1,0 +1,193 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>024-flow-control-intro</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 024 — Flow-Control introduction</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Flow-Control Part-1  || Introduction</p>
+<p>Source: real YouTube auto-captions (English, auto-generated). ASR writes legan (he tells the class not to make noise), irritative vs iterative, ative / itative for iterative, RM for return, yeser for `assert`, exception earning for exception handling. These notes restore the diagram and the Java he speaks while walking the flow.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Meaning of flow control: at run time, in which order statements execute.</li></ol>
+<ol><li>Spoken sketches of if/else and of a loop.</li></ol>
+<ol><li>All flow-control statements divided into three categories (he draws the diagram).</li></ol>
+<ol><li>Selection: if-else, switch.</li></ol>
+<ol><li>Iterative: while, do-while, for, for-each (came in 1.5).</li></ol>
+<ol><li>Transfer: break, continue, return, try-catch-finally, assert (came in 1.4).</li></ol>
+<ol><li>In this class he will explain up to break and continue. assert → assertions chapter. try-catch-finally and return → exception handling.</li></ol>
+<ol><li>Dictated definition + the same diagram again. Next videos: postmortem on each statement; basics, but several loopholes waiting.</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:08] Keep copying: Flow control</h3>
+<p>Board heading: flow control.</p>
+<p>Very basic concept, but there are several new things they are going to get — he is sure. By default (ASR: “by fault”) they will get those new things.</p>
+<h3>[00:31] What is flow control / control flow?</h3>
+<p>Majority of students ask, showing some 20 lines or 30 lines of code: “sir, can you please explain the flow?” Maybe a chance to ask that.</p>
+<p>What is flow control? At run time, in which order the statements are going to execute. At run time, in which order the statements will be executed is decided by flow control.</p>
+<h3>[01:09] `if` — JVM checks true or false</h3>
+<p>Suppose an if statement is there. Immediately the JVM will check: is the condition true or false?</p>
+<ul><li>If true → execute this part (the if-part).</li></ul>
+<ul><li>If false → without executing if, directly the control comes to the else part.</li></ul>
+<pre class='code'>if (condition) {
+    // JVM: condition true → execute this part
+} else {
+    // condition false → skip if-part, control comes here
+}</pre>
+<h3>[01:30] Loop — keep executing until the condition fails</h3>
+<p>Here some loop came. These statements keep on executing until this condition fails. If this condition fails, automatically “I will come out.”</p>
+<p>while (condition) {
+    // keep executing until the condition fails
+} // condition failed → come out</p>
+<p>So: flow control — in which order the statements are going to be executed is decided by flow control.</p>
+<h3>[01:51] How many flow-control statements? Three categories</h3>
+<p>He says: all flow-control statements. (ASR: “legan don’t make the noise” — he tells the class to be quiet.)</p>
+<p>All flow-control statements are divided into three categories. First category:</p>
+<h3>[02:14] 1. Selection statements</h3>
+<p>If several alternatives are there, then which one among the options — one thing will be selected. Among several available options, one thing will be selected and it will be executed. That is selection statements.</p>
+<p>Example for selection statements:</p>
+<p>First: if-else. In if-else, how many options are available? Two options — either the if-part or the else-part. Only two options.</p>
+<pre class='code'>if (condition) {
+    // option 1 — if-part
+} else {
+    // option 2 — else-part
+}</pre>
+<p>Second: switch statement. There are several options; among that, one case will be selected; that particular case will be executed. That is also selection statements.</p>
+<p>Among several available options, “can you please select one option and execute” — that is a selection statement.</p>
+<p>switch (x) {
+    case 1: /* one case selected and executed */ break;
+    case 2: break;
+    default: break;
+}</p>
+<p>In Java, how many selection statements are there? `if-else` and `switch` statement. Only those two.</p>
+<h3>[03:25] 2. Iterative statements</h3>
+<p>There are some statements which are going to be executed repeatedly / iteratively. Such type of statements are called iterative statements.</p>
+<p>He stresses the word: iterative, not “irritative.” Iterative statements.</p>
+<p>What are the various iterative statements?</p>
+<ol><li>`while` loop</li></ol>
+<ol><li>`do-while`</li></ol>
+<ol><li>`for` loop</li></ol>
+<ol><li>`for-each` loop</li></ol>
+<p>while (condition) { }
+
+do { } while (condition);
+
+for (int i = 0; i &lt; n; i++) { }
+
+for (int x : arr) { } // for-each</p>
+<p>`for-each` is the new loop which came in the 1.5 version.</p>
+<p>A group of statements are going to be executed iteratively — that is iterative statements.</p>
+<h3>[04:28] 3. Transfer statements</h3>
+<p>Last category: to transfer control from one place to another place.</p>
+<p>Best example: suppose he is in the while loop. Suddenly `break` is there in the middle. Immediately the control will be transferred to outside of the loop. This type of statement is a transfer statement — control transferred to outside.</p>
+<p>while (condition) {
+    // suddenly in the middle:
+    break; // control transferred outside the loop
+}</p>
+<p>To transfer the control from one place to another place — how many transfer statements are there?</p>
+<p>First: break statement.</p>
+<p>Second: continue statement.</p>
+<p>Third: return statement.</p>
+<p>Board so far: break, continue, return.</p>
+<p>break;     // transfer out of loop / switch
+continue;  // transfer to next iteration
+return;    // transfer out of the method</p>
+<h3>[05:24] `try-catch-finally` is also a transfer statement</h3>
+<p>try-catch-finally is also a transfer statement only. Reason: observe try / catch / finally.</p>
+<p>Suppose within the try block if an exception is raised, immediately what will happen? The control will be transferred to the catch block.</p>
+<p>If the catch block is not matching, then the control will be transferred to the finally block.</p>
+<p>So try-catch-finally is also one type of transfer statement only.</p>
+<p>try {
+    // if an exception is raised → control transfers to catch
+} catch (Exception e) {
+    // if this catch is not matching → control transfers to finally
+} finally {
+}</p>
+<h3>[06:14] `assert` is also a transfer statement (1.4)</h3>
+<p>Fifth one: `assert` (ASR: “yeser”). assert is also one type of transfer statement.</p>
+<p>Suppose in the middle anywhere an assert statement is there. If this condition fails, immediately the program will be stopped by raising `AssertionError`.</p>
+<p>assert condition;
+// if condition fails → program stopped by raising AssertionError</p>
+<p>This part he will discuss in the assertions concept anyway — but this one is also possible. assert statement.</p>
+<p>These are the various transfer statements they have.</p>
+<h3>[06:41] What he will explain in this class vs later chapters</h3>
+<ul><li>`assert` statement — he will explain in the assertions concept.</li></ul>
+<ul><li>`try-catch-finally` — he will explain in exception handling.</li></ul>
+<ul><li>`return` also will be covered in exception handling.</li></ul>
+<ul><li>In this class, up to `break` and `continue` he will explain.</li></ul>
+<p>All flow-control statements — how many types? Three types.</p>
+<ol><li>Selection statement — among several options only one option will be selected and will be executed.</li></ol>
+<ol><li>A group of statements will be executed iteratively — iterative statement. How many iterative statements? Four (while, do-while, for, for-each).</li></ol>
+<ol><li>To transfer the control from one place to another place — transfer statements: break, continue, return, (and the rest on the diagram).</li></ol>
+<p>Any explanation required up to this? No — first add this definition.</p>
+<h3>[07:31] Board sentence (dictation)</h3>
+<p>He repeats it until they copy:</p>
+<p>Flow control describes the order in which the statements will be executed at run time.</p>
+<h3>[08:13] Same diagram again (copy it directly)</h3>
+<p>Better to keep this diagram directly. Flow control. Of course there are three types of flow-control statements.</p>
+<p>First — selection statements. Among several options only one option will be selected and will be executed.</p>
+<p>Second — iterative statements. A group of statements will be executed iteratively. `while`, `do-while`, `for`, `for-each`. These are considered as iterative statements. `for-each` loop came in which version? 1.5 version.</p>
+<p>Third — transfer statements. break, continue, return, try-catch-finally, `assert`.</p>
+<p>`assert` concept came in which version? 1.4 version.</p>
+<pre class='code'>// selection
+if (condition) { } else { }
+switch (x) { case 1: break; }
+
+// iterative (for-each: 1.5)
+while (condition) { }
+do { } while (condition);
+for (;;) { }
+for (int e : arr) { }
+
+// transfer (assert: 1.4)
+break;
+continue;
+return;
+try { } catch (Exception e) { } finally { }
+assert condition;</pre>
+<p>That’s all. Now they have to perform postmortem on all these things. Even these are very basics, but still there are several loopholes waiting for them.</p>
+<p>He recites the transfer list once more at the end: break, continue, return, try-catch-finally, next the `assert`. Completed.</p>
+<h2>Rules (as he states them)</h2>
+<ol><li>Flow control = order of statement execution at run time.</li></ol>
+<ol><li>Three boxes only: selection, iterative, transfer — not a fourth top-level box for exceptions.</li></ol>
+<ol><li>Selection in Java: only `if-else` (two options) and `switch` (several cases, one selected).</li></ol>
+<ol><li>Iterative: four — while, do-while, for, for-each (1.5).</li></ol>
+<ol><li>Transfer: break, continue, return, try-catch-finally, assert (1.4).</li></ol>
+<ol><li>break in the middle of a loop transfers control outside the loop.</li></ol>
+<ol><li>Exception in try → control to catch; if catch does not match → finally.</li></ol>
+<ol><li>Failed assert → program stopped by raising `AssertionError`.</li></ol>
+<ol><li>This class’s scope: break and continue. assert later (assertions). try-catch-finally and return later (exception handling).</li></ol>
+<h2>Exam / interview traps (from this lecture)</h2>
+<ul><li>`for-each` is 1.5, not “always existed.”</li></ul>
+<ul><li>`assert` is 1.4 and sits in his transfer list, not in a separate “assertions” box on this diagram.</li></ul>
+<ul><li>`try-catch-finally` is classified here as transfer, not as a fourth top-level category.</li></ul>
+<ul><li>Iterative, not “irritative” — he corrects the pronunciation on purpose.</li></ul>
+<ul><li>Students asking “explain the flow” of 20–30 lines: the answer is this map, not a mystery.</li></ul>
+<h2>Recap</h2>
+<p>Three boxes on the board. Definition they copy: flow control describes the order in which the statements will be executed at run time. Next lecture starts selection: `if-else`.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 24 of 203</td></tr>
+<tr><td>Series</td><td>Flow-Control · Part 1 of 6</td></tr>
+<tr><td>Topic</td><td>What flow control is; selection / iterative / transfer map</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>10m 25s (625 seconds)</td></tr>
+<tr><td>Video ID</td><td>X6rS9vD9-qM</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=X6rS9vD9-qM</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

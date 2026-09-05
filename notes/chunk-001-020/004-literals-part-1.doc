@@ -1,0 +1,221 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>004-literals-part-1</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 004 — Literals, part 1</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-4 || Literals Part-1</p>
+<p>YouTube has captions disabled on this upload. Notes follow this lecture’s place in the series: video 003 ends data types with “how we provide values, we discuss in literals”; video 005 opens with char literals. So this session is integral, floating-point, and boolean literals — the board work Durga Sir does in Literals Part-1.</p>
+<h2>What this lecture covers</h2>
+<ol><li>What a literal is</li></ol>
+<ol><li>Integral literals — decimal, octal, hexadecimal, binary</li></ol>
+<ol><li>Default type of an integral literal (int) and the L suffix</li></ol>
+<ol><li>Assigning integral literals to byte / short / int / long (range checks)</li></ol>
+<ol><li>Floating-point literals — default double, F/D suffixes, scientific notation</li></ol>
+<ol><li>Boolean literals — only true and false</li></ol>
+<ol><li>Exam “valid or invalid” drills</li></ol>
+<p>Char, string, and more ways to write a char are next video.</p>
+<h2>Detailed notes</h2>
+<h3>What is a literal?</h3>
+<p>A literal is any constant value that can be assigned to a variable.</p>
+<p>int x = 10;        // 10 is an integer literal
+float f = 10.5f;   // 10.5f is a floating-point literal
+boolean b = true;  // true is a boolean literal
+char ch = &#x27;a&#x27;;     // &#x27;a&#x27; is a char literal (part 2)
+String s = &quot;durga&quot;; // &quot;durga&quot; is a string literal (part 2)</p>
+<p>The left side is a variable. The right side, when it is a typed-in constant, is a literal.</p>
+<h3>Integral literals</h3>
+<p>Integral types: byte, short, int, long.</p>
+<p>You can write an integral value in four forms. Durga drills conversions both directions (form → decimal, and “how do I write 10 in octal/hex”).</p>
+<h4>1. Decimal (base 10) — the default</h4>
+<p>Digits 0–9. No prefix.</p>
+<pre class='code'>int x = 10;
+int y = 100;</pre>
+<p>Allowed digits: 0 1 2 3 4 5 6 7 8 9.</p>
+<h4>2. Octal (base 8)</h4>
+<p>Prefix `0` (a leading zero). Allowed digits: 0–7.</p>
+<pre class='code'>int x = 010;   // octal 10 → decimal 8
+int y = 0777;</pre>
+<p>int x = 0786;  // CE: 8 is not an octal digit</p>
+<p>Board conversion: octal 010</p>
+<ul><li>1×8¹ + 0×8⁰ = 8</li></ul>
+<p>So System.out.println(010); prints 8, not 10. Exam loves this.</p>
+<h4>3. Hexadecimal (base 16)</h4>
+<p>Prefix `0x` or `0X`. Digits: 0–9 and a–f / A–F.</p>
+<p>int x = 0x10;    // hex 10 → decimal 16
+int y = 0xFace;
+int z = 0XBeef;
+int extra = 0xBeer; // CE: &#x27;r&#x27; is not a hex digit</p>
+<p>0x10 = 1×16¹ + 0 = 16.</p>
+<p>System.out.println(0x10); prints 16.</p>
+<p>Case of letters does not matter: 0xFace and 0xFACE are the same value.</p>
+<h4>4. Binary (base 2) — from Java 7</h4>
+<p>Prefix `0b` or `0B`. Digits: 0 and 1 only.</p>
+<p>int x = 0b1111;  // 15
+int y = 0B1010;  // 10
+int z = 0b201;   // CE: 2 is not a binary digit</p>
+<h3>Underscore in numeric literals (Java 7)</h3>
+<p>You may split groups of digits with _ for readability.</p>
+<p>int x = 1_00_000;     // valid
+int y = 0b0111_1111;  // valid</p>
+<p>Rules Durga flags:</p>
+<ul><li>Cannot start or end with _: _100 is an identifier, 100_ is CE</li></ul>
+<ul><li>Cannot sit next to the 0x / 0b prefix in an illegal place: 0x_10 CE</li></ul>
+<ul><li>Cannot sit next to the decimal point in a float in an illegal way</li></ul>
+<h3>Default type of an integral literal is `int`</h3>
+<p>Every integral literal is `int` unless you say otherwise.</p>
+<p>int x = 10;     // valid
+long l = 10;    // valid — int literal widened to long
+long l2 = 10L;  // valid — long literal
+long l3 = 10l;  // valid — lowercase L, but ugly (looks like 1)</p>
+<p>int x = 10L;    // CE: possible loss of precision (long → int)</p>
+<p>Use `L` not l so it does not look like digit one.</p>
+<p>When do you need L? When the number is outside int range:</p>
+<p>long l = 2147483647;          // valid, still an int literal
+long l2 = 2147483648;         // CE: 2147483648 is out of int range
+long l3 = 2147483648L;        // valid</p>
+<p>int max is 2³¹−1 = 2147483647. One more, and it is no longer a legal int literal.</p>
+<h3>Assigning to `byte` and `short`</h3>
+<p>Special rule that Durga repeats until it sticks:</p>
+<p>If the right-hand side is an `int` literal (not a variable) and it is in the target type’s range, the assignment is allowed. The compiler does an implicit narrowing for constants.</p>
+<p>byte b = 10;     // valid — 10 is in byte range (-128 to 127)
+byte b2 = 127;   // valid
+byte b3 = 128;   // CE: possible loss of precision
+byte b4 = -129;  // CE
+short s = 32767; // valid
+short s2 = 32768;// CE</p>
+<p>If the right-hand side is a variable, even if you “know” it fits, it is CE without a cast:</p>
+<p>int x = 10;
+byte b = x;      // CE
+byte b2 = (byte) x; // valid</p>
+<p>long literal to byte is also CE even if the number looks small:</p>
+<p>byte b = 10L;    // CE</p>
+<p>Because the literal is long, not an int constant in range.</p>
+<h3>Floating-point literals</h3>
+<p>Types: float (32-bit, ~6–7 digits precision, range about ±3.4e38) and double (64-bit, ~15 digits, range about ±1.7e308).</p>
+<h4>Default type is `double`</h4>
+<p>double d = 123.456;   // valid
+float f = 123.456;    // CE: possible loss of precision
+float f2 = 123.456F;  // valid
+float f3 = 123.456f;  // valid
+double d2 = 123.456D; // valid
+double d3 = 123.456d; // valid</p>
+<p>Board line Durga wants you to recite: every floating-point literal is double unless it ends with `F`/`f`.</p>
+<p>You can also write a float from an integer literal (widening):</p>
+<p>float f = 10;     // valid — int → float
+double d = 10;    // valid
+double d2 = 10.5f;// valid — float → double</p>
+<p>int x = 10.5;     // CE
+int x2 = 10.5F;   // CE</p>
+<h4>Scientific / exponential form</h4>
+<p>double d = 1.2e3;   // 1.2 × 10³ = 1200.0
+double d2 = 1.2E3;
+float f = 1.2e3F;</p>
+<p>e / E means “times 10 to the power”.</p>
+<h4>Forms of a floating literal</h4>
+<p>All of these are floating-point (type double unless F):</p>
+<p>123.456
+123.        // 123.0
+.456        // 0.456
+1.2e3
+0x10         // this is INTEGRAL hex, not float</p>
+<p>A number with a decimal point or an exponent is floating. A number without them is integral.</p>
+<h3>Boolean literals</h3>
+<p>Only two: `true` and `false`.</p>
+<pre class='code'>boolean b = true;
+boolean b2 = false;</pre>
+<p>Illegal (C programmers fall here):</p>
+<p>boolean b = 0;       // CE
+boolean b2 = 1;      // CE
+boolean b3 = True;   // CE — True is an identifier, not the literal
+boolean b4 = &quot;true&quot;; // CE — String, not boolean</p>
+<p>Durga’s contrast with C: in C, 0 is false and non-zero is true. In Java, that is a compile error. This is the same “strongly typed” point from video 002 (int x = 10.5 invalid, boolean b = 0 invalid).</p>
+<p>true / false / null are reserved literals, not keywords (video 001). You still cannot use them as names.</p>
+<h3>Which literal belongs to which type — board summary</h3>
+<h3>Classic print questions</h3>
+<p>System.out.println(10);     // 10
+System.out.println(010);    // 8
+System.out.println(0x10);   // 16
+System.out.println(0b10);   // 2</p>
+<p>If the question mixes them in one line, convert each, then add:</p>
+<p>System.out.println(010 + 0x10 + 0b10);
+// 8 + 16 + 2 = 26</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>class LiteralDemo {
+    public static void main(String[] args) {
+        int decimal = 10;
+        int octal = 010;
+        int hex = 0x10;
+        int binary = 0b1010;
+        long big = 2147483648L;
+        byte b = 127;
+        // byte bad = 128; // CE
+        float f = 12.34F;
+        double d = 12.34;
+        double sci = 1.2e3;
+        boolean flag = true;
+        System.out.println(decimal + &quot; &quot; + octal + &quot; &quot; + hex + &quot; &quot; + binary);
+        System.out.println(f + &quot; &quot; + d + &quot; &quot; + sci + &quot; &quot; + flag);
+    }
+}</pre>
+<h2>Rules to memorize</h2>
+<ol><li>Literal = constant value assigned to a variable.</li></ol>
+<ol><li>Integral literal default type is int; use L for long when needed.</li></ol>
+<ol><li>010 is octal eight; 0x10 is hex sixteen; 0b10 is two.</li></ol>
+<ol><li>Octal digits only 0–7; hex 0–9 a–f; binary 0–1.</li></ol>
+<ol><li>byte b = 10 is valid (constant in range); byte b = x for int x is CE.</li></ol>
+<ol><li>float f = 10.5 is CE; write 10.5F.</li></ol>
+<ol><li>Boolean literals are only true and false — never 0/1.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>System.out.println(010) prints 8, not 10.</li></ul>
+<ul><li>int x = 10L compile error.</li></ul>
+<ul><li>long l = 2147483648 compile error without L.</li></ul>
+<ul><li>float f = 123.456 compile error.</li></ul>
+<ul><li>boolean b = 0 compile error.</li></ul>
+<ul><li>byte b = 128 compile error.</li></ul>
+<ul><li>0xBeer compile error (r).</li></ul>
+<ul><li>0786 compile error (8 in octal).</li></ul>
+<h2>Recap</h2>
+<p>This lecture is “how you write numbers and booleans on the right-hand side.” Next lecture is the remaining literal forms, starting with char.</p>
+<p>Next video: 005-literals-part-2.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 4 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 4 of 16</td></tr>
+<tr><td>Topic</td><td>Literals (part 1): integral, floating-point, boolean</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 22m 19s (4939 seconds)</td></tr>
+<tr><td>Video ID</td><td>Eng8Oi-p2r4</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=Eng8Oi-p2r4</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Literal kind</th><th>How you write it</th><th>Default type</th><th>Suffix / prefix</th></tr>
+<tr><td>Decimal integral</td><td>10</td><td>int</td><td>none</td></tr>
+<tr><td>Octal integral</td><td>010</td><td>int</td><td>leading 0</td></tr>
+<tr><td>Hex integral</td><td>0x10</td><td>int</td><td>0x / 0X</td></tr>
+<tr><td>Binary integral</td><td>0b1010</td><td>int</td><td>0b / 0B (Java 7+)</td></tr>
+<tr><td>Long integral</td><td>10L</td><td>long</td><td>L / l</td></tr>
+<tr><td>Decimal floating</td><td>10.5</td><td>double</td><td>optional D/d</td></tr>
+<tr><td>Float</td><td>10.5F</td><td>float</td><td>F / f</td></tr>
+<tr><td>Exponential</td><td>1.2e3</td><td>double</td><td>optional F for float</td></tr>
+<tr><td>Boolean</td><td>true false</td><td>boolean</td><td>—</td></tr>
+</table>
+</body></html>

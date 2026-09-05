@@ -1,0 +1,1030 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>051-oops-intro-data-hiding</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 051 — OOPs introduction and data hiding</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming)Part-1||Introduction||data hiding</p>
+<p>ASR decoded while reading the captions: whoops / whoops keep supping / keep subing / keep uping = OOPs / keep writing (board heading); ENT room / inter your room = interview room; injp = OCJP; easier relationship = IS-A relationship; as a / has a = HAS-A; over ring = overriding; single turn = singleton; post mem = postmortem (long exam-style grilling); coupling on question = coupling and cohesion; data iing / obstruction = data hiding / abstraction; DGA = Durga; Chi / Charan / chanji / P / pan / Pavan = student names; four CL / foures = 4 crores; G screen / GI screen = GUI screen; IC Bank / IC = ICICI; MAA / Maava = made-up language name (joke); Cold Act = Coldact capsule; D bank = Durga Bank; tily / typ encapsulated = tightly encapsulated; inex = int x; verle = Oracle; wide = void; Setra = setter.</p>
+<p>This video is OOPs Part 1. The YouTube title names introduction and data hiding, but he actually finishes all of module 1 on the board: data hiding, abstraction, encapsulation, tightly encapsulated class. Next video is IS-A (inheritance). First stretch is agenda only (theoretical). Then he writes definitions and small classes.</p>
+<h3>00:05 — OOPs is the next topic (interview + daily coding)</h3>
+<p>Next topic is the most valuable concept for the interview room and for day-to-day coding: OOPs.</p>
+<p>He repeats “whoops concept” while writing the heading. First few OOPs items are a bit theoretical, but you still have to know them. He spells the agenda before any code.</p>
+<h3>00:41 — Agenda: four security-related features (module 1)</h3>
+<p>Board order for the first block:</p>
+<ol><li>Data hiding</li></ol>
+<ol><li>Abstraction</li></ol>
+<ol><li>Encapsulation</li></ol>
+<ol><li>Tightly encapsulated class</li></ol>
+<p>These four are module 1. They all talk about encapsulation / security. Data hiding and abstraction are part of encapsulation. He will treat them one by one, then combine them.</p>
+<h3>02:02 — Module 2: IS-A relationship (inheritance)</h3>
+<p>Next very important word: relationship. It looks like one word; it is a big topic.</p>
+<p>IS-A relationship is also known as inheritance. That is module 2 by itself. He only names it here. The actual IS-A lecture is the next session.</p>
+<h3>02:24 — HAS-A relationship, composition, aggregation</h3>
+<p>HAS-A is a very commonly used relationship in Java. Under HAS-A he will later discuss:</p>
+<ul><li>what HAS-A is</li></ul>
+<ul><li>advantage of HAS-A</li></ul>
+<ul><li>composition vs aggregation</li></ul>
+<ul><li>the difference between those two</li></ul>
+<p>Still agenda only. No HAS-A code in this video.</p>
+<h3>02:54 — Method signature (he will use this phrase constantly)</h3>
+<p>After the theoretical block, method signature.</p>
+<p>In later sessions he will keep saying “method signature must be same” / “method signature must be different.” So first: what is the method signature, and which parts of a method are considered the signature. He flags it; he does not define it yet.</p>
+<h3>03:19 — Overloading and overriding (polymorphism)</h3>
+<p>Next major OOPs topics:</p>
+<ul><li>overloading (~2.5 hours later)</li></ul>
+<ul><li>overriding (~4 hours later)</li></ul>
+<p>These two sit under polymorphism. The slogan he uses: encapsulation, inheritance, and under polymorphism → overloading and overriding.</p>
+<p>Inside overriding there is also method hiding and several related rules. He calls overloading and overriding the major concepts of the OOPs series.</p>
+<h3>04:07 — Static control flow and instance control flow</h3>
+<p>After overloading/overriding:</p>
+<ul><li>static control flow — if everything is static, in which order does control flow happen?</li></ul>
+<ul><li>instance control flow — same question when everything is instance</li></ul>
+<p>He says you will get several new things from this area. No control-flow diagrams in this video.</p>
+<h3>04:37 — Constructors (~4 hours) and singleton classes</h3>
+<p>Constructors are not a 45-minute side topic. He says he can spend about 4 hours, and they will do postmortem (deep exam-style questioning) on constructors.</p>
+<p>Application area he names now: how to create singleton classes. Private constructor is used for singleton classes. Syntactical constructor rules + singleton come later.</p>
+<h3>05:22 — Coupling and cohesion; OOPs is not only three words</h3>
+<p>Then coupling and cohesion.</p>
+<p>Most people, if asked “what are OOPs features / OOPs concepts?”, only say encapsulation, inheritance, polymorphism. Do not feel those are the only topics.</p>
+<p>He says there are almost around 13 features for OOPs. Coupling and cohesion are also OOPs features — a bit high-level / advanced. They show up when you talk design patterns and frameworks. Example he gives: Struts framework supports high cohesion and loose coupling. You still need a basic idea.</p>
+<h3>06:33 — Object type casting; full agenda recap</h3>
+<p>Always going to use object type casting. Questions: is this type casting valid? when should we go for type casting? what rules? About 1.5 hours later.</p>
+<p>That is the full basic OOPs features agenda he will cover in this series:</p>
+<p>Few opening concepts are theoretical. Overloading and overriding are the major concepts. Static/instance control flow: if everything is static / if everything is instance, in which order things execute. Constructors: another postmortem area.</p>
+<p>He asks if any explanation of the agenda is required, then starts module 1.</p>
+<h3>08:00 — Data hiding: keep writing the heading</h3>
+<p>Board heading (he says “keep subing / keep writing”):</p>
+<p>data hiding</p>
+<p>Small feature. Theoretical. First: what is data hiding? Look at the word: hiding of data.</p>
+<p>Meaning he wants:</p>
+<ul><li>an outside person cannot access our internal data directly</li></ul>
+<ul><li>or our internal data should not go out directly</li></ul>
+<p>If someone wants the data, they get it only after validation / authentication, and only the right person gets it.</p>
+<h3>08:58 — Real example 1: Gmail inbox</h3>
+<p>He has a Gmail account. He wants to check mail. He opens gmail.com. The inbox page does not come immediately. First it asks: provide username and password. Username is Durga, then password. Only if username and password are correct can he see account / inbox information.</p>
+<p>Can he check Charan’s inbox mail? Not possible. Even with a valid Gmail account, he can check his account only. Other persons’ account information he cannot get.</p>
+<p>That is data hiding in daily life: after credentials, only your data.</p>
+<pre class='code'>class GmailAccount {
+    private String inbox = &quot;Durga&#x27;s private mail&quot;;
+    private String username = &quot;durga&quot;;
+    private String password = &quot;secret&quot;;
+
+    public String getInbox(String u, String p) {
+        if (username.equals(u) &amp;&amp; password.equals(p)) {
+            return inbox;
+        }
+        return &quot;access denied&quot;;
+    }
+}
+
+class GmailDemo {
+    public static void main(String[] args) {
+        GmailAccount a = new GmailAccount();
+        System.out.println(a.getInbox(&quot;durga&quot;, &quot;secret&quot;));
+        // prints Durga&#x27;s private mail
+        System.out.println(a.getInbox(&quot;charan&quot;, &quot;anything&quot;));
+        // prints access denied
+        // System.out.println(a.inbox);
+        // CE: inbox has private access in GmailAccount
+    }
+}</pre>
+<p>Direct field read is compile-fail. Method path runs validation first, then maybe returns data.</p>
+<h3>09:47 — Real example 2: ATM balance (your account only)</h3>
+<p>He is a valid customer of the bank. He goes to the ATM, swipes the card, enters PIN, checks balance: account balance is 25,000. He can check his balance.</p>
+<p>Can he check Charan’s account balance or Pavan’s account balance? No. Even though he is a valid customer of the same bank, he does not have access permission for that information.</p>
+<p>Rule again: the right person, after validation, gets internal data. Internal data should not go out directly. An outside person cannot access internal data directly.</p>
+<p>If you want data, call a method: “get my details”, “get my inbox information”. That method validates: enter PIN, or username and password. If the person is correct, then provide information.</p>
+<p>This OOPs feature is data hiding.</p>
+<pre class='code'>class BankAccount {
+    private double balance = 25000;
+
+    public double checkBalance(int pin) {
+        if (pin == 1234) {
+            return balance;
+        }
+        return -1;
+    }
+}
+
+class AtmDemo {
+    public static void main(String[] args) {
+        BankAccount mine = new BankAccount();
+        System.out.println(mine.checkBalance(1234));
+        // prints 25000.0
+        System.out.println(mine.checkBalance(0000));
+        // prints -1.0
+        // System.out.println(mine.balance);
+        // CE: balance has private access in BankAccount
+    }
+}</pre>
+<p>There is no checkCharanBalance() API. Valid customer ≠ permission to read every account.</p>
+<h3>11:31 — Board definition of data hiding</h3>
+<p>He writes the definition slowly so everyone copies:</p>
+<p>Outside person can’t access our internal data directly.</p>
+<p>Or: our internal data should not go out directly.</p>
+<p>This OOPs feature is nothing but data hiding.</p>
+<p>Conclusion on the board:</p>
+<ul><li>outside person cannot contact / access internal data directly</li></ul>
+<ul><li>internal data should not go out directly</li></ul>
+<ul><li>after validation or authentication (any word you like), the outside person can access internal data</li></ul>
+<ul><li>so the right person accesses data; internal data should not be misused</li></ul>
+<h3>13:57 — Two examples copied onto the board</h3>
+<p>Example 1: After providing proper username and password, we can access our Gmail inbox information.</p>
+<p>Example 2: Even though we are a valid customer of the bank, we can access our account information, and we cannot access others’ account information.</p>
+<p>After authentication only, we access our account information. Can I check Charan’s balance or Pavan’s balance? No such thing. We can check our account information only. That is data hiding.</p>
+<pre class='code'>class BoardExample1Gmail {
+    private String inbox = &quot;inbox mails&quot;;
+
+    public String openInbox(String user, String pass) {
+        // after providing proper username and password
+        if (&quot;durga&quot;.equals(user) &amp;&amp; &quot;secret&quot;.equals(pass)) {
+            return inbox;
+        }
+        return &quot;login failed&quot;;
+    }
+
+    public static void main(String[] args) {
+        BoardExample1Gmail g = new BoardExample1Gmail();
+        System.out.println(g.openInbox(&quot;durga&quot;, &quot;secret&quot;));
+        // prints inbox mails
+    }
+}
+class BoardExample2Bank {
+    private double myBalance = 25000;
+
+    public double getMyBalance() {
+        return myBalance; // our account only
+    }
+
+    // no method: getCharanBalance() / getPavanBalance()
+
+    public static void main(String[] args) {
+        BoardExample2Bank a = new BoardExample2Bank();
+        System.out.println(a.getMyBalance());
+        // prints 25000.0
+    }
+}</pre>
+<h3>16:09 — How to achieve data hiding in code: `private`</h3>
+<p>How do we achieve it programmatically? Advantage we will come to.</p>
+<p>Every data member is recommended to be declared `private`. If it is private, can an outside person access it? No. Internal data will not go out directly.</p>
+<p>Then how does the outsider get data? He calls `getBalance()` (or some method). Inside that method you validate. Once validation completes and he is the right person, then provide the data. Through methods we provide data. Direct outside access we do not allow.</p>
+<p>By declaring every variable as private we can implement / achieve data hiding.</p>
+<h3>17:05 — First `Account` on the board (private field)</h3>
+<p>Best example: one account.</p>
+<p>He writes:</p>
+<pre class='code'>public class Account {
+    private double balance;
+    // ...
+}</pre>
+<p>By declaring the data variable private, we achieve data hiding.</p>
+<p>Doubt: if it is private, outside person cannot access — then how can we access when we require the data?</p>
+<p>Simple: public getter. Inside getBalance he performs validation. If this person is valid, return balance.</p>
+<pre class='code'>public class Account {
+    private double balance;
+
+    public double getBalance() {
+        // validation: is this person a valid person?
+        // if yes:
+        return balance;
+    }
+}</pre>
+<p>After validation only, outside person can get our data. Directly he cannot get internal data.</p>
+<p>By declaring data member / variable as private we can implement data hiding.</p>
+<h3>18:23 — Board rule (copy this sentence)</h3>
+<p>He dictates:</p>
+<p>By declaring data member (variable) as private, we can achieve data hiding.</p>
+<p>“Data member” means variable. He repeats it so the notebooks match.</p>
+<h3>19:06 — Same `Account` again, with validation then `return`</h3>
+<p>He rewrites the full example:</p>
+<pre class='code'>public class Account {
+    private double balance;
+
+    public double getBalance() {
+        // validation
+        // if this person is valid, then provide access
+        return balance;
+    }
+}
+public class Account + private double balance + public double getBalance() + validation + return balance. Terminology should be clear.</pre>
+<p>What happens if the field is not private? Anyone can read it with a dot — that is the insecure arrangement he is arguing against:</p>
+<pre class='code'>public class InsecureAccount {
+    public double balance = 25000;
+}
+
+class Anyone {
+    public static void main(String[] args) {
+        InsecureAccount a = new InsecureAccount();
+        System.out.println(a.balance);
+        // prints 25000.0
+        // outsider reads internal data directly — no data hiding
+    }
+}</pre>
+<p>Private field + outsider class (what the compiler does):</p>
+<pre class='code'>public class Account {
+    private double balance = 25000;
+}
+
+class Outsider {
+    public static void main(String[] args) {
+        Account a = new Account();
+        System.out.println(a.balance);
+        // CE: balance has private access in Account
+    }
+}</pre>
+<p>Allowed path is the method, after validation:</p>
+<pre class='code'>public class Account {
+    private double balance = 25000;
+
+    public double getBalance(boolean validPerson) {
+        if (validPerson) {
+            return balance;
+        }
+        return 0;
+    }
+}
+
+class Customer {
+    public static void main(String[] args) {
+        Account a = new Account();
+        System.out.println(a.getBalance(true));
+        // prints 25000.0
+        System.out.println(a.getBalance(false));
+        // prints 0.0
+    }
+}</pre>
+<h3>20:14 — Advantage of data hiding: security</h3>
+<p>If after validation only you can get data, what advantage? Security. Biggest advantage.</p>
+<p>Wherever hiding is there, the reason is security. We are hiding something → security. Biggest advantage of data hiding: we can achieve security.</p>
+<p>You can access your account information. Other person account information we cannot provide.</p>
+<p>Story: suppose a bank is ready to share any person’s account information publicly — username, password, amount, transactions — “I am ready to give this for any person.” How many people will open an account in that bank? No one.</p>
+<p>India / black money / government trying to bring money back: banks have n number of security restrictions. They are not allowed to hand that information out.</p>
+<p>Swiss bank example: if Swiss bank people highlight directly on a website who kept how much money, will anyone keep money in Swiss bank? Security is the point. You can access your information; you cannot ask others’.</p>
+<h3>22:25 — Board: main advantage of data hiding is security</h3>
+<p>He writes:</p>
+<p>The main advantage of data hiding is security.</p>
+<p>That is the whole advantage line for this feature.</p>
+<h3>22:53 — Highly recommended modifier for variables is `private`</h3>
+<p>Small good programming practice from this topic:</p>
+<p>Recommended modifier for variables is `private`.</p>
+<p>He dictates:</p>
+<p>It is highly recommended to declare data member (variable) as private.</p>
+<p>C language note (as he tells it): in C, the default modifier for a variable is private. int x = 10 in C — which modifier? private, by default.</p>
+<p>In Java there is a default modifier (package-level / default), but that is not the recommendation. Recommended modifier for every data member: `private`.</p>
+<pre class='code'>class JavaDefaultVsRecommended {
+    int defaultAccess = 10;     // Java default (package) — NOT the recommendation
+    private int hidden = 10;    // highly recommended for data members
+}
+class CStyleHeMentioned {
+    // he says: in C, int x = 10 is private by default
+    // in Java the same line is NOT private:
+    int x = 10;
+}
+
+class SamePackageReader {
+    public static void main(String[] args) {
+        CStyleHeMentioned o = new CStyleHeMentioned();
+        System.out.println(o.x);
+        // prints 10
+        // same-package outsider CAN read Java default — so this is NOT data hiding
+    }
+}</pre>
+<p>That is data hiding. Next feature.</p>
+<h3>24:16 — Abstraction: keep writing the heading</h3>
+<p>Second feature. Board heading: abstraction.</p>
+<p>He will first give an abstract idea, then internal things.</p>
+<p>Meaning of abstract idea: outline, central point, top-level information. Not a complete idea. Top-level information is shared, not complete information.</p>
+<p>Property joke: “How much property do you have?” “Almost around 4 crores.” One number. If he then lists land, gold, money, deposits, shares — that is internal things, not abstraction. “Around 4 crores” is the abstract / top-level line.</p>
+<pre class='code'>class PropertyAbstractView {
+    public String topLevel() {
+        return &quot;around 4 crores&quot;; // highlight only this
+    }
+}
+
+class PropertyInternalDetails {
+    String land = &quot;...&quot;;
+    String gold = &quot;...&quot;;
+    String cash = &quot;...&quot;;
+    String deposits = &quot;...&quot;;
+    String shares = &quot;...&quot;;
+    // listing this to the outsider is NOT abstraction
+}</pre>
+<h3>25:46 — Formal meaning: hide implementation, highlight services</h3>
+<p>At top level, highlight the set of services we are offering. Do not highlight internal implementation.</p>
+<p>Hide internal implementation and just highlight the set of services what we have — that is abstraction.</p>
+<h3>26:12 — ATM card walkthrough (end-user view)</h3>
+<p>Everyone in the classroom has used an ATM card at least once. Best example.</p>
+<p>Go to the ATM:</p>
+<ol><li>swipe or insert the card (both options exist)</li></ol>
+<ol><li>enter PIN 1 2 3 4</li></ol>
+<ol><li>GUI screen comes</li></ol>
+<ol><li>most common operation: withdraw (often you do not even check balance)</li></ol>
+<ol><li>click withdraw → how much money? 10,000</li></ol>
+<ol><li>savings or current? savings</li></ol>
+<ol><li>print receipt? yes</li></ol>
+<ol><li>request processed in about 10 seconds, money comes</li></ol>
+<ol><li>card comes out, receipt, you come out</li></ol>
+<p>This operation we did hundreds of times. That is the service list the user sees.</p>
+<h3>27:43 — Programmer doubts about what happens internally</h3>
+<p>Now he has a number of doubts on the internal process. Being a programmer you are not a layman.</p>
+<p>Whenever you swipe the card, internally validation happens: is this a valid card? associated with which account? is that account there? The machine reads the magnetic code on the card.</p>
+<p>Questions he piles on (end user does not know any of this):</p>
+<ul><li>is validation only in the ATM terminal, or is the request sent to the server?</li></ul>
+<ul><li>where is that server located?</li></ul>
+<ul><li>which request is triggering?</li></ul>
+<ul><li>which database does it communicate with?</li></ul>
+<ul><li>what is the username and password of that database?</li></ul>
+<ul><li>in which language is the validation logic implemented?</li></ul>
+<p>PIN 1234: authentication is happening. Which database query? Where is the DB server?</p>
+<p>Withdraw 10,000: which query, what logic, which programming language? Everything we don’t know.</p>
+<p>Being an end user he knows how to use the card. Internally what is happening / how functionality is implemented is not in our scope.</p>
+<h3>30:22 — Help-desk story (do not ask implementation)</h3>
+<p>Suppose you go to a corporate bank. Right-hand side: “May I help you” help desk (he says a very cute lady sits there).</p>
+<p>You: whenever I swipe ATM card in the machine, internally what is happening?</p>
+<p>She: validation, whether your card is valid… (the usual words).</p>
+<p>You: I know up to that. In which language is the code implemented, and which server is the request triggering? Please explain internally.</p>
+<p>Her face: big question mark. Being a user you should know how to use. Internally even she does not know.</p>
+<p>You: you kept a board “May I help you.” Next: when I enter PIN, which database query, is it Oracle, MySQL, or DB2? You give a list of 20 doubts on paper.</p>
+<p>She: wait 2 minutes. Goes inside, phones / updates project manager or branch manager: someone is asking this type of internal information, maybe he is a hacker, please intimate the policeman. Within few minutes police come and “answer” the queries.</p>
+<p>Why we are not getting that information: being end user, what is the use? You have to know how to use the card. You are not responsible to know internally how it is implemented.</p>
+<p>Hiding internal implementation, just highlight the set of services what we are offering — concept of abstraction.</p>
+<p>Through this ATM GUI screen, services you get: withdraw, check balance, statement, … Just highlight the set of services without highlighting internal implementation.</p>
+<h3>32:47 — Board definition of abstraction</h3>
+<p>He writes:</p>
+<p>Hiding internal implementation and just highlight the set of services what we are offering is the concept of abstraction.</p>
+<p>Data hiding vs abstraction should now be distinct: one hides data; the other hides implementation and shows services.</p>
+<h3>35:01 — Example: bank ATM GUI screen</h3>
+<p>Please give an example of abstraction: through ATM GUI screen.</p>
+<p>Bank people are highlighting the set of services they are offering. What services?</p>
+<ul><li>withdraw</li></ul>
+<ul><li>these days deposit is also there</li></ul>
+<ul><li>check balance / balance inquiry</li></ul>
+<ul><li>mini statement</li></ul>
+<ul><li>…</li></ul>
+<p>ICICI Bank ATM got an international award (he is not sure of the award name) because of several features. Every ATM itself is a small bank counter. Through ATM you can get almost all services you get from the bank. Enhanced-feature ATMs (ICICI) got the award because of several services.</p>
+<p>Whenever you click check balance, internally what is happening you don’t know. What functionality / utility you get: you get your account balance. Internally how it is implemented: I don’t know. Best example of abstraction.</p>
+<pre class='code'>interface AtmGuiScreen {
+    void withdraw();
+    void deposit();
+    void checkBalance();
+    void miniStatement();
+}</pre>
+<p>That interface is the highlighted service set. No SQL, no server host, no language name in the GUI.</p>
+<pre class='code'>class HiddenAtmEngine implements AtmGuiScreen {
+    public void withdraw() {
+        // magnetic stripe, server, Oracle/MySQL/DB2, PIN query...
+        // end user never sees this
+    }
+    public void deposit() { }
+    public void checkBalance() { }
+    public void miniStatement() { }
+}
+class EndUser {
+    public static void main(String[] args) {
+        AtmGuiScreen screen = new HiddenAtmEngine();
+        screen.withdraw();
+        screen.checkBalance();
+        // user only clicks services; implementation stays hidden
+    }
+}</pre>
+<h3>36:49 — Board example sentence</h3>
+<p>He writes:</p>
+<p>Through bank ATM GUI screen, bank people are highlighting the set of services what they are offering, without highlighting internal implementation.</p>
+<p>That is the example line for abstraction.</p>
+<h3>38:07 — Advantages of abstraction — (1) security</h3>
+<p>If I do not highlight internal implementation, only services — what is the advantage?</p>
+<p>First: outside person doesn’t aware our internal implementation. That’s why we can get security. Wherever hiding is there, the advantage is security. Outside person doesn’t know internally how it is implemented. Biggest advantage: security.</p>
+<h3>39:02 — (2) Enhancement becomes easy (Java vs “Maava”)</h3>
+<p>He developed this; it is happily providing service for the end user. Internally implemented using Java. Performance-wise not good / not up to the mark.</p>
+<p>Tomorrow another new language came: Maava language (joke name). He wants to replace this functionality with Maava because it is more enhanced than Java.</p>
+<p>Without changing the GUI screen, internal implementation he is changing. Any effect on the end user? No. End user always comes through this GUI screen. GUI is the same; internal logic he wants to change.</p>
+<p>Without affecting the outside person / end user, we can perform any type of changes in internal implementation. That’s why enhancement will become easy.</p>
+<p>We never highlight our internal implementation to the end user.</p>
+<pre class='code'>interface AtmGuiScreen {
+    void withdraw();
+}
+
+class JavaAtm implements AtmGuiScreen {
+    public void withdraw() {
+        // original Java implementation (slow, he says)
+    }
+}
+
+class MaavaAtm implements AtmGuiScreen {
+    public void withdraw() {
+        // replacement language; GUI type is still AtmGuiScreen
+    }
+}
+
+class BankCanSwitchEngine {
+    public static void main(String[] args) {
+        AtmGuiScreen screen = new JavaAtm();
+        screen.withdraw();
+        screen = new MaavaAtm(); // internal change
+        screen.withdraw();       // same button for the end user
+    }
+}</pre>
+<h3>39:47 — (3) easiness to use (4) maintainability</h3>
+<p>Third (end-user point of view): suppose to use ATM card you must know internal functionality / that code, then only you can use ATM. How many people would use ATM cards? No one.</p>
+<p>To use ATM you need how to use. Internal is implemented — not in my scope. Abstraction improves easiness to use the system. Without knowing internal things, happily you can use the card. It improves easiness to use our system.</p>
+<p>Next: maintainability of the application is going to be improved, because without affecting outside person you can perform any type of changes internally. Maintenance becomes very easy. Maintainability of the application will be improved.</p>
+<p>Even these many advantages are there, the highest important advantage of abstraction is still security.</p>
+<h3>42:08 — Four advantages written on the board</h3>
+<p>The main advantages of abstraction are:</p>
+<ol><li>We can achieve security — because we are not highlighting our internal implementation.</li></ol>
+<ol><li>Without affecting outside person we can perform any type of changes in our internal system, and hence enhancement will become easy.</li></ol>
+<ol><li>It improves maintainability of the application.</li></ol>
+<ol><li>It improves easiness to use our system.</li></ol>
+<pre class='code'>class AbstractionAdvantagesAsHeNumberedThem {
+    // 1 security: implementation not highlighted
+    // 2 enhancement easy: change internals, GUI stays
+    // 3 maintainability improved
+    // 4 easiness to use (no need to know internals)
+}</pre>
+<h3>45:08 — How do we implement abstraction in Java?</h3>
+<p>By using GUI screens — meaning interfaces — and abstract classes.</p>
+<ul><li>partial abstraction → abstract class</li></ul>
+<ul><li>full abstraction → interface</li></ul>
+<p>By using abstract classes and interfaces we can implement the abstraction concept.</p>
+<p>Board sentence:</p>
+<p>By using interfaces and abstract classes we can implement abstraction.</p>
+<p>Be aware: what is abstraction, and what is data hiding. That is data hiding and abstraction done.</p>
+<pre class='code'>abstract class PartialAtm {
+    abstract void withdraw();          // hidden elsewhere
+    void insertCard() {                // some implementation present
+        System.out.println(&quot;card in&quot;);
+    }
+}
+
+class PartialDemo extends PartialAtm {
+    void withdraw() {
+        System.out.println(&quot;cash&quot;);
+    }
+
+    public static void main(String[] args) {
+        PartialAtm a = new PartialDemo();
+        a.insertCard(); // prints card in
+        a.withdraw();   // prints cash
+    }
+}
+interface FullAtm {
+    void withdraw();
+    void checkBalance();
+    // no method bodies — full abstraction of services
+}
+
+class FullDemo implements FullAtm {
+    public void withdraw() {
+        System.out.println(&quot;cash&quot;);
+    }
+    public void checkBalance() {
+        System.out.println(&quot;25000&quot;);
+    }
+
+    public static void main(String[] args) {
+        FullAtm a = new FullDemo();
+        a.checkBalance(); // prints 25000
+        a.withdraw();     // prints cash
+    }
+}</pre>
+<p>He does not open a full abstract-class vs interface syntax lesson here. He only maps: abstract class = partial, interface = full, and both are how we implement abstraction.</p>
+<h3>46:42 — Encapsulation: book definition first</h3>
+<p>Very important. Keep writing: encapsulation.</p>
+<p>What is encapsulation? In books (open any C++ book or Java book, OOPs, encapsulation) you read:</p>
+<p>The process of binding data and corresponding behavior into a single unit.</p>
+<p>He will first give layman terminology, then the technical combination of the last two features.</p>
+<h3>47:38 — Coldact capsule analogy (layman)</h3>
+<p>Most people in class have cold / cough. To cure cold, which capsule is best? Several tablets / capsules; Coldact — colorful capsule, he says it is the best one he has in mind.</p>
+<p>Inside the capsule: colorful medicine, almost all possible colors, small bits. The medicine required to cure cold is kept inside a capsule. The total thing required is wrapped with a capsule. He can use the term capsule. That wrapping / capsulating is encapsulation.</p>
+<p>What do we keep inside a capsule? The medicine required to cure the cold.</p>
+<p>Same idea in Java: I want student information. Student data is required and student behavior is required. Bind the data and the corresponding behavior (corresponding methods) into a capsule → encapsulation.</p>
+<h3>49:30 — `Student` class: data members + methods</h3>
+<p>One class Student. For the student several variables are required. Variables are also known as data members. There may be methods required.</p>
+<p>Properties: what is the name, what is the age, what is the roll number.</p>
+<p>Methods: getAttendance, getMarks, updateMarks, …</p>
+<p>Data members + methods. Behavior is nothing but methods.</p>
+<p>The process of binding data members and corresponding methods into a single unit is nothing but encapsulation.</p>
+<p>In a normal capsule we kept medicine. In our Java class we kept data members and the corresponding behavior.</p>
+<pre class='code'>class Student {
+    String name;
+    int age;
+    int rollNumber;
+
+    void getAttendance() { }
+    void getMarks() { }
+    void updateMarks() { }
+}</pre>
+<p>Theoretical thing. Every Java class is an example of encapsulation, because everything in Java we write within the class only. That’s why every Java class itself is an example of encapsulation.</p>
+<pre class='code'>class AnyJavaClassIsEncapsulation {
+    // even this empty class is &quot;a unit&quot;
+    // theoretically: class is the capsule
+}</pre>
+<p>He says theoretically first; a bit practical he will explain next.</p>
+<h3>52:01 — Board definition (book line)</h3>
+<p>He writes:</p>
+<p>The process of binding data and the corresponding methods into a single unit is nothing but encapsulation.</p>
+<p>Java class itself is an example of encapsulation.</p>
+<p>Example on board: class Student = data members + methods (behavior). Binding data and methods into a single unit = encapsulation. He also wants the Coldact / capsule layman word in the notebook.</p>
+<pre class='code'>class Student {
+    // data members
+    String name;
+    int age;
+    int rollNumber;
+
+    // methods (behavior)
+    void getAttendance() { }
+    void getMarks() { }
+    void updateMarks() { }
+}</pre>
+<h3>54:13 — Technical meaning: data hiding + abstraction</h3>
+<p>Theoretically acceptable. Technically observe:</p>
+<p>If any component follows the last two features we covered:</p>
+<ol><li>data hiding</li></ol>
+<ol><li>abstraction</li></ol>
+<p>Do not feel encapsulation is something different. A combination of data hiding and abstraction is encapsulation.</p>
+<p>If any component follows data hiding plus abstraction, that is encapsulation.</p>
+<p>If any component follows data hiding and abstraction, such type of component is said to be an encapsulated component.</p>
+<h3>55:17 — Board: encapsulated component</h3>
+<p>He writes:</p>
+<p>If any component follows data hiding and abstraction, such a type of component is said to be encapsulated component.</p>
+<p>Then the equation:</p>
+<p>encapsulation = data hiding + abstraction</p>
+<h3>56:49 — Encapsulated `Account`: private field + getter + setter</h3>
+<p>He builds one Account class so the equation is visible in code.</p>
+<p>For every account, compulsory balance is there → private double balance (that is data hiding).</p>
+<p>To know how much balance: call `getBalance`. Return type `double`. return balance — but before returning, compulsory validate whether this person is the right person.</p>
+<p>Similarly, to update balance: public void setBalance(double balance). Validate whether this person is correct. After validation: this.balance = balance.</p>
+<p>Now he can use the word: it is an encapsulated component — because it follows data hiding and abstraction.</p>
+<p>Where is data hiding? Variable is private; outside person cannot access.</p>
+<p>Where is abstraction? He does not want to highlight this code to the end user. He will keep this in the server and project one GUI screen to the end user.</p>
+<pre class='code'>public class Account {
+    private double balance;
+
+    public double getBalance() {
+        // validation
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        // validation
+        this.balance = balance;
+    }
+}</pre>
+<p>Direct use of the field from another class:</p>
+<pre class='code'>class OutsidePerson {
+    public static void main(String[] args) {
+        Account a = new Account();
+        a.balance = 10000;
+        // CE: balance has private access in Account
+        System.out.println(a.balance);
+        // CE: balance has private access in Account
+    }
+}</pre>
+<p>The only legal conversation is methods (after validation):</p>
+<pre class='code'>public class Account {
+    private double balance;
+
+    public double getBalance(boolean valid) {
+        if (!valid) {
+            return 0;
+        }
+        return balance;
+    }
+
+    public void setBalance(double balance, boolean valid) {
+        if (!valid) {
+            return;
+        }
+        this.balance = balance;
+    }
+}
+
+class AfterValidation {
+    public static void main(String[] args) {
+        Account a = new Account();
+        a.setBalance(10000, true);
+        System.out.println(a.getBalance(true));
+        // prints 10000.0
+        a.setBalance(1, false); // ignored
+        System.out.println(a.getBalance(true));
+        // prints 10000.0
+    }
+}</pre>
+<h3>59:21 — Durga Bank GUI (abstraction half of the same example)</h3>
+<p>Welcome to Durga Bank. GUI for the end user:</p>
+<ul><li>Balance inquiry button</li></ul>
+<ul><li>Update balance — withdraw or deposit — update operation</li></ul>
+<p>If the end user clicks balance inquiry, internally `getBalance` is going to execute.</p>
+<p>If the end user clicks update balance, internally `setBalance` is going to execute.</p>
+<p>End user just clicks. Internally which logic, in which language — end user doesn’t know. So we have both data hiding and abstraction → encapsulation.</p>
+<p>Outside person doesn’t aware internally which method is calling, whether this code is implemented in Java or .NET or some other language. End user sees only GUI screen and buttons. Click: something happens, “your account balance is 1234”. Update: “transaction processed successfully.” Internally what / which language — he doesn’t aware.</p>
+<pre class='code'>class DurgaBankGui {
+    private Account account = new Account();
+
+    void balanceInquiry() {
+        // button click — user does not see getBalance()
+        System.out.println(account.getBalance());
+    }
+
+    void updateBalance() {
+        // withdraw or deposit button — user does not see setBalance()
+        account.setBalance(10000);
+        System.out.println(&quot;transaction processed successfully&quot;);
+    }
+}
+
+class DurgaBankCustomer {
+    public static void main(String[] args) {
+        DurgaBankGui screen = new DurgaBankGui();
+        screen.updateBalance();
+        // prints transaction processed successfully
+        screen.balanceInquiry();
+        // prints 10000.0
+    }
+}</pre>
+<p>(Account here is the encapsulated class from 56:49 — private field, getBalance, setBalance.)</p>
+<h3>1:01:22 — Full `Account` copied again on the board</h3>
+<p>He says take this example clearly:</p>
+<pre class='code'>public class Account {
+    private double balance;
+
+    public double getBalance() {
+        // validation
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        // validation
+        this.balance = balance;
+    }
+}</pre>
+<p>Whenever we click balance inquiry → getBalance path (validation, return balance).</p>
+<p>Whenever we click update balance → public void setBalance(double balance) (validation, this.balance = balance).</p>
+<p>We are getting data hiding and abstraction, which is nothing but encapsulation.</p>
+<p>Services: he does not want to highlight the Java methods directly to the end user. Why? Some interface concept, some GUI screens — highlight the set of services.</p>
+<pre class='code'>interface DurgaBankServices {
+    void balanceInquiry();
+    void updateBalance();
+}
+
+public class Account implements DurgaBankServices {
+    private double balance;
+
+    public double getBalance() {
+        // validation
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        // validation
+        this.balance = balance;
+    }
+
+    public void balanceInquiry() {
+        getBalance();
+    }
+
+    public void updateBalance() {
+        setBalance(10000);
+    }
+}</pre>
+<h3>1:03:55 — Main advantages of encapsulation (same list as abstraction)</h3>
+<p>Main advantages of encapsulation: biggest advantage is security, because it is abstraction and data hiding. That’s why enhancement will become easy. It improves maintainability of the application. Easiness to use our system.</p>
+<p>Board:</p>
+<p>The main advantages of encapsulation are:</p>
+<ol><li>We can achieve security</li></ol>
+<ol><li>Enhancement will become easy</li></ol>
+<ol><li>It improves maintainability of the application</li></ol>
+<p>(He also said easiness to use in the spoken list; the board numbering he reads as these three, matching abstraction’s security / enhancement / maintainability core.)</p>
+<h3>1:05:35 — Loophole: every advantage has a disadvantage</h3>
+<p>Very important loophole. If you want something, you miss something. For every advantage there should be some disadvantage.</p>
+<p>Advantage we are getting: security. Disadvantage: he explains with one or two examples. Observe carefully.</p>
+<h3>1:05:56 — Example: online funds transfer (many authentication levels)</h3>
+<p>Have you done online money transfer at least one time? Suppose ICICI bank account, transfer 10,000 rupees to a friend. Very common.</p>
+<p>What you have to do:</p>
+<ol><li>enter user ID and password, login</li></ol>
+<ol><li>then one-time password (OTP) to mobile; enter that; then you can login</li></ol>
+<ol><li>click funds transfer</li></ol>
+<ol><li>add payee / confirm payee</li></ol>
+<ol><li>amount 10,000, remarks (e.g. related to job posting)</li></ol>
+<ol><li>then transaction password</li></ol>
+<ol><li>submit — immediately it asks: enter four digits on your grid card, or otherwise back side of ATM card those four digits</li></ol>
+<p>After entering: “transaction processed successfully.”</p>
+<p>Just to transfer 10,000 rupees, minimum 5 to 10 minutes on the system, because how many levels of authentication:</p>
+<ol><li>user ID + password</li></ol>
+<ol><li>one-time password</li></ol>
+<ol><li>transaction password</li></ol>
+<ol><li>ATM/grid four digits</li></ol>
+<p>Four levels of security. Biggest advantage of this approach: security. Right person only can perform transfer. Some X person: no chance of misuse.</p>
+<p>Main disadvantage: time taking. Username/password then OTP — “I didn’t get the password, my class time is going to complete.” Close the browser, come out, then OTP arrives on mobile. Cannot perform the operation at that time. Same procedure again.</p>
+<p>Main advantage: security. Main disadvantage: it increases / slows down execution, and the overall performance of the system is going to be down.</p>
+<pre class='code'>class InsecureFastTransfer {
+    void transfer(double amt) {
+        System.out.println(&quot;sent &quot; + amt);
+        // one step — fast, but no security layers
+    }
+
+    public static void main(String[] args) {
+        new InsecureFastTransfer().transfer(10000);
+        // prints sent 10000.0
+    }
+}
+class EncapsulatedSlowTransfer {
+    boolean userIdPasswordOk(String id, String pwd) { return true; }
+    boolean otpOk(String otp) { return true; }
+    boolean txnPasswordOk(String txn) { return true; }
+    boolean gridDigitsOk(String four) { return true; }
+
+    void transfer(String id, String pwd, String otp, String txn, String grid, double amt) {
+        if (!userIdPasswordOk(id, pwd)) return;
+        if (!otpOk(otp)) return;
+        if (!txnPasswordOk(txn)) return;
+        if (!gridDigitsOk(grid)) return;
+        System.out.println(&quot;transaction processed successfully&quot;);
+    }
+
+    public static void main(String[] args) {
+        new EncapsulatedSlowTransfer()
+            .transfer(&quot;u&quot;, &quot;p&quot;, &quot;123456&quot;, &quot;txn&quot;, &quot;9876&quot;, 10000);
+        // prints transaction processed successfully
+        // four checks — longer code, slower execution (his disadvantage)
+    }
+}</pre>
+<h3>1:09:29 — Layman example: classroom with four doors vs one security door</h3>
+<p>Assume this room has four doors. From any door people can come and sit. To fill 500 chairs, hardly 5 to 10 minutes is enough. Some people this door, some that door. Class starts.</p>
+<p>Assume according to police constraint, each and every student must be checked before entering. Then close all doors, open only one. Student must walk through metal detector, then scanner, keep bags outside, receipt, then enter.</p>
+<p>For one student, minimum 3 to 5 minutes. 500 students × 5 minutes = 2,500 minutes — he works it as about 4 to 5 hours only for checking, then the class is only one hour. Is that recommended? Advantage: security. Problem: slows execution.</p>
+<p>Biggest advantage of encapsulation: security. Biggest drawback: it increases length of the code and slows down execution.</p>
+<pre class='code'>class FourDoorsFast {
+    void enter() {
+        System.out.println(&quot;sit&quot;); // no checks — 5 to 10 minutes for 500 people
+    }
+}
+
+class OneDoorSecure {
+    void metalDetector() { }
+    void scanner() { }
+    void bagReceipt() { }
+
+    void enter() {
+        metalDetector();
+        scanner();
+        bagReceipt();
+        System.out.println(&quot;sit&quot;);
+        // 3 to 5 minutes per student — security up, speed down
+    }
+
+    public static void main(String[] args) {
+        new OneDoorSecure().enter();
+        // prints sit
+    }
+}</pre>
+<h3>1:11:27 — Board: advantage vs disadvantage of encapsulation</h3>
+<p>He writes:</p>
+<p>The main advantage of encapsulation is we can achieve security.</p>
+<p>But the main disadvantage of encapsulation is it increases length of the code and slows down execution.</p>
+<p>Terminology should be very clear: advantage of encapsulation, disadvantage of encapsulation. That is the encapsulation word.</p>
+<h3>1:13:05 — Tightly encapsulated class (about 5 minutes)</h3>
+<p>Keep writing: tightly encapsulated class.</p>
+<p>What is it? If we are giving very much importance for data hiding: each and every variable of a class is private. All variables declared private. Such type of class is said to be tightly encapsulated class.</p>
+<p>Whether that class contains get method or not, set method or not — we are not required to check. Only: each and every variable of that class declared private or not. If each and every variable is private, that class is tightly encapsulated.</p>
+<h3>1:14:29 — `Account` as tightly encapsulated (getter is optional)</h3>
+<pre class='code'>public class Account {
+    private double balance;
+
+    public double getBalance() {
+        return balance;
+    }
+}</pre>
+<p>Is it tightly encapsulated? Yes. Only one checking: each and every variable declared as private or not. This class has only balance, and it is private.</p>
+<p>Whether for this variable corresponding get method is there or not, setter is there or not — not required to check. Only one rule: declare each and every variable as private.</p>
+<p>Same class without getter is still tightly encapsulated:</p>
+<pre class='code'>public class Account {
+    private double balance;
+}
+public class Account {
+    private double balance;
+
+    public double getBalance() {
+        return balance;
+    }
+}
+
+class TightCheck {
+    public static void main(String[] args) {
+        Account a = new Account();
+        System.out.println(a.getBalance());
+        // prints 0.0
+        // System.out.println(a.balance);
+        // CE: balance has private access in Account
+    }
+}</pre>
+<h3>1:15:48 — Board definition (and what we do *not* check)</h3>
+<p>He writes:</p>
+<p>A class is said to be tightly encapsulated if and only if each and every variable declared as private.</p>
+<p>Whether class contains corresponding getter and setter methods or not, and whether these methods are declared public or not — these things we are not required to check.</p>
+<p>He rewrites the short Account example: variable is private — that’s all. Whether get method is there, whether it is public — not required to check.</p>
+<pre class='code'>public class Account {
+    private double balance;
+
+    public double getBalance() {
+        return balance;
+    }
+}</pre>
+<h3>1:18:35 — Question 1: which of these classes are tightly encapsulated?</h3>
+<p>Question form: which of the following classes are tightly encapsulated?</p>
+<p>He writes three classes. B extends A. He starts to say C extends B, then corrects: `C extends A` only. Both B and C are children of A.</p>
+<pre class='code'>class A {
+    private int x = 10;
+}
+
+class B extends A {
+    int y = 20; // default / package — NOT private
+}
+
+class C extends A {
+    private int z = 30;
+}</pre>
+<p>Three classes. B child of A, C child of A.</p>
+<pre class='code'>class A {
+    private int x = 10;
+}
+
+class B extends A {
+    int y = 20;
+}
+
+class C extends A {
+    private int z = 30;
+}
+
+class WhichAreTight1 {
+    public static void main(String[] args) {
+        B b = new B();
+        System.out.println(b.y);
+        // prints 20
+        // outsider in same package reads y directly → B is NOT tightly encapsulated
+
+        // System.out.println(b.x);
+        // CE: x has private access in A
+
+        C c = new C();
+        // System.out.println(c.x);
+        // CE: x has private access in A
+        // System.out.println(c.z);
+        // CE: z has private access in C
+    }
+}</pre>
+<p>If each and every variable declared as private, automatically it is tightly encapsulated. Getter/setter presence and whether those methods are public — not required to check.</p>
+<h3>1:21:58 — Question 2: parent has default `x`</h3>
+<p>Another “which of the following classes are tightly encapsulated?”</p>
+<p>Very simple. He writes Class A, int x = 10 (default, not private). Then B extends A, then he says wait — private int y = 20. C extends B, private int z = 30.</p>
+<pre class='code'>class A {
+    int x = 10; // default — NOT private
+}
+
+class B extends A {
+    private int y = 20;
+}
+
+class C extends B {
+    private int z = 30;
+}</pre>
+<p>Among these, which are tightly encapsulated?</p>
+<ul><li>First (`A`): no</li></ul>
+<ul><li>Second (`B`): no — it is the child of A; non-private data by default available</li></ul>
+<ul><li>Third (`C`): no — this non-private data (A’s x) is by default available here also</li></ul>
+<pre class='code'>class A {
+    int x = 10;
+}
+
+class B extends A {
+    private int y = 20;
+}
+
+class C extends B {
+    private int z = 30;
+}
+
+class WhichAreTight2 {
+    public static void main(String[] args) {
+        A a = new A();
+        System.out.println(a.x);
+        // prints 10
+        // A&#x27;s x is not private → A is NOT tightly encapsulated
+
+        B b = new B();
+        System.out.println(b.x);
+        // prints 10
+        // inherited non-private x is available → B is NOT tightly encapsulated
+        // System.out.println(b.y);
+        // CE: y has private access in B
+
+        C c = new C();
+        System.out.println(c.x);
+        // prints 10
+        // A&#x27;s non-private x is still available through C → C is NOT tightly encapsulated
+        // System.out.println(c.y);
+        // CE: y has private access in B
+        // System.out.println(c.z);
+        // CE: z has private access in C
+    }
+}</pre>
+<h3>1:24:04 — Conclusion: parent not tight ⇒ no child is tight</h3>
+<p>From this example, is there any conclusion?</p>
+<p>If the parent class is not tightly encapsulated, then no child class is tightly encapsulated — because parent class non-private data is by default available to every child.</p>
+<p>He writes that note:</p>
+<p>If the parent class is not tightly encapsulated, then no child class is tightly encapsulated.</p>
+<pre class='code'>class ParentNotTight {
+    int x = 10; // non-private
+}
+
+class ChildPrivateField extends ParentNotTight {
+    private int y = 20;
+}
+
+class GrandChildPrivateField extends ChildPrivateField {
+    private int z = 30;
+}
+
+class ParentRule {
+    public static void main(String[] args) {
+        GrandChildPrivateField g = new GrandChildPrivateField();
+        System.out.println(g.x);
+        // prints 10
+        // parent not tight → this child cannot be called tightly encapsulated
+    }
+}</pre>
+<p>Contrast with question 1, where parent was tight, so a child with only private fields can be tight:</p>
+<pre class='code'>class TightParent {
+    private int x = 10;
+}
+
+class TightChild extends TightParent {
+    private int z = 30;
+}
+
+class TightParentRule {
+    public static void main(String[] args) {
+        TightChild c = new TightChild();
+        // System.out.println(c.x);
+        // CE: x has private access in TightParent
+        // System.out.println(c.z);
+        // CE: z has private access in TightChild
+        // TightParent tight, TightChild&#x27;s own field private → TightChild is tight
+    }
+}</pre>
+<h3>1:26:01 — Module 1 recap; next session is IS-A</h3>
+<p>This total thing is a small theoretical module 1: data hiding, abstraction, encapsulation, tightly encapsulated class. These talk about only one word: security. Security is the biggest advantage these OOPs features work for.</p>
+<p>Next session: IS-A relationship / inheritance concept, and what loopholes are there.</p>
+<h2>Board recap (what he wanted in the notebook)</h2>
+<p>Data hiding: outside person can’t access our internal data directly (or internal data should not go out directly). After validation/authentication, the right person can. Achieve it by declaring data members private. Main advantage: security. Highly recommended modifier for variables: private.</p>
+<p>Abstraction: hide internal implementation; highlight the set of services we are offering. Example: bank ATM GUI (withdraw, deposit, check balance, mini statement) without showing server/DB/language. Implement with interfaces (full) and abstract classes (partial). Advantages: security; enhancement easy without affecting outsider; maintainability; easiness to use.</p>
+<p>Encapsulation: process of binding data and corresponding methods into a single unit (every Java class, theoretically). Technically: encapsulation = data hiding + abstraction. Encapsulated Account: private balance + getBalance / setBalance behind a GUI. Advantages: security, enhancement easy, maintainability. Disadvantage: increases length of the code and slows down execution.</p>
+<p>Tightly encapsulated class: every variable is private. Do not require getters/setters or public methods. If parent is not tightly encapsulated, no child is.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 51 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 1</td></tr>
+<tr><td>Topic</td><td>Introduction, data hiding</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 26m 39s</td></tr>
+<tr><td>Video ID</td><td>Mp4Fy9TDU_Y</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=Mp4Fy9TDU_Y</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Block</th><th>Topics he listed</th></tr>
+<tr><td>Module 1 (this video)</td><td>data hiding, abstraction, encapsulation, tightly encapsulated class</td></tr>
+<tr><td>Module 2</td><td>IS-A / inheritance</td></tr>
+<tr><td>HAS-A</td><td>composition, aggregation</td></tr>
+<tr><td>Later</td><td>method signature, overloading, overriding (method hiding)</td></tr>
+<tr><td>Later</td><td>static control flow, instance control flow</td></tr>
+<tr><td>Later</td><td>constructors, singleton (private constructor)</td></tr>
+<tr><td>Later</td><td>coupling, cohesion</td></tr>
+<tr><td>Later</td><td>object type casting</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Tightly encapsulated?</th><th>Reason he gives</th></tr>
+<tr><td>A</td><td>Yes</td><td>every variable is private (x)</td></tr>
+<tr><td>B</td><td>No</td><td>non-private data is there (y is default). Outside person can access this data directly</td></tr>
+<tr><td>C</td><td>Yes</td><td>child of A; from A every variable is private, and here z is also private</td></tr>
+</table>
+</body></html>

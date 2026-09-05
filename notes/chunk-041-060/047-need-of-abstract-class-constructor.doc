@@ -1,0 +1,452 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>047-need-of-abstract-class-constructor</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 047</h1>
+<h2>Video info</h2>
+<p>Title: Java - Interface and Abstract class Loopholes Part-4 || Need of Abstract class constructor</p>
+<p>Source: real YouTube auto-captions (.transcripts/047-OGbUXeQ92q4.txt). ASR decoded in place: obstruct / obstructor / abstracted / abstractor = abstract; keep subing = board heading; CH / children = child; RO / rule / rle number = roll number; Marx / Marks = marks; DGA / DGA / D = Durga; Nur = Nagoor; 25k = 25000; un properties = 100 properties; so far = super; CL = call / super call; inting = inheriting; performation = perform initialization; injp = OCJP. He often says “you can create object for abstract class” while the rest of the sentence is can&#x27;t.</p>
+<p>This video answers two items from the video-044 list: (2) directly vs indirectly creating an abstract-class object, and (1) why an abstract class still has a constructor. He teaches it as two halves: without constructor in abstract class, then with constructor.</p>
+<h3>00:28 — Open</h3>
+<p>Caption is e e until he starts talking.</p>
+<h3>01:03 — Directly not possible; indirectly possible or not?</h3>
+<p>Next terminology — very very important.</p>
+<p>Is it possible to create an object for an abstract class? Directly: not possible. But indirectly: possible or not?</p>
+<p>Yes or no? Directly not possible because [it is an abstract] class. Directly not possible, but indirectly is it possible or not?</p>
+<p>How many people are feeling yes?</p>
+<h3>01:32 — Neither directly nor indirectly</h3>
+<p>Make sure: for abstract class it is not possible to create object either directly or indirectly.</p>
+<p>Because: when we should go for abstract class? Partially implemented class. If the implementation is not complete, how can you create an object? That&#x27;s why for abstract class, either directly or indirectly, we can&#x27;t create object. Clear for all.</p>
+<p>Point number one:</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+}
+
+class Test {
+    public static void main(String[] args) {
+        Person p = new Person();
+        // CE: Person is abstract; cannot be instantiated
+        // he: not directly, and not indirectly either
+    }
+}</pre>
+<h3>02:01 — Then what is the need of a constructor inside abstract class?</h3>
+<p>Directly or indirectly you can&#x27;t create object for abstract class. Then what is the need of constructor inside abstract class?</p>
+<p>Abstract class can contain constructor — but what is the need? Anyway you are not going to create object for abstract class directly or indirectly, but abstract class can contain constructor. What is the need? Getting the point?</p>
+<h3>02:23 — He will explain with a big example (two modules)</h3>
+<p>Let me explain with a big example. I will explain what is the advantage of abstract class constructor.</p>
+<p>Listen a bit very carefully. A bit lengthy explanation. Just be [there] 10 minutes. Most valuable point you people are going to get, I&#x27;m sure.</p>
+<p>He knows one class. He will take two modules:</p>
+<ol><li>without a constructor in abstract class</li></ol>
+<ol><li>with the constructor in abstract class</li></ol>
+<p>What is the difference?</p>
+<h3>03:03 — First part heading: without constructor in abstract class</h3>
+<p>First part: without constructor in abstract class. In the abstract class I don&#x27;t want to take constructor. Second half he will explain with the constructor — what is the advantage.</p>
+<h3>03:27 — `abstract class Person` — hundreds of properties, stick to two</h3>
+<p>Simple example. abstract class Person.</p>
+<p>Can you spell out: for every person how many properties are there? Hundreds of properties: name, age, height, weight, father name, mother name, gender, address, qualification, dot dot dot. Several.</p>
+<p>Let me stick to two properties; later I will generalize that: String name, int age. That&#x27;s all. How many properties are there? Two. Like that 100 properties may be a chance, but stick only for two; later I will generalize.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+}</pre>
+<p>It is abstract class. Anyway I am not going to create an object, that&#x27;s why I don&#x27;t want to take the constructor. Without constructor vs with constructor inside abstract class — what is the difference I have to explain.</p>
+<h3>04:36 — Child classes of `Person`</h3>
+<p>For this Person there are several child classes I can take.</p>
+<h3>04:48 — `class Student extends Person` — extra `rollNumber`, `marks`</h3>
+<p>Class Student extends Person. Automatically for the student these two properties (name, age) will come or not? Yes. In addition to that, some more properties: int rollNumber, int marks.</p>
+<p>Now: student got total how many properties? Four: name, age, roll number, marks.</p>
+<p>In the parent I don&#x27;t want to take any constructor, because I am not going to create an object for Person. That&#x27;s why I don&#x27;t want to take any constructor in the parent.</p>
+<p>If a constructor is not there, who is responsible to perform initialization for all the four properties? Child constructor only.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+}
+
+class Student extends Person {
+    int rollNumber;
+    int marks;
+
+    Student(String name, int age, int rollNumber, int marks) {
+        this.name = name;
+        this.age = age;
+        this.rollNumber = rollNumber;
+        this.marks = marks;
+    }
+}</pre>
+<p>Guide: Student(String name, int age, int rollNumber, int marks). Observe carefully — four properties. Code: this.name = name; this.age = age; this.rollNumber = rollNumber; this.marks = marks;.</p>
+<p>Total initialization job is going to take care only by child class constructor, because for the parent I don&#x27;t want to take constructor, because for the abstract class we can&#x27;t create an object.</p>
+<h3>06:47 — Create `Student s1 = new Student(&quot;Durga&quot;, 48, 101, 90)`</h3>
+<p>Let me create one object. Student object: Student s1 = new Student(&quot;Durga&quot;, 48, 101, 90); (ASR: DGA and 48, rule number 101 and 90).</p>
+<p>Which constructor is responsible to perform initialization for all the four properties? [Student] constructor, because parent doesn&#x27;t contain any constructor. That&#x27;s why your name is Durga and age 48 and roll number 101 and marks is 90.</p>
+<p>I don&#x27;t want to take any constructor in the parent class because I don&#x27;t want to create an object — of course object creation not possible because it&#x27;s an abstract class.</p>
+<p>This is the first child class.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+}
+
+class Student extends Person {
+    int rollNumber;
+    int marks;
+
+    Student(String name, int age, int rollNumber, int marks) {
+        this.name = name;
+        this.age = age;
+        this.rollNumber = rollNumber;
+        this.marks = marks;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s1 = new Student(&quot;Durga&quot;, 48, 101, 90);
+        // child constructor initializes all four:
+        //   name=Durga, age=48, rollNumber=101, marks=90
+    }
+}</pre>
+<h3>07:45 — Second child: `class Teacher extends Person`</h3>
+<p>Let me take one more child class. Student class, teacher class. class Teacher extends Person.</p>
+<p>Automatically these two properties will come for the teacher also or not? Yes.</p>
+<p>Specific properties of teacher: double salary (the most valuable factor), next String subject (which subject is handling). Some more properties. Let me stick.</p>
+<p>Now the teacher has how many properties? Four properties.</p>
+<h3>08:38 — Teacher constructor does all four assignments</h3>
+<p>Teacher(String name, int age, double salary, String subject) (ASR: teach of string name in ag … double salary … string subject). He is using short words; he hopes you can understand.</p>
+<p>Which code in the constructor? this.name = name; this.age = age; this.salary = salary; this.subject = subject;.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+}
+
+class Teacher extends Person {
+    double salary;
+    String subject;
+
+    Teacher(String name, int age, double salary, String subject) {
+        this.name = name;
+        this.age = age;
+        this.salary = salary;
+        this.subject = subject;
+    }
+}</pre>
+<h3>09:31 — Create `Teacher t = new Teacher(&quot;Nagoor&quot;, 47, 25000, &quot;Java&quot;)`</h3>
+<p>I want to create one teacher object. Teacher t = new Teacher(...). Name: some Nagoor (ASR: Nur). Age: 47. Salary: some 25k. Subject: Java. Assume that.</p>
+<p>Whenever you are creating teacher object, which constructor is responsible to perform initialization? This [Teacher constructor], because parent doesn&#x27;t [contain] constructor. Total initialization job who is going to take care? Child constructor only.</p>
+<p>Name is Nagoor, age is 47, salary 25[k], subject Java. That&#x27;s all.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+}
+
+class Teacher extends Person {
+    double salary;
+    String subject;
+
+    Teacher(String name, int age, double salary, String subject) {
+        this.name = name;
+        this.age = age;
+        this.salary = salary;
+        this.subject = subject;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Teacher t = new Teacher(&quot;Nagoor&quot;, 47, 25000, &quot;Java&quot;);
+        // child constructor initializes all four
+    }
+}</pre>
+<h3>10:35 — End of “without constructor” story (still simple)</h3>
+<p>This is without constructor in abstract class. Very simple. What I do — even I&#x27;m taking much time — but here I didn&#x27;t do much activity. I took one abstract class; only two properties are there. Of course now I took Student and Teacher like child classes; here two more properties are there. Total initialization job: which constructors who took care? Child constructors only take care, because parent constructor is not there.</p>
+<p>Without constructor in abstract class, this is the story.</p>
+<h3>11:12 — Generalize: 100 parent properties, 1000 child classes</h3>
+<p>Let me generalize the case. What problem is there here?</p>
+<p>In the parent how many properties are there? Two — like, assume 100 properties are there. Generalize: 100 properties are there.</p>
+<p>Here how many child classes I created? Student, Teacher — like that thousand child classes I created. Generalize. Class teacher, next class principal, class employee, dot dot dot — all the thousand classes I created.</p>
+<p>abstract class Person {
+    String name;
+    int age;
+    // ... assume 100 instance variables: height, weight, fatherName, ...
+}
+
+class Student extends Person { /* ... */ }
+class Teacher extends Person { /* ... */ }
+class Principal extends Person { /* ... */ }
+class Employee extends Person { /* ... */ }
+// ... 1000 child classes</p>
+<h3>12:00 — If abstract class has no constructor: first 100 lines duplicate in every child</h3>
+<p>If you don&#x27;t want to take constructor inside abstract class, who is responsible to perform initialization for all these 100 properties? Child constructor only. Correct or not? Because you don&#x27;t want to take constructor in the abstract class — child constructor.</p>
+<p>If it is the case: how many child classes are there? 1000. In every child constructor, the first 100 lines exactly same or not? this.name this.age this.height this.weight like 100 properties — here, and here, and next child same or not? In every thousand classes I have to take or not?</p>
+<p>Unnecessary duplicate code is going to come. Code redundancy will come into the picture. Same code I&#x27;m writing here: 100 properties, here 100 properties, here 100 properties. How many child classes are there? In 1000 classes, every constructor — the first standard lines are the same. Unnecessary duplicate code. Redundancy.</p>
+<p>How you can solve this problem? These many times I&#x27;m not [wanting] to write. How you can solve this problem?</p>
+<h3>13:22 — Solution: take constructor inside abstract class</h3>
+<p>Simple: take constructor inside abstract class. If I can take constructor inside abstract class, how my life will become easy. Just I will show for you.</p>
+<h3>13:35 — Second half heading: with the constructor in abstract class</h3>
+<p>With the constructor in abstract class. Very very simple.</p>
+<h3>13:50 — `Person` now has `Person(String name, int age)`</h3>
+<p>abstract class Person. String name, int age. Next here let me take constructor: Person(String name, int age) { this.name = name; this.age = age; }.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}</pre>
+<p>After this is clear. Now what is the advantage of taking this constructor inside abstract class? I will explain.</p>
+<h3>14:44 — `Student extends Person` — student-only fields, then `super`</h3>
+<p>First class: class Student extends Person. For the student how many [extra] properties are there? Two: int rollNumber, int marks.</p>
+<p>Now Student(...) — how many properties for the student total? Four: String name, int age, int rollNumber, int marks. Four properties are there.</p>
+<p>Can you please tell what is the first line? `super`. We are not required to perform initialization for these [name, age] properties here, because already parent constructor — just call. What is this line? super(name, age). Automatically this [Person] constructor is going to take care.</p>
+<p>Remaining properties: this.rollNumber = rollNumber; this.marks = marks;.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+class Student extends Person {
+    int rollNumber;
+    int marks;
+
+    Student(String name, int age, int rollNumber, int marks) {
+        super(name, age); // parent constructor takes name, age
+        this.rollNumber = rollNumber;
+        this.marks = marks;
+    }
+}</pre>
+<p>This is about student constructor. But in the earlier student class, student constructor contained how many lines of the code? Four lines. But now how many lines of the code? Only three lines, and one is a call — one is a call to parent constructor.</p>
+<p>Assume if the parent class contained thousand properties or 100 properties: 100 lines of the code we are not required to write. Just only one line. What is that line, son? `super` itself is [enough] for all those 100 properties. Who is going to take care? Parent constructor is going to take care to perform initialization.</p>
+<h3>16:43 — Create student object; parent inits name and age</h3>
+<p>I want to create student object: Student s = new Student(&quot;Durga&quot;, 48, 101, 90); (ASR: DGA 48 101 90).</p>
+<p>Whenever we are creating, automatically constructor will execute or not? Yes. Who is responsible to perform initialization for name and age? Parent constructor. Name Durga and age 48; roll number 101 and marks 90.</p>
+<p>First two properties&#x27; initialization is going to take care by [parent] constructor. Remaining properties&#x27; initialization is going to take care by children.</p>
+<p>Assume parent class contains 100 properties: for all those 100 properties, initialization will be performed at parent level. Just we have to use one line. What is that call? `super`. Clear.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+class Student extends Person {
+    int rollNumber;
+    int marks;
+
+    Student(String name, int age, int rollNumber, int marks) {
+        super(name, age);
+        this.rollNumber = rollNumber;
+        this.marks = marks;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student(&quot;Durga&quot;, 48, 101, 90);
+        // Person constructor: name=Durga, age=48
+        // Student constructor: rollNumber=101, marks=90
+    }
+}</pre>
+<h3>17:48 — `Teacher extends Person` with `super(name, age)`</h3>
+<p>Another class: class Teacher extends Person. Teacher properties: double salary, String subject.</p>
+<p>We have to take Teacher(String name, int age, double salary, String subject).</p>
+<p>Am I required to perform initialization for all four properties here? No. Just I will call super(name, age) (super of name and [a]g[e]). Automatically parent is going to take care initialization. Parent constructor will take care about initialization.</p>
+<p>Remaining properties: this.salary = salary; this.subject = subject;.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+class Teacher extends Person {
+    double salary;
+    String subject;
+
+    Teacher(String name, int age, double salary, String subject) {
+        super(name, age);
+        this.salary = salary;
+        this.subject = subject;
+    }
+}</pre>
+<h3>19:01 — Create teacher object; `super` runs first</h3>
+<p>Let me create one teacher object: Teacher t = new Teacher(&quot;Nagoor&quot;, 47, 25, &quot;Java&quot;); (ASR: teacher p; Nur; 47; 25; Java — this time he says 25, not 25k).</p>
+<p>If I create, automatically this constructor will come. Immediately from here, because of `super`, parent constructor will take care. Name: Nagoor. Age: 47. Next: salary 25, subject Java.</p>
+<pre class='code'>abstract class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+class Teacher extends Person {
+    double salary;
+    String subject;
+
+    Teacher(String name, int age, double salary, String subject) {
+        super(name, age);
+        this.salary = salary;
+        this.subject = subject;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Teacher t = new Teacher(&quot;Nagoor&quot;, 47, 25, &quot;Java&quot;);
+        // super: name=Nagoor, age=47
+        // child: salary=25, subject=Java
+    }
+}</pre>
+<h3>19:44 — Special care: with vs without — the 100-line redundancy</h3>
+<p>Take a bit special care. With the constructor inside abstract class, without constructor inside abstract class — observe the difference.</p>
+<p>If the parent class contains 100 properties, in every child class for all those 100 properties compulsory we have to perform initialization, because parent doesn&#x27;t contain constructor. So 100 lines in every child constructor — is the code the same or not? Same code, same code, same code. Code redundancy problem will come.</p>
+<p>But if I can take constructor inside abstract class, what is the advantage? For all these 100 properties, abstract class constructor is going to take care. In every child constructor we have to write only one line. What is that line? `super` line. We are not required to perform initialization for these 100 properties thousand times in every child. Just in every child constructor I have to use super.</p>
+<h3>20:46 — Advantage named: code reusability</h3>
+<p>Can you please tell what is the advantage of abstract class constructor now? Are you seeing or not? What is the advantage of constructor inside abstract class? Code reusability. Same code will be reused for every child class object. Length of the code will be reduced. Readability by default will be improved.</p>
+<p>What is the biggest advantage of constructor inside abstract class?</p>
+<p>Anyway you can&#x27;t create object for abstract class, but still abstract class can contain constructor. What is the purpose? To perform initialization for child object purpose only.</p>
+<p>What is the advantage? Very simple: code reusability. If I can create thousand child classes — for all thousand children classes this constructor is the common, so that we are not required to write this code multiple times in every child constructor. Code reusability — the biggest advantage. Able to understand?</p>
+<p>This is what you people should [have] clearly.</p>
+<h3>21:48 — Take the board point (point 3)</h3>
+<p>Can you please take this one. One minute. At the point — wait — what the last point you took? Add. Yes, add.</p>
+<h3>22:01 — Board dictation: can&#x27;t create object, but constructor exists — what is the need?</h3>
+<p>He dictates (many repeats while they write):</p>
+<p>Anyway we can&#x27;t create object for abstract class, either directly or indirectly, but abstract class can contain constructor. What is the need?</p>
+<h3>23:00 — Board answer: main objective of abstract-class constructor</h3>
+<p>The answer:</p>
+<p>The main objective of abstract class constructor is to perform initialization for the instance variables which are inheriting from abstract class to the child class.</p>
+<h3>23:58 — Whenever we create child object, abstract-class constructor runs</h3>
+<p>Whenever we are creating child class object, automatically abstract class constructor will be executed to perform initialization for the instance variables which are inheriting from abstract class (code reusability).</p>
+<p>That&#x27;s all. Able to understand?</p>
+<h3>25:20 — He asks: are you able to see the advantage?</h3>
+<p>What is the advantage of constructor inside abstract class? Are you able to see the advantage of abstract class constructor?</p>
+<p>Assume: if this constructor is not there in the abstract class, then these 100 properties — who is responsible to perform initialization? In the child class. But how many child classes are there? 1000 assume. In all thousand child classes, compulsory we have to perform initialization of these properties separately, separately, and so on.</p>
+<p>But if I can take this constructor: in the child we are not responsible to perform initialization for this, because this constructor is going to take care. From child class constructor, one line is enough. What is that line? `super`. Just super — automatically for all these 100 properties will be initialized.</p>
+<p>The biggest advantage of abstract class constructor is code reusability. Clear for all. This is the benefit of abstract class constructor. Clear.</p>
+<h3>26:31 — “Indirectly we can create abstract-class object” is 100% wrong</h3>
+<p>Some people may feel: sir, directly we can&#x27;t create object for abstract class, but indirectly we can create object for abstract class — for that purpose constructor is required. 100% wrong statement.</p>
+<p>Either directly or indirectly we can&#x27;t create object for abstract class. Clear for all.</p>
+<p>This is what you people should be aware.</p>
+<h3>26:52 — Copy the example: first half, second half, total</h3>
+<p>Better to take this example clearly. So: first half, first half, second half, and then total.</p>
+<p>He stops talking so they copy the without-constructor half, the with-constructor half, and the combined picture. Long quiet stretch through 27:27 (total) until the file ends at 28:13.</p>
+<p>Full board picture (both halves in one place, as he said “total”):</p>
+<pre class='code'>// ----- FIRST HALF: without constructor in abstract class -----
+abstract class Person {
+    String name;
+    int age;
+}
+
+class Student extends Person {
+    int rollNumber;
+    int marks;
+
+    Student(String name, int age, int rollNumber, int marks) {
+        this.name = name;
+        this.age = age;
+        this.rollNumber = rollNumber;
+        this.marks = marks; // 4 lines; 100 parent fields would be 100 duplicate lines per child
+    }
+}
+
+class Teacher extends Person {
+    double salary;
+    String subject;
+
+    Teacher(String name, int age, double salary, String subject) {
+        this.name = name;
+        this.age = age;
+        this.salary = salary;
+        this.subject = subject;
+    }
+}
+
+class TestWithout {
+    public static void main(String[] args) {
+        Student s1 = new Student(&quot;Durga&quot;, 48, 101, 90);
+        Teacher t = new Teacher(&quot;Nagoor&quot;, 47, 25000, &quot;Java&quot;);
+    }
+}
+// ----- SECOND HALF: with constructor in abstract class (code reusability) -----
+abstract class Person {
+    String name;
+    int age;
+
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+class Student extends Person {
+    int rollNumber;
+    int marks;
+
+    Student(String name, int age, int rollNumber, int marks) {
+        super(name, age); // one line for all parent instance variables
+        this.rollNumber = rollNumber;
+        this.marks = marks;
+    }
+}
+
+class Teacher extends Person {
+    double salary;
+    String subject;
+
+    Teacher(String name, int age, double salary, String subject) {
+        super(name, age);
+        this.salary = salary;
+        this.subject = subject;
+    }
+}
+
+class TestWith {
+    public static void main(String[] args) {
+        Student s = new Student(&quot;Durga&quot;, 48, 101, 90);
+        Teacher t = new Teacher(&quot;Nagoor&quot;, 47, 25, &quot;Java&quot;);
+    }
+}</pre>
+<p>That&#x27;s the whole of video 047. Constructor in abstract class is not proof that an abstract-class object exists. It runs for the child object, so parent instance variables inherited by the child are initialized once and reused.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>47 of 203</td></tr>
+<tr><td>Series</td><td>Interface and Abstract class Loopholes · Part 4</td></tr>
+<tr><td>Topic</td><td>Need of Abstract class constructor</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>28m 13s</td></tr>
+<tr><td>Video ID</td><td>OGbUXeQ92q4</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=OGbUXeQ92q4</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

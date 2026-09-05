@@ -1,0 +1,203 @@
+001	eTXd89t8ngI	4619	Core Java with OCJP/SCJP : Language Fundamentals Part-1 || Java Identifiers and Reserved Words
+002	njy7NGYzsvM	4008	Core Java with OCJP/SCJP: Language Fundamentals Part-2 || Data Types part-1
+003	HYAosZptldA	3307	Core Java with OCJP/SCJP: Language Fundamentals Part- 3 || Data Types part-2
+004	Eng8Oi-p2r4	4939	Core Java with OCJP/SCJP: Language Fundamentals Part-4 || Literals Part-1
+005	IJ0xCDR_Dlw	3928	Core Java with OCJP/SCJP: Language Fundamentals Part-5 || Literals part-2
+006	HSp0UX9Z8Zw	4524	Core Java with OCJP/SCJP: Language Fundamentals Part-6 || Arrays Part-1
+007	Qtw3nVWqf-w	2900	Core Java with OCJP/SCJP: Language Fundamentals Part-7 || Arrays part-2
+008	I_aJgAmDYPk	5936	Core Java with OCJP/SCJP: Language Fundamentals Part-8 || Arrays Part-3
+009	mkQsfdMITM8	3263	Core Java with OCJP/SCJP: Language Fundamentals Part-9 || Arrays Part-4
+010	Nw7NyvuwOTM	4118	Core Java with OCJP/SCJP: Language Fundamentals Part-10 || Types of Variables :  part-1
+011	CQMaVTO0Cfk	5232	Core Java with OCJP/SCJP: Language Fundamentals Part-11 || Types of Variables :part-2
+012	sjsq5UL5oFs	4836	Core Java with OCJP/SCJP: Language Fundamentals Part-12 || var-arg methods
+013	AipADVI3OG0	4000	Core Java with OCJP/SCJP: Language Fundamentals Part-13 || main() method part-1
+014	l3s_6gbNFTg	2540	Core Java with OCJP/SCJP: Language Fundamentals Part-14 || main() method part-2
+015	w9BrD4eanxQ	2314	Core Java with OCJP/SCJP: Language Fundamentals Part-15|| Command Line Arguments
+016	-w4QphWnlZo	4118	Core Java with OCJP/SCJP: Language Fundamentals Part-16 || Java Coding Standards
+017	1JGOPhIyhAM	5869	Core Java with OCJP/SCJP: Operators & Assignments Part-1  || Increment & Decrement , Arithmetic
+018	D7deFmjJBfs	4171	Core Java with OCJP/SCJP: Operators & Assignments Part-2  || Concatenation,Relational,equality
+019	dW_yjiVRlqQ	3314	Core Java with OCJP/SCJP: Operators & Assignments Part-3 || instanceof, bitwise operator
+020	8xoqfIeBZ1g	4561	Core Java with OCJP/SCJP: Operators & Assignments Part-4  || short-circuit,type cast operators
+021	_zZ2Eazelxc	2910	Core Java with OCJP/SCJP: Operators & Assignments Part-5  ||Assignment,conditional,new Operators
+022	jTmACfmmpUs	1372	Core Java with OCJP/SCJP: Operators & Assignments Part-6  || operator  & operand precedence
+023	K0bLAbhVyqw	5134	Core Java with OCJP/SCJP: Operators & Assignments Part-7  || Interview FAQs
+024	X6rS9vD9-qM	625	Core Java with OCJP/SCJP: Flow-Control Part-1  || Introduction
+025	FnnJkV1Euxk	1941	Core Java with OCJP/SCJP: Flow-Control Part-2  || Selection Statements : if-else
+026	bgA_xYjJ8xY	4290	Core Java with OCJP/SCJP: Flow-Control Part-3  || Selection Statements : switch
+027	dd9Epay1y6g	4359	Core Java with OCJP/SCJP: Flow-Control Part-4  || Iterative Statements: while,do-while
+028	ZfpvcmdOLOA	5589	Core Java with OCJP/SCJP: Flow-Control Part-5  || Iterative Statements : for, for-each Loops
+029	90DPWIfbPiY	3059	Core Java with OCJP/SCJP: Flow-Control Part-6  || Transfer statements : break and continue
+030	O3kDqVEbfMk	3996	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-1 || Java Source File Structure
+031	aXA59eIWkw0	5971	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-2 || import and static import
+032	oYLGLVjckj8	4401	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-3 || static import
+033	KHsAkh_JFw0	4232	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-4 || package statement
+034	hNaCIwcUHi8	4364	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-5 || Class Level Modifiers: final
+035	UykTzY45Jyc	4748	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-6|| Class Level Modifiers: abstract
+036	hzJPP0SvKro	5135	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-7||  MemberLevel Modifiers
+037	gDXucIITZqs	5312	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-8||  final variables
+038	ErbJRUtjlB0	4714	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-9||  static modifier
+039	nJ8klW-SQXs	5269	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-10|| native,static,transient
+040	sEH6BDCS3do	4293	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-11|| interfaces-1
+041	PS8gY5CXVY0	4527	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-12|| interfaces-2
+042	Kveg8HH2g9c	3871	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-13|| interfaces-3
+043	VUQGdiKSYKI	5986	Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-14|| interfaces-4
+044	WyE3t9geWNY	959	Core Java With OCJP/SCJP: Interface  and Abstract class Loopholes Part-1 || new vs Constructor
+045	c55db2_fFLo	943	Java -  Interface  and Abstract class Loopholes Part-2 || Child Object Vs Parent Constructor-1
+046	o-naZqPsO9U	848	Java -  Interface and Abstract class Loopholes Part-3 || Child Object Vs Parent Constructor-2
+047	OGbUXeQ92q4	1693	Java - Interface and Abstract class Loopholes Part-4 || Need of Abstract class constructor
+048	Sztm3l_dmdU	650	Interface and Abstract class Loopholes Part-5 || Abstract class vs Interface wrt constructor
+049	uNwIQ-mJPCI	1181	Java -  Interface and Abstract class Loopholes Part-6 || Abstract class Vs Interface
+050	U7uOLV5yOP0	672	Java -  Interface  and Abstract class Loopholes Part-7 ||Interface, Abstract class, constructor
+051	Mp4Fy9TDU_Y	5199	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming)Part-1||Introduction||data hiding
+052	7m5WIj3lpcE	4729	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-2 || Inheritance||is a relationship
+053	2GM56vHVLzM	4917	Core Java With OCJP/SCJP:OOPs(Object Oriented Programming)Part-3 || Inheritance||has a relationship
+054	tSv-XlP_1JA	4060	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming)Part-4 ||overloading
+055	MYzaDgNGmTg	4958	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-5 ||overriding
+056	1By_hC3ONt8	5025	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-6 ||overriding ||access modifiers
+057	SrveBABPMFc	6552	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-7||overriding ||varargs method
+058	HpJTGW9AwX0	5597	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-8||coupling
+059	CrVLBpKIe0E	2489	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-9||type casting
+060	B_tYO3Yn61U	2925	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-10 ||static control flow
+061	T-vbOoCzxI4	4260	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-11 ||static block
+062	q4hbAd7cHuQ	3998	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-12 || instance control flow
+063	KFKQNiOEepo	2729	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-13 || instance, static control flow
+064	XWjhxt6ijLI	3897	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-14 || constructors
+065	misWPx3VTGI	2936	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-15 || default constructor
+066	9qA_MNNqkK0	4321	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-16 || overloaded constructor
+067	SniLNfFejiU	2118	Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-17 || singleton class
+068	5NQjLBuNL0I	38011	Object Oriented Programming (OOPs) Concepts In Java || by Durga sir
+069	Jll2gxAdfxI	8825	Constructors in java | default constructor | Constructor Overloading
+070	zg4jYJjNEYI	3293	Core Java with OCJP/SCJP: Exception Handling Part-1 || Introduction
+071	46VtqhXIaeA	4544	Core Java with OCJP/SCJP: Exception Handling Part-2 || Default Exception Handling
+072	piqjRl-Dngc	3764	Core Java with OCJP/SCJP: Exception Handling Part-3A || Checked vs Unchecked Exceptions
+073	GljHUIBS9YY	4499	Core Java with OCJP/SCJP: Exception Handling Part-3B|| Customized Exception Haning by try-catch
+074	2ui_RS0Q7x4	2860	Core Java with OCJP/SCJP: Exception Handling Part-4 || finally block
+075	4BkGDX_BvDY	3013	Core Java with OCJP/SCJP: Exception Handling Part-5 || throw and throws
+076	ogOy-dU8AmY	5971	Core Java with OCJP/SCJP: Exception Handling Part-6 || throws keyword
+077	t-9RCfuHsAk	3945	Core Java with OCJP/SCJP: Exception Handling Part-7 || Customized Exceptions
+078	b_o6NeSn8pU	3173	Core Java with OCJP/SCJP: Exception Handling Part-8 || Top-10 Exceptions in java
+079	0n4Rh2Anlbw	6690	Core Java with OCJP/SCJP: Exception Handling Part-9 || try with resources and multi-catch block
+080	VHi9PedZCq8	36319	Java Exception Handling For  Certification & Interviews || Java Exception Handling || by Durga Sir
+081	Hysb7hXp8B0	3620	Core Java with OCJP/SCJP: Multi Threading Part-1 || Introduction
+082	fd3TAYCHRfw	6296	Core Java with OCJP/SCJP: Multi Threading Part-2 || The ways of defining a Thread Part-1
+083	8xnNgR0zeS8	4734	Core Java with OCJP/SCJP: Multi Threading Part-3 || The ways of defining a Thread Part-2
+084	DpM_wER1gAY	3516	Core Java with OCJP/SCJP: Multi Threading Part-4 || Thread Priorities
+085	AZuwWOURi2Y	6567	Core Java with OCJP/SCJP: Multi Threading Part-5 || yield() || join()
+086	naQZrm9XNFI	6394	Core Java with OCJP/SCJP: Multi Threading Part-6 || join() || sleep() || Thread Interruption
+087	equLV2F0vLA	5715	Core Java with OCJP/SCJP: Multi Threading Part-7 || synchronization part-1
+088	945WfTjpF2w	3223	Core Java with OCJP/SCJP: Multi Threading Part-8 || synchronization part-2
+089	ORzmjiYmOJg	4367	Core Java with OCJP/SCJP: Multi Threading Part-9 || synchronized block
+090	Ev0mltHfYh0	4706	Core Java with OCJP/SCJP: Multi Threading Part-10 || Inter Thread Communication Part-1
+091	2z218xjvw1M	5086	Core Java with OCJP/SCJP: Multi Threading Part-11 || Inter Thread Communication Part-2
+092	4U9FUlpvg_U	3306	Core Java with OCJP/SCJP: Multi Threading Part-12 || DeadLock || Starvation
+093	u5OunWJhKoE	3020	Core Java with OCJP/SCJP: Multi Threading Part-13 || Daemon Threads
+094	21KT--VtawI	2156	Core Java with OCJP/SCJP: Multi Threading Part-14 || Green Thread,stop(),suspend(),resume()
+095	B2L-vVpFP7Y	5334	Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 1|| Introduction || Thread Group
+096	OXDYAHLftRw	2755	Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 2|| java.util.concurrent package
+097	q8kaFJ8-zVo	5810	Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 3|| java.util.concurrent.locks
+098	Qgz6p-y-YUE	3627	Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 4|| java thread pools
+099	4ZLkbWWpkyk	4308	Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 5|| java thread local
+100	DcFWgoKs5B0	4919	Core Java With OCJP/SCJP: Innerclass  Part- 1||Introduction
+101	pRsqR3vQvBM	5411	Core Java With OCJP/SCJP: Innerclass  Part- 2||normal innerclass||regular innerclass
+102	QSvPY-Y71-k	5478	Core Java With OCJP/SCJP: Innerclass  Part- 3||anonymous inner class
+103	yB7dt-DDOgI	4418	Core Java With OCJP/SCJP: Innerclass  Part- 4||normal java class Vs anonymous inner class
+104	V3fhKrL8fy8	3629	Core Java With OCJP/SCJP: Innerclass  Part- 5||nested classes and interfaces
+105	-qrKA1aWMZs	5212	Core Java With OCJP/SCJP: java.lang.package Part-1 || Introduction||object class||toString()
+106	r6G5Pz0yMH4	3109	Core Java With OCJP/SCJP: java.lang.package Part-2 || object class||Hashcode()
+107	izDt7L4009k	5304	Core Java With OCJP/SCJP: java.lang.package Part-3 || eqals()||overridden methods of eqals
+108	3gQdOltJ89k	2069	Core Java With OCJP/SCJP: java.lang.package Part-4 || object class||finalize()||getclass()||notify()
+109	cI2JVbEWGy8	4567	Core Java With OCJP/SCJP: java.lang.package Part-5 ||  Strings class
+110	7zeOxAl19bg	6197	Core Java With OCJP/SCJP: java.lang.package Part-6 ||  Strings class || Strings class constructor
+111	JEaVfaRJiZw	6121	Core Java With OCJP/SCJP: java.lang.package Part-7 || Strings||constructors of StringsBuffer
+112	P5tFJ9umhvk	23587	String, StringBuffer & StringBuilder for JAVA Certification & Interviews
+113	UHq63fU4NVU	6218	Core Java With OCJP/SCJP: java.lang.package Part-8 || wrapper class||wrapper objects
+114	pmemJ6QfWjo	3591	Core Java With OCJP/SCJP: java.lang.package Part-9 || wrapper class||Utility methods
+115	gk1bQSgiBpw	4664	Core Java With OCJP/SCJP: java.lang.package Part-10 || Autoboxing||Autounboxing-1
+116	tcHVFR5OzD8	2761	Core Java With OCJP/SCJP: java.lang.package Part-11 || Autoboxing||Autounboxing-2
+117	wJgua6AobQU	5325	Core Java With OCJP/SCJP: java.lang.package Part-12 || object class || equals() || Hashcode()
+118	L-p-RGTNrZg	5383	Core Java With OCJP/SCJP: java.lang.package Part-13 || object class || clone()
+119	oEAiBx_06SA	5609	Core Java With OCJP/SCJP: java.lang.package Part-14 ||String class
+120	rxo1SZmq9VE	4346	Core Java With OCJP/SCJP: File I/O  Part-1|| Introduction || File
+121	QT8DCW5ZFxI	2770	Core Java With OCJP/SCJP: File I/O  Part-2||Filewriter||importent methods
+122	Zw71nmiWkJ0	5179	Core Java With OCJP/SCJP: File I/O  Part-3||FileReader||importent methods||Bufferedwriter
+123	JN7-L3ZEnTw	4093	Core Java With OCJP/SCJP: File I/O  Part- 4||Printwriter
+124	l8ONfuJo7wg	3411	Core Java With OCJP/SCJP: File I/O  Part- 5||Printwriter-Examples
+125	JTdqJ1RC65M	5366	Core Java With OCJP/SCJP: Serialization  Part- 1 || Introduction
+126	oEUlY-gFFcU	2626	Core Java With OCJP/SCJP: Serialization  Part- 2||Serialazation in the case of object graphs
+127	XmC4bzCDSHc	5097	Core Java With OCJP/SCJP: Serialization  Part- 3||Customized serialization - 1
+128	lVIl3wx67ds	1707	Core Java With OCJP/SCJP: Serialization  Part- 4||Customized serialization - 2
+129	Y5KXGLbCzbc	3362	Core Java With OCJP/SCJP: Serialization  Part- 5||Inheritance serialization
+130	hMJzf0E_ut4	5342	Core Java With OCJP/SCJP: Serialization  Part- 6||Externalization
+131	2kGvax307EM	3699	Core Java With OCJP/SCJP: Serialization  Part- 7||SerialVersion UID
+132	vftR8LilgMw	3498	Core Java With OCJP/SCJP: RegularExpresions Part-1 || Introduction
+133	Wo3wMiDt3a4	3627	Core Java With OCJP/SCJP: RegularExpresions Part-2 || character matching
+134	F1BxgMmF6F0	4138	Core Java With OCJP/SCJP: RegularExpresions Part-3 || pattern class
+135	IZt3rF8YAEA	3468	Core Java With OCJP/SCJP: RegularExpresions Part-4 || How to use Regular Expresions
+136	Bqv4At5vHVQ	3564	Core Java With OCJP/SCJP: Collections Part-1 || Introduction
+137	n8RRsB2dP7k	5510	Core Java With OCJP/SCJP: Collections Part-2 || 9key interfaces
+138	foi7_Zjbz5c	3655	Core Java With OCJP/SCJP: Collections Part-3 || collection & collections|| list & set
+139	LFri78r3zUQ	4019	Core Java With OCJP/SCJP: Collections Part-4 || Array list
+140	VmZrSCMkYoY	4717	Core Java With OCJP/SCJP: Collections Part-5 || Difference between Array list & linked list
+141	E2uSAGD3-UY	4507	Core Java With OCJP/SCJP: Collections Part-6 ||  limitations of enumerations
+142	AooYaSeVuZo	4855	Core Java With OCJP/SCJP: Collections Part-7 || Setinterface||ShortedSet
+143	sLW7GufoSXM	4590	Core Java With OCJP/SCJP: Collections Part-8 || TreeSet
+144	uu9DHLJVRIs	3898	Core Java With OCJP/SCJP: Collections Part-9 || comparator
+145	zHKqmFyuaKI	6608	Core Java With OCJP/SCJP: Collections Part-10 || string object in Treeset Example
+146	pSGvbJ7GJ68	5046	Core Java With OCJP/SCJP: Collections Part-11 || Map || Hashmap || linked Hashmap
+147	AVdD987trsc	3702	Core Java With OCJP/SCJP: Collections Part-12 || linked Hashmap
+148	aOAWzh3BJM4	2533	Core Java With OCJP/SCJP: Collections Part-13 || sortedmap
+149	rfpvtTwWFK0	5794	Core Java With OCJP/SCJP: Collections Part-14 || hashtable
+150	JOoq94-UQ-A	3446	Core Java With OCJP/SCJP: Collections Part-15 || queue
+151	Tk-vLd0zjN0	4183	Core Java With OCJP/SCJP: Collections Part-16 || Navigableset
+152	bQkR6N8OUks	3575	Core Java With OCJP/SCJP: Collections Part-17 || searching elements of list
+153	2kn8rgNJf3U	4235	Core Java With OCJP/SCJP: Collections Part-18 || Arrays
+154	aAvnT3L6Mlo	1095	Core Java With OCJP/SCJP:  Concurrent Collections Part-1 || Need of Concurrent Collections
+155	ev8zxzRdsFQ	428	Core Java With OCJP/SCJP: Concurrent Collections Part-2 ||Diff B/WTraditional&Concurrent Collections
+156	5Ypy0iQ27gs	884	Core Java With OCJP/SCJP:  Concurrent Collections Part-3 || ConcurrentMap Methods
+157	IUo1Ym-Uj_I	1154	Core Java With OCJP/SCJP:  Concurrent Collections Part-4 || ConcurrentHashMap Details
+158	y52gqOfral0	274	Core Java With OCJP/SCJP:  Concurrent Collections Part-5 || ConcurrentHashMap Program-1
+159	4XfL2wJYLsU	716	Core Java With OCJP/SCJP:  Concurrent Collections Part-6 || ConcurrentHashMap Program-2
+160	c6u87_gMBDU	485	CoreJava With OCJP/SCJP:ConcurrentCollectionsPart-7 || HashMap&ConcurrentHashMap
+161	4Q2udLDhMC8	475	CoreJavaWithOCJP/SCJP:ConcurrentCollectionsPart-8||ConcurrentHashMap||synchronizedMap()||Hashtable
+162	plEY1GXYGrI	524	Core Java With OCJP/SCJP:Concurrent Collections Part-9||CopyOnWriteArrayList Properties Part-1
+163	WHOqKbjQGXI	729	Core Java With OCJP/SCJP:Concurrent Collections Part-10||CopyOnWriteArrayList Properties Part-2
+164	FPF9VZX9Ebk	728	Core Java With OCJP/SCJP:ConcurrentCollections Part-11||CopyOnWriteArrayList Constructors&Methods
+165	HRvc6NPO0QA	306	Core Java With OCJP/SCJP:Concurrent Collections Part-12||CopyOnWriteArrayList Program-1
+166	Puk_oT7_VNU	427	Core Java With OCJP/SCJP:Concurrent Collections Part-13||CopyOnWriteArrayList Program-2
+167	vET8IHSWLzU	324	Core Java With OCJP/SCJP:Concurrent Collections Part-14||CopyOnWriteArrayList Program-3
+168	xD9t3fHLjRQ	343	Core Java With OCJP/SCJP:Concurrent Collections Part-15||CopyOnWriteArrayList Program-4
+169	zpwXa7j9ud8	302	Core Java With OCJP/SCJP:Concurrent Collections Part-16||ArrayList vs CopyOnWriteArrayList
+170	6FXfRR6gzEU	493	CoreJavaWithOCJP/SCJP:Concurrent Collections Part-17||CopyOnWriteArrayList,synchronizedList(),Vector
+171	RWHghf_w7Uk	595	Core Java With OCJP/SCJP:Concurrent Collections Part-18||CopyOnWriteArraySet
+172	gixD5g4F6OQ	293	Core Java With OCJP/SCJP:Concurrent Collections Part-19||CopyOnWriteArraySet vs synchronizedSet()
+173	watjoMfP-3M	2671	Core Java With OCJP/SCJP: Generics Part-1 || Introduction
+174	Z2h34SQCo4k	4729	Core Java With OCJP/SCJP: Generics Part-2 || time safety || type casting
+175	JMneguQXeUE	3259	Core Java With OCJP/SCJP: Generics Part-3 || time safety || type casting Examples
+176	ANzefryEvRo	3427	Core Java With OCJP/SCJP: Generics Part-4 || generics method ||generics wildcard characters(?)
+177	OddYBiLxZ9Y	3952	Core Java With OCJP/SCJP: Generics Part-5 || generics method
+178	emkpyQid45c	1686	Core Java With OCJP/SCJP:  Garbage collection Part-1 || Introduction
+179	2I4yUC3sCjY	3936	Core Java With OCJP/SCJP:  Garbage collection Part-2 || The ways to make object eligible for GC
+180	ECQlT9qwakA	3365	Core Java With OCJP/SCJP: Garbage collection Part-3 || The methods for requesting  jvm to run GC
+181	Be8rgU2gW9g	3038	Core Java With OCJP/SCJP: Garbage collection Part-4 || finalization-1
+182	gDXDnxKYQvk	3373	Core Java With OCJP/SCJP: Garbage collection Part-5 || finalization-2
+183	EsfE5M8RvGg	852	Core Java With OCJP/SCJP:Internationalization [I18N]  Part- 1||Introduction
+184	4TeDQfbJXoE	4937	Core Java With OCJP/SCJP:Internationalization [I18N]  Part- 2||Local class
+185	kiu0gj6rOF8	4305	Core Java With OCJP/SCJP:Internationalization [I18N] Part- 3||NumberFormate class
+186	Q3zFdr1Ma34	3688	Core Java With OCJP/SCJP:ENUM  Part- 1|| Introduction
+187	UoStP4AueiU	4046	Core Java With OCJP/SCJP:ENUM  Part- 2||enum vs inheritance
+188	sxvmzpZw3g8	4619	Core Java With OCJP/SCJP:ENUM  Part- 3||enum vs constructor
+189	ibFnTcft2Wk	5976	Core Java With OCJP/SCJP:Devlopment  Part- 1||Introduction
+190	Ju4yV7Ur0_w	3937	Core Java With OCJP/SCJP:Devlopment  Part- 2||Jar Files || System Propertices
+191	QmPU_zFGJko	6308	Core Java With OCJP/SCJP:Devlopment  Part- 3||Jar vs war vs var||JDK vs JRE VS JVM
+192	aNdlcn0mnTQ	4166	Core Java With OCJP/SCJP: Assertions  Part- 1||Introduction ||idenifier vs keywords
+193	CXHOhONUKeo	3489	Core Java With OCJP/SCJP: Assertions  Part- 2||Simpleassert || augmented assert
+194	I77e54Cs6z4	4145	Core Java With OCJP/SCJP: Assertions  Part- 3||various run time flags
+195	PqQQH11bU1A	1989	Core Java With OCJP/SCJP: Assertions  Part- 4||proper and improper use of assert
+196	WCoXPEDfeXo	5399	Core Java With OCJP/SCJP:JVM Architecture  Part- 1||Introduction || class loading of system
+197	SZjXdfLVZSE	3243	Core Java With OCJP/SCJP:JVM Architecture  Part- 2|| Linking ||verfi|| prepare||resolve
+198	JwTvaPyADa4	2860	Core Java With OCJP/SCJP:JVM Architecture  Part- 3|| how class loader works
+199	WgYbEY38NDM	3811	Core Java With OCJP/SCJP:JVM Architecture  Part- 4|| nead of customized classloader
+200	AIIJ7WhQjag	2471	Core Java With OCJP/SCJP:JVM Architecture  Part- 5|| heap area || method area
+201	v6UTBSkgvo8	4002	Core Java With OCJP/SCJP:JVM Architecture  Part- 6|| stack memory
+202	_So56uRuWEo	2187	Core Java With OCJP/SCJP:JVM Architecture  Part- 7|| jvm execution engine
+203	EG95zCkWh28	4756	Core Java With OCJP/SCJP:JVM Architecture  Part- 8|| complete jvm architecture

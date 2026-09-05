@@ -1,0 +1,436 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>018-concatenation-relational-equality</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 018 — Concatenation, relational, and equality operators</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Operators &amp; Assignments Part-2  || Concatenation,Relational,equality</p>
+<p>Captions on this upload are auto-generated English. ASR repeatedly garbles concatenation, arithmetic addition, compile-time error, nesting, and durga. These notes restore the board examples and compiler messages.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Recap of last session (increment / decrement / arithmetic) and today’s three operator groups</li></ol>
+<ol><li>+ as the only overloaded operator in Java: arithmetic addition vs string concatenation</li></ol>
+<ol><li>When + is addition vs concatenation (at-least-one-String rule)</li></ol>
+<ol><li>Left-to-right evaluation of a chain of + operators (same precedence)</li></ol>
+<ol><li>Exam example 1: a + b + c + d in four orders, with String a = &quot;durga&quot; and ints</li></ol>
+<ol><li>Exam example 2: which assignments are valid (a = b + c + d vs a = a + b + c, etc.)</li></ol>
+<ol><li>Relational operators: &lt; &lt;= &gt; &gt;=</li></ol>
+<ol><li>Relational operators on every primitive except boolean</li></ol>
+<ol><li>Relational operators cannot be applied to object types</li></ol>
+<ol><li>Nesting of relational operators is not allowed (10 &lt; 20 &lt; 30)</li></ol>
+<ol><li>Equality operators: == and !=</li></ol>
+<ol><li>Equality on every primitive including boolean</li></ol>
+<ol><li>Equality on object types = reference / address comparison</li></ol>
+<ol><li>Object == requires a type relation (child↔parent or same type); else incomparable types</li></ol>
+<ol><li>Interview one-liner: == vs equals()</li></ol>
+<ol><li>r == null and null == null</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:06] Recap and agenda</h3>
+<p>Last session (video 017, Operators &amp; Assignments Part-1) covered increment / decrement and arithmetic operators.</p>
+<p>Today’s three topics, in board order:</p>
+<ol><li>String concatenation operator (+)</li></ol>
+<ol><li>Relational operators</li></ol>
+<ol><li>Equality operators</li></ol>
+<h3>[00:17] String concatenation operator (`+`) — the only overloaded operator in Java</h3>
+<p>Warm-up the class already knows:</p>
+<p>Sometimes + is addition. Sometimes + is concatenation. That is operator overloading.</p>
+<p>Durga’s exam-level wording (he dictates this several times — memorize it):</p>
+<p>The only overloaded operator in Java is the plus operator.</p>
+<p>Sometimes it acts as arithmetic addition operator. Sometimes it acts as string concatenation operator.</p>
+<p>Operator overloading at language level: Java does not let you overload operators in general (you cannot define + for your own class the way C++ does). Method overloading you can apply everywhere; operator overloading you cannot. One exceptional case is + on String.</p>
+<p>Exam trap: do not answer “Java supports operator overloading” as a blanket yes. The safe answer is: at language level Java does not provide operator overloading, except `+` for String concatenation.</p>
+<p>The exam will not stop at “plus is overloaded.” The hard part is deciding, in a mixed expression, which `+` is addition and which is concatenation.</p>
+<h3>[04:40] Example 1 — four printlns, left-to-right evaluation</h3>
+<p>Board declarations (ASR says “DGA” / “dura”; the string is `&quot;durga&quot;`):</p>
+<pre class='code'>String a = &quot;durga&quot;;
+int b = 10;
+int c = 20;
+int d = 30;</pre>
+<p>Four statements:</p>
+<pre class='code'>System.out.println(a + b + c + d);
+System.out.println(b + c + d + a);
+System.out.println(b + c + a + d);
+System.out.println(b + a + c + d);</pre>
+<p>Class guesses that collide:</p>
+<h4>Why left-to-right (not “add the numbers then glue the string”)</h4>
+<p>a + b + c + d contains three + operators. When more than one operator is present, evaluation uses precedence. Here all three have the same precedence, so the order of evaluation is always left to right.</p>
+<p>So the compiler does not treat it as a + (b + c + d). It treats it as ((a + b) + c) + d.</p>
+<h4>Rule that decides each `+`</h4>
+<p>For one + with two operands:</p>
+<ol><li>If at least one argument is String type, + acts as concatenation.</li></ol>
+<ol><li>If both arguments are number type, + acts as arithmetic addition.</li></ol>
+<p>After concatenation, the result is a String. That String then infects every + to its right.</p>
+<h4>Walkthrough of all four</h4>
+<p>1. `a + b + c + d` → `&quot;durga102030&quot;`</p>
+<p>a + b     →  &quot;durga&quot; + 10     → at least one String → &quot;durga10&quot;
+&quot;durga10&quot; + c → &quot;durga10&quot; + 20 → concatenation      → &quot;durga1020&quot;
+&quot;durga1020&quot; + d → concatenation                     → &quot;durga102030&quot;</p>
+<p>People who print &quot;durga60&quot; added 10+20+30 first. That is wrong evaluation order.</p>
+<p>2. `b + c + d + a` → `&quot;60durga&quot;`</p>
+<p>b + c     →  10 + 20          → both numbers → 30
+30 + d    →  30 + 30          → both numbers → 60
+60 + a    →  60 + &quot;durga&quot;     → concatenation → &quot;60durga&quot;</p>
+<p>3. `b + c + a + d` → `&quot;30durga30&quot;`</p>
+<p>b + c     →  10 + 20          → 30
+30 + a    →  30 + &quot;durga&quot;     → &quot;30durga&quot;
+&quot;30durga&quot; + d → concatenation → &quot;30durga30&quot;</p>
+<p>4. `b + a + c + d` → `&quot;10durga2030&quot;`</p>
+<p>b + a     →  10 + &quot;durga&quot;     → &quot;10durga&quot;
+&quot;10durga&quot; + c → concatenation → &quot;10durga20&quot;
+&quot;10durga20&quot; + d → concatenation → &quot;10durga2030&quot;</p>
+<p>Once a String appears, every later `+` in that left-to-right chain is concatenation. Numbers after the first String are not added together.</p>
+<p>Durga flags this as maximum chance for SCJP/OCJP. Write the four outputs until they are automatic.</p>
+<h3>[14:42] Example 2 — which expressions are valid (same declarations, assignment)</h3>
+<p>Same variables: String a = &quot;durga&quot;, int b = 10, int c = 20, int d = 30.</p>
+<p>Consider these four assignments. Which compile?</p>
+<p>a = b + c + d;   // (1)
+a = a + b + c;   // (2)
+b = a + c + d;   // (3)
+b = b + c + d;   // (4)</p>
+<p>Board answers (he asks the class before explaining):</p>
+<p>If (1) is invalid, (2) is the “string version” and is valid. If (3) is invalid, (4) is the “int version” and is valid. That pairing is how he wants you to check quickly, then prove with types.</p>
+<h4>Compiler messages (write these; exam options quote them)</h4>
+<p>(1) b + c + d is int. You cannot assign int to String:</p>
+<p>incompatible types
+found   : int
+required: java.lang.String</p>
+<p>(2) a + b + c: a is String, so the whole RHS is String. String into String — fine.</p>
+<p>(3) a + c + d is String. You cannot assign String to int:</p>
+<p>incompatible types
+found   : java.lang.String
+required: int</p>
+<p>(4) b + c + d is int. int into int — fine.</p>
+<p>Two exam styles for concatenation, same concept:</p>
+<ol><li>What is printed? (evaluation order, example 1)</li></ol>
+<ol><li>Which lines compile? (assignment compatibility, example 2)</li></ol>
+<p>That closes concatenation.</p>
+<h3>[21:26] Relational operators</h3>
+<p>Operators on the board:</p>
+<p>Result of a relational operator is always boolean (true or false).</p>
+<h4>Example set — primitives (including `char` promotion)</h4>
+<p>System.out.println(10 &lt; 20);        // true
+System.out.println(&#x27;a&#x27; &lt; 10);       // false
+System.out.println(&#x27;a&#x27; &lt; 97.6);     // true
+System.out.println(&#x27;a&#x27; &gt; &#x27;A&#x27;);      // true
+System.out.println(true &gt; false);   // compile-time error</p>
+<p>Walkthrough:</p>
+<p>Compiler message for the boolean case:</p>
+<p>operator &gt; cannot be applied to boolean,boolean</p>
+<p>(true and false are at the same “level”; there is no ordering.)</p>
+<h4>Conclusion 1 — primitives except boolean</h4>
+<p>We can apply relational operators for every primitive type except boolean.</p>
+<p>Allowed: byte, short, int, long, float, double, char (char is compared via its numeric value).</p>
+<p>Not allowed: boolean.</p>
+<h3>[27:29] Conclusion 2 — cannot apply relational operators to object types</h3>
+<pre class='code'>System.out.println(&quot;durga123&quot; &gt; &quot;durga&quot;);</pre>
+<p>Invalid. Compile-time error.</p>
+<p>Why, even in English: “first student greater than second student” is meaningless. “First student’s marks greater than second student’s marks” is meaningful. Relational &lt; &gt; talk about numeric order, not objects.</p>
+<p>Compiler message:</p>
+<p>operator &gt; cannot be applied to java.lang.String,java.lang.String</p>
+<p>Same idea for any two objects (Student, Thread, …). Relational operators are not for object types.</p>
+<p>We cannot apply relational operators for object types. If we try, compile-time error.</p>
+<h3>[31:15] Conclusion 3 — nesting of relational operators is not allowed</h3>
+<p>System.out.println(10 &lt; 20);         // true — answer immediately
+System.out.println(10 &lt; 20 &lt; 30);    // compile-time error</p>
+<p>Looks like “10 is less than 20 and 20 is less than 30.” That is not how Java parses it.</p>
+<p>There are two &lt; operators, same precedence → left to right:</p>
+<p>10 &lt; 20     →  true
+true &lt; 30   →  operator &lt; cannot be applied to boolean, int</p>
+<p>Compiler message:</p>
+<p>operator &lt; cannot be applied to boolean,int</p>
+<p>Durga’s wording (ASR says “nising / nting”; he means nesting):</p>
+<p>Nesting of relational operators is not allowed.</p>
+<p>After applying a relational operator, you cannot apply another relational operator to that result. Otherwise compile-time error.</p>
+<p>Chaining like Python (10 &lt; 20 &lt; 30) does not exist in Java.</p>
+<h4>Relational operators — three conclusions to recite</h4>
+<ol><li>Every primitive except boolean.</li></ol>
+<ol><li>Not for object types.</li></ol>
+<ol><li>Nesting not allowed.</li></ol>
+<p>Small topic; those three loopholes are the exam.</p>
+<h3>[35:09] Equality operators (`==` and `!=`)</h3>
+<p>Equality operators on the board: `==` (double equal) and `!=` (not equal).</p>
+<h4>Example set — primitives including boolean</h4>
+<p>System.out.println(10 == 20);         // false
+System.out.println(&#x27;a&#x27; == &#x27;b&#x27;);       // false
+System.out.println(&#x27;a&#x27; == 97.0);      // true
+System.out.println(false == false);   // true</p>
+<p>Walkthrough:</p>
+<p>Class joke: some people say false == false is “a false statement.” It is true. Two false values are equal.</p>
+<p>Promotion reminder: whenever you compare a smaller numeric type with a bigger one, the smaller is promoted (same idea as arithmetic).</p>
+<p>Difference vs relational: &lt; &gt; are illegal on boolean. == != are legal on boolean.</p>
+<h4>Conclusion 1 — every primitive including boolean</h4>
+<p>We can apply equality operators for every primitive type including boolean.</p>
+<p>Durga calls equality operators universal at the primitive level: numbers, chars, booleans — all fine.</p>
+<h3>[39:40] Equality operators on object types — reference / address comparison</h3>
+<p>Yes, you can apply == / != to object types. That is a major difference from relational operators.</p>
+<p>If you apply equality operators to object references r1 and r2:</p>
+<p>r1 == r2 returns true if and only if both references point to the same object.</p>
+<p>That is reference comparison (also called address comparison). Not content comparison.</p>
+<p>Diagram he draws: two arrows into one heap object → == is true. Two arrows into two objects → == is false, even if the objects “look” the same.</p>
+<h3>[43:47] Example 1 — Thread references (not a multithreading lecture)</h3>
+<pre class='code'>Thread t1 = new Thread();
+Thread t2 = new Thread();
+Thread t3 = t1;
+
+System.out.println(t1 == t2);
+System.out.println(t1 == t3);</pre>
+<p>How many objects? Two (new Thread() twice).</p>
+<p>How many reference variables? Three (t1, t2, t3).</p>
+<p>t1 ──► [ Thread object A ]
+t3 ──┘
+t2 ──► [ Thread object B ]</p>
+<p>He stresses: this is not a threads chapter. Thread is just a convenient class. The same picture works with any class.</p>
+<h3>[46:37] Example 2 — there must be a relation between argument types</h3>
+<pre class='code'>Thread t = new Thread();
+Object o = new Object();
+String s = new String(&quot;durga&quot;);
+
+System.out.println(t == o);
+System.out.println(o == s);
+System.out.println(s == t);</pre>
+<p>Three objects, three types.</p>
+<p>The first two are false because the references do not point to the same object. That is the same rule as example 1.</p>
+<p>The loophole is the third line. If it were simply false, there would be no reason for a new example. Instead:</p>
+<p>incomparable types: java.lang.String and java.lang.Thread</p>
+<p>(ASR: “in comparable types.” Compiler wording is incomparable types.)</p>
+<p>He compiles Test.java with the third line commented: t == o and o == s print false false. Uncomment s == t → compile error.</p>
+<h4>Analogy he uses</h4>
+<ul><li>Two software engineers — comparable (skill, etc.)</li></ul>
+<ul><li>Two auto drivers — comparable (speed, experience)</li></ul>
+<ul><li>One software engineer and one auto driver — not comparable</li></ul>
+<ul><li>One animal and one human — not comparable</li></ul>
+<p>To use == between object types, the types must be in the same inheritance line.</p>
+<h4>Rule (dictate this)</h4>
+<p>If we apply equality operators for object types, compulsory there should be some relation between argument types</p>
+<p>(either child to parent, or parent to child, or same type).</p>
+<p>Otherwise compile-time error: incomparable types.</p>
+<p>Thread and Object: parent–child → OK.</p>
+<p>String and Object: parent–child → OK.</p>
+<p>String and Thread: siblings under Object, no direct relation for == → CE.</p>
+<p>Same-type (Thread vs Thread) is obviously allowed (example 1).</p>
+<h3>[57:24] Interview FAQ — difference between `==` and `equals()`</h3>
+<p>Maximum chance in the interview room because the words look similar: double-equal operator vs equals method.</p>
+<p>One-line answer the interviewer wants:</p>
+<p>Internal loopholes exist (he flags them: in one particular case equals() is also reference comparison — Object’s default equals — later advanced topic). At thumb-rule / top level, say: == → reference, equals() → content.</p>
+<h4>Example to explain in the interview (recommended)</h4>
+<p>String s1 = new String(&quot;durga&quot;);
+String s2 = new String(&quot;durga&quot;);
+
+System.out.println(s1 == s2);        // false
+System.out.println(s1.equals(s2));   // true</p>
+<p>Heap picture:</p>
+<p>s1 ──► [ &quot;durga&quot; ]     // object 1
+s2 ──► [ &quot;durga&quot; ]     // object 2, same content</p>
+<p>Two objects, same content.</p>
+<ul><li>s1 == s2 → reference comparison → different objects → `false`</li></ul>
+<ul><li>s1.equals(s2) → content comparison → both &quot;durga&quot; → `true`</li></ul>
+<p>He tells you to draw the diagram in the interview.</p>
+<p>Note he will return to: equals() is not always content comparison for every class (depends on override). Top-level answer still stands for String.</p>
+<h3>[1:04:07] Last point — comparing references with `null`</h3>
+<p>First dictation (then he immediately qualifies it):</p>
+<p>For any object reference r, r == null is always false.</p>
+<p>Then the full picture:</p>
+<p>String s = new String(&quot;durga&quot;);
+System.out.println(s == null);     // false  — s points to an object
+
+String s2 = null;
+System.out.println(s2 == null);    // true   — s2 holds null
+
+System.out.println(null == null);  // true</p>
+<p>Do not blindly recite “any reference == null is false.” If the reference itself is null, then s == null is `true`. s is still a reference variable; its value is null (not pointing to any object).</p>
+<h4>Local vs “global” (instance / static)</h4>
+<p>If s is a local variable and you never assign it, s == null is a compile-time error (local not initialized).</p>
+<p>If s is an instance or static String (he says “global”), the default value is null, so s == null is `true` without an explicit assignment.</p>
+<h3>Equality operators — closing recap from the lecture</h3>
+<ul><li>You can apply equality operators everywhere: primitives, boolean, object types.</li></ul>
+<ul><li>On object types there is a restriction: relation between argument types, or CE incomparable types.</li></ul>
+<ul><li>For a non-null object reference r, r == null is false. null == null is true.</li></ul>
+<ul><li>Interview: == vs equals() — reference vs content.</li></ul>
+<h2>Code from the lecture</h2>
+<h3>Concatenation — evaluation order</h3>
+<pre class='code'>class ConcatDemo {
+    public static void main(String[] args) {
+        String a = &quot;durga&quot;;
+        int b = 10, c = 20, d = 30;
+
+        System.out.println(a + b + c + d); // durga102030
+        System.out.println(b + c + d + a); // 60durga
+        System.out.println(b + c + a + d); // 30durga30
+        System.out.println(b + a + c + d); // 10durga2030
+    }
+}</pre>
+<h3>Concatenation — which assignments compile</h3>
+<pre class='code'>class ConcatAssign {
+    public static void main(String[] args) {
+        String a = &quot;durga&quot;;
+        int b = 10, c = 20, d = 30;
+
+        // a = b + c + d; // CE: incompatible types, found int, required String
+        a = a + b + c;      // OK  (String)
+        // b = a + c + d;  // CE: incompatible types, found String, required int
+        b = b + c + d;      // OK  (int)
+    }
+}</pre>
+<h3>Relational operators</h3>
+<pre class='code'>class RelationalDemo {
+    public static void main(String[] args) {
+        System.out.println(10 &lt; 20);      // true
+        System.out.println(&#x27;a&#x27; &lt; 10);     // false  (97 &lt; 10)
+        System.out.println(&#x27;a&#x27; &lt; 97.6);   // true   (97.0 &lt; 97.6)
+        System.out.println(&#x27;a&#x27; &gt; &#x27;A&#x27;);    // true   (97 &gt; 65)
+        // System.out.println(true &gt; false);
+        // CE: operator &gt; cannot be applied to boolean,boolean
+
+        // System.out.println(&quot;durga123&quot; &gt; &quot;durga&quot;);
+        // CE: operator &gt; cannot be applied to java.lang.String,java.lang.String
+
+        System.out.println(10 &lt; 20);      // true
+        // System.out.println(10 &lt; 20 &lt; 30);
+        // CE: operator &lt; cannot be applied to boolean,int
+    }
+}</pre>
+<h3>Equality — primitives and Thread references</h3>
+<pre class='code'>class EqualityDemo {
+    public static void main(String[] args) {
+        System.out.println(10 == 20);       // false
+        System.out.println(&#x27;a&#x27; == &#x27;b&#x27;);     // false
+        System.out.println(&#x27;a&#x27; == 97.0);    // true
+        System.out.println(false == false); // true
+
+        Thread t1 = new Thread();
+        Thread t2 = new Thread();
+        Thread t3 = t1;
+        System.out.println(t1 == t2); // false
+        System.out.println(t1 == t3); // true
+    }
+}</pre>
+<h3>Equality — incomparable types, equals(), null</h3>
+<pre class='code'>class EqualityObjects {
+    public static void main(String[] args) {
+        Thread t = new Thread();
+        Object o = new Object();
+        String s = new String(&quot;durga&quot;);
+        System.out.println(t == o); // false (compiles)
+        System.out.println(o == s); // false (compiles)
+        // System.out.println(s == t);
+        // CE: incomparable types: java.lang.String and java.lang.Thread
+
+        String s1 = new String(&quot;durga&quot;);
+        String s2 = new String(&quot;durga&quot;);
+        System.out.println(s1 == s2);        // false
+        System.out.println(s1.equals(s2));   // true
+
+        String live = new String(&quot;durga&quot;);
+        System.out.println(live == null);    // false
+
+        String n = null;
+        System.out.println(n == null);       // true
+        System.out.println(null == null);    // true
+    }
+}</pre>
+<h2>Exam / interview traps</h2>
+<ul><li>+ is the only overloaded operator; Java does not generally support operator overloading.</li></ul>
+<ul><li>a + b + c + d with a a String is `&quot;durga102030&quot;`, not &quot;durga60&quot;. Left to right. First String poisons the rest.</li></ul>
+<ul><li>b + c + d + a is &quot;60durga&quot; because the numbers are added before the String appears.</li></ul>
+<ul><li>a = b + c + d does not concatenate; RHS is int → CE.</li></ul>
+<ul><li>Relational operators: every primitive except boolean; never objects; no nesting.</li></ul>
+<ul><li>&#x27;a&#x27; &lt; 10 is false (97), not a CE.</li></ul>
+<ul><li>true &gt; false is CE; false == false is true.</li></ul>
+<ul><li>10 &lt; 20 &lt; 30 is CE (true &lt; 30), not true.</li></ul>
+<ul><li>Object == is reference, not content. new String(&quot;durga&quot;) == new String(&quot;durga&quot;) is false.</li></ul>
+<ul><li>String == Thread is CE incomparable types, not false.</li></ul>
+<ul><li>Interview one-liner: == reference comparison; equals() content comparison (with String example).</li></ul>
+<ul><li>null == null is `true`. A reference that actually points to an object compared with null is false. Uninitialized local reference cannot be compared.</li></ul>
+<h2>Recap</h2>
+<p>+ is addition only while both sides are numbers; one String and every later + in that left-to-right chain concatenates. Relational operators order numbers (and chars as numbers), never booleans or objects, and they do not chain. Equality operators work on every primitive including boolean, and on objects they compare addresses, but only if the compile-time types are related; equals() is the interview contrast for content.</p>
+<p>Next video: 019-instanceof-bitwise.md — instanceof and bitwise operators.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 18 of 203</td></tr>
+<tr><td>Series</td><td>Operators &amp; Assignments · Part 2 of 7</td></tr>
+<tr><td>Topic</td><td>String concatenation (+), relational operators, equality operators (== / !=) vs equals()</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 09m 31s (4171 seconds)</td></tr>
+<tr><td>Video ID</td><td>D7deFmjJBfs</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=D7deFmjJBfs</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>Result</th><th>Why</th></tr>
+<tr><td>10 + 20</td><td>30</td><td>both operands are numbers → arithmetic addition</td></tr>
+<tr><td>&quot;ab&quot; + &quot;cd&quot;</td><td>&quot;abcd&quot;</td><td>at least one operand is a String → string concatenation</td></tr>
+</table>
+<table>
+<tr><th>Line</th><th>Wrong guess A</th><th>Wrong guess B</th><th>Actual</th></tr>
+<tr><td>a + b + c + d</td><td>&quot;durga60&quot;</td><td>&quot;durga102030&quot;</td><td>&quot;durga102030&quot;</td></tr>
+<tr><td>b + c + d + a</td><td>&quot;102030durga&quot;</td><td>&quot;60durga&quot;</td><td>&quot;60durga&quot;</td></tr>
+<tr><td>b + c + a + d</td><td>&quot;30durga30&quot; or &quot;1020durga30&quot;</td><td></td><td>&quot;30durga30&quot;</td></tr>
+<tr><td>b + a + c + d</td><td>&quot;10durga2030&quot;</td><td></td><td>&quot;10durga2030&quot;</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Expression</th><th>Valid?</th><th>Type of RHS</th><th>Assigned to</th><th>Result</th></tr>
+<tr><td>1</td><td>a = b + c + d</td><td>invalid</td><td>int (10+20+30 → 60)</td><td>String a</td><td>compile-time error</td></tr>
+<tr><td>2</td><td>a = a + b + c</td><td>valid</td><td>String (concatenation)</td><td>String a</td><td>OK</td></tr>
+<tr><td>3</td><td>b = a + c + d</td><td>invalid</td><td>String</td><td>int b</td><td>compile-time error</td></tr>
+<tr><td>4</td><td>b = b + c + d</td><td>valid</td><td>int</td><td>int b</td><td>OK</td></tr>
+</table>
+<table>
+<tr><th>Operator</th><th>Meaning</th></tr>
+<tr><td>&lt;</td><td>less than</td></tr>
+<tr><td>&lt;=</td><td>less than or equal to</td></tr>
+<tr><td>&gt;</td><td>greater than</td></tr>
+<tr><td>&gt;=</td><td>greater than or equal to</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>What happens</th><th>Result</th></tr>
+<tr><td>10 &lt; 20</td><td>obvious</td><td>true</td></tr>
+<tr><td>&#x27;a&#x27; &lt; 10</td><td>char promoted to number. &#x27;a&#x27; is Unicode/ASCII 97. 97 &lt; 10</td><td>false</td></tr>
+<tr><td>&#x27;a&#x27; &lt; 97.6</td><td>&#x27;a&#x27; → 97 → 97.0 (int promoted to double). 97.0 &lt; 97.6</td><td>true</td></tr>
+<tr><td>&#x27;a&#x27; &gt; &#x27;A&#x27;</td><td>97 &gt; 65 (&#x27;A&#x27; is 65)</td><td>true</td></tr>
+<tr><td>true &gt; false</td><td>two booleans, no “bigger / smaller”</td><td>CE</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>What happens</th><th>Result</th></tr>
+<tr><td>10 == 20</td><td>10 is not 20</td><td>false</td></tr>
+<tr><td>&#x27;a&#x27; == &#x27;b&#x27;</td><td>97 vs 98</td><td>false</td></tr>
+<tr><td>&#x27;a&#x27; == 97.0</td><td>smaller type promoted to bigger: &#x27;a&#x27; → 97 → 97.0. 97.0 == 97.0</td><td>true</td></tr>
+<tr><td>false == false</td><td>both false</td><td>true</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>Same object?</th><th>Result</th></tr>
+<tr><td>t1 == t2</td><td>no</td><td>false</td></tr>
+<tr><td>t1 == t3</td><td>yes (t3 = t1)</td><td>true</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>Compiles?</th><th>Runtime if it compiles</th></tr>
+<tr><td>t == o</td><td>yes (Thread is a child of Object)</td><td>false (different objects)</td></tr>
+<tr><td>o == s</td><td>yes (String is a child of Object)</td><td>false</td></tr>
+<tr><td>s == t</td><td>no</td><td>compile-time error</td></tr>
+</table>
+<table>
+<tr><th></th><th>Meant for</th></tr>
+<tr><td>== operator</td><td>reference comparison (address comparison). true only if both references point to the same object.</td></tr>
+<tr><td>equals() method</td><td>content comparison. Objects may be different objects; we care whether content is the same.</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>Result</th><th>Why</th></tr>
+<tr><td>living reference == null</td><td>false</td><td>r points at an object, not null</td></tr>
+<tr><td>null == null</td><td>`true`</td><td>both are null</td></tr>
+</table>
+</body></html>

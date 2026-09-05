@@ -1,0 +1,331 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>003-data-types-part-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 003 — Data types part 2</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part- 3 || Data Types part-2</p>
+<h2>What this lecture covers</h2>
+<ol><li>Recap of int compile errors; when `int` range is not enough</li></ol>
+<ol><li>`long`: two “why long?” examples (light-travel distance; File.length()), size, range</li></ol>
+<ol><li>Wrap-up: byte/short/int/long are only for integral values</li></ol>
+<ol><li>Floating-point types `float` and `double`: choose by accuracy (5–6 vs 14–15 decimal places), not by “small vs big number”; single vs double precision; size and range</li></ol>
+<ol><li>`boolean`: size/range not applicable (JVM-dependent); only true / false; assignment quizzes including True vs &quot;true&quot; vs 0</li></ol>
+<ol><li>`if` / `while` with integers — legal in C/C++, illegal in Java</li></ol>
+<ol><li>`char`: why Java char is 2 bytes (Unicode vs ASCII); size and range</li></ol>
+<ol><li>Summary table of all 8 primitives: size, range, wrapper class, default value</li></ol>
+<ol><li>`null` is the default for object references only — not for primitives (char ch = null is a compile error)</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:04] When `int` is not enough — introducing `long`</h3>
+<p>He starts from the int discussion of the previous class (the various compile-error messages). int range looks huge:</p>
+<p>`int` range: −2,147,483,648 to 2,147,483,647</p>
+<p>(a 10-digit number — not small)</p>
+<p>Sometimes that is still not enough to hold big values. Then we go for `long`.</p>
+<h4>Example 1 — distance travelled by light in 1,000 days</h4>
+<ul><li>Speed of light: 3 × 10⁸ m/s (he also says 3 × 10¹⁰ cm/s).</li></ul>
+<ul><li>In miles: about 1,26,000 miles per second (1 lakh 26 thousand).</li></ul>
+<ul><li>Per minute: × 60</li></ul>
+<ul><li>Per hour: × 60</li></ul>
+<ul><li>Per day: × 24</li></ul>
+<ul><li>For 1,000 days: × 1,000</li></ul>
+<p>That product will not fit in int. Use long.</p>
+<p>long l = 126000 * 60 * 60 * 24 * 1000;</p>
+<p>(He says this is the oral / requirement value — the idea of the calculation — not that you must memorize the miles figure for the exam. The exam point is: int may not be enough → long.)</p>
+<p>Board:</p>
+<p>Sometimes int may not be enough to hold big values. Then we should go for `long` type.</p>
+<p>Example 1: the amount of distance travelled by light in 1,000 days — to hold this value int may not be enough; we should go for long.</p>
+<h4>[05:01] Example 2 — number of characters in a big file</h4>
+<p>Imagine a huge file:</p>
+<ul><li>lakhs of pages</li></ul>
+<ul><li>every page: hundreds of lines</li></ul>
+<ul><li>every line: hundreds of characters</li></ul>
+<p>To hold the number of characters in that file, int may not be enough.</p>
+<p>Java API: File has length().</p>
+<ul><li>f.length() returns the length (he discusses it as number of characters / size of the file).</li></ul>
+<ul><li>Return type of `length()` is `long`, not `int`.</li></ul>
+<ul><li>Why? The count may exceed `int` range. This is not Durga’s invention — it is part of the API.</li></ul>
+<p>long l = f.length();</p>
+<p>Board:</p>
+<p>Example 2: the number of characters present in a big file may exceed int range. Hence the return type of length() method is `long` but not `int`.</p>
+<h3>[07:49] `long` — size and range</h3>
+<p>He says: don’t worry about expanding 2⁶³ into a full decimal. Even he does not recite that number. Formula is enough.</p>
+<h3>[08:53] All of the above are integral types only</h3>
+<p>So far: byte, short, int, long — four types.</p>
+<p>Board note:</p>
+<p>All the above data types (byte, short, int, long) are for representing integral values.</p>
+<p>If we want to represent floating-point values (number with a decimal point), we cannot use these. We should go for floating-point data types.</p>
+<h3>[10:52] Floating-point data types: `float` and `double`</h3>
+<p>Two types: `float` and `double`.</p>
+<h4>Wrong criterion (most people fail this)</h4>
+<p>Students think:</p>
+<ul><li>small floating-point value → float</li></ul>
+<ul><li>big floating-point value → double</li></ul>
+<p>That is not the criterion. (For integral types, smaller range → smaller type is the idea. For float vs double, do not copy that logic.)</p>
+<h4>Right criterion: **decimal places of accuracy**</h4>
+<p>Example: 10.0 / 3 → 3.3333…</p>
+<ul><li>Sometimes 5 to 6 decimal places of accuracy are enough.</li></ul>
+<ul><li>Sometimes 14 to 15 decimal places of accuracy are required.</li></ul>
+<p>So:</p>
+<ul><li>float = less accuracy</li></ul>
+<ul><li>double = more accuracy</li></ul>
+<h4>Precision (technical words)</h4>
+<p>Precision = accuracy. Single precision = less accuracy; double precision = more accuracy.</p>
+<h4>Size</h4>
+<h4>Range (he first mixes the numbers, then corrects which range belongs to which type)</h4>
+<p>He writes exponential form: E38 means × 10³⁸.</p>
+<p>He initially recites the two scientific-notation magnitudes in the wrong type-order, then says “range wise a small correction” and assigns:</p>
+<p>Use the summary table as the final board version (see below): float ±3.4E38, double ±1.7E308.</p>
+<h3>[19:44] `boolean` data type</h3>
+<h4>Size — not applicable</h4>
+<p>Students from C/C++ offer:</p>
+<ul><li>1 bit / 1 byte / 2 bytes</li></ul>
+<ul><li>0 means true, non-zero means false</li></ul>
+<ul><li>or 0 means false, 1 means true</li></ul>
+<p>That terminology is for old languages, not Java.</p>
+<p>If someone from a C/C++ background asks “size of boolean in Java?”:</p>
+<ul><li>Size of `boolean` is not applicable.</li></ul>
+<ul><li>Better phrase: virtual machine dependent.</li></ul>
+<ul><li>Based on the JVM it might be one bit or one byte — we cannot tell a fixed size.</li></ul>
+<h4>Range — not applicable</h4>
+<p>You cannot say “true to false” or “false to true.” Both values are at the same level. There is no min/max numeric range.</p>
+<p>Allowed values: true or false only (lowercase).</p>
+<p>Board:</p>
+<h3>[22:50] `boolean` assignment quizzes</h3>
+<p>Assume the line sits in class Test.</p>
+<p>He compiles each one live so you see the four different outcomes.</p>
+<p>Why `True` is `cannot find symbol` (think like the compiler):</p>
+<ol><li>Is it a boolean value? No (true is lowercase).</li></ol>
+<ol><li>Is it an int? No.</li></ol>
+<ol><li>Is it a String? No — a String needs double quotes.</li></ol>
+<ol><li>It is not a valid value for any type → treat as a variable → cannot find symbol.</li></ol>
+<h3>[29:47] `if` / `while` with numbers — C vs Java (exam)</h3>
+<p>Second exam pattern from boolean.</p>
+<h4>Example A — `if (x)` where `x` is `int`</h4>
+<pre class='code'>int x = 0;
+if (x) {
+    System.out.println(&quot;hello&quot;);
+} else {
+    System.out.println(&quot;hi&quot;);
+}</pre>
+<p>Error:</p>
+<p>incompatible types — found: int, required: boolean</p>
+<h4>Example B — `while (1)`</h4>
+<pre class='code'>while (1) {
+    System.out.println(&quot;hello&quot;);
+}</pre>
+<p>Do not say “infinite loop.” That is the C / C++ story (1 means true).</p>
+<p>In Java: compile error. while expects true/false. 1 is int.</p>
+<p>incompatible types — found: int, required: boolean</p>
+<p>Both snippets are valid in C and invalid in Java because the Java compiler is strong (same strongly-typed theme as video 002).</p>
+<h3>[33:28] `char` data type — why 2 bytes?</h3>
+<p>Interview favourite: What is the size of `char` in Java? Why 2 bytes instead of 1?</p>
+<h4>Old languages are ASCII (he says “ASCII code”) based</h4>
+<p>Allowed characters in a C/C++ program: a–z, A–Z, 0–9, $, #, +, -, other specials.</p>
+<p>Number of different allowed ASCII characters ≤ 256.</p>
+<p>Why 8 bits are enough (he counts powers of 2):</p>
+<p>So: ≤ 256 characters → 8 bits enough → char is 1 byte. Those characters are ASCII characters.</p>
+<h4>Java is Unicode based</h4>
+<p>In a Java program you can still use all 256 ASCII characters, plus worldwide alphabet symbols if you want:</p>
+<ul><li>Telugu (he writes from అ …)</li></ul>
+<ul><li>Hindi (अ …)</li></ul>
+<ul><li>Tamil</li></ul>
+<ul><li>Chinese</li></ul>
+<ul><li>any language’s alphabet</li></ul>
+<p>That set is definitely greater than 256 and less than or equal to 65,536.</p>
+<p>8 bits are not enough. You need 16 bits. Hence Java char is 2 bytes. All of these are Unicode characters.</p>
+<p>Java is Unicode based; old languages are ASCII based. That is why the size differs.</p>
+<p>Extra point: the first 256 Unicode characters are the ASCII characters.</p>
+<p>Example: small &#x27;a&#x27;</p>
+<p>ASCII values = Unicode values for that overlapping block. Extra characters have Unicode only (no ASCII).</p>
+<p>Board (two columns):</p>
+<p>Old languages (C / C++): ASCII-based. Number of different ASCII characters ≤ 256. To represent them, 8 bits are enough. Hence size of char is 1 byte.</p>
+<p>Java: Unicode-based. Number of different Unicode characters &gt; 256 and ≤ 65,536. 8 bits may not be enough; compulsory 16 bits. Hence size of char in Java is 2 bytes.</p>
+<h4>Size and range of Java `char`</h4>
+<p>He first says range 0 to 65530, then corrects:</p>
+<p>Total characters representable: 65,536. Zero is included, so:</p>
+<p>How to write char values is postponed to literals (next videos).</p>
+<h3>[44:22] Summary of Java primitive data types</h3>
+<p>One table so everything is on a single slide. Columns he includes:</p>
+<ol><li>Data type</li></ol>
+<ol><li>Size</li></ol>
+<ol><li>Range</li></ol>
+<ol><li>Corresponding wrapper class (he says “rapper class”)</li></ol>
+<ol><li>Default value (if you do not provide a value, JVM provides one)</li></ol>
+<h4>The table (final board)</h4>
+<h4>Default-value notes he stresses</h4>
+<ul><li>Integral types (byte, short, int, long): default `0`.</li></ul>
+<ul><li>float and double: default `0.0`.</li></ul>
+<ul><li>`boolean`: in C++ people may remember default true; in Java default is `false`.</li></ul>
+<ul><li>`char`: default 0; he says 0 represents a space character. Remember that line as he taught it on the board.</li></ul>
+<p>Wrapper names to match exactly:</p>
+<p>Byte, Short, Integer (not Int), Long, Float, Double, Boolean, Character (not Char).</p>
+<h3>[51:54] `null` is not for primitives</h3>
+<p>Clarity after the table.</p>
+<p>`null` is the default value for object references — String type, Student type, Customer type, any object type.</p>
+<p>You cannot apply `null` to a primitive. If you try, compile error — even for char.</p>
+<p>char ch = null;   // invalid</p>
+<p>Compile error:</p>
+<p>incompatible types — found: null type, required: char (&lt;nulltype&gt; / null type vs char)</p>
+<p>Board:</p>
+<p>null is the default value for object reference, and we can’t apply for primitives.</p>
+<p>If we are trying to use for primitive, then we will get compile-time error.</p>
+<p>Example: char ch = null; → incompatible types, found null type, required char.</p>
+<p>That closes primitive data types. Next topic in the series is literals.</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // long examples (ideas from the board)
+        long light = 126000L * 60 * 60 * 24 * 1000;
+        // long n = f.length();   // File.length() returns long, not int
+
+        // boolean quizzes
+        boolean b1 = true;          // OK
+        // boolean b2 = 0;          // CE: incompatible types, found int, required boolean
+        // boolean b3 = True;       // CE: cannot find symbol, variable True, class Test
+        // boolean b4 = &quot;true&quot;;     // CE: incompatible types, found java.lang.String, required boolean
+
+        int x = 0;
+        // if (x) { }               // CE: found int, required boolean  (legal in C)
+        // while (1) { }            // CE: found int, required boolean  (infinite loop in C)
+
+        // char ch = null;          // CE: found null type, required char
+    }
+}</pre>
+<h2>Rules to memorize</h2>
+<ol><li>When int is not enough → `long`. Examples: light-distance product; `File.length()` returns `long`.</li></ol>
+<ol><li>long: 8 bytes / 64 bits, range −2⁶³ to 2⁶³−1.</li></ol>
+<ol><li>byte short int long = integral only. Decimal point → `float` / `double`.</li></ol>
+<ol><li>float vs double is accuracy, not “small vs big”: 5–6 places → float, 14–15 places → double.</li></ol>
+<ol><li>float = single precision (4 bytes, ±3.4E38). double = double precision (8 bytes, ±1.7E308).</li></ol>
+<ol><li>boolean size not applicable (JVM dependent). Range not applicable. Only `true` / `false`.</li></ol>
+<ol><li>boolean b = 0; → incompatible types. boolean b = True; → cannot find symbol. boolean b = &quot;true&quot;; → found String.</li></ol>
+<ol><li>if (int) and while (1) compile in C, not in Java.</li></ol>
+<ol><li>Java char is 2 bytes because Java is Unicode (&gt;256 and ≤65,536 characters). C char is 1 byte (ASCII ≤256). First 256 Unicode = ASCII (&#x27;a&#x27; is 97 in both).</li></ol>
+<ol><li>char range 0 to 65,535.</li></ol>
+<ol><li>Defaults: integrals 0; float/double 0.0; boolean `false` (not true); char 0.</li></ol>
+<ol><li>Wrappers: Byte Short Integer Long Float Double Boolean Character.</li></ol>
+<ol><li>`null` only for object references, never primitives.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>“Small float, big double” is wrong. Accuracy / precision is the criterion.</li></ul>
+<ul><li>Size of boolean is not 1 bit. Say not applicable / JVM dependent.</li></ul>
+<ul><li>boolean b = True; is not incompatible types — it is `cannot find symbol`. Case of true matters.</li></ul>
+<ul><li>boolean b = &quot;true&quot;; is a String, not a boolean.</li></ul>
+<ul><li>if (x) with x == 0 is a compile error in Java, not “else branch prints hi.”</li></ul>
+<ul><li>while (1) is not an infinite loop in Java — it does not compile.</li></ul>
+<ul><li>Interview: size of `char` is 2 bytes because Java is Unicode based; be ready to explain 256 vs 65,536 and 8 vs 16 bits.</li></ul>
+<ul><li>&#x27;a&#x27; Unicode is 97, same as ASCII — not a different number.</li></ul>
+<ul><li>Wrapper for int is `Integer`, for char is `Character`.</li></ul>
+<ul><li>Java default boolean is `false`, not C++’s true.</li></ul>
+<ul><li>char ch = null; → incompatible types / null type, not a runtime NullPointerException.</li></ul>
+<ul><li>File.length() return type is `long`, not int.</li></ul>
+<h2>Recap</h2>
+<p>This lecture finishes the eight primitives: `long` (when int overflows conceptually), `float`/`double` (precision), `boolean` (no size, no C-style 0/1), `char` (Unicode, 2 bytes), then the master table (size, range, wrapper, default) and the `null`-is-for-references rule. Next lecture starts literals.</p>
+<p>Next video: 004-literals-part-1.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 3 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 3 of 16</td></tr>
+<tr><td>Topic</td><td>Data types part 2 — long, float, double, boolean, char, primitive summary table, null</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>55m 07s (3307 seconds)</td></tr>
+<tr><td>Video ID</td><td>HYAosZptldA</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=HYAosZptldA</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th></th><th></th></tr>
+<tr><td>Size</td><td>8 bytes (64 bits)</td></tr>
+<tr><td>Range</td><td>−2⁶³ to 2⁶³ − 1</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>Choose</th></tr>
+<tr><td>5 to 6 decimal places of accuracy</td><td>`float`</td></tr>
+<tr><td>14 to 15 decimal places of accuracy</td><td>`double`</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>Follows</th></tr>
+<tr><td>float</td><td>single precision</td></tr>
+<tr><td>double</td><td>double precision</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>Size</th></tr>
+<tr><td>float</td><td>4 bytes</td></tr>
+<tr><td>double</td><td>8 bytes</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>Range he puts on the board</th></tr>
+<tr><td>float</td><td>−3.4E38 to 3.4E38</td></tr>
+<tr><td>double</td><td>first pass he still says −1.7E38; in the summary table later he writes −1.7E308 to 1.7E308</td></tr>
+</table>
+<table>
+<tr><th></th><th></th></tr>
+<tr><td>Size</td><td>not applicable (virtual machine dependent)</td></tr>
+<tr><td>Range</td><td>not applicable, but allowed values are `true` or `false`</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>Valid?</th><th>What the compiler does</th></tr>
+<tr><td>boolean b = true;</td><td>valid</td><td>prints true</td></tr>
+<tr><td>boolean b = 0;</td><td>invalid</td><td>incompatible types — found: int, required: boolean. (0 is an integral value → default int. In C, 0 means false; not in Java.)</td></tr>
+<tr><td>boolean b = True;</td><td>invalid</td><td>`cannot find symbol`. True is not a boolean value, not an int, not a String (no double quotes). Compiler treats it as a variable named True that was never declared. Symbol: variable `True`, location: class `Test`.</td></tr>
+<tr><td>boolean b = &quot;true&quot;;</td><td>invalid</td><td>incompatible types — found: java.lang.String, required: boolean. You cannot provide a String where a boolean primitive is expected.</td></tr>
+</table>
+<table>
+<tr><th>Language</th><th>Result</th></tr>
+<tr><td>C / C++</td><td>valid — 0 means false, so it would print hi</td></tr>
+<tr><td>Java</td><td>compile error — if always expects boolean. You provided an int.</td></tr>
+</table>
+<table>
+<tr><th>Language</th><th>Size of char</th></tr>
+<tr><td>C / C++</td><td>1 byte (8 bits)</td></tr>
+<tr><td>Java</td><td>2 bytes (16 bits)</td></tr>
+</table>
+<table>
+<tr><th>Bits</th><th>Distinct values</th></tr>
+<tr><td>1</td><td>2</td></tr>
+<tr><td>2</td><td>4</td></tr>
+<tr><td>3</td><td>8</td></tr>
+<tr><td>4</td><td>16</td></tr>
+<tr><td>5</td><td>32</td></tr>
+<tr><td>6</td><td>64</td></tr>
+<tr><td>7</td><td>128</td></tr>
+<tr><td>8</td><td>256</td></tr>
+</table>
+<table>
+<tr><th></th><th>Value</th></tr>
+<tr><td>ASCII of &#x27;a&#x27;</td><td>97</td></tr>
+<tr><td>Unicode of &#x27;a&#x27;</td><td>97 (same)</td></tr>
+</table>
+<table>
+<tr><th></th><th></th></tr>
+<tr><td>Size</td><td>2 bytes</td></tr>
+<tr><td>Range</td><td>0 to 65,535</td></tr>
+</table>
+<table>
+<tr><th>Data type</th><th>Size</th><th>Range</th><th>Wrapper class</th><th>Default value</th></tr>
+<tr><td>byte</td><td>1 byte</td><td>−2⁷ to 2⁷−1 = −128 to 127</td><td>Byte</td><td>0</td></tr>
+<tr><td>short</td><td>2 bytes</td><td>−2¹⁵ to 2¹⁵−1 = −32,768 to 32,767</td><td>Short</td><td>0</td></tr>
+<tr><td>int</td><td>4 bytes</td><td>−2³¹ to 2³¹−1 = −2,147,483,648 to 2,147,483,647</td><td>Integer</td><td>0</td></tr>
+<tr><td>long</td><td>8 bytes</td><td>−2⁶³ to 2⁶³−1</td><td>Long</td><td>0</td></tr>
+<tr><td>float</td><td>4 bytes</td><td>−3.4E38 to 3.4E38</td><td>Float</td><td>0.0</td></tr>
+<tr><td>double</td><td>8 bytes</td><td>−1.7E308 to 1.7E308</td><td>Double</td><td>0.0</td></tr>
+<tr><td>boolean</td><td>not applicable</td><td>not applicable (allowed: true / false)</td><td>Boolean</td><td>`false`</td></tr>
+<tr><td>char</td><td>2 bytes</td><td>0 to 65,535</td><td>Character</td><td>`0` (he says zero represents a space character)</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,349 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>020-short-circuit-type-cast</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 020 — Short-circuit operators and type cast</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Operators &amp; Assignments Part-4  || short-circuit,type cast operators</p>
+<p>Captions are auto-generated. ASR writes short Circ cute, Double R, impessive, X Plus, bite, car. These notes restore short-circuit, ||, implicit, explicit, byte, char. Assignment / conditional / new are not in this video; he defers them to Part-5.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Recap of bitwise &amp; | ^ and why &amp;&amp; || exist</li></ol>
+<ol><li>Motivation: if first operand of AND is already false, skip the expensive second check</li></ol>
+<ol><li>Login analogy: username missing → do not check password</li></ol>
+<ol><li>Difference table: bitwise &amp; | vs short-circuit &amp;&amp; || (evaluation, performance, types)</li></ol>
+<ol><li>When y is evaluated in x &amp;&amp; y vs x || y</li></ol>
+<ol><li>Exam example 1: ++x / ++y inside if, four operators &amp; &amp;&amp; | || — four different x,y pairs</li></ol>
+<ol><li>Exam example 2: &amp;&amp; vs &amp; with x / 0 — Hi vs ArithmeticException</li></ol>
+<ol><li>Two kinds of type casting: implicit vs explicit</li></ol>
+<ol><li>Implicit: compiler, smaller→bigger, widening/upcasting, no loss of information; conversion diagram</li></ol>
+<ol><li>Examples: int x = &#x27;a&#x27; → 97; double d = 10 → 10.0</li></ol>
+<ol><li>Explicit: programmer (type), bigger→smaller, narrowing/downcasting, possible loss; possible loss of precision</li></ol>
+<ol><li>Example: (byte) 130 → `-126`, with 32-bit → last-8-bits → two’s complement</li></ol>
+<ol><li>Example: (short) 150 stays 150; (byte) 150 → `-106`</li></ol>
+<ol><li>Example: (int) 130.456 → 130; (byte) 130.456 → -126 (fraction digits dropped)</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:07] Recap and the interview question that is *not* “one &amp; vs two &amp;”</h3>
+<p>Last part: bitwise operators. Next: short-circuit operators — `&amp;&amp;` and `||` (double-and, double-or).</p>
+<p>Interview / exam: we already have `&amp;`. Why `&amp;&amp;`?</p>
+<p>Wrong joke answer: “here we write &amp; once, here twice.” That is not the difference.</p>
+<h3>[01:37] Motivation — do not evaluate the second operand if it cannot change the result</h3>
+<p>Imagine:</p>
+<pre class='code'>if ( /* expensive X &gt; 10 */  &amp;  /* expensive Y */ ) {
+    // then part
+} else {
+    // else part
+}</pre>
+<p>Toy timing he uses: first operand takes 10 minutes to evaluate, second takes 10 minutes, plus a minute for the operator → ~21 minutes, then choose then/else.</p>
+<p>After the first 10 minutes you already know the first operand is `false`. For AND, if the first is false, the whole AND is `false` no matter what the second is. There is no need to spend another 10 minutes on Y.</p>
+<p>Bitwise `&amp;` always evaluates both operands, even when the second cannot change the answer. That wastes time and can create performance problems.</p>
+<p>`&amp;&amp;` (short-circuit AND): if the first operand is false, skip the second and go to else. Evaluate the second only if required (first was true).</p>
+<p>Performance: &amp;&amp; is relatively better than &amp; for this reason. Short-circuit operators improve performance when the second operand is expensive or unnecessary.</p>
+<h4>Login analogy</h4>
+<p>User enters username and password. Username is not in the database. Is it required to compare the password? No — waste. Use `&amp;&amp;`, not &amp;.</p>
+<h3>[06:10] Difference table (bitwise `&amp;` `|` vs short-circuit `&amp;&amp;` `||`)</h3>
+<p>He says &amp;&amp; || are exactly the same as bitwise `&amp;` `|` except the following differences.</p>
+<p>You cannot write 4 &amp;&amp; 5. Short-circuit operators always talk in true/false.</p>
+<h3>[07:16] When is `y` evaluated? (`x &amp;&amp; y` vs `x || y`)</h3>
+<p>`x &amp;&amp; y`</p>
+<ul><li>y will be evaluated if and only if `x` is `true`</li></ul>
+<ul><li>If x is false, y will not be evaluated</li></ul>
+<p>(whole AND is already false)</p>
+<p>`x || y`</p>
+<ul><li>y will be evaluated if and only if `x` is `false`</li></ul>
+<ul><li>If x is true, y will not be evaluated</li></ul>
+<p>(whole OR is already true)</p>
+<p>That is why these operators apply only to boolean.</p>
+<h3>[16:20] Exam example 1 — increment inside `if` (four operators, four outputs)</h3>
+<p>ASR once says ++y &gt; 50 while writing; when he evaluates he uses `++y &gt; 15` and treats that as true (16 &gt; 15). The working example is:</p>
+<pre class='code'>int x = 10;
+int y = 15;
+if (++x &lt; 10  /* operator */  ++y &gt; 15) {
+    x++;
+} else {
+    y++;
+}
+System.out.println(x + &quot;........&quot; + y);</pre>
+<p>Replace /* operator */ with &amp;, &amp;&amp;, |, or ||. That is the exam question: what are `x` and `y` for each?</p>
+<p>Start: x = 10, y = 15.</p>
+<p>Condition uses pre-increment. Then-branch: x++. Else-branch: y++.</p>
+<h4>Case A — bitwise `&amp;` (both sides always run)</h4>
+<p>++x  →  11,   11 &lt; 10  →  false
+++y  →  16,   16 &gt; 15  →  true
+false &amp; true  →  false  →  else  →  y++</p>
+<p>Increments: x once (in the condition), y twice (condition + else).</p>
+<p>Result: `x = 11`, `y = 17`</p>
+<h4>Case B — short-circuit `&amp;&amp;`</h4>
+<p>First operand still ++x → 11 &lt; 10 → `false`.</p>
+<p>Second operand not evaluated (y stays 15).</p>
+<p>Else: y++.</p>
+<p>x incremented once, y incremented once (else only).</p>
+<p>Result: `x = 11`, `y = 16`</p>
+<p>This is the &amp; vs &amp;&amp; difference in the printed numbers.</p>
+<h4>Case C — bitwise `|` (both sides always run)</h4>
+<p>First still false. Second still evaluated: ++y → 16, 16 &gt; 15 → true.</p>
+<p>false | true → `true` → then branch: x++.</p>
+<p>x incremented twice (condition + then), y incremented once (condition only).</p>
+<p>Result: `x = 12`, `y = 16`</p>
+<h4>Case D — short-circuit `||`</h4>
+<p>First is false, so the second must be evaluated (OR cannot skip when first is false). Same as | here: second true, then-branch x++.</p>
+<p>Result: `x = 12`, `y = 16` — no difference between | and || in this example, because the first operand is false.</p>
+<p>He says there may be no difference between | and || when the first operand is false. The difference would appear when the first operand is true (|| would skip ++y).</p>
+<h4>Summary table for example 1</h4>
+<p>Very important for the exam. He prints x + &quot;........&quot; + y.</p>
+<h3>[22:31] Exam example 2 — short-circuit can skip `/ 0`</h3>
+<p>Same concept, different style. Multiple-choice trap.</p>
+<pre class='code'>int x = 10;
+if (++x &lt; 10 &amp;&amp; (x / 0 &gt; 10)) {
+    System.out.println(&quot;Hello&quot;);
+} else {
+    System.out.println(&quot;Hi&quot;);
+}</pre>
+<p>Options he lists:</p>
+<ol><li>Compile-time error</li></ol>
+<ol><li>Runtime exception: ArithmeticException: / by zero</li></ol>
+<ol><li>Hello</li></ol>
+<ol><li>Hi</li></ol>
+<p>Most people see / 0 and pick runtime exception. Wrong for &amp;&amp;.</p>
+<p>++x → 11, 11 &lt; 10 → `false`. Short-circuit AND does not evaluate x / 0. Control goes to else. Output: `Hi`.</p>
+<p>If you replace `&amp;&amp;` with `&amp;`:</p>
+<p>Both sides evaluate. x / 0 runs → `ArithmeticException: / by zero`. Then option 2 is correct.</p>
+<p>Single &amp; vs double &amp;&amp;: different behaviour, not just different speed.</p>
+<p>Theory line under the example:</p>
+<p>If we replace &amp;&amp; with &amp;, then we will get runtime exception saying ArithmeticException: / by zero.</p>
+<p>That ends short-circuit operators. Only these styles of questions, he says.</p>
+<h3>[27:21] Type cast operator — two kinds</h3>
+<p>Two types of type casting:</p>
+<ol><li>Implicit type casting</li></ol>
+<ol><li>Explicit type casting</li></ol>
+<p>(Power-cut joke around 29:09: “just another 10 minutes the power will come.” Content continues.)</p>
+<h3>[28:56] Implicit type casting</h3>
+<h4>Example 1 — `char` into `int`</h4>
+<p>int x = &#x27;a&#x27;;
+System.out.println(x);  // 97</p>
+<p>You provided a `char`. Output is `97`. Someone converted char → int. The compiler did it automatically. That conversion is implicit type casting.</p>
+<h4>Example 2 — `int` into `double`</h4>
+<p>double d = 10;
+System.out.println(d);  // 10.0</p>
+<p>Compiler converts int → double automatically. Print is 10.0, not 10.</p>
+<h4>Four conclusions (dictate)</h4>
+<ol><li>Compiler is responsible to perform implicit type casting.</li></ol>
+<ol><li>Whenever we assign a smaller data type value to a bigger data type variable, implicit type casting is performed.</li></ol>
+<p>(char 2 bytes → int 4 bytes; int 4 bytes → double 8 bytes.)</p>
+<p>“Keeping a small value in a big container.”</p>
+<ol><li>Also known as widening or upcasting.</li></ol>
+<ol><li>There is no loss of information. If there were loss, the compiler would refuse to do this automatically. (10 can become 10.0; &#x27;a&#x27; can become 97 without losing the value.)</li></ol>
+<h4>Where implicit conversion happens (board diagram)</h4>
+<p>Moving left → right (smaller → bigger):</p>
+<p>byte  →  short  →  int  →  long  →  float  →  double
+                      ↑
+                     char</p>
+<p>He lists:</p>
+<ul><li>byte → short</li></ul>
+<ul><li>short → int</li></ul>
+<ul><li>int → long</li></ul>
+<ul><li>long → float</li></ul>
+<ul><li>float → double</li></ul>
+<ul><li>char → int</li></ul>
+<p>Any smaller-to-bigger assignment is acceptable; the compiler inserts the conversion. (Note: long → float is still called implicit here even though float is 4 bytes — range is the story he uses: it sits on the “bigger container” arrow.)</p>
+<p>Programmer is not responsible; it happens internally. That is all he wants on implicit.</p>
+<h3>[41:33] Explicit type casting</h3>
+<p>Now the conversion the programmer must write.</p>
+<h4>Compiler refuses `int` → `byte` without a cast</h4>
+<pre class='code'>int x = 130;
+byte b = x;</pre>
+<p>int is 4 bytes, byte is 1 byte. Putting a 4-byte value in a 1-byte hole: possible loss of information. Compiler will not “allow” it.</p>
+<p>possible loss of precision
+found   : int
+required: byte</p>
+<p>(He jokes: compiler is a decent person — it warns you.)</p>
+<p>You must tell the compiler: if there is loss, I will take care (the “3+ years experience, not fake” joke). Syntax:</p>
+<pre class='code'>byte b = (byte) x;</pre>
+<p>Then it compiles. This programmer-written conversion is explicit type casting.</p>
+<p>When required: assigning a bigger data type value to a smaller data type variable.</p>
+<h4>The shocking output</h4>
+<p>int x = 130;
+byte b = (byte) x;
+System.out.println(b);  // -126</p>
+<p>You assigned 130. You get `-126`. Programmer is shocked. Compiler is happy — it warned you about loss of information.</p>
+<p>So in explicit type casting there may be loss of information.</p>
+<p>He also says: they will not always ask 130; they might ask 150. Then the byte result is not -126. You must know the bit rule, not a memorized pair. (He first misspeaks -108 for 150, then computes `-106` in example 2.)</p>
+<h4>Four conclusions (parallel to implicit)</h4>
+<ol><li>Programmer is responsible to perform explicit type casting.</li></ol>
+<ol><li>Whenever we assign a bigger data type value to a smaller data type variable, explicit type casting is required.</li></ol>
+<ol><li>Also known as narrowing or downcasting. (“Keeping a big value in a small place.”)</li></ol>
+<ol><li>There may be a chance of loss of information (130 became -126).</li></ol>
+<h4>Same diagram, opposite direction</h4>
+<ul><li>Left → right: implicit (smaller → bigger)</li></ul>
+<ul><li>Right → left: explicit (bigger → smaller)</li></ul>
+<p>Examples of explicit: double → float → long → int → short → byte, and int → char.</p>
+<p>He compiles Test.java: byte b = x → possible loss of precision. byte b = (byte) x → runs, prints -126. “Not a random value — it is exactly from the original bits.”</p>
+<h3>[54:43] Internal analysis — why `(byte) 130` is `-126`</h3>
+<p>130 as int: 4 bytes = 32 bits. Positive → sign bit `0`. Remaining bits store 130 directly.</p>
+<p>Binary of 130: 128 + 2 → low bytes end with `10000010`.</p>
+<p>32-bit 130:  00000000 00000000 00000000 10000010</p>
+<p>Rule (dictate):</p>
+<p>Whenever we assign a bigger data type value to a smaller data type variable by explicit type casting, the most significant bits will be lost. We have to consider only the least significant bits.</p>
+<p>byte is 8 bits. Keep the last 8 bits only:</p>
+<p>10000010</p>
+<p>MSB of that byte is `1` → negative. Remaining bits represent magnitude in two’s complement (same memory rules as video 019).</p>
+<p>Two’s complement of 0000010 (the seven value bits), or equivalently of the whole 8-bit pattern:</p>
+<ul><li>One’s complement of 0000010 → 1111101</li></ul>
+<ul><li>Add 1 → 1111110 = 126</li></ul>
+<ul><li>Sign negative → `-126`</li></ul>
+<p>Equivalent check: signed 8-bit 10000010 = -128 + 2 = -126.</p>
+<h3>[1:03:11] Example 2 — `(short) 150` vs `(byte) 150`</h3>
+<pre class='code'>int x = 150;
+short s = (short) x;
+byte b = (byte) x;
+System.out.println(s);
+System.out.println(b);</pre>
+<p>150 is in short range (−32768 to 32767). Expect no loss for short.</p>
+<h4>150 in binary (his successive ÷2)</h4>
+<p>150 / 2 = 75 r 0
+ 75 / 2 = 37 r 1
+ 37 / 2 = 18 r 1
+ 18 / 2 =  9 r 0
+  9 / 2 =  4 r 1
+  4 / 2 =  2 r 0
+  2 / 2 =  1 r 0
+  1 / 2 =  0 r 1</p>
+<p>Remainders bottom-up: `10010110`.</p>
+<p>32-bit: sign 0 plus leading zeros, then 10010110.</p>
+<p>`(short) x`: short is 16 bits. Last 16 bits. MSB of those 16 is `0` (positive). Remaining bits represent 150 directly. Output `150`. No loss.</p>
+<p>`(byte) x`: last 8 bits: `10010110`. MSB `1` → negative. Two’s complement of the rest:</p>
+<ul><li>Pattern 0010110 → one’s complement 1101001 → +1 → 1101010</li></ul>
+<ul><li>64 + 32 + 8 + 2 = 106</li></ul>
+<ul><li>Negative → `-106`</li></ul>
+<p>He cross-checks with System.out.println and confirms 150 and `-106`.</p>
+<p>(Earlier he guessed -108 out loud; the calculation and the run are -106. Use -106.)</p>
+<h3>[1:11:32] Example 3 — floating point to integral: fraction digits are dropped</h3>
+<p>double d = 130.456;
+int x = (int) d;
+System.out.println(x);     // 130
+
+byte b = (byte) d;
+System.out.println(b);     // -126</p>
+<p>Rule:</p>
+<p>If we assign floating-point values to integral types by explicit type casting, the digits after the decimal point will be lost.</p>
+<p>(int) 130.456 → `130` (.456 gone). Truncation toward zero as taught here: just “digits after decimal gone.”</p>
+<p>Then (byte) d: the fractional part is gone first in the conversion to an integral, leaving 130, which cannot fit in byte, so you get the same `-126` as (byte) 130.</p>
+<p>That is the last type-cast example.</p>
+<h3>[1:15:24] Close of type cast; remaining operators later</h3>
+<p>Two kinds: implicit (compiler, smaller→bigger, no loss) and explicit (programmer, bigger→smaller, possible loss).</p>
+<p>“Now the remaining I will continue” — assignment, conditional, `new` are the next Operators &amp; Assignments video (Part-5, video 021), not this one.</p>
+<h2>Code from the lecture</h2>
+<h3>Short-circuit example 1 (four operators)</h3>
+<pre class='code'>class ShortCircuitEx1 {
+    public static void main(String[] args) {
+        int x = 10, y = 15;
+        if (++x &lt; 10 &amp; ++y &gt; 15) {
+            x++;
+        } else {
+            y++;
+        }
+        System.out.println(x + &quot;........&quot; + y); // 11........17  with &amp;
+        // &amp;&amp; → 11........16
+        // |  → 12........16
+        // || → 12........16
+    }
+}</pre>
+<h3>Short-circuit example 2 (`/ 0`)</h3>
+<pre class='code'>class ShortCircuitEx2 {
+    public static void main(String[] args) {
+        int x = 10;
+        if (++x &lt; 10 &amp;&amp; x / 0 &gt; 10) {
+            System.out.println(&quot;Hello&quot;);
+        } else {
+            System.out.println(&quot;Hi&quot;);  // this prints — second operand skipped
+        }
+        // if (++x &lt; 10 &amp; x / 0 &gt; 10)  → ArithmeticException: / by zero
+    }
+}</pre>
+<h3>Implicit type cast</h3>
+<pre class='code'>class ImplicitCast {
+    public static void main(String[] args) {
+        int x = &#x27;a&#x27;;
+        System.out.println(x);   // 97  (compiler: char → int)
+
+        double d = 10;
+        System.out.println(d);   // 10.0  (compiler: int → double)
+    }
+}</pre>
+<h3>Explicit type cast — 130, 150, 130.456</h3>
+<pre class='code'>class ExplicitCast {
+    public static void main(String[] args) {
+        int x = 130;
+        // byte b = x;
+        // CE: possible loss of precision, found int, required byte
+        byte b = (byte) x;
+        System.out.println(b);   // -126
+
+        int n = 150;
+        short s = (short) n;
+        byte b2 = (byte) n;
+        System.out.println(s);   // 150
+        System.out.println(b2);  // -106
+
+        double d = 130.456;
+        int i = (int) d;
+        byte b3 = (byte) d;
+        System.out.println(i);   // 130   (fraction gone)
+        System.out.println(b3);  // -126
+    }
+}</pre>
+<h2>Exam / interview traps</h2>
+<ul><li>Difference between &amp; and &amp;&amp; is not “one character vs two.” It is always-evaluate vs optional second operand, performance, and integral vs boolean-only.</li></ul>
+<ul><li>x &amp;&amp; y: evaluate y iff x is true. x || y: evaluate y iff x is false.</li></ul>
+<ul><li>Classic increments: &amp; → 11, 17; &amp;&amp; → 11, 16; | and || (with false first operand) → 12, 16.</li></ul>
+<ul><li>&amp;&amp; with x / 0 after a false first operand prints `Hi`, not ArithmeticException. &amp; does throw.</li></ul>
+<ul><li>Implicit: compiler, widening/upcasting, smaller→bigger, no loss. int x = &#x27;a&#x27; is 97. double d = 10 is 10.0.</li></ul>
+<ul><li>Explicit: programmer (type), narrowing/downcasting, bigger→smaller, possible loss. Message: possible loss of precision.</li></ul>
+<ul><li>(byte) 130 is `-126`, not 130, not −130. MSB of the kept 8 bits is the new sign bit; two’s complement for the magnitude.</li></ul>
+<ul><li>(short) 150 is still 150; (byte) 150 is `-106` (not −108).</li></ul>
+<ul><li>Float/double → int/byte: fractional digits lost first, then the remaining integer is narrowed (130.456 → 130 → -126 as byte).</li></ul>
+<ul><li>Assignment operators, conditional ?:, and new are next lecture, not this one.</li></ul>
+<h2>Recap</h2>
+<p>&amp;&amp; and || are boolean-only cousins of &amp; and | that skip the second operand when it cannot change the answer — that is both a performance feature and an exam trap (++ not run, / 0 not run). Type cast is either silent widening by the compiler or a written (type) narrowing that can throw away high bits and fractional digits.</p>
+<p>Next video: Operators &amp; Assignments Part-5 — assignment, conditional, and new operators (video 021).</p>
+<table>
+<tr><th>Field</th><th>Detail</th><th></th><th></th><th></th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td><td></td><td></td><td></td></tr>
+<tr><td>Position</td><td>Video 20 of 203</td><td></td><td></td><td></td></tr>
+<tr><td>Series</td><td>Operators &amp; Assignments · Part 4 of 7</td><td></td><td></td><td></td></tr>
+<tr><td>Topic</td><td>Short-circuit &amp;&amp; `\</td><td>\</td><td> vs bitwise &amp; \</td><td>`; implicit vs explicit type cast (widening / narrowing)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td><td></td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 16m 01s (4561 seconds)</td><td></td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>8xoqfIeBZ1g</td><td></td><td></td><td></td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=8xoqfIeBZ1g</td><td></td><td></td><td></td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td><td></td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th></th><th>Bitwise &amp; `\</th><th>`</th><th>Short-circuit &amp;&amp; `\</th><th>\</th><th>`</th></tr>
+<tr><td>1. Evaluation</td><td>Both arguments should be evaluated always (required or not)</td><td>Second argument evaluation is optional — evaluated only if required</td><td></td><td></td><td></td></tr>
+<tr><td>2. Performance</td><td>Relatively low</td><td>Relatively high</td><td></td><td></td><td></td></tr>
+<tr><td>3. Types</td><td>Applicable for both boolean and integral types</td><td>Applicable only for boolean, not for integral types</td><td></td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Operator</th><th>Second ++y run?</th><th>Branch</th><th>x</th><th>y</th><th></th><th></th></tr>
+<tr><td>&amp;</td><td>yes</td><td>else</td><td>11</td><td>17</td><td></td><td></td></tr>
+<tr><td>&amp;&amp;</td><td>no</td><td>else</td><td>11</td><td>16</td><td></td><td></td></tr>
+<tr><td>`\</td><td>`</td><td>yes</td><td>then</td><td>12</td><td>16</td><td></td></tr>
+<tr><td>`\</td><td>\</td><td>`</td><td>yes (first was false)</td><td>then</td><td>12</td><td>16</td></tr>
+</table>
+</body></html>

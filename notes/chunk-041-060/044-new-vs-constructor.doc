@@ -1,0 +1,238 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>044-new-vs-constructor</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 044</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Interface  and Abstract class Loopholes Part-1 || new vs Constructor</p>
+<p>Source: real YouTube auto-captions (.transcripts/044-WyE3t9geWNY.txt). ASR decoded in place: keep subing = board heading; CH class = child class; Cent / parent = parent; abstruct / obstruct = abstract; inas / interace = interface; loop Poes / loop hes = loopholes; Amir notes = any notes; RO / rule number = roll number; stringer name = String name; DGA / D = Durga; one1 / 101 = 101; Mo n = name (default null); a BB has to burn = a baby has to be born; naming cermony = naming ceremony; injp = OCJP; CLE / CL = clear / clarity.</p>
+<p>This video does not answer the abstract-class and interface loopholes yet. He only lists them, then spends the rest of the class on new vs constructor. Videos 046–048 continue the list. Video 045 (Child Object Vs Parent Constructor-1) has no captions and is skipped.</p>
+<h3>00:00 — Open</h3>
+<p>Caption starts with a stray e. He is not teaching yet.</p>
+<h3>00:40 — Student doubts around constructor, abstract class, and interface</h3>
+<p>Related to constructors, abstract class, and interface, students have several doubts.</p>
+<p>First doubt he voices: we are not going to create an object for an abstract class, but an abstract class can contain a constructor. What is the need? What is the purpose?</p>
+<pre class='code'>abstract class Person {
+    Person() {
+        // legal: abstract class can contain a constructor
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Person p = new Person();
+        // CE: Person is abstract; cannot be instantiated
+    }
+}</pre>
+<p>He has not answered “why the constructor is allowed” yet. He is only putting the doubt on the table.</p>
+<h3>01:09 — Indirect object for abstract class?</h3>
+<p>Some people feel: we cannot create an object for an abstract class directly, but we can create it indirectly. He asks: is it really possible? Indirectly can I create an object for an abstract class? That is another big doubt for most people.</p>
+<p>He does not settle yes/no in this video.</p>
+<h3>01:26 — Constructor for abstract class but not for interface</h3>
+<p>Assume this (he restates, then corrects himself while talking):</p>
+<ul><li>Interface can&#x27;t contain a constructor. (That part he keeps.)</li></ul>
+<ul><li>He first slips “abstract class can&#x27;t contain constructor,” then immediately: abstract class can contain constructor.</li></ul>
+<ul><li>We can&#x27;t create an object for an abstract class.</li></ul>
+<ul><li>We can&#x27;t create an object for an interface.</li></ul>
+<p>Then the doubt: why is the constructor concept required for abstract class but not for interface (inas)?</p>
+<p>This type of terminology — abstract class, interface, constructor — students should have clear clarity.</p>
+<h3>01:59 — Textbook line: child object creates parent object</h3>
+<p>One more big doubt. In several textbooks, in any notes, or on some websites, you will see:</p>
+<p>Whenever we are creating a child class object, automatically a parent object will be created by default.</p>
+<p>Is the parent object created or not? These kinds of loopholes have to be discussed.</p>
+<h3>02:20 — He will spend about one hour on this set</h3>
+<p>Almost around one hour he wants to spend. After completing that one hour, these questions you should be in a position to answer. Just have a look once. (Later he says one hour or one and a half hour.)</p>
+<h3>02:28 — Board: five loophole questions (read them)</h3>
+<p>He asks someone to read. These five are the agenda for the whole loopholes stretch, not five answers in this 16-minute file.</p>
+<p>1. We can&#x27;t create an object for abstract class, but abstract class can contain a constructor. What is the need / what is the purpose?</p>
+<p>2. We can&#x27;t create an object for abstract class directly, but indirectly we can create. Is it valid or not?</p>
+<p>3. Whenever we are creating a child class object, automatically parent class object will be created. Is it valid or not? (Valid or not they will discuss.)</p>
+<p>4. Anyway we can&#x27;t create an object for abstract class and interface, but abstract class can contain a constructor and interface doesn&#x27;t. Why? What is the reason?</p>
+<p>5. Inside interface we can take only abstract methods. Inside abstract class also we can take only abstract methods, based on our requirement. Then what is the need of interface? Is it possible to replace the interface concept with abstract class or not?</p>
+<p>These kinds of loopholes you people are going to learn. Once this one-hour / one-and-a-half-hour session is complete, that is the target.</p>
+<h3>03:50 — First you must know constructor vs `new`</h3>
+<p>First, you people should be aware: what is the purpose of constructor? What is the purpose of `new` keyword? You should have a clear difference.</p>
+<h3>04:00 — Board line: `Student s = new Student(&quot;Durga&quot;, 101)`</h3>
+<p>He writes (ASR: student s is equal to new student of DGA one1):</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student(&quot;Durga&quot;, 101);
+    }
+}</pre>
+<p>He asks: what am I doing? Creating an object for Student class. That is my job. Correct.</p>
+<h3>04:33 — Two activities, not one</h3>
+<p>Do you know: there are two activities I did. Not only creating an object — I am performing initialization also.</p>
+<p>Who is responsible to create an object? Most people do not have clear clarity here.</p>
+<h3>04:46 — Jobs: `new` creates; constructor initializes</h3>
+<p>What is the purpose of the `new` operator? new operator: to create an object.</p>
+<p>What is the purpose of the constructor? To perform initialization of an object.</p>
+<p>You should have clear clarity.</p>
+<p>Most people feel: the purpose of constructor is to create an object. No. The purpose of constructor is to initialize an object.</p>
+<p>Who is responsible to create an object? `new` operator is responsible. Clear for all.</p>
+<p>So: new operator to create an object, and constructor to perform initialization of an object.</p>
+<h3>05:25 — Board: class `Student` with two instance variables</h3>
+<p>He takes one class Student. For every student, compulsory name should be there; roll number is there. Those are instance variables.</p>
+<p>Constructor: Student(String name, int rollNumber) (ASR: student of stringer name in role number). Body: this.name = name; this.rollNumber = rollNumber;.</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+}</pre>
+<p>What is this? A class. How many instance variables? Two. For every object, a separate copy of name and rollNumber will be created.</p>
+<p>What is this concept? Constructor. Of course this one is nothing but one constructor.</p>
+<h3>06:33 — Because of that line: two pieces</h3>
+<p>Watch very carefully. Because of this line (Student s = new Student(&quot;Durga&quot;, 101)), what is happening? Clear clarity required.</p>
+<p>First: new operator is responsible to create object.</p>
+<p>Next: this one (Student(&quot;Durga&quot;, 101)) is a constructor call. This is responsible to initialize object.</p>
+<p>Two points you people should be aware of:</p>
+<ul><li>purpose of new operator → create an object</li></ul>
+<ul><li>purpose of constructor → initialize that object</li></ul>
+<h3>07:27 — What `new` does internally: object + default values</h3>
+<p>Because of this line, a Student object will be created, and two instance variables will be created, of course with default values.</p>
+<p>Whenever we are using new, internally: an object got created; two instance variables will be created with the default values.</p>
+<ul><li>default value for name (Mo n in ASR): `null`</li></ul>
+<ul><li>default value for roll number: `0`</li></ul>
+<p>That is the thing happening because of new.</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student(&quot;Durga&quot;, 101);
+        // after new, before constructor body runs:
+        //   s.name       == null
+        //   s.rollNumber == 0
+        // after constructor body:
+        //   s.name       == &quot;Durga&quot;
+        //   s.rollNumber == 101
+    }
+}</pre>
+<h3>08:02 — Immediately after object creation, constructor executes</h3>
+<p>After object creation, immediately constructor will be executed.</p>
+<p>How many arguments are we passing? Two arguments. Durga (D) is coming here; next the roll number is coming here.</p>
+<p>Now on this object this constructor will execute to perform initialization.</p>
+<h3>08:24 — `this.name` and `this.rollNumber`</h3>
+<p>this.name — meaning: current object name. That is equal to name, which name you provided: here Durga you provided. Now this is replaced with Durga.</p>
+<p>this.rollNumber = rollNumber — which roll number we passed? 101. Now 0 will be replaced with 101.</p>
+<p>Main purpose of new operator: create an object. Purpose of constructor: perform initialization of an object.</p>
+<p>Most people feel constructor purpose is to create an object. No. Constructor purpose is to initialize an object. Clear for all.</p>
+<p>What is the purpose of new operator? What is the purpose of constructor? First you should have clear clarity.</p>
+<h3>09:20 — Which executes first: `new` or constructor?</h3>
+<p>Last point about this one. new operator is there, constructor is there. Which will be executed first? new operator or constructor?</p>
+<p>First `new`. Once object is created, then we will think about initialization. That is why first `new` operator, after that constructor will be executed.</p>
+<h3>09:41 — Baby / naming-ceremony analogy</h3>
+<p>Simple: a baby has to be born (a BB has to burn). After baby is born, we will think about naming ceremony.</p>
+<p>Look at this: first naming ceremony and then baby will come? No. First object should be created; after that initialization will happen.</p>
+<p>In which order will the things be executed? First `new` operator, after that constructor. new operator to create an object; constructor is to perform initialization of that object. Clear for all.</p>
+<p>This is about what is the purpose of constructor and new operator.</p>
+<h3>10:18 — Board dictation: main objective of `new`</h3>
+<p>Take this part. He dictates slowly so they copy:</p>
+<p>The main objective of `new` operator is to create an object.</p>
+<p>(He repeats “to create an object” several times while writing.)</p>
+<h3>10:48 — Board dictation: main purpose of constructor</h3>
+<p>The main purpose of constructor is to initialize that object.</p>
+<p>(He repeats “to initialize object.”)</p>
+<h3>11:16 — Board dictation: order</h3>
+<p>First object will be created by using `new` operator, and then initialization will be performed by constructor.</p>
+<h3>12:02 — Rules should be very clear</h3>
+<p>What is the purpose of new operator? What is the purpose of constructor? Rules should be very clear.</p>
+<ul><li>new purpose is to create object</li></ul>
+<ul><li>constructor purpose is to initialize that object</li></ul>
+<p>Clear. Take this example.</p>
+<h3>12:22 — Same `Student` example written again</h3>
+<p>He rewrites the class on the board (ASR: string name in RO number; student of string name into RO number; this name is equal to name; this RO number is equal to ro number):</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+}</pre>
+<p>Better to highlight: what is this part? Constructor.</p>
+<p>What is the purpose of constructor? You people should have clear clarity: to perform initialization.</p>
+<p>Have you observed: assignment statements are there. Assignment is meant for what? Initialization. Constructor job is just to perform initialization of an object. Completed.</p>
+<h3>13:32 — Creation line and the diagram</h3>
+<p>Now take this line, and the diagram also (ASR first says new student of 101, then corrects to Durga 101):</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Student s = new Student(&quot;Durga&quot;, 101);
+        // new Student(...)  --&gt; new operator: responsible to create object
+        // Student(&quot;Durga&quot;, 101) --&gt; constructor: to initialize object
+    }
+}</pre>
+<p>What about new operator? Responsible to create object.</p>
+<p>What is the purpose of this word constructor? To initialize object.</p>
+<p>Whenever we are creating an object by using new operator, automatically constructor will be executed to perform initialization.</p>
+<p>So: first object will be created, and then constructor will be executed.</p>
+<h3>14:41 — Repeat the two jobs and the order</h3>
+<p>By this, he hopes everyone can say: what is the purpose of new operator, what is the purpose of constructor.</p>
+<ul><li>new operator is responsible to create object</li></ul>
+<ul><li>constructor job is to initialize that object</li></ul>
+<p>First which one will be executed? First one: `new` operator. After that, constructor will be executed. Clear.</p>
+<h3>15:05 — Point number one: constructor does not create the object</h3>
+<p>First you should have this clarity first.</p>
+<p>Most people are going to [think]: constructor to create an object. No. Constructor to initialize an object, but not to create object. Clear for all of you.</p>
+<p>Point number one. (Okay / end.)</p>
+<p>That is the whole of video 044: only the new vs constructor foundation. The five loopholes stay on the board for the next parts.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>44 of 203</td></tr>
+<tr><td>Series</td><td>Interface and Abstract class Loopholes · Part 1</td></tr>
+<tr><td>Topic</td><td>new vs Constructor</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>15m 59s</td></tr>
+<tr><td>Video ID</td><td>WyE3t9geWNY</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=WyE3t9geWNY</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

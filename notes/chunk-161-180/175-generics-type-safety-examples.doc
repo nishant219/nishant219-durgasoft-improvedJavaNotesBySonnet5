@@ -1,0 +1,332 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>175-generics-type-safety-examples</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 175 — Generics Part-3: Type Safety &amp; Type Casting Examples (Bounded Types)</h1>
+<h2>Video info</h2>
+<p>ASR decode notes: time safety = type safety; bound dat / bound data = bounded type; un founded = unbounded; exter / externs = extends; run / runable / unable = Runnable; interace = interface; CH class = child class; compar / comp meod = compile-time error; Paka = pakka (definitely); iner / in = Integer; leg / Len = listen; keep subing = board note.</p>
+<h2>Session overview</h2>
+<p>Part-3 extends the Gen&lt;T&gt; / generic-class foundation from Video 174 with bounded types — restricting the type parameter to a particular range when the class logic only makes sense for certain types (e.g. arithmetic only on numbers).</p>
+<p>Prerequisite (recap from prior session):</p>
+<ul><li>Need and advantage of generics</li></ul>
+<ul><li>Type parameter concept</li></ul>
+<ul><li>Non-generic vs generic ArrayList class</li></ul>
+<ul><li>How to create our own generic class</li></ul>
+<p>What this session covers:</p>
+<ol><li>Motivation: arithmetic on T requires numeric bound</li></ol>
+<ol><li>`T extends Number` — bounded type for numeric operations</li></ol>
+<ol><li>Unbounded vs bounded type parameters</li></ol>
+<ol><li>Syntax: class Test&lt;T extends X&gt;</li></ol>
+<ol><li>X as class vs interface — what types are allowed at instantiation</li></ol>
+<ol><li>Live compile demos with error messages</li></ol>
+<ol><li>Multiple bounds: T extends Number &amp; Runnable</li></ol>
+<ol><li>More combinations: T extends Runnable &amp; Comparable, T extends Number &amp; Runnable &amp; Comparable</li></ol>
+<ol><li>Invalid combinations and reasons (order, multiple classes)</li></ol>
+<ol><li>Three conclusions: extends-only keyword; any valid identifier for T; multiple type parameters (HashMap&lt;K,V&gt;)</li></ol>
+<h3>00:05 — Recap and the bounded-type problem</h3>
+<p>Previous session covered: need of generics, type parameter, generic vs non-generic class, creating own generic class.</p>
+<p>New twist — extension of prior `Test&lt;T&gt;` example:</p>
+<p>Suppose:</p>
+<pre class='code'>class Test&lt;T&gt; {
+    public void m1() {
+        T a, b;
+        System.out.println(a + b);
+        System.out.println(a * b);
+        System.out.println(a / b);
+    }
+}</pre>
+<p>Problem: Arithmetic operations (+, *, /) apply only to numbers, not to arbitrary types.</p>
+<ul><li>Two String objects: a + b OK (concatenation), but a * b and a / b are meaningless</li></ul>
+<ul><li>Two Student objects: all three operations meaningless</li></ul>
+<p>If functionality applies only to a particular boundary (numbers), we must bound the type parameter up to `Number` only.</p>
+<p>Solution:</p>
+<pre class='code'>class Test&lt;T extends Number&gt; {
+    public void m1() {
+        T a, b;
+        // arithmetic meaningful only when T is Number or subclass
+        System.out.println(a + b);
+        System.out.println(a * b);
+        System.out.println(a / b);
+    }
+}</pre>
+<p>At type parameter we can pass any type which is a child class of `Number`.</p>
+<p>Child classes of `Number`: Byte, Short, Integer, Long, Float, Double (and Number itself).</p>
+<h3>03:47 — Bounded vs unbounded type parameters</h3>
+<p>We can bound the type parameter for a particular range by using the `extends` keyword.</p>
+<p>Such types are called bounded types.</p>
+<p>Board definition:</p>
+<p>We can bound the type parameter for a particular range by using `extends` keyword. Such types are called bounded types.</p>
+<h3>06:49 — Unbounded example — any type allowed</h3>
+<pre class='code'>class Test&lt;T&gt; { }
+
+Test&lt;Integer&gt; t1 = new Test&lt;Integer&gt;();   // valid
+Test&lt;String&gt; t2 = new Test&lt;String&gt;();   // valid</pre>
+<p>For unbounded Test&lt;T&gt;:</p>
+<ul><li>Type parameter we can pass any type</li></ul>
+<ul><li>There are no restrictions</li></ul>
+<ul><li>Hence it is an unbounded type</li></ul>
+<h3>09:27 — Bounded example: `T extends Number`</h3>
+<pre class='code'>class Test&lt;T extends Number&gt; { }
+
+Test&lt;Integer&gt; t1 = new Test&lt;Integer&gt;();   // valid — Integer is child of Number
+Test&lt;String&gt; t2 = new Test&lt;String&gt;();     // INVALID — compile error</pre>
+<p>Compile error:</p>
+<p>type parameter java.lang.String is not within its bound</p>
+<p>(String is not a subclass of Number.)</p>
+<h3>10:08 — Wrong keywords: `implements` and `super` (not for bounded types)</h3>
+<p>Sir shows invalid syntax variants to trap exam mistakes:</p>
+<pre class='code'>// WRONG — do not use for bounded types:
+class Test&lt;T implements Runnable&gt; { }   // invalid terminology
+class Test&lt;T super String&gt; { }          // super not applicable</pre>
+<p>Only this is correct for bounded types:</p>
+<pre class='code'>class Test&lt;T extends Number&gt; { }        // valid
+class Test&lt;T extends Runnable&gt; { }      // valid — extends works for interfaces too</pre>
+<p>Note: Wherever implements would seem natural, replace with `extends` — in generics, `extends` is used for both classes and interfaces.</p>
+<h3>12:37 — Syntax for bounded type (formal)</h3>
+<p>General syntax:</p>
+<pre class='code'>class Test&lt;T extends X&gt; { }</pre>
+<p>`X` can be either class or interface.</p>
+<p>Board (copy exactly):</p>
+<p>Syntax for bounded type:
+
+class Test&lt;T extends X&gt; { }
+
+X can be either class or interface.
+
+If X is a class:
+  → at type parameter: X type or its child classes
+
+If X is an interface:
+  → at type parameter: X type or its implementation classes</p>
+<h3>16:13 — Examples: `T extends Number` and `T extends Runnable`</h3>
+<h4>Example 1 — `T extends Number`</h4>
+<pre class='code'>class Test&lt;T extends Number&gt; { }
+
+Test&lt;Integer&gt; t1 = new Test&lt;Integer&gt;();     // valid
+Test&lt;String&gt; t2 = new Test&lt;String&gt;();       // CE: String not within bound</pre>
+<h4>Example 2 — `T extends Runnable`</h4>
+<pre class='code'>class Test&lt;T extends Runnable&gt; { }
+
+Test&lt;Runnable&gt; t1 = new Test&lt;Runnable&gt;();   // valid
+Test&lt;Thread&gt; t2 = new Test&lt;Thread&gt;();       // valid — Thread implements Runnable
+Test&lt;Integer&gt; t3 = new Test&lt;Integer&gt;();     // CE: Integer not in bound</pre>
+<p>Error for Integer on Runnable bound:</p>
+<p>type parameter java.lang.Integer is not within its bound</p>
+<p>Sir executes live in Test.java to confirm all compile errors.</p>
+<h3>26:38 — Multiple bounds (combination)</h3>
+<p>Requirement: Type parameter must be child class of Number AND implement Runnable — both conditions simultaneously.</p>
+<p>Syntax:</p>
+<pre class='code'>class Test&lt;T extends Number &amp; Runnable&gt; { }</pre>
+<p>Not comma — use `&amp;` between bounds.</p>
+<p>More valid combinations:</p>
+<pre class='code'>// Must implement BOTH interfaces:
+class Test&lt;T extends Runnable &amp; Comparable&gt; { }
+
+// Child of Number AND implements both interfaces:
+class Test&lt;T extends Number &amp; Runnable &amp; Comparable&gt; { }</pre>
+<h3>32:43 — Invalid multiple-bound combinations</h3>
+<h4>Invalid 1 — interface before class (wrong order)</h4>
+<pre class='code'>class Test&lt;T extends Runnable &amp; Number&gt; { }   // INVALID</pre>
+<p>Reason: Same as normal Java class declaration — class first, then interfaces:</p>
+<pre class='code'>class A extends B implements C { }   // valid
+class A implements B extends C { }   // invalid</pre>
+<p>For bounded types: `extends Number` (class) must come before `&amp; Runnable` (interface).</p>
+<h4>Invalid 2 — extending more than one class</h4>
+<pre class='code'>class Test&lt;T extends Number &amp; Thread&gt; { }   // INVALID</pre>
+<p>Reason: Java does not support multiple inheritance of classes. Number and Thread are both classes — cannot extend two classes simultaneously (same rule as class A extends B, C).</p>
+<p>Valid pattern summary:</p>
+<p>Rules when defining bounded types in combination:</p>
+<ol><li>My type parameter can extend one class and implement interface(s)</li></ol>
+<ol><li>My type parameter can implement more than one interface</li></ol>
+<ol><li>Class first, then interfaces (extends keyword chain)</li></ol>
+<ol><li>Not more than one class in the bound list</li></ol>
+<h3>39:46 — Conclusions (three notes)</h3>
+<h4>Note 1 — Bounded types defined only with `extends`</h4>
+<p>We can define bounded types only by using `extends` keyword.</p>
+<ul><li>`implements` and `super` keywords are NOT allowed</li></ul>
+<ul><li>Where implements purpose is needed → replace with `extends`</li></ul>
+<pre class='code'>class Test&lt;T extends Number&gt; { }      // valid
+class Test&lt;T implements Runnable&gt; { } // WRONG
+class Test&lt;T super String&gt; { }          // WRONG
+class Test&lt;T extends Runnable&gt; { }    // valid (interface via extends)</pre>
+<h4>Note 2 — Type parameter name</h4>
+<p>The type parameter need not be `T` — any valid Java identifier:</p>
+<pre class='code'>class Test&lt;T&gt; { }      // convention — T means Type parameter
+class Test&lt;X&gt; { }      // valid
+class Test&lt;A&gt; { }      // valid
+class Test&lt;Durga&gt; { }  // valid</pre>
+<p>Convention: Use `T` because T starts with T and means type parameter — not compulsory.</p>
+<h4>Note 3 — Multiple type parameters</h4>
+<p>Based on requirement, we can declare any number of type parameters, separated by comma:</p>
+<pre class='code'>class Test&lt;A, B&gt; { }
+class Test&lt;X, Y, Z&gt; { }</pre>
+<p>Real API example — `HashMap`:</p>
+<pre class='code'>class HashMap&lt;K, V&gt; { }   // K = key type, V = value type
+
+HashMap&lt;Integer, String&gt; m = new HashMap&lt;Integer, String&gt;();</pre>
+<p>Two type parameters: K (key type), V (value type).</p>
+<h2>Bounded types — complete reference table</h2>
+<h2>Compile error messages (exam)</h2>
+<h2>Full demo code — bounded types</h2>
+<pre class='code'>// Unbounded
+class UnboundedTest&lt;T&gt; { }
+
+// Bounded — numbers only
+class NumberTest&lt;T extends Number&gt; {
+    public void printSum(T a, T b) {
+        System.out.println(a.doubleValue() + b.doubleValue());
+    }
+}
+
+// Bounded — Runnable hierarchy
+class RunnableTest&lt;T extends Runnable&gt; { }
+
+// Multi-bound (conceptual — type must satisfy both)
+class MultiBoundTest&lt;T extends Number &amp; Runnable&gt; { }
+
+public class BoundedTypeDemo {
+    public static void main(String[] args) {
+        UnboundedTest&lt;Integer&gt; u1 = new UnboundedTest&lt;&gt;();
+        UnboundedTest&lt;String&gt; u2 = new UnboundedTest&lt;&gt;();
+
+        NumberTest&lt;Integer&gt; n1 = new NumberTest&lt;&gt;();
+        // NumberTest&lt;String&gt; n2 = new NumberTest&lt;&gt;();  // CE
+
+        RunnableTest&lt;Thread&gt; r1 = new RunnableTest&lt;&gt;();
+        // RunnableTest&lt;Integer&gt; r2 = new RunnableTest&lt;&gt;();  // CE
+
+        NumberTest&lt;Integer&gt; nums = new NumberTest&lt;&gt;();
+        nums.printSum(10, 20);
+    }
+}</pre>
+<h2>OCJP/SCJP exam checklist (Video 175)</h2>
+<ul><li>[ ] Define bounded type — restrict type parameter to a range via extends</li></ul>
+<ul><li>[ ] Distinguish unbounded (&lt;T&gt;) vs bounded (&lt;T extends Number&gt;)</li></ul>
+<ul><li>[ ] Syntax: class Test&lt;T extends X&gt; — X = class or interface</li></ul>
+<ul><li>[ ] If X is class → X or subclasses; if interface → X or implementors</li></ul>
+<ul><li>[ ] Know child classes of Number: Byte, Short, Integer, Long, Float, Double</li></ul>
+<ul><li>[ ] Multi-bound syntax: T extends Number &amp; Runnable (use &amp;, not comma)</li></ul>
+<ul><li>[ ] Invalid: T extends Runnable &amp; Number (class must be first)</li></ul>
+<ul><li>[ ] Invalid: T extends Number &amp; Thread (two classes)</li></ul>
+<ul><li>[ ] Cannot use implements or super for bounded types — only extends</li></ul>
+<ul><li>[ ] Type parameter name: any valid identifier; T is convention</li></ul>
+<ul><li>[ ] Multiple type parameters: HashMap&lt;K,V&gt;, comma-separated</li></ul>
+<ul><li>[ ] Error: &quot;type parameter X is not within its bound&quot;</li></ul>
+<h2>Interview Q&amp;A (rapid fire)</h2>
+<p>Q: What is a bounded type?</p>
+<p>A: A generic type parameter restricted to a range using extends, e.g. T extends Number.</p>
+<p>Q: Unbounded vs bounded?</p>
+<p>A: Unbounded &lt;T&gt; accepts any type; bounded &lt;T extends Number&gt; accepts Number and subclasses only.</p>
+<p>Q: Can we write `T implements Runnable`?</p>
+<p>A: No. Use T extends Runnable for both classes and interfaces in generics.</p>
+<p>Q: Multiple bounds syntax?</p>
+<p>A: T extends ClassBound &amp; Interface1 &amp; Interface2 — one class max, class first.</p>
+<p>Q: Must type parameter be named T?</p>
+<p>A: No. Any valid Java identifier; T is convention (Type parameter).</p>
+<p>Q: Example of two type parameters?</p>
+<p>A: HashMap&lt;K, V&gt; — K key type, V value type.</p>
+<h2>Cross-references (playlist)</h2>
+<h2>Board diagrams to reproduce</h2>
+<h3>Diagram 1: Unbounded vs bounded</h3>
+<p>Unbounded:     class Test&lt;T&gt;           →  any type OK
+Bounded:       class Test&lt;T extends Number&gt;  →  Number hierarchy only</p>
+<h3>Diagram 2: Number hierarchy (allowed for T extends Number)</h3>
+<p>        Number
+       /  |  \
+   Integer Long Double
+     /      \
+  Byte    Short Float</p>
+<h3>Diagram 3: Multiple bounds</h3>
+<p>Valid:    T extends Number &amp; Runnable &amp; Comparable
+          └─ one class ─┘   └── interfaces ──┘
+
+Invalid:  T extends Runnable &amp; Number     (class not first)
+Invalid:  T extends Number &amp; Thread       (two classes)</p>
+<h3>Diagram 4: Three conclusions</h3>
+<p>1. Bounded types → extends ONLY (not implements/super)
+2. Type param name → any identifier (T = convention)
+3. Count → any number, comma-separated (HashMap&lt;K,V&gt;)</p>
+<h2>Summary (one paragraph)</h2>
+<p>Video 175 introduces bounded types to restrict generic type parameters when class logic demands it — Sir&#x27;s Test&lt;T&gt; with a + b, a * b, a / b only makes sense for numbers, so T extends Number limits arguments to Number and its subclasses (Integer, Double, etc.). Unbounded &lt;T&gt; accepts any type; bounded &lt;T extends X&gt; uses `extends` for both classes and interfaces. For a class bound, pass X or subclasses; for an interface, pass X or implementors. Live demos show Test&lt;String&gt; failing with &quot;not within its bound&quot; when bound is Number, and Test&lt;Integer&gt; failing when bound is Runnable. Multiple bounds use &amp;: T extends Number &amp; Runnable requires both conditions; class must come before interfaces, and only one class is allowed. Three conclusions: define bounds only with extends (not implements/super); type parameter name is any valid identifier (T is convention); declare multiple type parameters comma-separated as in HashMap&lt;K,V&gt;. Generic methods and wildcards continue in later videos.</p>
+<p>End of Video 175 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th><th></th><th></th></tr>
+<tr><td>Position</td><td>175 of 203</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Generics Part-3 \</td><td>\</td><td>type safety \</td><td>\</td><td>type casting Examples</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Duration</td><td>54m 19s</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>JMneguQXeUE</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Watch URL</td><td>https://www.youtube.com/watch?v=JMneguQXeUE</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>YouTube auto-captions (yt-dlp + node PO token)</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Transcript</td><td>.transcripts/175-JMneguQXeUE.txt</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Output</td><td>175-generics-type-safety-examples.doc</td><td></td><td></td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Declaration</th><th>Kind</th><th>Type argument restriction</th></tr>
+<tr><td>class Test&lt;T&gt;</td><td>Unbounded</td><td>Any type — no restrictions</td></tr>
+<tr><td>class Test&lt;T extends Number&gt;</td><td>Bounded</td><td>Number or its subclasses only</td></tr>
+</table>
+<table>
+<tr><th>Bound target</th><th>Meaning at type parameter</th></tr>
+<tr><td>T extends Number</td><td>Number or child classes</td></tr>
+<tr><td>T extends Runnable</td><td>Runnable or implementation classes</td></tr>
+<tr><td>T super String</td><td>Not applicable in Java generics</td></tr>
+</table>
+<table>
+<tr><th>If X is…</th><th>At type parameter we can pass…</th></tr>
+<tr><td>Class</td><td>X type or its child classes</td></tr>
+<tr><td>Interface</td><td>X type or its implementation classes</td></tr>
+</table>
+<table>
+<tr><th>Rule</th><th>Detail</th></tr>
+<tr><td>Type argument</td><td>Any type that is subclass of Number and implements Runnable</td></tr>
+<tr><td>Keyword between bounds</td><td>&amp;</td></tr>
+</table>
+<table>
+<tr><th>Pattern</th><th>Valid?</th></tr>
+<tr><td>T extends Class &amp; Interface</td><td>Yes</td></tr>
+<tr><td>T extends Interface &amp; Interface</td><td>Yes</td></tr>
+<tr><td>T extends Interface &amp; Class</td><td>No — class first</td></tr>
+<tr><td>T extends Class &amp; Class</td><td>No — only one class</td></tr>
+</table>
+<table>
+<tr><th>Declaration</th><th>Bounded?</th><th>Valid type args</th><th>Invalid type args</th></tr>
+<tr><td>Test&lt;T&gt;</td><td>Unbounded</td><td>Any reference type</td><td>—</td></tr>
+<tr><td>Test&lt;T extends Number&gt;</td><td>Bounded</td><td>Integer, Double, Number, …</td><td>String</td></tr>
+<tr><td>Test&lt;T extends Runnable&gt;</td><td>Bounded</td><td>Runnable, Thread, …</td><td>Integer</td></tr>
+<tr><td>Test&lt;T extends Number &amp; Runnable&gt;</td><td>Multi-bound</td><td>Types subclassing Number AND implementing Runnable</td><td>String, Integer alone</td></tr>
+<tr><td>Test&lt;T extends Runnable &amp; Number&gt;</td><td>—</td><td>Invalid syntax (class must be first)</td><td>—</td></tr>
+<tr><td>Test&lt;T extends Number &amp; Thread&gt;</td><td>—</td><td>Invalid (two classes)</td><td>—</td></tr>
+</table>
+<table>
+<tr><th>Situation</th><th>Typical message</th></tr>
+<tr><td>Wrong type for bound</td><td>type parameter java.lang.String is not within its bound</td></tr>
+<tr><td>Primitive as type arg</td><td>unexpected type / required: reference</td></tr>
+<tr><td>Wrong add on generic list</td><td>cannot find symbol: method add(Integer)</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Video</th><th>Notes file</th></tr>
+<tr><td>Generics introduction</td><td>173</td><td>173-generics-introduction.doc</td></tr>
+<tr><td>Generic classes &amp; Gen&lt;T&gt;</td><td>174</td><td>174-generics-type-safety-casting.doc</td></tr>
+<tr><td>Number wrapper hierarchy</td><td>113</td><td>113-wrapper-classes.doc</td></tr>
+<tr><td>Runnable / Thread</td><td>081–082</td><td>chunk-081-100</td></tr>
+<tr><td>HashMap (K, V params)</td><td>collections Map lectures</td><td>chunk-141-160</td></tr>
+</table>
+</body></html>

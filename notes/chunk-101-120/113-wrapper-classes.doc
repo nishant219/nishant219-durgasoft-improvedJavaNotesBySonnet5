@@ -1,0 +1,193 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>113-wrapper-classes</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 113</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: java.lang.package Part-8 || wrapper classes</p>
+<h3>00:06 — Where we are in `java.lang`</h3>
+<p>Completed so far: Object, String, StringBuffer, StringBuilder.</p>
+<p>Next: Wrapper classes, then Autoboxing / Autounboxing (Java 1.5).</p>
+<h3>01:19 — What is a wrapper? (English → Java)</h3>
+<p>Wrapper = cover (chocolate wrapped in foil).</p>
+<p>In Java: wrap a primitive so it can be treated as an object.</p>
+<p>Purpose: convert primitive → object form to use primitives where only objects are allowed.</p>
+<h3>03:20 — Classic pre-1.5 Collections example</h3>
+<p>Until Java 1.4, collections hold objects only, not primitives:</p>
+<pre class='code'>import java.util.*;
+
+class Test {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        // l.add(10);  // CE (1.4): required Object, found int
+
+        Integer i = new Integer(10);  // wrap primitive 10
+        l.add(i);                     // OK — now Object
+    }
+}</pre>
+<p>Java is OOP-oriented; wrapper classes let us handle primitives like objects.</p>
+<h3>05:45 — Two main objectives of wrapper classes</h3>
+<ol><li>Wrap primitive into object form so primitives can be handled like objects (Collections, generics, etc.)</li></ol>
+<ol><li>Define utility methods required for primitives (e.g. Integer.toString(10)) — primitives have no methods of their own</li></ol>
+<p>Example utility:</p>
+<p>String s = Integer.toString(10);
+// Converts primitive 10 to String — method lives in Integer wrapper class</p>
+<h3>11:08 — Eight wrapper classes &amp; constructors overview</h3>
+<p>8 wrapper classes: Byte, Short, Integer, Long, Float, Double, Character, Boolean</p>
+<p>Almost all wrapper classes have two constructors:</p>
+<ol><li>Corresponding primitive argument</li></ol>
+<ol><li>Corresponding `String` argument</li></ol>
+<p>Integer i = new Integer(10);    // int primitive
+Integer j = new Integer(&quot;10&quot;);  // String form</p>
+<p>Same pattern for Double, etc.</p>
+<h3>15:57 — String constructor trap: `NumberFormatException`</h3>
+<p>If String argument does not represent a valid number:</p>
+<p>Integer i = new Integer(&quot;ten&quot;);  // compiles
+// Runtime: NumberFormatException</p>
+<h3>19:56 — Constructor validity traps (Integer / Float / Double)</h3>
+<p>Integer — `long` literal NOT accepted by Integer constructor:</p>
+<p>Integer i = new Integer(10);    // valid
+Integer j = new Integer(10L);   // CE — no Integer(int/long) ambiguity; 10L is long</p>
+<p>Float — three constructors (exception to “almost all have two”):</p>
+<p>Float f1 = new Float(10.5F);        // float primitive — valid
+Float f2 = new Float(&quot;10.5F&quot;);      // String — valid
+Float f3 = new Float(10.5);         // double primitive — valid (Float has double ctor)
+// 10.5 without F is double type; Float class accepts float OR String OR double</p>
+<p>Double — two constructors: double or String</p>
+<h3>25:20 — Character: **only ONE** constructor</h3>
+<p>Character ch = new Character(&#x27;a&#x27;);   // valid — char primitive
+Character bad = new Character(&quot;a&quot;); // CE — no String constructor in Character</p>
+<p>Character class contains only one constructor — takes `char` primitive only.</p>
+<h3>28:29 — Boolean: two constructors + primitive vs String rules</h3>
+<p>Primitive constructor — only `true` or `false` (lowercase):</p>
+<p>Boolean b1 = new Boolean(true);   // valid
+Boolean b2 = new Boolean(false);  // valid
+Boolean b3 = new Boolean(True);   // CE — True is not boolean primitive
+Boolean b4 = new Boolean(&quot;true&quot;); // valid String form (different rules)
+Boolean b5 = new Boolean(&quot;Durga&quot;); // compiles; runtime → false internally</p>
+<h3>34:28 — Famous interview MCQ: `Boolean(&quot;yes&quot;)` vs `Boolean(&quot;no&quot;)`</h3>
+<pre class='code'>Boolean x = new Boolean(&quot;yes&quot;);
+Boolean y = new Boolean(&quot;no&quot;);
+System.out.println(x.equals(y));</pre>
+<p>Most students guess: false (content differs).</p>
+<p>Actual output: `true`</p>
+<p>Why: String-argument Boolean constructor rules:</p>
+<ul><li>If content equals `&quot;true&quot;` case-insensitively → stored as true</li></ul>
+<ul><li>All other strings → stored as false</li></ul>
+<p>So both x and y internally hold `false` → equals → true.</p>
+<p>Live run (Durga Sir):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Boolean x = new Boolean(&quot;yes&quot;);
+        Boolean y = new Boolean(&quot;no&quot;);
+        System.out.println(x);           // false
+        System.out.println(y);           // false
+        System.out.println(x.equals(y)); // true
+    }
+}</pre>
+<p>Board rule — String type Boolean argument:</p>
+<ul><li>Case and content both NOT important (except true detection)</li></ul>
+<ul><li>If case-insensitive content equals &quot;true&quot; → true</li></ul>
+<ul><li>Otherwise → false</li></ul>
+<p>Examples:</p>
+<ul><li>&quot;true&quot;, &quot;TRUE&quot;, &quot;TrUe&quot; → true</li></ul>
+<ul><li>&quot;yes&quot;, &quot;no&quot;, &quot;Durga&quot;, &quot;Malika&quot; → false</li></ul>
+<p>Contrast — primitive boolean argument: only `true` / `false` (case matters — must be lowercase keywords).</p>
+<h3>49:12 — Constructor summary table</h3>
+<p>Variations: Float (3 ctors), Character (1 ctor), Boolean (String semantics).</p>
+<h3>51:49 — Printing wrapper refs: `toString()` &amp; `equals()` overridden</h3>
+<p>In all wrapper classes:</p>
+<ul><li>`toString()` overridden → returns content directly (false, not Boolean@hex)</li></ul>
+<ul><li>`equals()` overridden → content comparison</li></ul>
+<p>Boolean x = new Boolean(&quot;yes&quot;);
+System.out.println(x);  // false — not Boolean@hash</p>
+<h3>57:03 — Utility method 1: `valueOf()` — purpose</h3>
+<p>Same goal as constructors: create wrapper object from primitive or String.</p>
+<pre class='code'>Integer i = new Integer(10);      // constructor
+Integer j = Integer.valueOf(10);  // valueOf — preferred later (autoboxing uses this)
+Integer k = Integer.valueOf(&quot;10&quot;);</pre>
+<p>Three forms of `valueOf`:</p>
+<p>Form 1 — String (every wrapper except Character):</p>
+<pre class='code'>public static Wrapper valueOf(String s)</pre>
+<p>Form 2 — String + radix (integral wrappers only: Byte, Short, Integer, Long):</p>
+<p>Integer i = Integer.valueOf(&quot;1010&quot;, 2);  // binary string → decimal 10
+System.out.println(i);                   // 10</p>
+<p>Allowed radix range: 2 to 36 (digits 0–9, then A–Z for higher bases). Radix 37 → NumberFormatException.</p>
+<p>Why max 36? Need distinct digit symbols 0–9 + A–Z.</p>
+<p>Form 3 — primitive (all wrappers including Character):</p>
+<p>Integer i = Integer.valueOf(10);
+Character c = Character.valueOf(&#x27;a&#x27;);
+Boolean b = Boolean.valueOf(true);</p>
+<h3>1:24:28 — Utility method 2: `xxxValue()` — wrapper → primitive</h3>
+<p>Reverse of wrapping: get primitive from wrapper object.</p>
+<p>On Integer (example) — six numeric conversion methods:</p>
+<p>Integer i = new Integer(130);
+System.out.println(i.byteValue());   // -126  (internal narrowing cast)
+System.out.println(i.shortValue());  // 130
+System.out.println(i.intValue());    // 130
+System.out.println(i.longValue());   // 130
+System.out.println(i.floatValue());  // 130.0
+System.out.println(i.doubleValue()); // 130.0</p>
+<p>Every number-type wrapper class (Byte, Short, Integer, Long, Float, Double) contains these 6 methods → 6 × 6 = 36 methods.</p>
+<p>Plus:</p>
+<ul><li>Character: charValue()</li></ul>
+<ul><li>Boolean: booleanValue()</li></ul>
+<p>Total `xxxValue` methods: 38 = 6×6 + 1 + 1</p>
+<p>Character ch = new Character(&#x27;a&#x27;);
+char c = ch.charValue();  // &#x27;a&#x27;
+
+Boolean b = Boolean.valueOf(&quot;Durga&quot;);  // false internally
+boolean bv = b.booleanValue();         // false</p>
+<h3>1:43:08 — End of session (mid utility-methods series)</h3>
+<p>Session ends after `xxxValue` summary. Remaining utility methods (parseXxx, toString static forms) continue in next video(s). Autoboxing follows wrapper utilities in series order.</p>
+<h2>ASR decode notes</h2>
+<p>Java code block count: 17</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP (java.lang package series)</td></tr>
+<tr><td>Position</td><td>113 of 203</td></tr>
+<tr><td>Series</td><td>java.lang.package</td></tr>
+<tr><td>Topic</td><td>Wrapper classes; wrapper object creation; constructors; valueOf; xxxValue</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 43m 38s</td></tr>
+<tr><td>Video ID</td><td>UHq63fU4NVU</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=UHq63fU4NVU</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Wrapper</th><th>Constructor arguments</th></tr>
+<tr><td>Byte</td><td>byte or String</td></tr>
+<tr><td>Short</td><td>short or String</td></tr>
+<tr><td>Integer</td><td>int or String</td></tr>
+<tr><td>Long</td><td>long or String</td></tr>
+<tr><td>Float</td><td>float, String, or `double`</td></tr>
+<tr><td>Double</td><td>double or String</td></tr>
+<tr><td>Character</td><td>`char` only</td></tr>
+<tr><td>Boolean</td><td>boolean or String (special parsing rules)</td></tr>
+</table>
+<table>
+<tr><th>Heard</th><th>Intended</th></tr>
+<tr><td>rapper / wer / raer / Apper</td><td>wrapper</td></tr>
+<tr><td>bullan / buan</td><td>Boolean</td></tr>
+<tr><td>care / car</td><td>char</td></tr>
+<tr><td>Ric / radics / radic</td><td>radix</td></tr>
+<tr><td>sh value / in Value</td><td>shortValue, intValue</td></tr>
+<tr><td>PKA / Paka</td><td>“100% sure” (Telugu-English)</td></tr>
+</table>
+</body></html>

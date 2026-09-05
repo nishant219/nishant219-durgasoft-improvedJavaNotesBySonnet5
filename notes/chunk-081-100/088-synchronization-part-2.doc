@@ -1,0 +1,497 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>088-synchronization-part-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 088 — Synchronization part 2</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-8 || synchronization part-2</p>
+<p>ASR decode key (Whisper): Vishmatan / Vishmedan / wish method → `wish`; regular often means irregular (mixed/interleaved) when context says threads run simultaneously — listen for Sir’s “regular or irregular?”; threats → threads; Seymour time → simultaneously; butchilak / past thread → object lock / first thread; Yivara Zeta / Uras / your as → Yuvraj; Dona Yada → Dhoni; Neu Mytred / Madrid → new MyThread; keep sabading / keep subing → keep writing (in notes); relig / religious → releases; intratus / intracts → threads; ERC → irregular; Amani → many; Joby → job; Gujmadan → call the method; display n / display end → `displayN`; display c / display see → `displayC`; EAT I → int i; two hours a second → 2000 milliseconds (2 seconds); class class object → `Class` object (from JVM architecture).</p>
+<p>Continues from Video 087: Display.wish(String) demo — one Display, two MyThreads, synchronized instance method, object-level lock.</p>
+<h3>00:06 — Recap: one object, two threads → synchronization required</h3>
+<p>Sir opens by revisiting the previous lecture’s example (Video 087):</p>
+<ul><li>How many `Display` objects? One.</li></ul>
+<ul><li>How many threads? Two.</li></ul>
+<p>If multiple threads operate simultaneously on the same Java object, synchronization is required. At any moment, only one thread should operate on that object — that is why we declared `wish` as synchronized.</p>
+<pre class='code'>class Display {
+    public synchronized void wish(String name) {
+        for (int i = 1; i &lt;= 10; i++) {
+            System.out.print(&quot;Good Morning: &quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) { }
+            System.out.println(name);
+        }
+    }
+}
+class MyThread extends Thread {
+    Display d;
+    String name;
+
+    MyThread(Display d, String name) {
+        this.d = d;
+        this.name = name;
+    }
+
+    public void run() {
+        d.wish(name);
+    }
+}
+class SynchronizedDemo1 {
+    public static void main(String[] args) {
+        Display d = new Display();
+        MyThread t1 = new MyThread(d, &quot;Dhoni&quot;);
+        MyThread t2 = new MyThread(d, &quot;Yuvi&quot;);
+        t1.start();
+        t2.start();
+    }
+}
+// prints regular output: full Dhoni block, then full Yuvi block (order of t1/t2 not guaranteed)</pre>
+<p>Recap rule: Same object + multiple threads → `synchronized` on the shared method → object-level lock → regular (non-interleaved) output.</p>
+<h3>01:01 — Small change: two `Display` objects instead of one</h3>
+<p>Sir keeps the program the same except one deliberate change — take special care:</p>
+<ul><li>`Display d1 = new Display();`</li></ul>
+<ul><li>`Display d2 = new Display();`</li></ul>
+<ul><li>`MyThread t1 = new MyThread(d1, &quot;Dhoni&quot;);`</li></ul>
+<ul><li>`MyThread t2 = new MyThread(d2, &quot;Yuvraj&quot;);`</li></ul>
+<ul><li>`t1.start(); t2.start();`</li></ul>
+<p>wish is still `synchronized`. The question: regular or irregular output?</p>
+<p>Many students answer regular, reasoning: “wish is synchronized.” Sir pauses — make sure you think again.</p>
+<pre class='code'>class SynchronizedDemo2 {
+    public static void main(String[] args) {
+        Display d1 = new Display();
+        Display d2 = new Display();
+
+        MyThread t1 = new MyThread(d1, &quot;Dhoni&quot;);
+        MyThread t2 = new MyThread(d2, &quot;Yuvraj&quot;);
+
+        t1.start();
+        t2.start();
+    }
+}</pre>
+<p>Thread stories (Sir’s board flow):</p>
+<h3>04:03 — Why synchronized method still gives irregular output here</h3>
+<p>Even though `wish` is synchronized, the answer is irregular output — not regular.</p>
+<p>Reason:</p>
+<ol><li>T1 wants to execute synchronized wish on d1 → needs lock of d1.</li></ol>
+<ol><li>T2 wants to execute synchronized wish on d2 → needs lock of d2.</li></ol>
+<ol><li>T1 gets lock of d1 and starts wish.</li></ol>
+<ol><li>T2 gets lock of d2 and starts wish at the same time.</li></ol>
+<ol><li>Different locks → both threads run simultaneously.</li></ol>
+<pre class='code'>// T1 holds: d1&#x27;s object lock
+// T2 holds: d2&#x27;s object lock
+// No contention — two separate monitors → interleaved console output</pre>
+<p>Sir runs the program on the board. `wish` is synchronized only — no problem compiling. But because display objects are different, both threads execute simultaneously → irregular (mixed) output.</p>
+<pre class='code'>// Sample irregular output (interleaved &quot;Good Morning:&quot; lines)
+// Good Morning: Good Morning:
+// Dhoni
+// Yuvraj
+// Good Morning: Good Morning:
+// ...</pre>
+<h3>06:38 — When is synchronization required? (core rule + Biryani analogy)</h3>
+<p>In this case, is synchronization required?</p>
+<p>Not required — because the rule is about the same object, not just “multiple threads.”</p>
+<p>Biryani plate analogy (Sir repeats from 087, now with multiple plates):</p>
+<pre class='code'>// Analogy only — not Java
+// 3 dogs, 1 biryani plate  → synchronization REQUIRED (same resource)
+// 3 dogs, 3 biryani plates → synchronization NOT required (separate resources)
+// Technical mapping
+// Same Java object  → one lock must serialize access
+// Different objects → each has its own lock; no sharing conflict</pre>
+<h3>07:34 — Case study: minimal code + conclusion to write in notes</h3>
+<p>Sir asks students to take only this code plus the two thread-flow diagrams:</p>
+<pre class='code'>Display d1 = new Display();
+Display d2 = new Display();
+
+MyThread t1 = new MyThread(d1, &quot;Dhoni&quot;);
+MyThread t2 = new MyThread(d2, &quot;Yuvraj&quot;);
+
+t1.start();
+t2.start();</pre>
+<p>Diagram 1 — T1: calls wish on d1, passing &quot;Dhoni&quot;.</p>
+<p>Diagram 2 — T2: calls wish on d2, passing &quot;Yuvraj&quot;.</p>
+<p>Theory point (write as conclusion):</p>
+<p>Even though `wish` is a synchronized method, we get irregular output because threads are operating on different Java objects.</p>
+<p>Formal conclusions (Sir dictates — keep in notebook):</p>
+<pre class='code'>/*
+ * RULE 1:
+ * If multiple threads are operating on the SAME Java object
+ *     → synchronization IS required.
+ *
+ * RULE 2:
+ * If multiple threads are operating on MULTIPLE (different) Java objects
+ *     → synchronization is NOT required.
+ */</pre>
+<h3>12:34 — Real-life analogy: bank accounts (wife and husband)</h3>
+<ul><li>Wife and husband both operating on the same SBI joint account object → synchronization required (simultaneous operations on same account → inconsistency risk).</li></ul>
+<ul><li>You operate on your account; someone else operates on their account → why should they wait for you? Not required.</li></ul>
+<pre class='code'>class Account {
+    synchronized void withdraw() { /* ... */ }
+}
+
+Account jointAccount = new Account();   // wife + husband → same object → sync matters
+Account myAccount    = new Account();   // only my thread uses this → separate lock
+Account hisAccount   = new Account();   // independent</pre>
+<p>Three dogs, one biryani plate → sync required. Three dogs, three plates → sync not required.</p>
+<p>Sir: This is what you must evaluate in exam/interview questions — count objects, not just threads or the synchronized keyword alone.</p>
+<h3>13:59 — Next change: `static synchronized` with two different objects</h3>
+<p>Same setup — two `Display` objects, two threads (d1/Dhoni, d2/Yuvraj) — but now:</p>
+<pre class='code'>class Display {
+    public static synchronized void wish(String name) {
+        for (int i = 1; i &lt;= 10; i++) {
+            System.out.print(&quot;Good Morning: &quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) { }
+            System.out.println(name);
+        }
+    }
+}</pre>
+<p>Objects: different (d1, d2). Method: `static synchronized`.</p>
+<p>Question: regular or irregular output?</p>
+<ul><li>Instance synchronized + different objects → irregular (already demonstrated).</li></ul>
+<ul><li>`static synchronized` → Sir says: for every action there must be a reaction — now output changes → regular output.</li></ul>
+<h3>15:23 — Demo: instance sync vs static sync side by side</h3>
+<p>Run 1 — instance synchronized, different objects:</p>
+<pre class='code'>class Display {
+    public synchronized void wish(String name) { /* same loop as above */ }
+}
+
+// d1 + d2 + t1 + t2 → irregular / mixed &quot;Good Morning:&quot; interleaving</pre>
+<p>Run 2 — static synchronized, different objects:</p>
+<pre class='code'>class Display {
+    public static synchronized void wish(String name) { /* same loop */ }
+}
+
+// d1 + d2 + t1 + t2 → REGULAR output
+// Good Morning: Dhoni (all 10 lines for Dhoni)
+// then Good Morning: Yuvraj (all 10 for Yuvraj) — order of t1/t2 not guaranteed</pre>
+<p>Sample regular output Sir narrates:</p>
+<pre class='code'>// prints Good Morning: Dhoni (10 times, one name per iteration after sleep)
+// then Good Morning: Yuvraj (10 times)
+// After completing Dhoni, only then Yuvraj — or vice versa depending on scheduler</pre>
+<h3>17:23 — Class-level lock: why static synchronized behaves differently</h3>
+<p>T1 executes `static synchronized wish` on d1 (could be any instance — static method).</p>
+<ul><li>Is wish static synchronized? Yes.</li></ul>
+<ul><li>To execute a static synchronized method, the thread needs class-level lock — not the instance lock of d1 or d2.</li></ul>
+<p>Flow:</p>
+<ol><li>T1 arrives → needs class-level lock of `Display` → gets it → starts execution.</li></ol>
+<ol><li>T2 arrives → also needs class-level lock of `Display` → already held by T1 → waits until T1 releases lock.</li></ol>
+<ol><li>Only one thread at a time for any `static synchronized` method of that class.</li></ol>
+<pre class='code'>/*
+ * Every class in Java has a unique lock → CLASS-LEVEL LOCK.
+ * Every object in Java has a unique lock → OBJECT-LEVEL LOCK.
+ *
+ * In Java there are ONLY TWO locks:
+ *   1. Object-level lock
+ *   2. Class-level lock
+ * (No &quot;variable-level lock&quot; — Sir mentions students sometimes imagine a third kind; there isn&#x27;t.)
+ */</pre>
+<p>Internal detail: Class-level lock is tied to the `Class` object created internally for each loaded class (from JVM architecture — `Display.class` / Class instance for Display). Sir says: think of it simply as class-level lock.</p>
+<p>Notes to write (Sir repeats for notebook):</p>
+<pre class='code'>/*
+ * If a thread wants to execute a STATIC SYNCHRONIZED method
+ *     → thread requires CLASS-LEVEL LOCK.
+ *
+ * Once a thread got class-level lock
+ *     → it is allowed to execute ANY static synchronized method OF THAT CLASS.
+ *
+ * Once static synchronized method execution completes
+ *     → thread automatically RELEASES the lock.
+ */</pre>
+<h3>23:08 — Class X lock scenario: M1–M5 and six threads</h3>
+<p>Sir draws class X with five methods and walks through six threads — this is the standard OCJP-style lock table.</p>
+<pre class='code'>class X {
+    static synchronized void m1() { /* ... */ }
+    static synchronized void m2() { /* ... */ }
+
+    static void m3() { /* normal static — NOT synchronized */ }
+
+    synchronized void m4() { /* instance synchronized */ }
+    void m5() { /* normal instance */ }
+}</pre>
+<p>X obj = new X();
+// T1 → m1()   static synchronized → needs CLASS lock of X
+// T2 → m1()   static synchronized → needs CLASS lock → WAIT (T1 holds it)
+// T3 → m2()   static synchronized → needs CLASS lock → WAIT (T1 holds it)
+// T4 → m3()   normal static        → NO lock required → RUNS immediately
+// T5 → m4()   instance synchronized → needs OBJECT lock of obj → AVAILABLE → RUNS
+// T6 → m5()   normal instance       → NO lock required → RUNS immediately</p>
+<p>State summary while T1 executes `m1` (holds class lock):</p>
+<p>Key insight: Class-level lock ≠ object-level lock. T1 holds class lock; T5 only needs object lock — different locks → no waiting.</p>
+<pre class='code'>/*
+ * While one thread is executing a STATIC SYNCHRONIZED method:
+ *   - Other threads are NOT allowed to execute ANY static synchronized method of that class.
+ *
+ * BUT remaining threads ARE allowed to execute SIMULTANEOUSLY:
+ *   1. Normal static methods
+ *   2. Synchronized instance methods (on available object lock)
+ *   3. Normal instance methods
+ */</pre>
+<p>Sir: Object-level lock and class-level lock are independent — if I hold class lock but you need object lock, you don’t wait.</p>
+<h3>31:05 — Board recap: lock diagram + transition to second example</h3>
+<p>Sir consolidates class-level lock vs object-level lock on the board. Students must have clear clarity before the next demo.</p>
+<p>Preview: After this example, the lecture will move to synchronized block — what it is, why we need it, how to declare it (next topic / later in series).</p>
+<h3>32:28 — Second major example: `displayN` and `displayC` on one `Display`</h3>
+<p>New `Display` class with two instance methods:</p>
+<ol><li>`displayN()` — print numbers 1 to 10</li></ol>
+<ol><li>`displayC()` — print characters A to J (ASCII 65–75)</li></ol>
+<p>After each print, the thread sleeps 2000 ms — same pattern as wish.</p>
+<pre class='code'>class Display {
+    public void displayN() {
+        for (int i = 1; i &lt;= 10; i++) {
+            System.out.print(i + &quot; &quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) { }
+        }
+        System.out.println();
+    }
+
+    public void displayC() {
+        for (int i = 65; i &lt;= 75; i++) {
+            System.out.print((char) i + &quot; &quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) { }
+        }
+        System.out.println();
+    }
+}</pre>
+<p>Requirement: Two thread classes — one calls `displayN`, one calls `displayC` — on the same `Display` object.</p>
+<h3>36:39 — Two thread classes: `MyThread1` and `MyThread2`</h3>
+<p>Up to now, examples often used one MyThread class. Here Sir defines two thread classes with different jobs:</p>
+<pre class='code'>class MyThread1 extends Thread {
+    Display d;
+
+    MyThread1(Display d) {
+        this.d = d;
+    }
+
+    public void run() {
+        d.displayN();
+    }
+}
+class MyThread2 extends Thread {
+    Display d;
+
+    MyThread2(Display d) {
+        this.d = d;
+    }
+
+    public void run() {
+        d.displayC();
+    }
+}</pre>
+<ul><li>MyThread1’s job: on the given Display object, call `displayN()`.</li></ul>
+<ul><li>MyThread2’s job: on the same object, call `displayC()`.</li></ul>
+<p>To call `displayN` / `displayC`, a `Display` reference is compulsory — they are instance methods.</p>
+<h3>39:30 — `SynchronizeDemo` main: one object, two threads, no `synchronized` yet</h3>
+<pre class='code'>class SynchronizeDemo {
+    public static void main(String[] args) {
+        Display d = new Display();
+
+        MyThread1 t1 = new MyThread1(d);
+        MyThread2 t2 = new MyThread2(d);
+
+        t1.start();
+        t2.start();
+    }
+}</pre>
+<p>Facts:</p>
+<ul><li>How many `Display` objects? One.</li></ul>
+<ul><li>How many threads? Two.</li></ul>
+<ul><li>T1 calls `displayN` on d.</li></ul>
+<ul><li>T2 calls `displayC` on d.</li></ul>
+<ul><li>Both methods are NOT synchronized — Sir did not use the `synchronized` keyword anywhere.</li></ul>
+<p>Result: Both threads execute simultaneously on the same object → irregular / mixed output — numbers and characters interleaved.</p>
+<pre class='code'>// prints mixed output like:
+// 1 A 2 B 3 C ... (interleaved — not clean blocks)
+// Exact pattern depends on scheduler + sleep timing</pre>
+<p>Sir runs `SynchronizeDemo` — students see mixed numbers and letters. No `synchronized` keyword → no object-lock protection.</p>
+<h3>43:50 — Desired behavior vs fix: synchronize both methods</h3>
+<p>What Sir wants: Not mixed like 1 A 2 B. He wants either:</p>
+<ul><li>All numbers 1 2 3 … 10, then A B C … J, or</li></ul>
+<ul><li>All characters first, then numbers —</li></ul>
+<p>but one complete method before the other starts — regular sequential output.</p>
+<p>Desired regular pattern (example):</p>
+<pre class='code'>// prints 1 2 3 4 5 6 7 8 9 10
+// then A B C D E F G H I J
+// OR characters first, then numbers — depends which thread wins the lock first</pre>
+<p>Fix: Declare both methods `synchronized`:</p>
+<pre class='code'>class Display {
+    public synchronized void displayN() {
+        for (int i = 1; i &lt;= 10; i++) {
+            System.out.print(i + &quot; &quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) { }
+        }
+        System.out.println();
+    }
+
+    public synchronized void displayC() {
+        for (int i = 65; i &lt;= 75; i++) {
+            System.out.print((char) i + &quot; &quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) { }
+        }
+        System.out.println();
+    }
+}</pre>
+<p>Effect:</p>
+<ul><li>Same one object lock (d) protects both synchronized instance methods.</li></ul>
+<ul><li>Only one thread at a time may execute any synchronized method on that object.</li></ul>
+<ul><li>T1 runs `displayN` completely → releases lock → T2 runs `displayC` (or vice versa).</li></ul>
+<pre class='code'>/*
+ * If both methods are synchronized on the SAME object:
+ *   - Only ONE thread allowed at a time.
+ *   - Which thread first? NOT guaranteed (scheduler decides).
+ *   - After T1 completes, then T2 — or after T2, then T1.
+ */</pre>
+<h3>45:13 — Execute synchronized version; sample output</h3>
+<p>Code compiles fine. Sir executes:</p>
+<pre class='code'>class SynchronizeDemo {
+    public static void main(String[] args) {
+        Display d = new Display();
+        MyThread1 t1 = new MyThread1(d);
+        MyThread2 t2 = new MyThread2(d);
+        t1.start();
+        t2.start();
+    }
+}
+// With synchronized displayN + displayC:
+// prints 1 2 3 4 5 6 7 8 9 10  (then)  A B C D E F G H I J
+// OR characters first if t2 wins — both are &quot;regular&quot; (non-interleaved)</pre>
+<p>Regular output — threads run one by one. The `synchronized` keyword enforces object-level lock on the single shared `Display`.</p>
+<p>No guarantee numbers always before letters — characters first is also possible if T2 acquires lock first. Sir re-runs; with only two threads you may not always see the swap, but either order is valid.</p>
+<h3>46:52 — Wrap-up: object lock focus; synchronized block next</h3>
+<p>Sir closes Part 2:</p>
+<ul><li>This `displayN` / `displayC` example is for object-level lock clarity.</li></ul>
+<ul><li>Class-level lock was covered with `static synchronized wish` and class X / M1–M5.</li></ul>
+<ul><li>Synchronized block — need, syntax, use cases — will be discussed next (continues in a following lecture).</li></ul>
+<p>Final board diagram (conceptual):</p>
+<pre class='code'>/*
+ * One Display object d
+ *
+ *   T1 (MyThread1) ──► d.displayN()  ──┐
+ *                                        ├── same object lock on d
+ *   T2 (MyThread2) ──► d.displayC()  ──┘
+ *
+ * Without synchronized → simultaneous → mixed output
+ * With synchronized    → one at a time → regular output
+ */</pre>
+<h3>48:49 — Student note-taking: full program on board</h3>
+<p>Sir asks students to copy clearly:</p>
+<ul><li>`Display` with `displayN` and `displayC`</li></ul>
+<ul><li>`MyThread1 extends Thread` with `Display d`, `run()` → d.displayN()`</li></ul>
+<ul><li>`MyThread2 extends Thread` with `run()` → d.displayC()`</li></ul>
+<ul><li>`SynchronizeDemo` — `Display d = new Display()`, `MyThread1 t1`, `MyThread2 t2`, `start()` both</li></ul>
+<p>(Short pause while students write — Sir verifies class names and constructor assignment `this.d = d`.)</p>
+<h3>52:06 — Compulsory diagram: two threads, one object, two methods</h3>
+<p>After copying code, students must draw:</p>
+<pre class='code'>// Diagram labels (copy to notes)
+//
+//   [ Display object d ]
+//        ▲         ▲
+//        │         │
+//   displayN()  displayC()
+//        │         │
+//      [T1]      [T2]
+//
+// T1 = MyThread1 → displayN
+// T2 = MyThread2 → displayC
+// Both methods on SAME display object</pre>
+<h3>53:09 — Lecture end: synchronized keyword summary</h3>
+<p>What you should know after Video 088:</p>
+<p>Sir: Is it clear for all of you? — end of Multi Threading Part-8 / synchronization part-2.</p>
+<h2>Quick reference — lock cheat sheet</h2>
+<pre class='code'>// INSTANCE synchronized method → object lock of &quot;this&quot; (the instance used to call)
+void instanceSync() { synchronized (this) { } }  // equivalent lock concept
+
+// STATIC synchronized method → class lock of the declaring class
+static synchronized void staticSync() { }
+
+// Same object, two synchronized instance methods → same lock → serialize access
+synchronized void m1() { }
+synchronized void m2() { }  // blocks on same instance
+
+// Different objects → different locks → no cross-object blocking
+Display d1 = new Display();
+Display d2 = new Display();  // d1 lock != d2 lock
+// OCJP-style: which lock?
+class Test {
+    static synchronized void a() { }  // Class lock: Test.class
+    synchronized void b() { }        // Object lock: this instance
+    static void c() { }               // No lock
+    void d() { }                      // No lock
+}</pre>
+<h2>Summary table — examples in this video</h2>
+<p>Java block count: 33</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 88 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 8</td></tr>
+<tr><td>Topic</td><td>synchronization part-2</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>53m 43s</td></tr>
+<tr><td>Video ID</td><td>945WfTjpF2w</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=945WfTjpF2w</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Thread</th><th>Calls</th><th>On object</th><th>Argument</th></tr>
+<tr><td>T1</td><td>wish(...)</td><td>d1</td><td>&quot;Dhoni&quot;</td></tr>
+<tr><td>T2</td><td>wish(...)</td><td>d2</td><td>&quot;Yuvraj&quot;</td></tr>
+</table>
+<table>
+<tr><th>Situation</th><th>Synchronization</th></tr>
+<tr><td>Multiple threads on the same Java object</td><td>Required</td></tr>
+<tr><td>Multiple threads on different Java objects</td><td>Not required</td></tr>
+</table>
+<table>
+<tr><th>Thread</th><th>Method</th><th>Lock needed</th><th>Gets chance?</th><th>State</th></tr>
+<tr><td>T1</td><td>m1</td><td>Class lock</td><td>Yes (holder)</td><td>Running</td></tr>
+<tr><td>T2</td><td>m1</td><td>Class lock</td><td>No</td><td>Waiting</td></tr>
+<tr><td>T3</td><td>m2</td><td>Class lock</td><td>No</td><td>Waiting</td></tr>
+<tr><td>T4</td><td>m3</td><td>None</td><td>Yes</td><td>Running (parallel)</td></tr>
+<tr><td>T5</td><td>m4</td><td>Object lock of obj</td><td>Yes</td><td>Running (parallel)</td></tr>
+<tr><td>T6</td><td>m5</td><td>None</td><td>Yes</td><td>Running (parallel)</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Takeaway</th></tr>
+<tr><td>Same object, multiple threads</td><td>Synchronization required for consistent access</td></tr>
+<tr><td>Different objects, multiple threads</td><td>Instance `synchronized` does not block across objects → irregular if they share a resource externally (e.g. console)</td></tr>
+<tr><td>`static synchronized`</td><td>Uses class-level lock — one thread per class for all static synchronized methods of that class</td></tr>
+<tr><td>Class vs object lock</td><td>Independent — holding one does not block the other</td></tr>
+<tr><td>Class X / M1–M5</td><td>While static sync runs, normal static + instance methods (non-competing locks) can still run</td></tr>
+<tr><td>`displayN` / `displayC`</td><td>Two synchronized methods on same object share one lock → mutual exclusion</td></tr>
+<tr><td>Next</td><td>Synchronized block</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Setup</th><th>Method sync type</th><th>Objects</th><th>Output</th></tr>
+<tr><td>1</td><td>wish — recap</td><td>instance synchronized</td><td>1</td><td>Regular</td></tr>
+<tr><td>2</td><td>wish — d1, d2</td><td>instance synchronized</td><td>2</td><td>Irregular</td></tr>
+<tr><td>3</td><td>wish — d1, d2</td><td>`static synchronized`</td><td>2</td><td>Regular</td></tr>
+<tr><td>4</td><td>displayN + displayC</td><td>not synchronized</td><td>1</td><td>Irregular (mixed)</td></tr>
+<tr><td>5</td><td>displayN + displayC</td><td>both synchronized</td><td>1</td><td>Regular</td></tr>
+</table>
+</body></html>

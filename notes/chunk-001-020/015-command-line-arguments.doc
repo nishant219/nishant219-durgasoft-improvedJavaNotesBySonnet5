@@ -1,0 +1,407 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>015-command-line-arguments</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 015 — Command line arguments</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-15|| Command Line Arguments</p>
+<p>Auto-captions repeatedly hear args as “ax / ox / ask / x”. In every reconstruction below the parameter is String[] args, which is what he writes on the board.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Definition of a command line argument</li></ol>
+<ol><li>What the JVM does: create a String[], pass it, invoke main</li></ol>
+<ol><li>How to read values inside main: args[0], args[1], args.length</li></ol>
+<ol><li>Java vs C: the class name is not args[0]</li></ol>
+<ol><li>Why we need them: customize main (lab-exam square story + file-merge story)</li></ol>
+<ol><li>Why the type is always String[] (~70% String objects; convert String → number/boolean)</li></ol>
+<ol><li>Case 1 (SCJP trap): i &lt;= args.length → ArrayIndexOutOfBoundsException on every run</li></ol>
+<ol><li>Case 2 (SCJP trap): reassign args to another array; command-line values are ignored</li></ol>
+<ol><li>Case 3 (SCJP trap): args[0] + args[1] is concatenation, not addition (10 + 20 → 1020, not 30)</li></ol>
+<ol><li>Case 4: space is the separator; quotes make one argument that contains a space</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:03] Topic on the board</h3>
+<p>Language Fundamentals Part-15: command line arguments.</p>
+<p>This sits immediately after the two main() lectures (Parts 13–14). Those lectures explained the signature of main. This lecture explains the argument that signature receives.</p>
+<h3>[00:18] What is a command line argument?</h3>
+<p>Definition (board, he dictation-repeats this):</p>
+<p>The arguments which are passing from command prompt are called command line arguments.</p>
+<p>Example invocation:</p>
+<p>java Test A B C</p>
+<p>A, B, and C are the command line arguments. They are arguments to `main`, not to the class name.</p>
+<h3>[00:50] What the JVM does with those tokens</h3>
+<p>Whenever you execute Test from the command prompt as java Test A B C, the JVM:</p>
+<ol><li>Creates one `String` array whose elements are those command line arguments (&quot;A&quot;, &quot;B&quot;, &quot;C&quot;).</li></ol>
+<ol><li>Passes that array as the argument to main.</li></ol>
+<ol><li>Invokes `main`.</li></ol>
+<p>Who creates the array? The JVM.</p>
+<p>With what values? The values we typed after the class name.</p>
+<p>So the picture is:</p>
+<p>java Test A B C
+        │
+        ▼
+   JVM builds:  String[]  { &quot;A&quot;, &quot;B&quot;, &quot;C&quot; }
+        │
+        ▼
+   Test.main( that array )</p>
+<p>main does not “read the command prompt” by itself. The JVM already packaged the tokens into a String[] before main started.</p>
+<h3>[02:11] How you read them inside `main`</h3>
+<p>Inside main(String[] args):</p>
+<p>Index is zero-based. Length is count, not last index. Last valid index is args.length - 1.</p>
+<p>The parameter name on the board is often args (he also writes ax). The type is what matters: it is a one-dimensional String array. You could legally name the parameter x or argh; the JVM still passes the same array. Usage inside main is always index into that array plus .length.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // args[0], args[1], args[2]  and  args.length
+    }
+}</pre>
+<h3>[02:52] Java vs C — first argument is not the class name</h3>
+<p>He flags this as “one small thing you should be aware.”</p>
+<p>In C, when you run a program from the command prompt, the program name itself becomes the first command line argument (argv[0] is the executable name; the real user tokens start at argv[1]).</p>
+<p>In Java, the first command line argument is the first token after the class name. The class name Test is not stored in args[0].</p>
+<p>For java Test A B C:</p>
+<ul><li>args[0] is &quot;A&quot; — not &quot;Test&quot;</li></ul>
+<ul><li>There is no extra slot for the class name</li></ul>
+<p>If you come from C and write args[1] expecting &quot;A&quot;, you are already on the wrong index.</p>
+<h3>[03:35] Board dictation of the JVM story (again, slower)</h3>
+<p>He writes it as three sentences you should be able to recite:</p>
+<ol><li>The arguments which are passing from command prompt are called command line arguments.</li></ol>
+<ol><li>With these command line arguments, JVM will create an array.</li></ol>
+<ol><li>By passing that array as argument, JVM will call `main` method.</li></ol>
+<p>Same example again:</p>
+<p>java Test A B C</p>
+<ul><li>A → args[0]</li></ul>
+<ul><li>B → args[1]</li></ul>
+<ul><li>C → args[2]</li></ul>
+<ul><li>args.length → 3</li></ul>
+<h3>[05:31] Why do we need them? Lab-exam “smart student” story</h3>
+<p>He asks: what is the purpose / main objective of command line arguments?</p>
+<p>Setup: academic lab exams. Most students use “extracurricular activities”: slips, pen drives, xerox copies, Bluetooth from a mobile, programs already dumped on the lab systems. They open the dump, copy, and show the lecturer.</p>
+<p>Some “smart” students do not need slips or dumps. They still want the program to look as if it works for whatever the lecturer types. The question on the slip:</p>
+<p>Write a program to find the square of a given number.</p>
+<p>Wrong “smart” version (hardcoded):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // ........ big dummy code ........
+        System.out.println(&quot;the square of 4 is 16&quot;);
+        // ........ big dummy code ........
+    }
+}</pre>
+<p>They do not call the lecturer immediately. They wait until the last 5 minutes, when the lecturer is in a hurry, then: “Sir my program got completed, can you please come.”</p>
+<p>Lecturer types:</p>
+<p>java Test 4</p>
+<p>Output:</p>
+<p>the square of 4 is 16</p>
+<p>Looks perfect. But if by mistake the lecturer says “execute this with five”:</p>
+<p>java Test 5</p>
+<p>Output is still:</p>
+<p>the square of 4 is 16</p>
+<p>The program is hardcoded for 4 and 16. It is not a square program. It is a print-statement program.</p>
+<p>Correct way — read the number from the command line:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int n = Integer.parseInt(args[0]);
+        System.out.println(&quot;the square of &quot; + n + &quot; is &quot; + (n * n));
+    }
+}</pre>
+<p>The number comes in as a String (args[0] is &quot;4&quot;, not 4). Integer.parseInt converts String → int. Then n * n is real arithmetic.</p>
+<p>Difference between the two programs:</p>
+<ul><li>First: hardcoded; works only for 4 → 16.</li></ul>
+<ul><li>Second: not hardcoded. Based on the value we provide, the program works. Pass 4, it squares 4. Pass 5, it squares 5.</li></ul>
+<p>How did that customization happen? Because of the command line argument.</p>
+<h3>[11:41] Main objective, in one sentence</h3>
+<p>The main objective of command line arguments is customization of the main method / we can customize the behavior of the main method.</p>
+<p>You pass some values; based on your provided values, main works.</p>
+<h3>[12:05] Second example — merging files (same idea, different data)</h3>
+<p>He wrote a program that merges data from a.txt and b.txt into c.txt. He ran it. Merge succeeded.</p>
+<p>Tomorrow the data is in x.txt and y.txt, and he wants the result in j.txt. Can he reuse the same program?</p>
+<p>No, if the file names are hardcoded inside main. The program is welded to A/B/C files.</p>
+<p>Fix: do not hardcode. Take:</p>
+<ul><li>args[0] → first input file</li></ul>
+<ul><li>args[1] → second input file</li></ul>
+<ul><li>args[2] → output file</li></ul>
+<p>Then the same bytecode works for ABC files, XYZ files, or any names you pass.</p>
+<p>That is the advantage: instead of fixing the functionality for only one set of names, the variable part is supplied at launch time.</p>
+<p>Passing arguments is not compulsory. If you have no parameters and you do not need customization, hardcode the functionality; that is fine. Command line arguments are the tool when the interesting part of main should change per run.</p>
+<p>Single-word purpose (board dictation, repeated many times):</p>
+<p>The main objective of command line arguments is: we can customize the behavior of the main method.</p>
+<h3>[15:11] Common doubt: why are command line arguments always String?</h3>
+<p>Two questions he answers:</p>
+<ol><li>Why always String form? Why not int[] or double[]?</li></ol>
+<ol><li>Why did the language designers give priority to String?</li></ol>
+<p>Reason 1 — String is the most commonly used object in Java.</p>
+<p>In almost any Java program, roughly:</p>
+<ul><li>~70% String objects</li></ul>
+<ul><li>~30% non-String objects</li></ul>
+<p>The number of String objects we use is more than any other type. So the most commonly used type is the recommended type for main’s argument.</p>
+<p>Reason 2 — from String you can convert to any other type.</p>
+<ul><li>String → number type: possible (Integer.parseInt, etc.)</li></ul>
+<ul><li>String → boolean type: possible</li></ul>
+<ul><li>String → any other type: we can convert</li></ul>
+<p>If they had made main(int[] args), you could not pass a file name. If they made main(String[] args), you can pass &quot;4&quot; and parse it, or pass &quot;true&quot; and parse it, or pass &quot;a.txt&quot; and use it as-is.</p>
+<p>In the square example he passed a number, but it arrived in String form. He converted explicitly. That is the pattern: JVM always hands you Strings; you convert if you need numbers.</p>
+<p>So: command line arguments inside main are always `String`. The parameter type is String[]. Each slot is one String.</p>
+<h3>[17:37] Case 1 / Example 1 — the `&lt;=` vs `&lt;` SCJP trap</h3>
+<p>He says there are three or four cases you must have clear for SCJP. This is the first.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        for (int i = 0; i &lt;= args.length; i++) {
+            System.out.println(args[i]);
+        }
+    }
+}</pre>
+<p>Three invocations:</p>
+<p>Most people fail all three. They expect “ABC / AB / no output” and never expect a runtime exception. In all three cases you get a runtime exception.</p>
+<p>Why — walkthrough of invocation 1 (`java Test A B C`):</p>
+<ul><li>args.length is 3</li></ul>
+<ul><li>Condition is i &lt;= 3 (less than or equal to)</li></ul>
+<ul><li>i = 0 → 0 &lt;= 3 → print args[0] → A</li></ul>
+<ul><li>i = 1 → print args[1] → B</li></ul>
+<ul><li>i = 2 → print args[2] → C</li></ul>
+<ul><li>i = 3 → 3 &lt;= 3 is true → print args[3]</li></ul>
+<ul><li>There is no args[3]. Valid indexes are only 0, 1, 2.</li></ul>
+<ul><li>Runtime exception: `ArrayIndexOutOfBoundsException`</li></ul>
+<p>So the output of case 1 is:</p>
+<p>A
+B
+C
+Exception in thread &quot;main&quot; java.lang.ArrayIndexOutOfBoundsException: 3</p>
+<p>(He says: “ABC followed by ArrayIndexOutOfBoundsException.”)</p>
+<p>Invocation 2 (java Test A B): length 2, loop still goes i = 0, 1, 2. Prints A, B, then tries args[2] → exception.</p>
+<p>Invocation 3 (java Test): zero command line arguments. args is not null. It is a zero-length array. args.length is 0. Loop: i = 0, 0 &lt;= 0 is true, print args[0] — there is no element at 0 → exception immediately. No lines of output before the exception.</p>
+<p>Where the bug came from: “this bloody less than or equal to.”</p>
+<p>Fix: replace &lt;= with &lt; only:</p>
+<pre class='code'>for (int i = 0; i &lt; args.length; i++) {
+    System.out.println(args[i]);
+}</pre>
+<p>Now:</p>
+<p>No runtime exception.</p>
+<p>Exam point he wants you to keep: you must have clear clarity on &lt; vs &lt;= with args.length. This is a realistic SCJP question on command line arguments.</p>
+<p>Board note he adds after the example:</p>
+<p>If we replace lesser than or equal to with lesser than, then we won’t get any runtime exception.</p>
+<h3>[25:45] Case 2 / Example 2 — reassigning `args` (very important for the exam)</h3>
+<p>He stresses this one: “a bit very very important example, even a bit important for the exam sake.”</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String[] argh = {&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;};
+        args = argh;
+        for (String s : args) {
+            System.out.println(s);
+        }
+    }
+}</pre>
+<p>args is a String[]. argh is also a String[]. Both are one-dimensional String arrays, so the assignment args = argh; is legal. After that line, `args` points to `argh`.</p>
+<p>Three invocations (same as case 1):</p>
+<p>java Test A B C
+java Test A
+java Test</p>
+<p>What students guess:</p>
+<ul><li>first: maybe A B C, or A B C plus X Y Z</li></ul>
+<ul><li>second: A plus X Y Z, or X Y</li></ul>
+<ul><li>third: nothing, or X Y Z</li></ul>
+<p>Actual output in ALL three cases:</p>
+<p>X
+Y
+Z</p>
+<p>Always X Y Z, whether you pass command line arguments or not.</p>
+<p>Why — memory picture for `java Test A B C`:</p>
+<ol><li>JVM creates an array { &quot;A&quot;, &quot;B&quot;, &quot;C&quot; } and makes args point to it.</li></ol>
+<ol><li>The line String[] argh = {&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;}; creates a second array.</li></ol>
+<ol><li>args = argh; — from this line onward, args points at { &quot;X&quot;, &quot;Y&quot;, &quot;Z&quot; }. The original { &quot;A&quot;, &quot;B&quot;, &quot;C&quot; } is abandoned (eligible for GC; main no longer refers to it).</li></ol>
+<ol><li>The for-each for (String s : args) walks whatever `args` currently points to — always X, Y, Z.</li></ol>
+<p>If args was { &quot;A&quot;, &quot;B&quot; }, or a zero-length array, after that assignment it still points to { &quot;X&quot;, &quot;Y&quot;, &quot;Z&quot; }.</p>
+<p>If you delete the line `args = argh;`:</p>
+<p>That assignment line “plays a very very important role.” Draw the two arrays and the pointer change; he asks students to take the diagram.</p>
+<p>Exam takeaway: args is a local parameter (a reference). You can re-point it. Command line arguments are only the array the JVM initially passed. After args = somethingElse, main is no longer looking at the command line.</p>
+<h3>[31:02] Case 3 — `10 + 20` is `1020`, not `30`</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(args[0] + args[1]);
+    }
+}</pre>
+<p>Invocation:</p>
+<p>java Test 10 20</p>
+<p>Question: args[0] + args[1] → 30 or 1020?</p>
+<p>Answer: `1020`, not `30`.</p>
+<p>Inside main, command line arguments are available in String form. &quot;10&quot; + &quot;20&quot; is String concatenation, not arithmetic addition.</p>
+<p>Most people overlook this and say 10 + 20 is 30. Wrong.</p>
+<p>Board theory (dictation):</p>
+<p>Within main method, command line arguments are available in string form.</p>
+<p>Therefore: String-related operations only will be performed, not number-related operations — unless you convert first.</p>
+<p>If you want addition:</p>
+<p>int n1 = Integer.parseInt(args[0]);
+int n2 = Integer.parseInt(args[1]);
+System.out.println(n1 + n2);   // 30</p>
+<p>Same tokens 10 and 20, different type, different +.</p>
+<h3>[34:18] Case 4 — space is the separator; quotes glue a space into one argument</h3>
+<p>Same class, small change — print only the first argument:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(args[0]);
+    }
+}</pre>
+<p>Invocation (no quotes):</p>
+<p>java Test note book</p>
+<p>Is args[0] &quot;note&quot; or &quot;notebook&quot; or &quot;note book&quot;?</p>
+<p>`&quot;note&quot;`. Space splits tokens. note is the first command line argument, book is the second (args[1]).</p>
+<p>He wants the whole phrase as one argument, so that printing args[0] yields note book.</p>
+<p>How: enclose the whole thing in double quotes.</p>
+<p>java Test &quot;note book&quot;</p>
+<p>Now the total &quot;note book&quot; is one command line argument. args[0] is note book. args.length is 1.</p>
+<p>Board theory (dictation):</p>
+<p>Usually space itself is the separator between command line arguments.</p>
+<p>If our command line argument itself contains a space, then we have to enclose that command line argument within double quotes.</p>
+<p>Without quotes: two arguments. With quotes: one argument that contains a space.</p>
+<h3>[38:02] Close of the lecture</h3>
+<p>These are the loopholes you should be aware of for the SCJP exam related to command line arguments.</p>
+<p>Recap he wants:</p>
+<ol><li>What is a command line argument?</li></ol>
+<ol><li>What is the purpose (customize main)?</li></ol>
+<ol><li>What are the various exam loopholes (the four cases)?</li></ol>
+<h2>Code from the lecture</h2>
+<h3>JVM picture</h3>
+<p>java Test A B C
+
+JVM creates:   args -----&gt; [ &quot;A&quot; , &quot;B&quot; , &quot;C&quot; ]
+                             0     1     2
+args.length == 3</p>
+<p>C contrast: args[0] is &quot;A&quot;, never the class name Test.</p>
+<h3>Customized square (the version that is actually a square program)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int n = Integer.parseInt(args[0]);
+        System.out.println(&quot;the square of &quot; + n + &quot; is &quot; + (n * n));
+    }
+}</pre>
+<h3>File names as arguments (idea; he does not write the full IO code)</h3>
+<pre class='code'>// args[0] = first file, args[1] = second file, args[2] = destination
+// e.g. java Test a.txt b.txt c.txt
+//      java Test x.txt y.txt j.txt</pre>
+<h3>Case 1 — off-by-one (`&lt;=`)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        for (int i = 0; i &lt;= args.length; i++) {  // BUG: should be i &lt; args.length
+            System.out.println(args[i]);
+        }
+    }
+}</pre>
+<p>Replace &lt;= with &lt; to print arguments with no exception.</p>
+<h3>Case 2 — steal the reference</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String[] argh = {&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;};
+        args = argh;   // command line values no longer visible
+        for (String s : args) {
+            System.out.println(s);
+        }
+    }
+}</pre>
+<h3>Case 3 — concatenation</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(args[0] + args[1]);  // java Test 10 20  →  1020
+    }
+}</pre>
+<h3>Case 4 — quoted argument containing a space</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(args[0]);
+    }
+}
+
+// java Test note book      →  note
+// java Test &quot;note book&quot;    →  note book</pre>
+<h2>`String[]` vs usage inside `main`</h2>
+<p>The declaration String[] args is the contract. Usage is: indexes, length, parse if needed, never assume the array still points at the JVM’s original array if you reassigned it.</p>
+<h2>Exam / interview traps</h2>
+<ul><li>java Test A B C → args[0] is A, not Test.</li></ul>
+<ul><li>args.length is 3; last index is 2. i &lt;= args.length always overruns.</li></ul>
+<ul><li>java Test with args[0] or with i &lt;= args.length → ArrayIndexOutOfBoundsException, not “no output” and not NullPointerException.</li></ul>
+<ul><li>After args = argh;, for-each prints argh’s contents for every invocation.</li></ul>
+<ul><li>java Test 10 20 with args[0] + args[1] prints 1020.</li></ul>
+<ul><li>Space splits arguments; &quot;note book&quot; is one argument.</li></ul>
+<ul><li>Objective of CLA: customize the behavior of `main`, not “pass the class name.”</li></ul>
+<ul><li>Why String[]: String is the most common object; every other type can be converted from String.</li></ul>
+<h2>Recap (as Durga wants you to recite)</h2>
+<ol><li>Command line arguments = tokens passed from the command prompt after the class name.</li></ol>
+<ol><li>JVM creates a String[] from those tokens and calls main with that array.</li></ol>
+<ol><li>args[0] is the first token, not the class name (unlike C).</li></ol>
+<ol><li>args.length is the count; valid indexes are 0 .. length-1.</li></ol>
+<ol><li>Purpose: customize main (square of n, merge these files, …).</li></ol>
+<ol><li>Always String form inside main; parse if you need numbers.</li></ol>
+<ol><li>Four loopholes: &lt;= vs &lt;, reassign args, + concatenation, space/quotes.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 15 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 15 of 16</td></tr>
+<tr><td>Topic</td><td>Command line arguments (args array, java Test A B C, length, index, space as separator, String[] vs usage inside main)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>38m 34s (2314 seconds)</td></tr>
+<tr><td>Video ID</td><td>w9BrD4eanxQ</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=w9BrD4eanxQ</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Token</th><th>Meaning</th></tr>
+<tr><td>java</td><td>the JVM launcher</td></tr>
+<tr><td>Test</td><td>the class whose main will run</td></tr>
+<tr><td>A</td><td>first command line argument</td></tr>
+<tr><td>B</td><td>second</td></tr>
+<tr><td>C</td><td>third</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>Value for java Test A B C</th></tr>
+<tr><td>args[0]</td><td>&quot;A&quot;</td></tr>
+<tr><td>args[1]</td><td>&quot;B&quot;</td></tr>
+<tr><td>args[2]</td><td>&quot;C&quot;</td></tr>
+<tr><td>args.length</td><td>3 (how many command line arguments we passed)</td></tr>
+</table>
+<table>
+<tr><th>Invocation</th><th>Output</th></tr>
+<tr><td>java Test 4</td><td>the square of 4 is 16</td></tr>
+<tr><td>java Test 5</td><td>the square of 5 is 25</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Command</th><th>What students guess</th><th>What actually happens</th></tr>
+<tr><td>1</td><td>java Test A B C</td><td>prints A B C</td><td>prints A, B, C, then ArrayIndexOutOfBoundsException</td></tr>
+<tr><td>2</td><td>java Test A B</td><td>prints A B</td><td>prints A, B, then ArrayIndexOutOfBoundsException</td></tr>
+<tr><td>3</td><td>java Test (no args)</td><td>no output</td><td>immediately ArrayIndexOutOfBoundsException</td></tr>
+</table>
+<table>
+<tr><th>Command</th><th>Output</th></tr>
+<tr><td>java Test A B C</td><td>A / B / C</td></tr>
+<tr><td>java Test A B</td><td>A / B</td></tr>
+<tr><td>java Test</td><td>no output (loop body never runs)</td></tr>
+</table>
+<table>
+<tr><th>Command</th><th>Output</th></tr>
+<tr><td>java Test A B C</td><td>A / B / C</td></tr>
+<tr><td>java Test A B</td><td>A / B</td></tr>
+<tr><td>java Test</td><td>no output</td></tr>
+</table>
+<table>
+<tr><th>Piece</th><th>Meaning</th></tr>
+<tr><td>String[]</td><td>the type of main’s parameter — always an array of Strings</td></tr>
+<tr><td>Parameter name (args, ax, …)</td><td>only a local name; JVM does not care</td></tr>
+<tr><td>args.length</td><td>how many tokens were passed (0 if you typed only java Test)</td></tr>
+<tr><td>args[i]</td><td>the i-th token, as a String (even if it looks like a number)</td></tr>
+<tr><td>Empty invocation</td><td>args is a length-0 array, not null</td></tr>
+<tr><td>+ on two slots</td><td>concatenation</td></tr>
+<tr><td>Need a number</td><td>Integer.parseInt(args[i]) (or similar)</td></tr>
+<tr><td>Need a space inside one token</td><td>&quot;double quotes&quot; on the command line</td></tr>
+</table>
+</body></html>

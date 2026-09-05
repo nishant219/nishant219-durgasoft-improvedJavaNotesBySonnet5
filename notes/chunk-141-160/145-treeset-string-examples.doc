@@ -1,0 +1,1090 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>145-treeset-string-examples</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 145 — Collections Part-10: String Object in TreeSet — Comparator Examples Marathon</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This is the marathon Comparator examples session that Video 144 explicitly promised. At the end of Video 144, Durga Sir stated:</p>
+<p>&quot;Just for the first example like this we are going to cover another five to six examples so that you can get much clarity.&quot;</p>
+<p>Video 145 delivers that entire block. Where Video 144 spent ~1 hour on one flagship example (TreeSet + Integer + descending order + seven compare implementations), Video 145 applies the same mental model across String natural sorting, multiple String Comparators, StringBuffer (non-Comparable), custom Person/Employee objects, inter-conversion, heterogeneous traps, and null rules with/without Comparator.</p>
+<p>Exam mantra from Sir: If you understood Video 144&#x27;s Integer descending example and the &quot;JVM is blind&quot; analogy, every program in this session is a variation on the same theme. If you missed Video 144, go back before continuing.</p>
+<h3>What this lecture covers</h3>
+<ol><li>Recap — TreeSet + String + default natural sorting (Unicode, capitals before lowercase, duplicates via compareTo returning 0)</li></ol>
+<ol><li>SCJP-style MCQ — &quot;one&quot;, &quot;two&quot;, &quot;three&quot;, &quot;four&quot; → output [four, one, three, two] (not alphabetical!)</li></ol>
+<ol><li>Insertion order vs sorted output — live demos proving TreeSet never preserves insertion order</li></ol>
+<ol><li>String Comparator examples — reverse alphabetical, sort by length, sort by last character</li></ol>
+<ol><li>Multiple compare() implementation styles — +1/-1/0, subtraction trick, Integer.compare()</li></ol>
+<ol><li>TreeSet with StringBuffer using Comparator — fixing the ClassCastException from Video 143</li></ol>
+<ol><li>TreeSet with custom Person/Employee + Comparator by name, by id</li></ol>
+<ol><li>Inter-conversion — ArrayList → TreeSet via TreeSet(Collection c) constructor</li></ol>
+<ol><li>Mixed Integer + String heterogeneous → ClassCastException (with and without Comparator)</li></ol>
+<ol><li>Null in TreeSet — with vs without Comparator (Java 7+ rules)</li></ol>
+<ol><li>Interview questions from this entire Comparator block (143–145)</li></ol>
+<h3>Connection to prior sessions</h3>
+<h2>00:04 — Opening recap: why we need more examples</h2>
+<p>Durga Sir opens by reinforcing the thumb rule from Videos 143–144:</p>
+<p>If default natural sorting order is not available, OR if we are not satisfied with default natural sorting order, then we can go for customized sorting by using `Comparator`.</p>
+<p>Two scenarios recap:</p>
+<p>LINE ONE theory (memorize permanently):</p>
+<p>Sir&#x27;s message: Video 144 gave you the engine (Comparator + compare + JVM blind). Video 145 gives you six different cars (String, StringBuffer, Person, ArrayList conversion, etc.) — same engine, different payloads.</p>
+<h2>05:12 — Recap: TreeSet + String + default natural sorting</h2>
+<h3>Program: TreeSetDemo String recap</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetStringRecap {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet();   // LINE ONE — no Comparator
+        t.add(&quot;A&quot;);
+        t.add(&quot;A&quot;);   // duplicate — compareTo returns 0 → ignored
+        t.add(&quot;B&quot;);
+        t.add(&quot;Z&quot;);
+        t.add(&quot;L&quot;);
+        System.out.println(t);
+    }
+}</pre>
+<p>Constructor used: No-argument → default natural sorting order.</p>
+<p>Object type: String — implements Comparable&lt;String&gt; → valid for natural sorting.</p>
+<p>Insertion sequence: A, A, B, Z, L</p>
+<p>Output: [A, B, L, Z]</p>
+<p>Why NOT `[A, A, B, Z, L]`? TreeSet does NOT preserve insertion order. Elements appear in sorting order (in-order traversal of internal balanced tree).</p>
+<h3>Unicode / lexicographic sorting — exam critical</h3>
+<p>String&#x27;s natural order (compareTo) is lexicographic based on Unicode values, NOT &quot;human alphabetical intuition.&quot;</p>
+<p>Board rule: Capital letters come before lowercase letters because 65–90 &lt; 97–122.</p>
+<h3>Demo: capitals before lowercase</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetCaseDemo {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet();
+        t.add(&quot;a&quot;);   // lowercase — Unicode 97
+        t.add(&quot;A&quot;);   // capital  — Unicode 65
+        t.add(&quot;b&quot;);
+        t.add(&quot;B&quot;);
+        System.out.println(t);
+    }
+}</pre>
+<p>Output: [A, B, a, b]</p>
+<p>NOT [A, a, B, b] — comparison is character-by-character on Unicode values; all capitals (65–90) precede all lowercase (97–122).</p>
+<h3>Duplicate detection via compareTo</h3>
+<p>When compareTo() returns 0, TreeSet treats objects as equal for sorting purposes → duplicate → not inserted (silently ignored, no exception).</p>
+<p>System.out.println(&quot;A&quot;.compareTo(&quot;A&quot;));  // 0 → duplicate</p>
+<p>Internal mechanism (from Video 143):</p>
+<ul><li>obj1 = object being inserted (new element)</li></ul>
+<ul><li>obj2 = object already in tree (existing element)</li></ul>
+<ul><li>compareTo returns 0 → JVM stops → duplicate not inserted</li></ul>
+<h3>compareTo quick reference</h3>
+<pre class='code'>class CompareToQuickRef {
+    public static void main(String[] args) {
+        System.out.println(&quot;A&quot;.compareTo(&quot;Z&quot;));   // negative (-25)
+        System.out.println(&quot;Z&quot;.compareTo(&quot;K&quot;));   // positive (+1)
+        System.out.println(&quot;A&quot;.compareTo(&quot;A&quot;));   // zero (0)
+        // System.out.println(&quot;A&quot;.compareTo(null)); // NullPointerException
+    }
+}</pre>
+<p>Sign matters, magnitude does not: -25 and -1 both mean &quot;before.&quot;</p>
+<h2>18:30 — SCJP-style MCQ: one two three four</h2>
+<p>This is one of the most famous TreeSet String exam questions in the Durga Sir / OCJP canon.</p>
+<h3>The question</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetMCQ {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet();
+        t.add(&quot;one&quot;);
+        t.add(&quot;two&quot;);
+        t.add(&quot;three&quot;);
+        t.add(&quot;four&quot;);
+        System.out.println(t);
+    }
+}</pre>
+<p>What is the output?</p>
+<h3>Student trap</h3>
+<p>Most students pick B — they assume &quot;alphabetical order&quot; means the words sorted as humans expect: one, two, three, four.</p>
+<p>Correct answer: A — `[four, one, three, two]`</p>
+<h3>Why? Character-by-character Unicode comparison</h3>
+<p>TreeSet uses String.compareTo() — lexicographic order on each character position, left to right.</p>
+<p>Step 1 — sort by first character:</p>
+<ul><li>&#x27;f&#x27; (102) → &quot;four&quot; comes first</li></ul>
+<ul><li>&#x27;o&#x27; (111) → &quot;one&quot; comes second</li></ul>
+<ul><li>&#x27;t&#x27; (116) → &quot;three&quot; and &quot;two&quot; tie on first character</li></ul>
+<p>Step 2 — break tie between &quot;three&quot; and &quot;two&quot;:</p>
+<ul><li>Compare second character: &#x27;h&#x27; (104) vs &#x27;w&#x27; (119)</li></ul>
+<ul><li>104 &lt; 119 → &quot;three&quot; before &quot;two&quot;</li></ul>
+<p>Final sorted order: [four, one, three, two]</p>
+<h3>Trace table</h3>
+<h3>Sir&#x27;s board note</h3>
+<p>Never assume English dictionary word order in TreeSet String questions. Always trace Unicode character-by-character.</p>
+<h3>Variation MCQ — with duplicates</h3>
+<p>TreeSet t = new TreeSet();
+t.add(&quot;one&quot;);
+t.add(&quot;one&quot;);   // duplicate
+t.add(&quot;two&quot;);
+System.out.println(t);  // [one, two] — only one &quot;one&quot;</p>
+<h3>Variation MCQ — mixed case</h3>
+<p>TreeSet t = new TreeSet();
+t.add(&quot;Apple&quot;);
+t.add(&quot;apple&quot;);
+t.add(&quot;Banana&quot;);
+System.out.println(t);  // [Apple, Banana, apple]</p>
+<p>Capitals before lowercase: &#x27;A&#x27;(65) &lt; &#x27;B&#x27;(66) &lt; &#x27;a&#x27;(97).</p>
+<h2>28:45 — Insertion order vs sorted output (extended demo)</h2>
+<p>Durga Sir emphasizes repeatedly: TreeSet is NOT LinkedHashSet.</p>
+<h3>Demo: insertion order completely ignored</h3>
+<pre class='code'>import java.util.*;
+
+class InsertionVsSortedDemo {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet();
+        System.out.println(&quot;Adding in order: Z, A, M, B, Y&quot;);
+        t.add(&quot;Z&quot;);
+        t.add(&quot;A&quot;);
+        t.add(&quot;M&quot;);
+        t.add(&quot;B&quot;);
+        t.add(&quot;Y&quot;);
+        System.out.println(&quot;TreeSet contents: &quot; + t);
+        // Output: [A, B, M, Y, Z] — sorted, NOT insertion order
+    }
+}</pre>
+<p>Output: [A, B, M, Y, Z]</p>
+<h3>Side-by-side: TreeSet vs LinkedHashSet vs HashSet</h3>
+<pre class='code'>import java.util.*;
+
+class SetComparisonDemo {
+    public static void main(String[] args) {
+        String[] input = {&quot;Z&quot;, &quot;A&quot;, &quot;M&quot;, &quot;B&quot;, &quot;Y&quot;};
+
+        TreeSet ts = new TreeSet();
+        LinkedHashSet lhs = new LinkedHashSet();
+        HashSet hs = new HashSet();
+
+        for (String s : input) {
+            ts.add(s);
+            lhs.add(s);
+            hs.add(s);
+        }
+
+        System.out.println(&quot;TreeSet:       &quot; + ts);  // [A, B, M, Y, Z] sorted
+        System.out.println(&quot;LinkedHashSet: &quot; + lhs); // [Z, A, M, B, Y] insertion order
+        System.out.println(&quot;HashSet:       &quot; + hs);  // unpredictable order
+    }
+}</pre>
+<h3>Internal BST trace for Z, A, M, B, Y</h3>
+<p>Using natural String order:</p>
+<ol><li>Add &quot;Z&quot; → root (no comparison)</li></ol>
+<ol><li>Add &quot;A&quot; → compare &quot;A&quot; with &quot;Z&quot; → negative → left of Z</li></ol>
+<ol><li>Add &quot;M&quot; → compare with &quot;Z&quot; → negative → left; compare with &quot;A&quot; → positive → right of A</li></ol>
+<ol><li>Add &quot;B&quot; → navigates tree via compareTo calls</li></ol>
+<ol><li>Add &quot;Y&quot; → navigates tree via compareTo calls</li></ol>
+<p>In-order traversal (Left → Root → Right): A, B, M, Y, Z</p>
+<p>Output confirms: sorting order, not insertion order.</p>
+<h2>38:20 — Comparator Example 1: Reverse alphabetical String sort</h2>
+<h3>Problem statement</h3>
+<p>Insert String objects into TreeSet where sorting order is reverse alphabetical (Z → A).</p>
+<p>Default natural order gives A → Z. We are not satisfied → go for Comparator.</p>
+<h3>Solution — if-else style (same pattern as Integer descending from Video 144)</h3>
+<pre class='code'>import java.util.*;
+
+class ReverseAlphaComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        String s1 = (String) obj1;
+        String s2 = (String) obj2;
+
+        if (s1.compareTo(s2) &gt; 0)       // s1 alphabetically after s2
+            return -1;                   // s1 should come BEFORE s2 (reverse)
+        else if (s1.compareTo(s2) &lt; 0)  // s1 alphabetically before s2
+            return +1;                   // s1 should come AFTER s2 (reverse)
+        else
+            return 0;                    // equal → duplicate
+    }
+}</pre>
+<h3>Full program</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetReverseAlpha {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet(new ReverseAlphaComparator());  // LINE ONE with Comparator
+        t.add(&quot;A&quot;);
+        t.add(&quot;Z&quot;);
+        t.add(&quot;L&quot;);
+        t.add(&quot;B&quot;);
+        t.add(&quot;M&quot;);
+        System.out.println(t);
+    }
+}
+
+class ReverseAlphaComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        String s1 = (String) obj1;
+        String s2 = (String) obj2;
+        if (s1.compareTo(s2) &gt; 0)
+            return -1;
+        else if (s1.compareTo(s2) &lt; 0)
+            return +1;
+        else
+            return 0;
+    }
+}</pre>
+<p>Output: [Z, M, L, B, A]</p>
+<h3>Shortcut implementations (from Video 144 pattern)</h3>
+<pre class='code'>// Style 1: negate natural compareTo
+return -(s1.compareTo(s2));
+
+// Style 2: reverse arguments
+return s2.compareTo(s1);
+
+// Style 3: negate reversed arguments (double reversal = natural again — NOT what we want)
+return -(s2.compareTo(s1));  // this gives natural order, NOT reverse</pre>
+<p>Best one-liner for reverse alphabetical:</p>
+<pre class='code'>class ReverseAlphaShort implements Comparator {
+    public int compare(Object o1, Object o2) {
+        String s1 = (String) o1;
+        String s2 = (String) o2;
+        return s2.compareTo(s1);   // reverse arguments
+    }
+}</pre>
+<h3>Trace: inserting &quot;A&quot; then &quot;Z&quot; with reverse Comparator</h3>
+<ol><li>Add &quot;A&quot; → root (no comparison)</li></ol>
+<ol><li>Add &quot;Z&quot; → compare(&quot;Z&quot;, &quot;A&quot;):</li></ol>
+<ul><li>s1=&quot;Z&quot;, s2=&quot;A&quot;</li></ul>
+<ul><li>s2.compareTo(s1) = &quot;A&quot;.compareTo(&quot;Z&quot;) = negative</li></ul>
+<ul><li>JVM: negative → Z goes before A</li></ul>
+<ol><li>Final output: [Z, A] for just these two</li></ol>
+<p>JVM is blind — it only sees the return value, not &quot;Z is after A alphabetically.&quot;</p>
+<h2>48:10 — Comparator Example 2: Sort String by length</h2>
+<h3>Problem statement</h3>
+<p>Insert String objects into TreeSet sorted by length (shortest first). If two strings have the same length, break tie by natural alphabetical order.</p>
+<h3>Demo data</h3>
+<p>Input: &quot;Java&quot;, &quot;C&quot;, &quot;Python&quot;, &quot;Go&quot;, &quot;C&quot;</p>
+<p>Expected output by length: &quot;C&quot;(1), &quot;Go&quot;(2), &quot;Java&quot;(4), &quot;Python&quot;(6)</p>
+<h3>Implementation 1: if-else with +1/-1/0</h3>
+<pre class='code'>import java.util.*;
+
+class LengthComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        String s1 = (String) obj1;
+        String s2 = (String) obj2;
+
+        if (s1.length() &lt; s2.length())
+            return -1;    // shorter comes first
+        else if (s1.length() &gt; s2.length())
+            return +1;    // longer comes after
+        else
+            return s1.compareTo(s2);  // same length → alphabetical tie-break
+    }
+}</pre>
+<h3>Full program</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetSortByLength {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet(new LengthComparator());
+        t.add(&quot;Java&quot;);
+        t.add(&quot;C&quot;);
+        t.add(&quot;Python&quot;);
+        t.add(&quot;Go&quot;);
+        t.add(&quot;C&quot;);       // duplicate of &quot;C&quot; → compare returns 0 → not inserted
+        System.out.println(t);
+    }
+}
+
+class LengthComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        String s1 = (String) obj1;
+        String s2 = (String) obj2;
+        if (s1.length() &lt; s2.length())
+            return -1;
+        else if (s1.length() &gt; s2.length())
+            return +1;
+        else
+            return s1.compareTo(s2);
+    }
+}</pre>
+<p>Output: [C, Go, Java, Python]</p>
+<h3>Implementation 2: subtraction trick</h3>
+<pre class='code'>class LengthComparatorSubtract implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        String s1 = (String) obj1;
+        String s2 = (String) obj2;
+        int diff = s1.length() - s2.length();
+        return (diff != 0) ? diff : s1.compareTo(s2);
+    }
+}</pre>
+<p>How subtraction trick works:</p>
+<p>Warning: Subtraction trick works safely for small int values like length. For large integer differences that overflow int range, prefer Integer.compare().</p>
+<h3>Implementation 3: Integer.compare (Java 7+ — recommended)</h3>
+<pre class='code'>class LengthComparatorIntegerCompare implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        String s1 = (String) obj1;
+        String s2 = (String) obj2;
+        int cmp = Integer.compare(s1.length(), s2.length());
+        return (cmp != 0) ? cmp : s1.compareTo(s2);
+    }
+}</pre>
+<p>Why Integer.compare is preferred:</p>
+<ul><li>No overflow risk (subtraction of large ints can overflow)</li></ul>
+<ul><li>Readable intent</li></ul>
+<ul><li>Returns -1, 0, or +1 consistently</li></ul>
+<h3>Descending by length variation</h3>
+<pre class='code'>class LengthDescendingComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        String s1 = (String) obj1;
+        String s2 = (String) obj2;
+        return Integer.compare(s2.length(), s1.length());  // reverse: longer first
+    }
+}</pre>
+<h2>58:40 — Comparator Example 3: Sort String by last character</h2>
+<h3>Problem statement</h3>
+<p>Sort strings by their last character. If last characters are equal, use natural order as tie-breaker.</p>
+<h3>Demo</h3>
+<p>Input: &quot;cat&quot;, &quot;dog&quot;, &quot;bat&quot;, &quot;rat&quot;</p>
+<p>Last characters: &#x27;t&#x27;, &#x27;g&#x27;, &#x27;t&#x27;, &#x27;t&#x27;</p>
+<p>Sorted by last char: &quot;dog&quot;(&#x27;g&#x27;), then &quot;bat&quot;/&quot;cat&quot;/&quot;rat&quot;(all end in &#x27;t&#x27;) → tie-break alphabetically among bat, cat, rat.</p>
+<h3>Implementation 1: if-else style</h3>
+<pre class='code'>import java.util.*;
+
+class LastCharComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        String s1 = (String) obj1;
+        String s2 = (String) obj2;
+
+        char c1 = s1.charAt(s1.length() - 1);
+        char c2 = s2.charAt(s2.length() - 1);
+
+        if (c1 &lt; c2)
+            return -1;
+        else if (c1 &gt; c2)
+            return +1;
+        else
+            return s1.compareTo(s2);
+    }
+}</pre>
+<h3>Full program</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetSortByLastChar {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet(new LastCharComparator());
+        t.add(&quot;cat&quot;);
+        t.add(&quot;dog&quot;);
+        t.add(&quot;bat&quot;);
+        t.add(&quot;rat&quot;);
+        System.out.println(t);
+    }
+}
+
+class LastCharComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        String s1 = (String) obj1;
+        String s2 = (String) obj2;
+        char c1 = s1.charAt(s1.length() - 1);
+        char c2 = s2.charAt(s2.length() - 1);
+        if (c1 &lt; c2)
+            return -1;
+        else if (c1 &gt; c2)
+            return +1;
+        else
+            return s1.compareTo(s2);
+    }
+}</pre>
+<p>Output: [dog, bat, cat, rat]</p>
+<ul><li>&quot;dog&quot; last char &#x27;g&#x27; (103) — smallest</li></ul>
+<ul><li>&quot;bat&quot;, &quot;cat&quot;, &quot;rat&quot; all end in &#x27;t&#x27; (116) — tie-break: bat &lt; cat &lt; rat</li></ul>
+<h3>Implementation 2: subtraction trick on char (promoted to int)</h3>
+<pre class='code'>class LastCharComparatorSubtract implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        String s1 = (String) obj1;
+        String s2 = (String) obj2;
+        char c1 = s1.charAt(s1.length() - 1);
+        char c2 = s2.charAt(s2.length() - 1);
+        int diff = c1 - c2;
+        return (diff != 0) ? diff : s1.compareTo(s2);
+    }
+}</pre>
+<p>Note: char - char promotes to int automatically in Java.</p>
+<h3>Implementation 3: Integer.compare on char values</h3>
+<pre class='code'>class LastCharComparatorIntegerCompare implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        String s1 = (String) obj1;
+        String s2 = (String) obj2;
+        char c1 = s1.charAt(s1.length() - 1);
+        char c2 = s2.charAt(s2.length() - 1);
+        int cmp = Integer.compare(c1, c2);
+        return (cmp != 0) ? cmp : s1.compareTo(s2);
+    }
+}</pre>
+<h2>1:08:15 — compare() implementation styles master table (String edition)</h2>
+<p>Durga Sir revisits the seven styles from Video 144, now applied to String length sorting.</p>
+<p>Given insertion order: &quot;Java&quot;, &quot;C&quot;, &quot;Python&quot;, &quot;Go&quot;</p>
+<h3>Dangerous implementations — Sir&#x27;s warnings carry forward</h3>
+<pre class='code'>// DANGEROUS: always +1 → insertion order, duplicates allowed
+public int compare(Object o1, Object o2) { return +1; }
+
+// DANGEROUS: always -1 → reverse insertion order
+public int compare(Object o1, Object o2) { return -1; }
+
+// DANGEROUS: always 0 → only first element survives
+public int compare(Object o1, Object o2) { return 0; }</pre>
+<p>JVM never validates your logic. If you return +1 for equal strings, TreeSet will store both — breaking the Set contract in practice.</p>
+<h3>Style comparison: when to use which</h3>
+<h2>1:15:30 — TreeSet with StringBuffer using Comparator</h2>
+<h3>Problem (from Video 143 recap)</h3>
+<p>TreeSet t = new TreeSet();  // no Comparator
+t.add(new StringBuffer(&quot;A&quot;));
+// ClassCastException: StringBuffer cannot be cast to Comparable</p>
+<p>StringBuffer is homogeneous-safe but NOT Comparable. Default natural sorting fails.</p>
+<h3>Solution: supply Comparator</h3>
+<p>Since StringBuffer lacks compareTo(), we define comparison logic externally.</p>
+<pre class='code'>import java.util.*;
+
+class TreeSetStringBufferDemo {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet(new StringBufferComparator());  // LINE ONE with Comparator
+        t.add(new StringBuffer(&quot;Z&quot;));
+        t.add(new StringBuffer(&quot;A&quot;));
+        t.add(new StringBuffer(&quot;L&quot;));
+        t.add(new StringBuffer(&quot;B&quot;));
+        System.out.println(t);
+    }
+}
+
+class StringBufferComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        StringBuffer sb1 = (StringBuffer) obj1;
+        StringBuffer sb2 = (StringBuffer) obj2;
+        // Convert to String for comparison, or use StringBuffer&#x27;s content
+        return sb1.toString().compareTo(sb2.toString());
+    }
+}</pre>
+<p>Output: [A, B, L, Z]</p>
+<h3>Key points</h3>
+<h3>Alternative: compare StringBuffer content without toString()</h3>
+<pre class='code'>class StringBufferComparatorV2 implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        StringBuffer sb1 = (StringBuffer) obj1;
+        StringBuffer sb2 = (StringBuffer) obj2;
+        int len1 = sb1.length();
+        int len2 = sb2.length();
+        int min = Math.min(len1, len2);
+        for (int i = 0; i &lt; min; i++) {
+            char c1 = sb1.charAt(i);
+            char c2 = sb2.charAt(i);
+            if (c1 != c2)
+                return c1 - c2;
+        }
+        return len1 - len2;
+    }
+}</pre>
+<p>Note: This manual approach mirrors what String.compareTo does internally. Using toString().compareTo() is simpler and sufficient for exams.</p>
+<h3>StringBuilder — same story</h3>
+<p>StringBuilder also does NOT implement Comparable. Identical Comparator approach required.</p>
+<h2>1:22:45 — TreeSet with custom Person/Employee objects</h2>
+<h3>Problem statement</h3>
+<p>Create a Person class with name and id. Insert Person objects into TreeSet sorted by name (alphabetical). Then repeat with a different Comparator sorted by id (numerical).</p>
+<h3>Person class</h3>
+<pre class='code'>class Person {
+    String name;
+    int id;
+
+    Person(String name, int id) {
+        this.name = name;
+        this.id = id;
+    }
+
+    public String toString() {
+        return name + &quot;-&quot; + id;
+    }
+}</pre>
+<p>Person does NOT implement Comparable — customized sorting via Comparator only.</p>
+<h3>Comparator 1: sort by name</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetPersonByName {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet(new PersonNameComparator());
+        t.add(new Person(&quot;Durga&quot;, 101));
+        t.add(new Person(&quot;Ravi&quot;, 103));
+        t.add(new Person(&quot;Anil&quot;, 102));
+        t.add(new Person(&quot;Shiva&quot;, 104));
+        System.out.println(t);
+    }
+}
+
+class Person {
+    String name;
+    int id;
+    Person(String name, int id) { this.name = name; this.id = id; }
+    public String toString() { return name + &quot;-&quot; + id; }
+}
+
+class PersonNameComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        Person p1 = (Person) obj1;
+        Person p2 = (Person) obj2;
+        return p1.name.compareTo(p2.name);
+    }
+}</pre>
+<p>Output: [Anil-102, Durga-101, Ravi-103, Shiva-104]</p>
+<p>Sorted by name alphabetically. IDs are irrelevant for this Comparator.</p>
+<h3>Comparator 2: sort by id (numerical ascending)</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetPersonById {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet(new PersonIdComparator());
+        t.add(new Person(&quot;Durga&quot;, 101));
+        t.add(new Person(&quot;Ravi&quot;, 103));
+        t.add(new Person(&quot;Anil&quot;, 102));
+        t.add(new Person(&quot;Shiva&quot;, 104));
+        System.out.println(t);
+    }
+}
+
+class PersonIdComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        Person p1 = (Person) obj1;
+        Person p2 = (Person) obj2;
+        return Integer.compare(p1.id, p2.id);
+        // or: return p1.id - p2.id;  (subtraction trick — safe for small ids)
+    }
+}</pre>
+<p>Output: [Durga-101, Anil-102, Ravi-103, Shiva-104]</p>
+<p>Sorted by id numerically.</p>
+<h3>Same data, different Comparator → different output</h3>
+<p>This proves: TreeSet sort order is entirely determined by the Comparator you pass at LINE ONE.</p>
+<h3>Employee example — sort by salary descending</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetEmployeeBySalary {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet(new EmployeeSalaryComparator());
+        t.add(new Employee(&quot;Durga&quot;, 50000));
+        t.add(new Employee(&quot;Ravi&quot;, 75000));
+        t.add(new Employee(&quot;Anil&quot;, 60000));
+        System.out.println(t);
+    }
+}
+
+class Employee {
+    String name;
+    int salary;
+    Employee(String name, int salary) { this.name = name; this.salary = salary; }
+    public String toString() { return name + &quot;-&quot; + salary; }
+}
+
+class EmployeeSalaryComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        Employee e1 = (Employee) obj1;
+        Employee e2 = (Employee) obj2;
+        // descending salary: higher salary comes first
+        return Integer.compare(e2.salary, e1.salary);
+    }
+}</pre>
+<p>Output: [Ravi-75000, Anil-60000, Durga-50000]</p>
+<h3>Duplicate Person with same name</h3>
+<p>t.add(new Person(&quot;Anil&quot;, 102));
+t.add(new Person(&quot;Anil&quot;, 999));  // same name, different id
+// PersonNameComparator: name.compareTo → 0 → DUPLICATE → second not inserted</p>
+<p>Critical: With name-based Comparator, two persons with same name are duplicates even if ids differ. If you want uniqueness by id, sort by id or use a composite Comparator.</p>
+<h3>Composite Comparator (sort by name, then by id)</h3>
+<pre class='code'>class PersonNameThenIdComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        Person p1 = (Person) obj1;
+        Person p2 = (Person) obj2;
+        int cmp = p1.name.compareTo(p2.name);
+        return (cmp != 0) ? cmp : Integer.compare(p1.id, p2.id);
+    }
+}</pre>
+<h2>1:32:10 — Inter-conversion: ArrayList to TreeSet</h2>
+<h3>Constructor 3 recap (from Video 143)</h3>
+<pre class='code'>TreeSet t = new TreeSet(Collection c);</pre>
+<ul><li>Used for inter-conversion between collection objects</li></ul>
+<ul><li>Source collection (e.g., ArrayList) has no inherent sorting</li></ul>
+<ul><li>TreeSet applies default natural sorting order to those elements</li></ul>
+<h3>Demo program</h3>
+<pre class='code'>import java.util.*;
+
+class ArrayListToTreeSetDemo {
+    public static void main(String[] args) {
+        ArrayList al = new ArrayList();
+        al.add(&quot;Z&quot;);
+        al.add(&quot;A&quot;);
+        al.add(&quot;M&quot;);
+        al.add(&quot;B&quot;);
+        al.add(&quot;Y&quot;);
+
+        System.out.println(&quot;ArrayList (insertion order): &quot; + al);
+        // [Z, A, M, B, Y]
+
+        TreeSet ts = new TreeSet(al);   // Constructor 3 — inter-conversion
+        System.out.println(&quot;TreeSet (sorted): &quot; + ts);
+        // [A, B, M, Y, Z]
+    }
+}</pre>
+<p>Output:</p>
+<p>ArrayList (insertion order): [Z, A, M, B, Y]
+TreeSet (sorted): [A, B, M, Y, Z]</p>
+<h3>Key observations</h3>
+<h3>Inter-conversion with Integer</h3>
+<p>ArrayList al = new ArrayList();
+al.add(10);
+al.add(5);
+al.add(20);
+al.add(0);
+
+TreeSet ts = new TreeSet(al);
+System.out.println(ts);  // [0, 5, 10, 20] — natural ascending</p>
+<h3>Inter-conversion with custom Comparator</h3>
+<p>If you want sorted-by-length when converting from ArrayList:</p>
+<p>ArrayList al = new ArrayList();
+al.add(&quot;Java&quot;);
+al.add(&quot;C&quot;);
+al.add(&quot;Python&quot;);
+
+TreeSet ts = new TreeSet(new LengthComparator());
+ts.addAll(al);   // addAll also works
+System.out.println(ts);  // [C, Java, Python]</p>
+<p>Note: new TreeSet(al) uses natural order only. For custom order, create TreeSet with Comparator first, then addAll(al).</p>
+<h3>Inter-conversion failure — non-Comparable elements</h3>
+<p>ArrayList al = new ArrayList();
+al.add(new StringBuffer(&quot;A&quot;));
+al.add(new StringBuffer(&quot;Z&quot;));
+
+TreeSet ts = new TreeSet(al);  // ClassCastException at runtime</p>
+<p>StringBuffer in ArrayList is fine (ArrayList allows anything). TreeSet constructor tries natural sorting → fails.</p>
+<h2>1:38:50 — Heterogeneous objects: Integer + String → ClassCastException</h2>
+<h3>Rule (from Video 143 — reinforced here)</h3>
+<p>TreeSet does NOT allow heterogeneous objects when using default natural sorting.</p>
+<p>Only TreeSet and TreeMap enforce this in the entire Collections Framework.</p>
+<h3>Demo: natural sorting — ClassCastException</h3>
+<pre class='code'>import java.util.*;
+
+class HeterogeneousTreeSetDemo {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet();   // no Comparator — natural sorting
+        t.add(&quot;A&quot;);
+        t.add(&quot;B&quot;);
+        t.add(10);   // Integer after Strings → ClassCastException
+        System.out.println(t);
+    }
+}</pre>
+<p>Exception:</p>
+<p>Exception in thread &quot;main&quot; java.lang.ClassCastException:
+    java.lang.Integer cannot be cast to java.lang.String</p>
+<p>Why? JVM tries to compare Integer with String using compareTo — types are incompatible.</p>
+<h3>Reverse order also fails</h3>
+<p>TreeSet t = new TreeSet();
+t.add(10);
+t.add(&quot;A&quot;);   // ClassCastException — Integer already in tree</p>
+<h3>With Comparator — still problematic</h3>
+<p>TreeSet t = new TreeSet(new MyComparator());
+t.add(&quot;A&quot;);
+t.add(10);   // MyComparator must cast both to same type — still CCE or logic error</p>
+<p>Even with Comparator, if your compare method casts to String, Integer will fail at cast. Heterogeneous objects are fundamentally incompatible with TreeSet&#x27;s comparison model unless Comparator explicitly handles multiple types (never done in exam questions).</p>
+<h3>Preview from Video 144: return +1 always</h3>
+<p>Sir previewed: if compare always returns +1, heterogeneous objects can all be added:</p>
+<pre class='code'>class AlwaysPlusOne implements Comparator {
+    public int compare(Object o1, Object o2) { return +1; }
+}
+
+TreeSet t = new TreeSet(new AlwaysPlusOne());
+t.add(&quot;A&quot;);
+t.add(10);
+t.add(new Person(&quot;X&quot;, 1));
+System.out.println(t);  // [A, 10, X-1] — insertion order, NOT sorted</pre>
+<p>This is NOT valid sorted TreeSet usage — it&#x27;s a trick question demonstrating JVM blindness. Normal TreeSet requires homogeneous, mutually comparable objects.</p>
+<h3>Heterogeneous summary table</h3>
+<h2>1:42:30 — Null in TreeSet: with vs without Comparator</h2>
+<h3>Without Comparator (natural sorting) — complete rules</h3>
+<p>From Video 143 (star note):</p>
+<p>Modern exam answer (Java 8+): null is NOT allowed in TreeSet at all with natural sorting.</p>
+<p>TreeSet t = new TreeSet();
+t.add(null);   // NullPointerException (Java 7+)</p>
+<p>TreeSet t = new TreeSet();
+t.add(&quot;A&quot;);
+t.add(null);   // NullPointerException — must compare null with &quot;A&quot;</p>
+<h3>With Comparator — null behavior</h3>
+<p>When Comparator is supplied, JVM calls compare(obj1, obj2). If either argument is null:</p>
+<p>TreeSet t = new TreeSet(new MyComparator());
+t.add(null);   // compare(null, null) or no comparison for first element?</p>
+<p>Case 1: null as first element with Comparator (Java 7+):</p>
+<p>TreeSet t = new TreeSet(new StringLengthComparator());
+t.add(null);   // Still NullPointerException in Java 7+</p>
+<p>TreeSet internally may still reject null even with Comparator in modern Java.</p>
+<p>Case 2: non-empty TreeSet + null with Comparator:</p>
+<p>TreeSet t = new TreeSet(new ReverseAlphaComparator());
+t.add(&quot;A&quot;);
+t.add(null);   // NullPointerException — compare(null, &quot;A&quot;) → NPE in your compare method</p>
+<p>Case 3: Comparator that handles null explicitly (theoretical — not exam focus):</p>
+<pre class='code'>class NullSafeComparator implements Comparator {
+    public int compare(Object o1, Object o2) {
+        if (o1 == o2) return 0;
+        if (o1 == null) return -1;
+        if (o2 == null) return +1;
+        String s1 = (String) o1;
+        String s2 = (String) o2;
+        return s1.compareTo(s2);
+    }
+}</pre>
+<p>Even with null-safe Comparator, TreeSet in Java 7+ generally rejects null at the collection level before compare is called. Do not rely on null in TreeSet for exams.</p>
+<h3>Null summary — board note</h3>
+<p>Interview one-liner: &quot;Null is not allowed in TreeSet (Java 7 onwards), regardless of whether Comparator is present.&quot;</p>
+<h2>1:47:00 — Session summary and exam checklist</h2>
+<h3>Programs covered in this session</h3>
+<h3>OCJP / SCJP exam checklist (Videos 143–145 combined)</h3>
+<ul><li>[ ] TreeSet underlying DS = Balanced Tree (Red-Black Tree)</li></ul>
+<ul><li>[ ] Duplicates not allowed; insertion order not preserved</li></ul>
+<ul><li>[ ] Heterogeneous objects → ClassCastException (TreeSet and TreeMap only)</li></ul>
+<ul><li>[ ] Default natural sorting requires homogeneous + Comparable</li></ul>
+<ul><li>[ ] String natural order = Unicode lexicographic (capitals before lowercase)</li></ul>
+<ul><li>[ ] MCQ: one/two/three/four → [four, one, three, two]</li></ul>
+<ul><li>[ ] LINE ONE without Comparator → compareTo(); with Comparator → compare()</li></ul>
+<ul><li>[ ] Comparator package = java.util; Comparable package = java.lang</li></ul>
+<ul><li>[ ] Implement Comparator → only compare() required (equals inherited from Object)</li></ul>
+<ul><li>[ ] compare return: negative = before, positive = after, zero = duplicate</li></ul>
+<ul><li>[ ] Reverse sort shortcuts: -(a.compareTo(b)) or b.compareTo(a)</li></ul>
+<ul><li>[ ] Subtraction trick: a - b for int/char; overflow risk for large ints</li></ul>
+<ul><li>[ ] Integer.compare(a, b) — preferred over subtraction</li></ul>
+<ul><li>[ ] StringBuffer/StringBuilder need Comparator (not Comparable)</li></ul>
+<ul><li>[ ] Custom objects need Comparator for any sort key (name, id, salary)</li></ul>
+<ul><li>[ ] TreeSet(Collection c) = inter-conversion with natural sorting</li></ul>
+<ul><li>[ ] Null NOT allowed in TreeSet (Java 7+)</li></ul>
+<ul><li>[ ] return +1 always → insertion order (dangerous trick)</li></ul>
+<ul><li>[ ] return 0 always → only first element survives</li></ul>
+<ul><li>[ ] JVM is blind — only trusts compare/compareTo return value</li></ul>
+<h2>Interview questions from this block (143–145)</h2>
+<h3>Basic TreeSet</h3>
+<p>Q1: What is the underlying data structure of TreeSet?</p>
+<p>→ Balanced Tree (Red-Black Tree internally). O(log n) for add, remove, contains.</p>
+<p>Q2: Does TreeSet preserve insertion order?</p>
+<p>→ No. Elements are stored and printed in sorting order.</p>
+<p>Q3: Are duplicates allowed in TreeSet?</p>
+<p>→ No. When compareTo/compare returns 0, duplicate is silently not inserted.</p>
+<p>Q4: Are heterogeneous objects allowed?</p>
+<p>→ No. ClassCastException. TreeSet and TreeMap are the only collections with this restriction.</p>
+<h3>String sorting traps</h3>
+<p>Q5: What is the output of TreeSet with &quot;one&quot;, &quot;two&quot;, &quot;three&quot;, &quot;four&quot;?</p>
+<p>→ [four, one, three, two] — lexicographic Unicode order, not English word order.</p>
+<p>Q6: How does TreeSet sort &quot;A&quot; and &quot;a&quot;?</p>
+<p>→ &quot;A&quot; comes before &quot;a&quot; because capital A (65) &lt; lowercase a (97).</p>
+<p>Q7: Why is String sorting called lexicographic and not alphabetical?</p>
+<p>→ It compares Unicode values character-by-character, which differs from dictionary word order for multi-character strings starting with different letters.</p>
+<h3>Comparable vs Comparator</h3>
+<p>Q8: What is the difference between Comparable and Comparator?</p>
+<p>→ Comparable = default natural sorting (internal, compareTo). Comparator = customized sorting (external, compare).</p>
+<p>Q9: Which package contains Comparable? Comparator?</p>
+<p>→ Comparable: java.lang. Comparator: java.util.</p>
+<p>Q10: When implementing Comparator, must you implement equals()?</p>
+<p>→ No. equals() is inherited from Object.</p>
+<p>Q11: What method does JVM call when Comparator is passed to TreeSet constructor?</p>
+<p>→ compare(obj1, obj2) on your Comparator object.</p>
+<p>Q12: In compare(obj1, obj2), which object is being inserted?</p>
+<p>→ obj1 is the new element being inserted; obj2 is an existing element in the tree.</p>
+<h3>Comparator implementation</h3>
+<p>Q13: Write a Comparator to sort strings by length.</p>
+<p>→ Compare lengths; tie-break with compareTo. Use Integer.compare for safety.</p>
+<p>Q14: One-line Comparator for reverse alphabetical String sort?</p>
+<pre class='code'>→ return s2.compareTo(s1); or return -(s1.compareTo(s2));</pre>
+<p>Q15: What happens if compare() always returns +1?</p>
+<p>→ Insertion order (not sorted). Duplicates allowed. JVM doesn&#x27;t validate.</p>
+<p>Q16: What happens if compare() always returns 0?</p>
+<p>→ Only the first inserted element survives; all others treated as duplicates.</p>
+<p>Q17: Subtraction trick vs Integer.compare — which is safer?</p>
+<p>→ Integer.compare — no integer overflow risk.</p>
+<h3>StringBuffer and custom objects</h3>
+<p>Q18: Can you store StringBuffer in TreeSet with default constructor?</p>
+<p>→ No. ClassCastException — StringBuffer doesn&#x27;t implement Comparable.</p>
+<p>Q19: How to store StringBuffer in TreeSet?</p>
+<p>→ Pass a Comparator that compares StringBuffer contents (e.g., via toString().compareTo()).</p>
+<p>Q20: Can Person objects go into TreeSet without Comparator?</p>
+<p>→ No (unless Person implements Comparable). Need Comparator for customized sort by name/id.</p>
+<p>Q21: Two Person objects with same name but different id — duplicate in name-based Comparator?</p>
+<p>→ Yes. compare returns 0 when names match → second Person not inserted.</p>
+<h3>Inter-conversion and null</h3>
+<p>Q22: How to convert ArrayList to TreeSet with natural sorting?</p>
+<p>→ TreeSet ts = new TreeSet(arrayList); — Constructor 3.</p>
+<p>Q23: Is null allowed in TreeSet?</p>
+<p>→ No (Java 7+). NullPointerException regardless of Comparator.</p>
+<p>Q24: Difference between TreeSet(Comparator) and TreeSet(Collection)?</p>
+<p>→ Comparator constructor: empty set with custom sort. Collection constructor: populated set with natural sort from collection elements.</p>
+<h3>Advanced / trick</h3>
+<p>Q25: TreeSet with String and Integer — what happens?</p>
+<p>→ ClassCastException with natural sorting. Cannot compare incompatible types.</p>
+<p>Q26: If Comparator casts to String but Integer is added, what happens?</p>
+<p>→ ClassCastException at the cast inside compare().</p>
+<p>Q27: How is TreeSet output order determined?</p>
+<p>→ Entirely by compareTo (natural) or compare (Comparator). JVM performs in-order traversal of internal BST.</p>
+<p>Q28: Will TreeMap use the same Comparable/Comparator concepts?</p>
+<p>→ Yes — identical terminology. Constructor 1 = natural, Constructor 2 = Comparator. (Preview for later sessions.)</p>
+<h2>Homework / self-test</h2>
+<ol><li>Predict output of TreeSet MCQ (one, two, three, four) without running code.</li></ol>
+<ol><li>Write reverse alphabetical Comparator three ways: if-else, negation, reversed args.</li></ol>
+<ol><li>Write length Comparator using all three styles: if-else, subtraction, Integer.compare.</li></ol>
+<ol><li>Implement TreeSet with StringBuffer + Comparator from memory.</li></ol>
+<ol><li>Create Person class with name and id; write two Comparators (by name, by id).</li></ol>
+<ol><li>Convert ArrayList [&quot;Z&quot;,&quot;A&quot;,&quot;M&quot;] to TreeSet and predict output.</li></ol>
+<ol><li>Explain why t.add(10) after t.add(&quot;A&quot;) throws ClassCastException.</li></ol>
+<ol><li>Explain null behavior in TreeSet for Java 8.</li></ol>
+<ol><li>Predict output when compare always returns +1 with elements &quot;C&quot;, &quot;A&quot;, &quot;B&quot;.</li></ol>
+<ol><li>Draw BST after inserting &quot;K&quot;, &quot;Z&quot;, &quot;A&quot;, &quot;A&quot; with natural String order.</li></ol>
+<h3>Self-test program template</h3>
+<pre class='code'>import java.util.*;
+
+public class Video145SelfTest {
+    public static void main(String[] args) {
+        // Test 1: MCQ
+        TreeSet mcq = new TreeSet();
+        for (String s : new String[]{&quot;one&quot;, &quot;two&quot;, &quot;three&quot;, &quot;four&quot;})
+            mcq.add(s);
+        System.out.println(&quot;MCQ: &quot; + mcq);
+        // Expected: [four, one, three, two]
+
+        // Test 2: reverse alpha
+        TreeSet rev = new TreeSet(new Comparator() {
+            public int compare(Object a, Object b) {
+                return ((String)b).compareTo((String)a);
+            }
+        });
+        for (String s : new String[]{&quot;A&quot;, &quot;Z&quot;, &quot;L&quot;, &quot;B&quot;})
+            rev.add(s);
+        System.out.println(&quot;Reverse: &quot; + rev);
+        // Expected: [Z, L, B, A]
+
+        // Test 3: by length
+        TreeSet byLen = new TreeSet(new Comparator() {
+            public int compare(Object a, Object b) {
+                String s1 = (String) a, s2 = (String) b;
+                int c = Integer.compare(s1.length(), s2.length());
+                return c != 0 ? c : s1.compareTo(s2);
+            }
+        });
+        for (String s : new String[]{&quot;Java&quot;, &quot;C&quot;, &quot;Python&quot;, &quot;Go&quot;})
+            byLen.add(s);
+        System.out.println(&quot;By length: &quot; + byLen);
+        // Expected: [C, Go, Java, Python]
+
+        // Test 4: StringBuffer
+        TreeSet sb = new TreeSet(new Comparator() {
+            public int compare(Object a, Object b) {
+                return a.toString().compareTo(b.toString());
+            }
+        });
+        sb.add(new StringBuffer(&quot;Z&quot;));
+        sb.add(new StringBuffer(&quot;A&quot;));
+        System.out.println(&quot;StringBuffer: &quot; + sb);
+        // Expected: [A, Z]
+
+        // Test 5: ArrayList inter-conversion
+        ArrayList al = new ArrayList();
+        al.add(&quot;Z&quot;); al.add(&quot;A&quot;); al.add(&quot;M&quot;);
+        TreeSet converted = new TreeSet(al);
+        System.out.println(&quot;Converted: &quot; + converted);
+        // Expected: [A, M, Z]
+    }
+}</pre>
+<h2>Connection to Video 146 (next session)</h2>
+<p>Video 146 begins the Map module — the second half of the Collections Framework. Sir&#x27;s opening recap in 146 confirms:</p>
+<ul><li>Comparable/Comparator is the crown jewel of the Collection half</li></ul>
+<ul><li>Set terminology (TreeSet block) is complete after this session</li></ul>
+<ul><li>TreeMap (coming later) reuses identical Comparable/Comparator constructor terminology</li></ul>
+<p>Before starting Map: ensure every program in this session (145) runs correctly in your IDE from memory.</p>
+<h2>Durga Sir&#x27;s emphasis points (write in notebook)</h2>
+<ol><li>&quot;Five to six more examples&quot; — this session IS that promise from Video 144</li></ol>
+<ol><li>&quot;JVM is blind&quot; — applies to String, StringBuffer, Person, everything</li></ol>
+<ol><li>&quot;LINE ONE&quot; — with or without Comparator determines compare vs compareTo</li></ol>
+<ol><li>MCQ trap — one/two/three/four is NOT alphabetical word order</li></ol>
+<ol><li>Unicode capitals before lowercase — always check case in String TreeSet questions</li></ol>
+<ol><li>StringBuffer looks like String but is NOT Comparable — Comparator fixes it</li></ol>
+<ol><li>Same data, different Comparator → different output — Person by name vs by id</li></ol>
+<ol><li>ArrayList → TreeSet — Constructor 3 applies natural sort to unsorted collection</li></ol>
+<ol><li>Heterogeneous → ClassCastException — TreeSet and TreeMap only</li></ol>
+<ol><li>Null NOT allowed — Java 7+ regardless of Comparator</li></ol>
+<ol><li>Subtraction trick vs Integer.compare — know both, prefer Integer.compare</li></ol>
+<ol><li>return +1/0/-1 always — dangerous tricks; JVM never validates your logic</li></ol>
+<h2>Quick reference card</h2>
+<h3>TreeSet constructor decision tree</h3>
+<p>Need TreeSet?
+│
+├─ Have existing Collection to convert?
+│   └─ new TreeSet(collection) → natural sort applied
+│
+├─ Need default natural order (Comparable objects)?
+│   └─ new TreeSet() → JVM calls compareTo()
+│
+└─ Need custom order?
+    └─ new TreeSet(new MyComparator()) → JVM calls compare()</p>
+<h3>compare() return contract (same as compareTo)</h3>
+<h3>String Comparator recipes</h3>
+<p>End of Video 145 study notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>145 of 203</td><td></td><td></td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Collections Part-10 \</td><td>\</td><td>string object in Treeset Example</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 50m 08s</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>zHKqmFyuaKI</td><td></td><td></td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=zHKqmFyuaKI</td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>Synthesized from adjacent lectures + standard syllabus (captions unavailable; Whisper blocked)</td><td></td><td></td></tr>
+<tr><td>Prerequisite</td><td>Video 143 (TreeSet fundamentals), Video 144 (Comparator interface + Integer descending + seven compare styles)</td><td></td><td></td></tr>
+<tr><td>Next session</td><td>Video 146 (Map introduction — HashMap, Hashtable)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Session</th><th>Focus</th><th>Status</th></tr>
+<tr><td>Video 143</td><td>TreeSet properties, constructors, String natural sort, StringBuffer CCE, null rules, Comparable/compareTo</td><td>✅ Prerequisite</td></tr>
+<tr><td>Video 144</td><td>Comparator interface, Integer descending, seven compare styles, JVM-blind analogy</td><td>✅ Prerequisite</td></tr>
+<tr><td>Video 145</td><td>String + custom object Comparator marathon (this session)</td><td>✅ Today</td></tr>
+<tr><td>Video 146</td><td>Map introduction — HashMap, Hashtable</td><td>⏳ Next</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Example</th><th>Solution</th></tr>
+<tr><td>Natural order not available</td><td>StringBuffer (no Comparable)</td><td>Pass Comparator to TreeSet constructor</td></tr>
+<tr><td>Natural order not satisfactory</td><td>String A→Z but you want Z→A</td><td>Pass Comparator to TreeSet constructor</td></tr>
+</table>
+<table>
+<tr><th>LINE ONE</th><th>JVM internally calls</th><th>Sorting type</th></tr>
+<tr><td>TreeSet t = new TreeSet();</td><td>compareTo()</td><td>Default natural sorting</td></tr>
+<tr><td>TreeSet t = new TreeSet(new MyComparator());</td><td>compare()</td><td>Customized sorting</td></tr>
+</table>
+<table>
+<tr><th>Character</th><th>Unicode (decimal)</th></tr>
+<tr><td>&#x27;A&#x27; (capital)</td><td>65</td></tr>
+<tr><td>&#x27;Z&#x27; (capital)</td><td>90</td></tr>
+<tr><td>&#x27;a&#x27; (lowercase)</td><td>97</td></tr>
+<tr><td>&#x27;z&#x27; (lowercase)</td><td>122</td></tr>
+</table>
+<table>
+<tr><th>Option</th><th>Output</th></tr>
+<tr><td>A</td><td>[four, one, three, two]</td></tr>
+<tr><td>B</td><td>[one, two, three, four]</td></tr>
+<tr><td>C</td><td>[one, three, two, four]</td></tr>
+<tr><td>D</td><td>Compilation fails</td></tr>
+</table>
+<table>
+<tr><th>String</th><th>First char</th><th>Unicode</th></tr>
+<tr><td>&quot;four&quot;</td><td>&#x27;f&#x27;</td><td>102</td></tr>
+<tr><td>&quot;one&quot;</td><td>&#x27;o&#x27;</td><td>111</td></tr>
+<tr><td>&quot;three&quot;</td><td>&#x27;t&#x27;</td><td>116</td></tr>
+<tr><td>&quot;two&quot;</td><td>&#x27;t&#x27;</td><td>116</td></tr>
+</table>
+<table>
+<tr><th>Comparison</th><th>Result</th><th>Reasoning</th></tr>
+<tr><td>&quot;four&quot;.compareTo(&quot;one&quot;)</td><td>negative</td><td>&#x27;f&#x27;(102) &lt; &#x27;o&#x27;(111)</td></tr>
+<tr><td>&quot;one&quot;.compareTo(&quot;three&quot;)</td><td>negative</td><td>&#x27;o&#x27;(111) &lt; &#x27;t&#x27;(116)</td></tr>
+<tr><td>&quot;three&quot;.compareTo(&quot;two&quot;)</td><td>negative</td><td>&#x27;h&#x27;(104) &lt; &#x27;w&#x27;(119) at index 1</td></tr>
+</table>
+<table>
+<tr><th>Collection</th><th>Order preserved?</th><th>Sorting?</th></tr>
+<tr><td>TreeSet</td><td>No</td><td>Yes — always sorted</td></tr>
+<tr><td>LinkedHashSet</td><td>Yes — insertion order</td><td>No</td></tr>
+<tr><td>HashSet</td><td>No</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>Result</th><th>Meaning</th></tr>
+<tr><td>3 - 5</td><td>-2 (negative)</td><td>obj1 shorter → before</td></tr>
+<tr><td>7 - 2</td><td>+5 (positive)</td><td>obj1 longer → after</td></tr>
+<tr><td>4 - 4</td><td>0</td><td>same length → need tie-breaker</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>compare() body</th><th>Output</th><th>Notes</th></tr>
+<tr><td>1</td><td>return s1.compareTo(s2);</td><td>Natural alphabetical</td><td>Same as no Comparator</td></tr>
+<tr><td>2</td><td>return -(s1.compareTo(s2));</td><td>Reverse alphabetical</td><td>One-line reverse</td></tr>
+<tr><td>3</td><td>return s2.compareTo(s1);</td><td>Reverse alphabetical</td><td>Reverse args</td></tr>
+<tr><td>4</td><td>return Integer.compare(s1.length(), s2.length());</td><td>Sort by length ascending</td><td>Subtraction safe via Integer.compare</td></tr>
+<tr><td>5</td><td>return s1.length() - s2.length();</td><td>Sort by length ascending</td><td>Subtraction trick</td></tr>
+<tr><td>6</td><td>return +1; always</td><td>Insertion order</td><td>NOT sorted — [Java, C, Python, Go]</td></tr>
+<tr><td>7</td><td>return 0; always</td><td>Only first element</td><td>[Java] only</td></tr>
+</table>
+<table>
+<tr><th>Style</th><th>Use when</th><th>Risk</th></tr>
+<tr><td>+1/-1/0 if-else</td><td>Learning, interviews, explicit logic</td><td>Verbose</td></tr>
+<tr><td>Subtraction a - b</td><td>Small int/char differences</td><td>Overflow for large ints</td></tr>
+<tr><td>Integer.compare(a, b)</td><td>Production code, exam best practice</td><td>None for ints</td></tr>
+<tr><td>s1.compareTo(s2)</td><td>Delegating to natural order</td><td>None</td></tr>
+<tr><td>-(s1.compareTo(s2))</td><td>Reversing natural order</td><td>None</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>Without Comparator</th><th>With Comparator</th></tr>
+<tr><td>StringBuffer in TreeSet</td><td>ClassCastException</td><td>Works</td></tr>
+<tr><td>JVM calls</td><td>compareTo (fails)</td><td>compare (your logic)</td></tr>
+<tr><td>Comparison basis</td><td>N/A</td><td>Whatever you define in compare()</td></tr>
+</table>
+<table>
+<tr><th>Comparator</th><th>Sort key</th><th>Output order</th></tr>
+<tr><td>PersonNameComparator</td><td>name</td><td>Anil, Durga, Ravi, Shiva</td></tr>
+<tr><td>PersonIdComparator</td><td>id</td><td>Durga(101), Anil(102), Ravi(103), Shiva(104)</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>ArrayList</th><th>TreeSet</th></tr>
+<tr><td>Order</td><td>Insertion order preserved</td><td>Sorted order</td></tr>
+<tr><td>Duplicates</td><td>Allowed</td><td>Not allowed</td></tr>
+<tr><td>Underlying DS</td><td>Dynamic array</td><td>Balanced tree</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Result</th></tr>
+<tr><td>String + Integer, no Comparator</td><td>ClassCastException</td></tr>
+<tr><td>String + Integer, with normal Comparator</td><td>ClassCastException (at cast)</td></tr>
+<tr><td>Any mix, compare always +1</td><td>All added — insertion order (exam trick)</td></tr>
+<tr><td>String + String</td><td>OK</td></tr>
+<tr><td>Integer + Integer</td><td>OK</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Java 6</th><th>Java 7+</th></tr>
+<tr><td>Empty TreeSet, add null first</td><td>Allowed [null]</td><td>NullPointerException</td></tr>
+<tr><td>Non-empty TreeSet, add null</td><td>NullPointerException</td><td>NullPointerException</td></tr>
+<tr><td>TreeSet has null, add anything else</td><td>NullPointerException</td><td>NullPointerException</td></tr>
+</table>
+<table>
+<tr><th>TreeSet type</th><th>null allowed? (Java 8+)</th></tr>
+<tr><td>new TreeSet() natural</td><td>No — NullPointerException</td></tr>
+<tr><td>new TreeSet(comparator)</td><td>No — NullPointerException</td></tr>
+<tr><td>HashSet</td><td>Yes — one null allowed</td></tr>
+<tr><td>ArrayList</td><td>Yes — multiple nulls allowed</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Class / Topic</th><th>Comparator?</th><th>Key output</th></tr>
+<tr><td>1</td><td>String natural sorting recap</td><td>No</td><td>[A, B, L, Z]</td></tr>
+<tr><td>2</td><td>MCQ one/two/three/four</td><td>No</td><td>[four, one, three, two]</td></tr>
+<tr><td>3</td><td>Insertion vs sorted demo</td><td>No</td><td>Sorted, not insertion order</td></tr>
+<tr><td>4</td><td>Reverse alphabetical String</td><td>Yes</td><td>[Z, M, L, B, A]</td></tr>
+<tr><td>5</td><td>Sort by length</td><td>Yes</td><td>[C, Go, Java, Python]</td></tr>
+<tr><td>6</td><td>Sort by last character</td><td>Yes</td><td>[dog, bat, cat, rat]</td></tr>
+<tr><td>7</td><td>StringBuffer + Comparator</td><td>Yes</td><td>[A, B, L, Z]</td></tr>
+<tr><td>8</td><td>Person by name</td><td>Yes</td><td>Alphabetical by name</td></tr>
+<tr><td>9</td><td>Person by id</td><td>Yes</td><td>Numerical by id</td></tr>
+<tr><td>10</td><td>Employee by salary desc</td><td>Yes</td><td>Highest salary first</td></tr>
+<tr><td>11</td><td>ArrayList → TreeSet</td><td>No (Constructor 3)</td><td>Natural sort applied</td></tr>
+<tr><td>12</td><td>Heterogeneous String+Integer</td><td>No</td><td>ClassCastException</td></tr>
+<tr><td>13</td><td>Null acceptance</td><td>Both</td><td>NullPointerException (Java 7+)</td></tr>
+</table>
+<table>
+<tr><th>Return</th><th>Meaning</th><th>TreeSet action</th></tr>
+<tr><td>Negative</td><td>obj1 before obj2</td><td>Go left in BST</td></tr>
+<tr><td>Positive</td><td>obj1 after obj2</td><td>Go right in BST</td></tr>
+<tr><td>Zero</td><td>obj1 equals obj2</td><td>Duplicate — skip</td></tr>
+</table>
+<table>
+<tr><th>Goal</th><th>One-liner</th></tr>
+<tr><td>Natural alpha</td><td>s1.compareTo(s2)</td></tr>
+<tr><td>Reverse alpha</td><td>s2.compareTo(s1)</td></tr>
+<tr><td>By length asc</td><td>Integer.compare(s1.length(), s2.length())</td></tr>
+<tr><td>By length desc</td><td>Integer.compare(s2.length(), s1.length())</td></tr>
+<tr><td>By last char</td><td>Integer.compare(c1, c2) where c = charAt(len-1)</td></tr>
+</table>
+</body></html>

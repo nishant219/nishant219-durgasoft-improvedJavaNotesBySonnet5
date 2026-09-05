@@ -1,0 +1,237 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>096-concurrent-package</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 096 — java.util.concurrent package (locks intro)</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Multithreading Enhancement  Part- 2|| java.util.concurrent package</p>
+<p>ASR decode (this lecture): keep subing = keep writing (board heading); synchronizer / synchronizer keyword = synchronized; luck / L do = lock / l.; trock / tryck / TR = tryLock; religious lock = releases lock; thre / threats = thread(s); loocks / logs package = locks package; reenter / reentrant = ReentrantLock; interrupta = lockInterruptibly; illegal monitor State = IllegalMonitorStateException; Nan / microc = NANOSECONDS / MICROSECONDS; legend = listen; keep uping = keep writing.</p>
+<h3>00:07 — Topic: `java.util.concurrent` / locks package</h3>
+<p>Board heading: java.util.concurrent package (and its sub-package locks). Last sessions covered the synchronized keyword. There are many problems with traditional synchronization.</p>
+<h3>00:38 — Biggest problems with synchronized</h3>
+<ol><li>Performance goes down.</li></ol>
+<ol><li>If synchronized is not used properly → chance of deadlock. Synchronized is the only reason deadlock situations appear in the classic model.</li></ol>
+<p>To overcome these: `java.util.concurrent.locks` came into the picture (sub-package of java.util.concurrent). He will explain locks in detail.</p>
+<h3>01:17 — Problem 1: no try-for-lock without waiting</h3>
+<p>Requirement: “I want to try for the lock. If available, give it. If not available, I won’t wait — I will do alternative operations.”</p>
+<p>Traditional synchronized: until you get the lock you must wait. No alternative. Waiting time unknown (1 minute, 10 minutes, 1 hour, 10 days).</p>
+<p>Bus analogy: synchronized = wait for the bus forever. Flexible approach = ask “bus available?” — if yes, board; if no, take another path.</p>
+<pre class='code'>// Conceptual flexibility NOT available with synchronized alone:
+Lock l = /* some Lock */;
+if (l.tryLock()) {
+    // got lock → safe operations
+} else {
+    // lock not available → alternative operations (no wait)
+}</pre>
+<h3>04:02 — No waiting ⇒ no deadlock question</h3>
+<p>If you do not wait when the lock is unavailable, there is no waiting time → no question of deadlock. In the concurrent locks package this style of API exists.</p>
+<h3>04:27 — Problem 2: no fairness / no control who gets the lock</h3>
+<p>If T1, T2, T3 wait for a lock and the lock becomes free — which thread gets it? Unknown (thread scheduler). You may want: longest waiting thread must get it (fairness policy). Synchronized cannot guarantee this. In locks there is a fairness flag; if set, longest waiting thread gets the chance.</p>
+<p>“Be a bit fair / don’t do fraud” = fairness policy.</p>
+<h3>05:41 — Problem 3: no API for waiting-thread count</h3>
+<p>How many threads are waiting for the lock? Synchronized has no API to list/count waiting threads.</p>
+<h3>06:03 — Board: problems with traditional synchronized keyword</h3>
+<pre class='code'>// Board heading:
+// Problems with traditional synchronized keyword</pre>
+<h3>07:00 — Problem list dictated on board (1)</h3>
+<p>1. No flexibility to try for a lock without waiting.</p>
+<h3>07:38 — Problem list (2): no max waiting time</h3>
+<p>Sometimes you want: wait at most 10 minutes; if still no lock, continue with alternative work. Synchronized: wait until lock forever — no max waiting time → performance problems and deadlock risk.</p>
+<pre class='code'>// Board:
+// 2. There is no way to specify maximum waiting time
+//    for your thread to get lock
+//    → thread will wait until getting the lock
+//    → which may create performance problems
+//    → which may cause deadlock</pre>
+<h3>09:44 — Problem list (3): who gets the lock after release</h3>
+<p>If a thread releases the lock, which waiting thread gets it? No control with synchronized.</p>
+<pre class='code'>// Board:
+// 3. If a thread releases lock, then which waiting thread
+//    will get that lock — we are not having any control on this</pre>
+<h3>10:34 — Problem list (4): no API to list waiting threads</h3>
+<pre class='code'>// Board:
+// 4. There is no API to list out all waiting threads for a lock</pre>
+<h3>11:08 — Problem list (5): synchronized only method-level or block-inside-method</h3>
+<p>Ways to use synchronized:</p>
+<ul><li>declare a method synchronized</li></ul>
+<ul><li>or a synchronized block inside a method (synchronized(this) etc.)</li></ul>
+<p>It applies at method level or within the method. Across multiple methods you cannot “start lock in M1 and release inside M2” cleanly with the keyword alone.</p>
+<p>Scenario: need lock from a point in M1 through part of called M2, then release mid-flow so later code is open to other threads. With Lock API:</p>
+<pre class='code'>Lock l = /* ... */;
+
+void m1() {
+    l.lock();
+    // need lock here
+    m2();
+}
+
+void m2() {
+    // still under lock from m1&#x27;s acquisition...
+    // from some point lock no longer required:
+    l.unlock();
+    // multiple threads allowed from here
+}</pre>
+<p>Across multiple methods, synchronization nature is achievable with `java.util.concurrent.locks`, not with traditional synchronized keyword alone.</p>
+<h3>13:32 — Board dictation of problem 5</h3>
+<pre class='code'>// Board:
+// 5. Compulsory we have to use synchronized either at
+//    method level or within the method
+//    and it is not possible to use across multiple methods</pre>
+<h3>14:28 — Five problems → `java.util.concurrent.locks` in 1.5</h3>
+<p>Total five problems listed. To overcome them, Sun introduced `java.util.concurrent.locks` package in 1.5.</p>
+<p>Package also provides several enhancements for more control on concurrency (not only “alternative to synchronized”).</p>
+<h3>16:42 — Need of Lock: interface + implementation class</h3>
+<p>In this package topic he focuses on:</p>
+<ul><li>interface: `Lock`</li></ul>
+<ul><li>implementation class: `ReentrantLock`</li></ul>
+<p>Methods already mentioned verbally: tryLock, lock, unlock — live on Lock / ReentrantLock.</p>
+<h3>17:32 — Lock object vs implicit lock</h3>
+<p>A Lock (implementation) object is similar to the implicit lock a thread acquires for a synchronized method/block — but created explicitly, and Lock implementations provide more extensive operations than traditional implicit locks (e.g. how many waiting threads, unlock when done, etc.).</p>
+<pre class='code'>// Board:
+// Lock object is similar to implicit lock acquired by a thread
+// to execute synchronized method or synchronized block
+//
+// Lock implementations provide more extensive operations
+// than traditional implicit locks</pre>
+<h3>19:56 — Important methods of Lock interface — `void lock()`</h3>
+<pre class='code'>import java.util.concurrent.locks.Lock;
+
+// l.lock();
+void lock();</pre>
+<p>Use to acquire a lock:</p>
+<ul><li>If lock available → current thread gets it immediately and continues.</li></ul>
+<ul><li>If lock not available → wait until getting the lock.</li></ul>
+<p>Exactly same behavior as traditional synchronized keyword (wait forever).</p>
+<h3>23:08 — Motivation story then `boolean tryLock()`</h3>
+<p>Long classroom story (ideas vs try vs 1% who continue; sea waves near shore vs calm in middle; Indians / software companies) → moral: just try once.</p>
+<pre class='code'>boolean tryLock();</pre>
+<ul><li>If available → acquire and return `true`.</li></ul>
+<ul><li>If not available → return `false`; thread continues without waiting.</li></ul>
+<ul><li>Thread never enters waiting state for this call.</li></ul>
+<p>Usage pattern he writes:</p>
+<pre class='code'>Lock l = /* ... */;
+
+if (l.tryLock()) {
+    // perform safe operations
+} else {
+    // perform alternative operations
+}</pre>
+<h3>28:51 — Board: meaning of tryLock()</h3>
+<pre class='code'>// Board:
+// boolean tryLock()
+// to acquire the lock without waiting
+// if the lock is available → thread acquires that lock and returns true
+// if the lock is not available → this method returns false
+//   and can continue its execution without waiting
+// in this case thread never be entered into waiting state</pre>
+<h3>31:23 — Compare lock vs tryLock; introduce timed tryLock</h3>
+<ul><li>l.lock() → available? get; not? wait until get.</li></ul>
+<ul><li>l.tryLock() → available? get; not? don’t wait, continue.</li></ul>
+<ul><li>Medium form: try; if not available wait some time (e.g. 1 hour); still not? continue.</li></ul>
+<pre class='code'>import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+
+// wait up to 1 hour then give up
+boolean ok = l.tryLock(1, TimeUnit.HOURS);</pre>
+<h3>32:55 — Third method: `boolean tryLock(long time, TimeUnit unit)`</h3>
+<pre class='code'>boolean tryLock(long time, TimeUnit unit) throws InterruptedException;</pre>
+<p>Board meaning:</p>
+<ul><li>If lock available → get lock and continue.</li></ul>
+<ul><li>If not available → wait until specified amount of time.</li></ul>
+<ul><li>Still not available after that → thread can continue execution (returns false).</li></ul>
+<h3>35:25 — `TimeUnit` enum</h3>
+<p>TimeUnit is an enum (group of constants) in `java.util.concurrent` (not in the locks sub-package).</p>
+<p>He runs javap on java.util.concurrent.TimeUnit — shown as abstract class at API level but strictly an enum. Allowed values:</p>
+<pre class='code'>import java.util.concurrent.TimeUnit;
+
+// Allowed TimeUnit values (board):
+// NANOSECONDS
+// MICROSECONDS
+// MILLISECONDS
+// SECONDS
+// MINUTES
+// HOURS
+// DAYS</pre>
+<p>Lock interface is in java.util.concurrent.locks; TimeUnit is in java.util.concurrent — import both when needed.</p>
+<h3>39:03 — Example call with milliseconds</h3>
+<pre class='code'>import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+
+if (l.tryLock(1000, TimeUnit.MILLISECONDS)) {
+    // got the lock within 1000 ms
+} else {
+    // still no lock after waiting up to 1000 ms
+}</pre>
+<h3>39:51 — Fourth method: `void lockInterruptibly()`</h3>
+<p>Spelling care: lockInterruptibly.</p>
+<pre class='code'>void lockInterruptibly() throws InterruptedException;</pre>
+<ul><li>If lock available → acquire and return immediately.</li></ul>
+<ul><li>If not available → wait.</li></ul>
+<ul><li>While waiting, if the thread is interrupted → thread won’t get the lock (interrupted while waiting).</li></ul>
+<pre class='code'>// Board:
+// void lockInterruptibly()
+// acquires the lock if it is available and returns immediately
+// if the lock is not available then it will wait
+// while waiting if the thread is interrupted
+//   then thread won&#x27;t get the lock</pre>
+<h3>42:12 — Fifth method: `void unlock()`</h3>
+<pre class='code'>void unlock();</pre>
+<p>Releases the lock.</p>
+<p>Twist: only the owner of the lock may call unlock.</p>
+<p>Lock l = /* ... */;
+
+// OK: owner unlocks
+l.lock();
+// safe operations
+l.unlock();
+
+// BAD: main calls unlock without owning the lock
+l.unlock();
+// Runtime: IllegalMonitorStateException</p>
+<p>Board rule:</p>
+<pre class='code'>// To call unlock(), compulsory current thread should be
+// owner of the lock
+// otherwise we will get runtime exception saying
+// IllegalMonitorStateException</pre>
+<h3>45:03 — Five methods of Lock; next class ReentrantLock</h3>
+<p>Methods of Lock interface (five):</p>
+<ol><li>lock()</li></ol>
+<ol><li>tryLock() (no time)</li></ol>
+<ol><li>tryLock(long, TimeUnit) (with time)</li></ol>
+<ol><li>lockInterruptibly()</li></ol>
+<ol><li>unlock()</li></ol>
+<p>Implementation class for next session: `ReentrantLock`.</p>
+<pre class='code'>import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+Lock l = new ReentrantLock();</pre>
+<p>` ```java ` block count: 22</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 96 of 203</td></tr>
+<tr><td>Series</td><td>Multithreading Enhancement · Part 2</td></tr>
+<tr><td>Topic</td><td>java.util.concurrent package / problems with synchronized; Lock interface intro</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>45m 55s</td></tr>
+<tr><td>Video ID</td><td>OXDYAHLftRw</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=OXDYAHLftRw</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

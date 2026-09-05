@@ -1,0 +1,539 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>074-finally-block</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 074 — finally block</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Exception Handling Part-4 || finally block</p>
+<p>Source: real YouTube auto-captions (.transcripts/074-2ui_RS0Q7x4.txt). ASR decoded in place: legend / listen L = listen; ENT your room / inter room = interview room; keep uping / keep subing = keep writing (board); under the T = on the board; TR / Tri / tri = try; Link / hand link / exception link = handling / exception handling; Checker exception and Checker exception = checked vs unchecked exception; Garb collector / gar collector / G collection = garbage collector; resty = destroy; delocated = deallocated; blood = block; O Val / 100% P valid / 100% PKA / 100% pakka = valid, 100% sure; exception X has already been cut / CAU = exception X has already been caught; compar / compor / compart = compile-time error; s of / sop / SF = System.out.println; nting = nesting; catcher finally = catch or finally; rer = whether; cral = cruel; bumper offer = last wish before GC destroys the object.</p>
+<p>This video is Exception Handling Part 4. He does not run the four finally control-flow cases (exception raised or not, handled or not) with print statements. He does not show System.exit(), return-in-try vs finally, or try-with-resources. The 47 minutes are two board topics only:</p>
+<ol><li>Interview line: difference between `final`, `finally`, and `finalize` (including the garbage-collector “last wish” story, and why finally-cleanup is try-block level while finalize-cleanup is object level).</li></ol>
+<ol><li>25 combinations of try / catch / finally (he numbers them 1–25 at 38:59), then six summary rules.</li></ol>
+<h3>00:06 — Interview question: `final` vs `finally` vs `finalize`</h3>
+<p>He opens with the difference between final, finally, and finalize. Why is this the very important question? Similarity in the words. Because the three look alike, it is the most valuable question for the interview room. Keep writing the heading: final.</p>
+<h3>00:33 — `final` is a modifier</h3>
+<p>Spell it out: final. final means it is a modifier (of course a keyword). Applicable for classes, methods, and variables.</p>
+<ul><li>If a class is declared final, we can’t create a child class. For final classes, inheritance is not possible.</li></ul>
+<ul><li>If a method is declared final, we can’t override that method in the child class.</li></ul>
+<ul><li>If a variable is declared final, we can’t perform reassignment. It becomes a constant. Final variable = fixed value. Final method = method implementation is final; no one is allowed to override. Final class = no one is allowed to extend; no one is allowed to create a child class.</li></ul>
+<h3>01:29 — Board dictation: `final` (copy slowly)</h3>
+<p>Keep writing.</p>
+<p>final is a modifier, applicable for classes, methods, and variables.</p>
+<p>final class P {
+}
+
+class C extends P {
+    // CE: cannot inherit from final class P
+}</p>
+<p>If a class is declared final, then we can’t extend that class — that is, we can’t create a child class for that class. That is: inheritance is not possible for final classes.</p>
+<p>He repeats the inheritance sentence many times so the room copies it. First point clear.</p>
+<h3>03:24 — If a method is `final`</h3>
+<p>If a method is final, then we can’t override that method in the child class.</p>
+<pre class='code'>class P {
+    public final void m1() {
+    }
+}
+
+class C extends P {
+    public void m1() {
+        // CE: m1() in C cannot override m1() in P
+    }
+}</pre>
+<h3>03:56 — If a variable is `final`</h3>
+<p>If a variable is declared final, then we can’t perform reassignment for that variable.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        final int x = 10;
+        x = 20;
+        // CE: cannot assign a value to final variable x
+    }
+}</pre>
+<p>That’s all for final. Recap: final is the modifier applicable for classes, methods, variables. If a class is final / if a method is final / if a variable is final — the three rules above.</p>
+<h3>04:54 — Second word: `finally`</h3>
+<p>Keep writing: finally.</p>
+<p>finally is a block. Always associated with try-catch. Purpose: to maintain cleanup code.</p>
+<p>Speciality of finally block: it will be executed always — whether exception is raised or not, whether handled or not handled.</p>
+<h3>05:33 — Board dictation: `finally` is a block</h3>
+<p>Keep writing.</p>
+<p>finally is a block, always associated with try-catch, to maintain cleanup code.</p>
+<p>He starts to say “to maintain risky code”, then corrects himself: sorry — cleanup code.</p>
+<h3>06:14 — What goes in try, catch, finally?</h3>
+<p>Listen. Within the try block, which code? Risky code. Within the catch block, which code? Handling code. Within the finally block, which code? Cleanup code.</p>
+<h3>06:46 — Board: try / catch / finally purpose</h3>
+<p>Take this part first. Purpose of try: to maintain risky code. Catch: handling code. Finally: cleanup code. Take special care.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            // risky code
+        } catch (Exception e) {
+            // handling code
+        } finally {
+            // cleanup code
+        }
+    }
+}</pre>
+<p>Finally is nothing but cleanup activity / cleanup code. Not required to keep any extra explanation about this terminology. Risky code, handling code, cleanup code.</p>
+<h3>07:44 — Speciality of finally (the interview sentence)</h3>
+<p>The speciality of finally block: it will be executed always, irrespective of whether exception is raised or not raised, and whether handled or not handled.</p>
+<p>That is the whole speciality sentence. He does not run four System.out.println programs in this video. He only dictates the rule.</p>
+<p>This is about finally block. Now third one. Keep writing: finalize.</p>
+<h3>08:50 — Third word: `finalize` is a method</h3>
+<p>What is finalize? finalize is a method. People who already attended the garbage-collection concept should be aware. If not, he spends about two minutes on a story.</p>
+<h3>09:17 — Story: an object with no reference (food for GC)</h3>
+<p>Suppose he has an object. Is this object eligible for garbage collection or not? This object doesn’t have any reference. It is a useless object. Useless objects are always eligible for GC. It is eligible for GC.</p>
+<p>Garbage collector came. GC saw this object and felt very happy — because the food of the garbage collector is useless objects only. GC got food to eat, that’s why GC felt very happy by seeing this object.</p>
+<h3>10:03 — GC dancing: “I’m going to destroy you”</h3>
+<p>Then GC is dancing in front of this object: “I’m going to kill you, I’m going to destroy you.” Whenever GC is dancing in front of this object, what is the feeling of this object? The object starts shivering, crying, a bit panic.</p>
+<h3>10:26 — GC is not that cruel — bumper offer / last wish</h3>
+<p>GC saw that. GC is not that much cruel a person; having a bit of mercy. GC approached the object: “Object, definitely I’m going to kill you — because if I’m not going to destroy you, I’m not doing my job well. My job is to destroy useless objects and to increase free memory. If I’m not killing you, I’m not doing my job well. Definitely I’m going to destroy you; in that there is no doubt.”</p>
+<p>But: before destruction, I will give one bumper offer for you. Do you have any last wish? Let me know. I will fulfill that, and then I will destroy you.</p>
+<h3>11:15 — Object’s last wish: close DB and network, then destroy me</h3>
+<p>Immediately what is the object going to do? The object itself is going to convey: “I have one network connection associated with me, one database connection associated with me. Can you please close all, and then you can destroy me — no problem at all.”</p>
+<p>To fulfill that last wish, garbage collector is going to call which method? `finalize` method. Finalize method is to perform these cleanup activities. GC is going to call finalize. Once finalize method completes, automatically garbage collector is going to destroy this object.</p>
+<p>Take special care: once finalize method completes, automatically GC can destroy this object. There is no doubt at all.</p>
+<h3>12:27 — Three questions, then one line</h3>
+<p>His point number one:</p>
+<ul><li>Who is calling finalize method? Garbage collector.</li></ul>
+<ul><li>When does GC call finalize? Just before destroying an object.</li></ul>
+<ul><li>For which purpose? To perform cleanup activities.</li></ul>
+<p>Convert the total thing into a single line: just before destroying an object, garbage collector always calls finalize method to perform cleanup activities. Once the finalize method completes, automatically garbage collector is going to destroy that object.</p>
+<pre class='code'>class Test {
+    public void finalize() {
+        // last wish: close DB / network associated with THIS object
+        // GC calls this just before destroying the object
+    }
+}</pre>
+<h3>13:05 — Board dictation: `finalize` (copy slowly)</h3>
+<p>Keep writing.</p>
+<p>finalize is a method, always invoked by garbage collector, just before destroying an object, to perform cleanup activities.</p>
+<p>Once finalize method completes, immediately garbage collector destroys that object.</p>
+<p>That’s all. Make sure you people should have clear idea: difference between final, finally, and finalize.</p>
+<h3>14:48 — The doubt: both are cleanup — then what is the difference?</h3>
+<p>He has one big doubt. What is the purpose of finally? To maintain cleanup code. What is the purpose of finalize method? To maintain cleanup code / cleanup activities only. So what is the difference between finally-cleanup and finalize-cleanup?</p>
+<p>Yes, there is a difference.</p>
+<p>Whatever the resources we opened as part of try block — those resources’ cleanup activities are taken care by finally block. Finally block is meant to perform cleanup activities associated with the try block. Whatever resources we opened as part of try block should be closed inside finally block.</p>
+<p>But finalize method cleanup activities are related to the object. If any resources associated with the object, before destroying that object all those resources will be deallocated by using which method? finalize method.</p>
+<p>Both are cleanup activities, but the context is different:</p>
+<ul><li>finally block → cleanup activities related to try block (try-block-level cleanup)</li></ul>
+<ul><li>finalize method → cleanup activities related to object (object-level cleanup)</li></ul>
+<p>Take a note.</p>
+<h3>16:27 — Board dictation: finally vs finalize cleanup (copy slowly)</h3>
+<p>Keep writing.</p>
+<p>Finally block is responsible to perform cleanup activities related to try block — that is, whatever resources we opened as part of try block will be closed inside finally block.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        try {
+            // open resources as part of try (DB, file, network, …)
+        } catch (Exception e) {
+            // handling code
+        } finally {
+            // close those SAME try-block resources
+        }
+    }
+}</pre>
+<h3>17:46 — Whereas `finalize` method…</h3>
+<p>Whereas finalize method is responsible to perform cleanup activities related to object — that is, whatever resources associated with the object will be deallocated before destroying an object by using finalize method.</p>
+<pre class='code'>class Test {
+    public void finalize() {
+        // deallocate resources associated with THIS object
+        // then GC destroys the object
+    }
+}</pre>
+<p>Object-level cleanup activities vs try-block-level cleanup activities. Both are cleanup only, but contexts are different. Finally block related to try; finalize method related to object. Clear. Make sure you people should have clear clarity.</p>
+<p>This is the difference between final, finally, finalize — the most valuable question for the interview room.</p>
+<h3>19:42 — Two most valuable interview questions in exception handling (so far)</h3>
+<p>In exception handling, the most valuable things as of now are only two:</p>
+<ol><li>What is the difference between checked exception and unchecked exception? (previous video)</li></ol>
+<ol><li>What is the difference between `final`, `finally`, `finalize`? (this video)</li></ol>
+<h3>20:12 — Next heading: various possible combinations of try-catch-finally</h3>
+<p>Keep writing: various possible combinations of try-catch-finally.</p>
+<p>Very very important. Observe. First combination — later he will give numbering (1–25 at 38:59). First he takes them one by one.</p>
+<h3>20:52 — Combination 1: try-catch — valid</h3>
+<p>He takes try, then catch block. Is it a valid combination or not? Valid.</p>
+<pre class='code'>class Case01 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+        }
+    }
+}</pre>
+<h3>21:11 — Combination 2: try with two catch blocks — valid</h3>
+<p>Catch block Exception e, now another catch block. Try with two catch blocks: no problem at all. Valid.</p>
+<p>Two catch blocks are allowed when the exception types are different (child first, then parent). Same type is the next case, and that one is invalid.</p>
+<pre class='code'>class Case02 {
+    public static void main(String[] args) {
+        try {
+        } catch (ArithmeticException e) {
+        } catch (Exception e) {
+        }
+    }
+}</pre>
+<h3>21:33 — Combination 3: two catch blocks for the **same** exception — invalid</h3>
+<p>Try, catch Exception e / exception X, another catch block for the same exception. Valid or invalid? Invalid. Somewhere they already covered: two catch blocks for the same exception we should not take.</p>
+<p>What compile error? `exception X has already been caught`.</p>
+<pre class='code'>class Case03 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+        } catch (Exception x) {
+        }
+        // CE: exception Exception has already been caught
+    }
+}</pre>
+<p>If the board type is named X, the compiler wording is exception X has already been caught.</p>
+<h3>22:23 — Combination 4: try-catch-finally — valid</h3>
+<p>Try, catch block, then finally. Valid or not? Perfectly valid. No problem at all.</p>
+<pre class='code'>class Case04 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+        } finally {
+        }
+    }
+}</pre>
+<h3>22:45 — He starts “only try”, then switches: try followed by finally</h3>
+<p>Take special care. He starts taking only try — then: one minute. Try followed by finally. Is it valid or not?</p>
+<p>Don’t write “only try” yet. First: try-finally. Valid or invalid?</p>
+<h3>23:13 — Why is try-finally valid without catch?</h3>
+<p>Listen. Purpose of try: to maintain risky code. If an exception occurs, where can we keep handling code? Inside catch. Finally: to perform cleanup activities.</p>
+<p>So without catch, what is the need of holding risky code by using try? You are telling try-finally is valid syntax — then why?</p>
+<p>Make sure: there may be a chance of raising an exception. If an exception is raised, I don’t know how to handle. Abnormal termination — no problem. But before abnormal termination, can you please close my database connection?</p>
+<p>I want abnormal termination, no problem — but before abnormal termination, close my database connection. That is try followed by finally. Valid syntax.</p>
+<p>If really an exception occurs: abnormal termination. Advantage of this syntax: before abnormal termination, my database connection will be closed / my cleanup activities will be performed. That’s why try-finally is valid syntax only.</p>
+<pre class='code'>class Case05 {
+    public static void main(String[] args) {
+        try {
+            // risky code (e.g. use DB connection)
+            // if exception is raised: he accepts abnormal termination
+        } finally {
+            // close DB connection — runs BEFORE abnormal termination
+        }
+    }
+}</pre>
+<h3>24:40 — Combination 6: try-catch, then another try-catch — valid</h3>
+<p>Try-catch followed by try-catch. Valid or not? 100% valid.</p>
+<pre class='code'>class Case06 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+        }
+        try {
+        } catch (Exception e) {
+        }
+    }
+}</pre>
+<h3>25:06 — Combination 7: try-catch, then try-finally — valid</h3>
+<p>Try-catch, then try, then finally. Try-catch try-finally: valid syntax. No problem at all.</p>
+<pre class='code'>class Case07 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+        }
+        try {
+        } finally {
+        }
+    }
+}</pre>
+<h3>25:31 — Combination 8: only try (no catch, no finally) — invalid</h3>
+<p>Take special care about this one. Only try. No catch, no finally. Valid or invalid? Invalid. Immediately compile error.</p>
+<p>What is that error? `try without catch or finally`.</p>
+<pre class='code'>class Case08 {
+    public static void main(String[] args) {
+        try {
+        }
+        // CE: try without catch or finally
+    }
+}</pre>
+<h3>26:09 — Combination 9: only catch — invalid</h3>
+<p>Two worst syntaxes. Only catch block. Valid or invalid? Invalid, because catch without a try. Whenever we are writing catch block, compulsory try should be there.</p>
+<p>Compile error: `catch without try`.</p>
+<pre class='code'>class Case09 {
+    public static void main(String[] args) {
+        catch (Exception e) {
+        }
+        // CE: catch without try
+    }
+}</pre>
+<h3>26:38 — Combination 10: only finally — invalid</h3>
+<p>Only finally block. Valid or invalid? Invalid.</p>
+<p>Compile error: `finally without try`.</p>
+<pre class='code'>class Case10 {
+    public static void main(String[] args) {
+        finally {
+        }
+        // CE: finally without try
+    }
+}</pre>
+<p>Try-catch-finally: only try, or only catch, or only finally — invalid syntax.</p>
+<h3>27:12 — Combination 11: try-finally, then catch — invalid</h3>
+<p>Try, finally, and then catch block. Valid or invalid? Invalid. Compile error.</p>
+<p>Because try-finally — up to that, completed. Now this catch block will become alone. If you want try-catch-finally: valid. But whenever you are taking try-finally, that syntax is completed; this catch block will become alone.</p>
+<p>In try-catch-finally, order is important: first try, then catch, then finally. If you are taking finally first (after try), catch will become alone.</p>
+<p>Compile error: `catch without try`.</p>
+<pre class='code'>class Case11 {
+    public static void main(String[] args) {
+        try {
+        } finally {
+        }
+        catch (Exception e) {
+        }
+        // CE: catch without try
+        // try-finally already completed; this catch is alone
+    }
+}</pre>
+<h3>28:14 — Combination 12: try, then `hello` in the middle, then catch — invalid</h3>
+<p>Try block, then some System.out.println statement in the middle — hello — then catch block. Valid or invalid? Invalid. Two errors. Try separate, catch separate; there is no link.</p>
+<ol><li>`try without catch or finally`</li></ol>
+<ol><li>`catch without try`</li></ol>
+<pre class='code'>class Case12 {
+    public static void main(String[] args) {
+        try {
+        }
+        System.out.println(&quot;hello&quot;);
+        catch (Exception e) {
+        }
+        // CE: try without catch or finally
+        // CE: catch without try
+    }
+}</pre>
+<h3>29:15 — Combination 13: try-catch, then `hello`, then another catch — invalid</h3>
+<p>Try, catch Exception e, then System.out.println(&quot;hello&quot;), then catch Exception y. Valid or not? Invalid.</p>
+<p>Try-catch is okay. But this second catch block will become alone because of this SOP. Compile error: `catch without try`.</p>
+<pre class='code'>class Case13 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+        }
+        System.out.println(&quot;hello&quot;);
+        catch (Exception y) {
+        }
+        // CE: catch without try
+    }
+}</pre>
+<h3>30:15 — Combination 14: try-catch, then `hello`, then finally — invalid</h3>
+<p>Try block, catch Exception e, then SOP hello, and after that finally. Try-catch okay, then finally: compile error.</p>
+<p>What is that error? `finally without try`.</p>
+<pre class='code'>class Case14 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+        }
+        System.out.println(&quot;hello&quot;);
+        finally {
+        }
+        // CE: finally without try
+    }
+}</pre>
+<p>These are some cases. Still he wants to add some more.</p>
+<h3>31:13 — Combination 15: try containing try-catch, then outer catch — same exception X — valid</h3>
+<p>Try block, within that try-catch, then outer catch. Valid or not?</p>
+<p>Observe carefully: this inner catch block for X exception; this outer catch block also for X exception. Valid or invalid?</p>
+<p>100% pakka valid. For the same try, two catch blocks for the same exception you can’t. But this catch block is related to this try, this catch block is related to this (other) try. No problem. Within the try, try-catch you can take. Valid. Acceptable.</p>
+<pre class='code'>class Case15 {
+    public static void main(String[] args) {
+        try {
+            try {
+            } catch (Exception e) {
+            }
+        } catch (Exception e) {
+        }
+    }
+}</pre>
+<h3>32:15 — Combination 16: try containing a try with **no** catch/finally, then outer catch — invalid</h3>
+<p>Try, within that another try, then (only) outer catch Exception e. Valid or invalid?</p>
+<p>Compile error. Within the try you are taking try — for this inner try, where is the catch or finally? Don’t tell “outer catch”. If outer catch, then what is the need of taking this inner try? This is invalid. This inner try without having catch or finally.</p>
+<p>Compile error: `try without catch or finally`.</p>
+<pre class='code'>class Case16 {
+    public static void main(String[] args) {
+        try {
+            try {
+            }
+        } catch (Exception e) {
+        }
+        // CE: try without catch or finally   (the INNER try)
+    }
+}</pre>
+<h3>33:09 — Combination 17: try containing try-finally, then outer catch — valid</h3>
+<p>Try, within that try-finally, then catch Exception. Valid or not? 100% pakka valid. Try / try-finally / catch. No problem at all.</p>
+<pre class='code'>class Case17 {
+    public static void main(String[] args) {
+        try {
+            try {
+            } finally {
+            }
+        } catch (Exception e) {
+        }
+    }
+}</pre>
+<h3>33:34 — Combination 18: try-catch, and **inside catch** a try-finally — valid</h3>
+<p>Try, catch Exception, within the catch: try-finally. Valid or not? Within the catch block, try-finally: valid. No problem at all.</p>
+<pre class='code'>class Case18 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+            try {
+            } finally {
+            }
+        }
+    }
+}</pre>
+<h3>33:56 — Combination 19: try-catch, and inside catch a finally **without** try — invalid</h3>
+<p>Try, catch, and inside that a finally (no corresponding inner try). Valid or invalid? Invalid.</p>
+<p>If you are taking finally, where is the corresponding try? Compile error: `finally without try`.</p>
+<pre class='code'>class Case19 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+            finally {
+            }
+        }
+        // CE: finally without try
+    }
+}</pre>
+<h3>34:31 — Combination 20: try-catch-finally, and **inside finally** a try-catch — valid</h3>
+<p>Try-catch-finally, within that finally he is taking try-catch. Valid or not?</p>
+<p>Within the finally block we can take try-catch (he also says try-catch-finally). No problem at all. Valid syntax.</p>
+<p>Try-catch-finally we can take inside try, inside catch, inside finally. Nesting of try-catch-finally is always possible. No problem at all. Valid.</p>
+<pre class='code'>class Case20 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+        } finally {
+            try {
+            } catch (Exception e) {
+            }
+        }
+    }
+}</pre>
+<h3>35:15 — Combination 21: try-catch-finally, and inside finally another finally — invalid</h3>
+<p>Try-catch-finally, within that finally another finally. Valid or invalid? Invalid.</p>
+<p>Compile error: `finally without try`. This inner finally is not having the try. That’s the problem.</p>
+<pre class='code'>class Case21 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+        } finally {
+            finally {
+            }
+        }
+        // CE: finally without try
+    }
+}</pre>
+<h3>35:54 — Combination 22: try-catch-finally, then a **second** finally — invalid</h3>
+<p>Try, catch Exception, then finally, and then another finally block. Valid or invalid?</p>
+<p>How many finally blocks? Two. One try, multiple catch blocks: no problem. But how many finally blocks can we take? Only one. Try-catch-finally — up to that completed. This extra finally block will become alone. Compile-time error: `finally without try`.</p>
+<pre class='code'>class Case22 {
+    public static void main(String[] args) {
+        try {
+        } catch (Exception e) {
+        } finally {
+        }
+        finally {
+        }
+        // CE: finally without try
+    }
+}</pre>
+<h3>36:48 — Combinations 23–25: curly braces missing on try / catch / finally — invalid</h3>
+<p>Listen a bit carefully. He takes try with System.out.println(&quot;try&quot;) — only one statement, curly braces he didn’t take. Catch block: only one statement, curly braces he didn’t take. Similarly finally: System.out.println(&quot;finally&quot;), curly braces he didn’t take.</p>
+<p>Valid or invalid? Try-catch-finally — make sure. Red color is there on the board. 100% pakka these are invalid, because for try, catch, finally blocks curly braces are mandatory. Even though you are taking only one statement, curly braces compulsory we should take.</p>
+<pre class='code'>class Case23TryNoBraces {
+    public static void main(String[] args) {
+        try
+            System.out.println(&quot;try&quot;);
+        // CE: &#x27;{&#x27; expected   (curly braces mandatory for try)
+    }
+}
+class Case24CatchNoBraces {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;try&quot;);
+        } catch (Exception e)
+            System.out.println(&quot;catch&quot;);
+        // CE: &#x27;{&#x27; expected   (curly braces mandatory for catch)
+    }
+}
+class Case25FinallyNoBraces {
+    public static void main(String[] args) {
+        try {
+            System.out.println(&quot;try&quot;);
+        } catch (Exception e) {
+            System.out.println(&quot;catch&quot;);
+        } finally
+            System.out.println(&quot;finally&quot;);
+        // CE: &#x27;{&#x27; expected   (curly braces mandatory for finally)
+    }
+}</pre>
+<p>Board as he drew it (all three without braces, marked red / invalid):</p>
+<pre class='code'>class Case23_24_25Board {
+    public static void main(String[] args) {
+        try
+            System.out.println(&quot;try&quot;);
+        catch (Exception e)
+            System.out.println(&quot;catch&quot;);
+        finally
+            System.out.println(&quot;finally&quot;);
+        // CE: &#x27;{&#x27; expected  (try)
+        // CE: &#x27;{&#x27; expected  (catch)
+        // CE: &#x27;{&#x27; expected  (finally)
+    }
+}</pre>
+<h3>38:59 — He numbers the board 1 to 25</h3>
+<p>One minute, let me give numbering. He numbers 1 through 25 (he starts 1, says don’t take “listen” because he has to add some things, then 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25). “Excellent.”</p>
+<p>With this knowledge you can understand any new combination also — you can tell whether it is valid or not.</p>
+<h3>40:03 — Conclude: six rules (keep writing)</h3>
+<p>First: listen.</p>
+<h3>40:08 — Rule 1: in try-catch-finally, **order is important**</h3>
+<p>First try, next catch, next finally.</p>
+<p>Keep writing: in try-catch-finally, order is important.</p>
+<h3>40:44 — Rule 2: whenever we are writing try, either catch or finally is compulsory</h3>
+<p>Whenever we are writing try, compulsory either catch or finally must be required. Try without catch or finally is invalid.</p>
+<p>Keep writing: whenever we are writing try, compulsory we should write either catch or finally. Otherwise we will get compile-time error — that is, try without catch or finally is invalid.</p>
+<h3>42:12 — Rule 3: whenever we are writing catch, try is compulsory</h3>
+<p>Whenever we are writing catch block, compulsory try block must be required. That is: catch without try is invalid.</p>
+<h3>43:01 — Rule 4: whenever we are writing finally, try is compulsory</h3>
+<p>Whenever we are writing finally block, compulsory we should write try block. That is: finally without try is invalid.</p>
+<h3>43:54 — Rule 5: nesting of try-catch-finally is allowed</h3>
+<p>Inside try, catch, and finally blocks we can declare try, catch, and finally blocks. That is: nesting (one inside another) of try-catch-finally is allowed.</p>
+<h3>45:03 — Rule 6: curly braces are mandatory</h3>
+<p>For try, catch, and finally blocks, curly braces are mandatory.</p>
+<p>That’s all. He hopes it is clear.</p>
+<h3>45:36 — Copy pause: take all 25, numbering also</h3>
+<p>Do you want to take these things? Yes — take all. Even numbering also is there. Take clearly all these things. Not that much easy. Take all.</p>
+<p>Long copy silence until the end of the video (~45:57–47:38, ASR only “e”). No new combination and no new rule after rule 6.</p>
+<h2>Board recap he wants in the notebook</h2>
+<p>Interview (copy as three headings):</p>
+<ul><li>final — modifier; classes / methods / variables; no child class / no override / no reassignment.</li></ul>
+<ul><li>finally — block associated with try-catch; cleanup code; executes always (exception raised or not, handled or not).</li></ul>
+<ul><li>finalize — method; always invoked by GC just before destroying an object, to perform cleanup activities; then GC destroys the object.</li></ul>
+<p>Cleanup context: finally = try-block resources closed in finally. finalize = object resources deallocated in finalize().</p>
+<p>25 combinations: 1 try-catch valid; 2 two catch (different types) valid; 3 two catch same type invalid (exception X has already been caught); 4 try-catch-finally valid; 5 try-finally valid (close DB before abnormal termination); 6 try-catch try-catch valid; 7 try-catch try-finally valid; 8 only try invalid; 9 only catch invalid; 10 only finally invalid; 11 try-finally-catch invalid; 12 try / hello / catch — two CEs; 13 try-catch / hello / catch invalid; 14 try-catch / hello / finally invalid; 15 nested try-catch + outer catch same X valid; 16 inner try with no catch/finally invalid; 17 inner try-finally + outer catch valid; 18 try-finally inside catch valid; 19 finally inside catch without try invalid; 20 try-catch inside finally valid (nesting always possible); 21 extra finally inside finally invalid; 22 second finally after try-catch-finally invalid; 23–25 curly braces missing on try / catch / finally invalid.</p>
+<p>Six rules: order try → catch → finally; try needs catch or finally; catch needs try; finally needs try; nesting allowed; {} mandatory.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 74 of 203</td></tr>
+<tr><td>Series</td><td>Exception Handling · Part 4</td></tr>
+<tr><td>Topic</td><td>finally block</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>47m 40s</td></tr>
+<tr><td>Video ID</td><td>2ui_RS0Q7x4</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=2ui_RS0Q7x4</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

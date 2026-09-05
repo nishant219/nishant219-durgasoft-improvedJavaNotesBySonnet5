@@ -1,0 +1,585 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>058-coupling</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 058 — Coupling</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-8||coupling</p>
+<p>ASR decode (Whisper): Coppaling / Coppaling = coupling; woops / WUPE / moopu / moop = OOPs; polymer pizzyam = polymorphism; studs = Struts; Arrogatin / Arigating / Are you getting = Are you getting; Lusely = loosely; Titely = tightly; handsa / hencea / Hensa = hence / enhancement; reuse of balloting / reaus of balloting = reusability of the code; sorlet / subway / silhouette / satellite = servlet; valid / validates subwet = validate servlet; coefficient = cohesion; objective type casting = object type casting; chile = child; Renable = Runnable; string of buffer / Stringer buffer = StringBuffer; Object of wo / Objective-o / Object Bo = Object o; Classening = class name; inconvertible / incompatible types kept; Keep sabiting / keep sub-adding = keep writing; Legend = Listen; Base / derives = Base1/Base2, Derived1…Derived4.</p>
+<p>This Part-8 lecture actually covers three topics end-to-end: coupling → cohesion → start of object type casting (three mantras). Video 059 continues type casting internals.</p>
+<h3>00:04 — Agenda: two advanced OOPs features</h3>
+<p>Last classes covered overloading, overriding, inheritance, encapsulation — the major / basic OOPs concepts.</p>
+<p>Two more OOPs features remain. At basic level they look minor; at advanced / framework / HLD level (MVC, Struts, Spring, enterprise design) they matter a lot.</p>
+<p>Do not say encapsulation, polymorphism, and inheritance are the only OOPs features. Coupling and cohesion are also OOPs features — advanced OOPs features. Basic idea is required even in this Core Java course; deep design use comes later at framework level.</p>
+<h3>01:40 — What is coupling? (measurement analogy)</h3>
+<p>In computer networks you already heard loosely coupled / tightly coupled.</p>
+<p>Everyday measurements:</p>
+<ul><li>Height → metres / centimetres / feet</li></ul>
+<ul><li>Milk → litres</li></ul>
+<ul><li>Weight → kilograms</li></ul>
+<ul><li>Temperature → °C / °F</li></ul>
+<p>Dependency also needs a measurement.</p>
+<p>The degree of dependency between the components is called coupling.</p>
+<p>Only two practical levels he stresses: loosely vs tightly.</p>
+<h3>04:24 — Tight vs loose (board theory he repeats)</h3>
+<p>He dictates slowly for notes:</p>
+<ul><li>If dependency is more → considered tightly coupling.</li></ul>
+<ul><li>If dependency is less → considered loosely coupling.</li></ul>
+<p>Which is good practice? He answers after the coding example.</p>
+<h3>05:50 — Classic tightly coupled example: `A` → `B` → `C` → `D`</h3>
+<p>Four components with a chain of static dependencies:</p>
+<pre class='code'>class A {
+    static int i = B.j;
+}
+
+class B {
+    static int j = C.k;
+}
+
+class C {
+    static int k = D.m1();
+}
+
+class D {
+    public static int m1() {
+        return 10;
+    }
+}</pre>
+<p>How it hangs together:</p>
+<ul><li>Value of i is B.j</li></ul>
+<ul><li>Value of j is C.k</li></ul>
+<ul><li>Value of k is return of D.m1()</li></ul>
+<ul><li>D.m1() returns 10</li></ul>
+<p>Four components are tightly coupled — dependency between them is high.</p>
+<pre class='code'>class TightCouplingDemo {
+    public static void main(String[] args) {
+        System.out.println(A.i);
+        // prints 10
+        // A depends on B, B on C, C on D — change D and everyone feels it
+    }
+}</pre>
+<h3>08:07 — Tight coupling is the *worst* practice (apartment analogy)</h3>
+<p>Tight coupling = worst programming practice because dependency always brings problems. Independence avoids many of them.</p>
+<p>Layman story: apartment (2/3 BHK) vs independent house.</p>
+<ul><li>Apartment → common water, maintenance, lift, politics (“who is president”), restrictions on parties / lift usage → many people to coordinate.</li></ul>
+<ul><li>Independent house (village) → far fewer shared concerns.</li></ul>
+<p>Same idea in code: less dependency is good programming practice; more dependency (tight coupling) is worst.</p>
+<h3>10:10 — Disadvantage 1: enhancement becomes difficult</h3>
+<p>Coding-level problems with the A–B–C–D chain:</p>
+<p>A depends on B, B on C, C on D.</p>
+<p>If tomorrow you change D.m1() from return 10 to return 20:</p>
+<pre class='code'>class D {
+    public static int m1() {
+        return 20; // was 10 — A, B, C all see the new value
+    }
+}</pre>
+<p>Everyone depending on that component is affected. You cannot modify one component without affecting the others → enhancement becomes difficult.</p>
+<pre class='code'>// Conceptual: &quot;without affecting remaining components we can&#x27;t modify any component&quot;
+// Enhancement will become difficult.</pre>
+<h3>11:26 — Disadvantage 2: suppresses reusability</h3>
+<p>You need only A’s functionality (say ~10 lines) somewhere else.</p>
+<ul><li>Ask A to come → A says: fine, but `B` must come (I depend on B).</li></ul>
+<ul><li>Ask B → B says: only if `C` comes.</li></ul>
+<ul><li>Ask C → C says: only if `D` comes.</li></ul>
+<p>To reuse 10 lines you must drag B, C, D. Often the developer says: I don’t want that risk — I’ll rewrite the 10 lines.</p>
+<p>→ Tight coupling suppresses reusability of the code.</p>
+<pre class='code'>// Want only A&#x27;s logic elsewhere — but A needs B, B needs C, C needs D.
+// Reuse of A alone is not practical → rewrite instead of reuse.
+class SomewhereElse {
+    // developer rewrites the 10 lines rather than importing A+B+C+D
+    static int localCopy() {
+        return 10;
+    }
+}</pre>
+<h3>13:48 — Disadvantage 3: maintainability goes down</h3>
+<p>Because you cannot change freely, and reuse is painful, maintainability of the application is reduced.</p>
+<p>Recommendation: keep dependency between components as less as possible → loose coupling is good programming practice.</p>
+<p>Frameworks that advertise “loose coupling” are considered good design for that reason. Coupling / cohesion language shows up heavily at design-patterns / Spring / Struts level.</p>
+<h3>14:41 — Board copy: tightly coupled components + three disadvantages</h3>
+<p>He repeats while students copy. Notes form:</p>
+<pre class='code'>class A {
+    static int i = B.j;
+}
+
+class B {
+    static int j = C.k;
+}
+
+class C {
+    static int k = D.m1();
+}
+
+class D {
+    public static int m1() {
+        return 10;
+    }
+}</pre>
+<p>The above components are said to be tightly coupled with each other, because dependency between the components is more.</p>
+<p>Tight coupling is not a good programming practice because it has several serious disadvantages:</p>
+<ol><li>Without affecting remaining components, we can’t modify any component → enhancement will become difficult.</li></ol>
+<ol><li>It suppresses reusability of the code.</li></ol>
+<ol><li>It reduces maintainability of the application.</li></ol>
+<pre class='code'>// Summary of coupling goal (dictated):
+// Hence we have to maintain dependency between the components
+// as less as possible — that is loosely coupling —
+// loosely coupling is a good programming practice.</pre>
+<h3>21:13 — Cohesion (next advanced OOPs feature)</h3>
+<p>Physics memory hook (intermediate): cohesive forces / adhesive forces.</p>
+<p>In design / MVC / Spring MVC you hear high cohesion / low cohesion. Spring MVC is a textbook high cohesion example.</p>
+<h3>22:13 — What is high cohesion?</h3>
+<p>For every component, define a clear, well-defined functionality:</p>
+<ul><li>This component → database operations</li></ul>
+<ul><li>This → logging</li></ul>
+<ul><li>This → presentation logic</li></ul>
+<ul><li>This → business logic</li></ul>
+<p>Such components are said to follow high cohesion.</p>
+<p>If one component is a mixture of unrelated responsibilities → low cohesion.</p>
+<h3>24:05 — Board theory: high cohesion definition</h3>
+<p>Dictated repeatedly:</p>
+<p>For every component, a clear well-defined functionality is defined; then that component is said to follow high cohesion.</p>
+<p>High cohesion is always good practice because of several advantages (shown via the mail app).</p>
+<h3>25:28 — Low cohesion demo: one “TotalServlet” Gmail-like app</h3>
+<p>Design a mail-sending application like Gmail. Needed activities: login page, validate credentials, inbox, reply, compose, sent mail, error page, …</p>
+<p>Bad design: put everything in one servlet — funny name `TotalServlet`.</p>
+<pre class='code'>// Low cohesion — one mega-component does everything
+public class TotalServlet /* extends HttpServlet */ {
+    // login page display
+    // validation
+    // inbox page
+    // reply page
+    // compose page
+    // error page
+    // ... &quot;70 lakh lines&quot; hyperbolic joke for &quot;huge&quot;
+    public void service(/* req, resp */) {
+        // mixture of ALL mail-app functionalities
+    }
+}</pre>
+<p>Working ≠ good design. Clear well-defined functionality is missing → low cohesion by default.</p>
+<h3>28:27 — Problems of low cohesion / TotalServlet</h3>
+<p>1. Enhancement difficult</p>
+<p>Change look-and-feel of login every few weeks (colors, festival images). Login logic is buried inside 70-lakh-line TotalServlet → find the login fragment, change carefully, fear side effects → enhancement becomes very difficult.</p>
+<p>2. Reusability down</p>
+<p>Validation might be only ~10 lines. To reuse validation elsewhere you must drag the whole huge servlet → rewrite 10 lines instead → reusability goes down.</p>
+<p>3. Maintainability down</p>
+<p>Same reasons → maintainability suffers.</p>
+<pre class='code'>// Conceptual pain of low cohesion
+class TotalServletProblems {
+    // tiny login look-and-feel change → redesign / hunt inside TotalServlet
+    // need 10 lines of validation elsewhere → cannot take only those 10 lines
+}</pre>
+<p>Fix: do not put total functionality in one servlet. For every functionality, maintain a separate component.</p>
+<h3>31:03 — High cohesion redesign: separate JSP / servlet pieces</h3>
+<pre class='code'>// High cohesion sketch (web components as separate units)
+
+// login.jsp          — display login page only
+// ValidateServlet    — validation logic only
+// inbox.jsp          — display inbox
+// error.jsp          — display error
+// reply.jsp          — reply UI
+// compose.jsp        — compose UI</pre>
+<p>Flow he describes:</p>
+<ol><li>User opens login.jsp, enters username/password.</li></ol>
+<ol><li>Submit → request to `ValidateServlet`.</li></ol>
+<ol><li>If success → inbox.jsp; if wrong → error.jsp.</li></ol>
+<ol><li>From inbox → reply.jsp / compose.jsp / …</li></ol>
+<p>This style is high cohesion: each component has one clear job.</p>
+<pre class='code'>public class ValidateServlet /* extends HttpServlet */ {
+    public void service(/* req, resp */) {
+        // ONLY validation — success → inbox.jsp, failure → error.jsp
+    }
+}
+// login.jsp responsibility: presentation of login only
+// inbox.jsp responsibility: display inbox mails only</pre>
+<h3>33:05 — Advantages of high cohesion</h3>
+<ol><li>Change look-and-feel of login.jsp → no effect on other components → enhancement becomes easy.</li></ol>
+<ol><li>Wherever validation is needed, reuse the same ValidateServlet (~10 lines of responsibility) without rewriting → promotes reusability.</li></ol>
+<ol><li>Different people can own login / inbox / validation modules → maintainability improves.</li></ol>
+<p>High cohesion is good programming practice.</p>
+<p>Best design example: MVC (especially Model-2).</p>
+<p>Why MVC Model-2 exists: mixing presentation + business logic caused problems.</p>
+<p>That separation is high cohesion.</p>
+<h3>38:23 — Board theory: high cohesion advantages (dictated)</h3>
+<p>High cohesion is always a good programming practice because it has several advantages:</p>
+<ol><li>Without affecting remaining components, we can modify any component → enhancement will become easy.</li></ol>
+<ol><li>It promotes reusability of the code</li></ol>
+<ul><li>Wherever validation is required, reuse the same ValidateServlet without rewriting.</li></ul>
+<ol><li>It improves maintainability of the application.</li></ol>
+<h3>42:12 — Exam note: couple these two slogans</h3>
+<p>Loosely coupling  +  High cohesion  =  good programming practices</p>
+<p>These are advanced OOPs features (alongside polymorphism, encapsulation, inheritance). At basic OOPs courses they may be light; at design-patterns / Spring / framework level you will hear them constantly — keep the basic idea clear.</p>
+<h3>43:33 — Object type casting begins (three mantras)</h3>
+<p>Next big topic: object type casting (primitive casting already covered under operators).</p>
+<p>Only three mantras — if you know them, object type casting is simple.</p>
+<h3>44:15 — Two prerequisites before casting</h3>
+<p>1. Parent reference can hold child object</p>
+<pre class='code'>class ParentRefDemo {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        // Object = parent, String = child — valid
+    }
+}</pre>
+<p>2. Interface reference can hold implemented-class object</p>
+<pre class='code'>class InterfaceRefDemo {
+    public static void main(String[] args) {
+        Runnable r = new Thread();
+        // Runnable = interface, Thread = implementing class — valid
+    }
+}</pre>
+<p>Board form he dictates:</p>
+<pre class='code'>// We can use parent reference to hold the child object.
+Object o = new String(&quot;Durga&quot;);
+
+// We can use interface reference to hold implemented class object.
+Runnable r = new Thread();</pre>
+<h3>47:26 — Motivating puzzle (answer later)</h3>
+<pre class='code'>class CastPuzzle {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        StringBuffer sb = (StringBuffer) o;
+        // Valid? CE? Runtime? Which error?
+    }
+}</pre>
+<p>He polls the class (valid / CE / ClassCastException). Almost everyone guesses CE. He says: wait — after the three mantras you can answer with confidence. Spoiler for later: compiles, fails at runtime with `ClassCastException`.</p>
+<h3>49:48 — Syntax of object type casting: `A b = (C) d`</h3>
+<p>He labels four pieces A B C D:</p>
+<p>A b = (C) d;</p>
+<p>Through type casting you do two activities:</p>
+<ol><li>Convert `d`’s object to type `C`.</li></ol>
+<ol><li>Assign that `C`-typed result to an `A`-typed reference variable b.</li></ol>
+<p>Compiler checks two conditions; JVM checks one → three conditions total. If all pass → valid cast.</p>
+<pre class='code'>// General form (notes)
+// A b = (C) d;
+// Activity 1: convert object referred by d to type C
+// Activity 2: assign that C-typed value to A-typed reference b</pre>
+<h3>54:06 — Compiler check 1 + Mantra 1 (relation between `d` and `C`)</h3>
+<p>Compiler asks: is the conversion legal?</p>
+<p>Rule: type of d and type C must have some relation:</p>
+<ul><li>child → parent, or</li></ul>
+<ul><li>parent → child, or</li></ul>
+<ul><li>same type</li></ul>
+<p>Otherwise:</p>
+<p>CE: inconvertible types
+found: &lt;type of d&gt;
+required: &lt;C&gt;</p>
+<p>(He sometimes says “incompatible” / “inconvertible” interchangeably in speech; the classic javac wording for no-relation casts is inconvertible types.)</p>
+<p>Mantra 1 (compile-time checking 1):</p>
+<p>The type of d and C must have some relation (child→parent or parent→child or same type). Otherwise CE: inconvertible types — found d-type required C.</p>
+<h3>58:16 — Example 1 for Mantra 1: `Object` ↔ `StringBuffer` (relation OK)</h3>
+<pre class='code'>class Mantra1Example1 {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        StringBuffer sb = (StringBuffer) o;
+        // Mantra 1: Object and StringBuffer — parent/child relation → OK so far
+        // (other mantras decide final fate)
+    }
+}</pre>
+<p>javac Test.java — no CE from Mantra 1 (relation exists). Students copy; he says finishing touch comes after all three mantras.</p>
+<h3>59:56 — Example 2 for Mantra 1: `String` ↔ `StringBuffer` (no relation → CE)</h3>
+<pre class='code'>class Mantra1Example2 {
+    public static void main(String[] args) {
+        String s = new String(&quot;Durga&quot;);
+        // StringBuffer sb = (StringBuffer) s; // CE
+    }
+}
+class Mantra1Example2CE {
+    public static void main(String[] args) {
+        String s = new String(&quot;Durga&quot;);
+        StringBuffer sb = (StringBuffer) s;
+        // CE: inconvertible types
+        // found: java.lang.String
+        // required: java.lang.StringBuffer
+    }
+}</pre>
+<p>No parent–child relation between String and StringBuffer → Mantra 1 fails immediately.</p>
+<h3>1:03:25 — Compiler check 2 + Mantra 2 (assignment `C` → `A`)</h3>
+<p>After conversion to C, we assign to A-typed b.</p>
+<p>Rule: C must be either the same as `A` or a derived type (child) of `A`</p>
+<p>(because parent reference can hold child object).</p>
+<p>Otherwise:</p>
+<p>CE: incompatible types
+found: &lt;C&gt;
+required: &lt;A&gt;</p>
+<p>Mantra 2 (compile-time checking 2):</p>
+<p>C must be either same as A or derived type of A. Otherwise CE: incompatible types — found C required A.</p>
+<h3>1:06:43 — Example 1: both compiler rules pass (still watch runtime)</h3>
+<pre class='code'>class Mantra2Example1 {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        StringBuffer sb = (StringBuffer) o;
+        // Mantra 1: Object ↔ StringBuffer — relation OK
+        // Mantra 2: C = StringBuffer, A = StringBuffer — same type OK
+        // Compiles — runtime checked by Mantra 3
+    }
+}</pre>
+<h3>1:08:25 — Example 2: Mantra 2 fails (`(String)` into `StringBuffer`)</h3>
+<pre class='code'>class Mantra2Example2 {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        // StringBuffer sb = (String) o; // CE
+    }
+}
+class Mantra2Example2CE {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        StringBuffer sb = (String) o;
+        // Mantra 1: Object ↔ String — relation OK
+        // Mantra 2: C = String; A = StringBuffer — String is NOT same/child of StringBuffer
+        // CE: incompatible types
+        // found: java.lang.String
+        // required: java.lang.StringBuffer
+    }
+}</pre>
+<p>He compiles live: Mantra 1 OK, Mantra 2 fails → incompatible types.</p>
+<p>Reminder: compiler looks at reference types; JVM looks at underlying runtime object type.</p>
+<h3>1:13:38 — Mantra 3: runtime checking (`ClassCastException`)</h3>
+<p>Mantra 3 (runtime checking):</p>
+<p>Underlying / runtime object type of d must be either same as `C` or a derived type of `C`.</p>
+<p>Otherwise: runtime exception — `ClassCastException`.</p>
+<p>Compiler can pass while JVM fails.</p>
+<p>Classic case — both compile-time mantras OK, runtime fails:</p>
+<pre class='code'>class Mantra3Example1 {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        StringBuffer sb = (StringBuffer) o;
+        // Mantra 1 OK (Object–StringBuffer)
+        // Mantra 2 OK (StringBuffer–StringBuffer)
+        // Mantra 3 FAIL: runtime object is String, not same/child of StringBuffer
+    }
+}
+class Mantra3Run {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        StringBuffer sb = (StringBuffer) o;
+        // Exception in thread &quot;main&quot; java.lang.ClassCastException:
+        // java.lang.String cannot be cast to java.lang.StringBuffer
+    }
+}</pre>
+<p>Message form he writes:</p>
+<p>ClassCastException: java.lang.String cannot be cast to java.lang.StringBuffer</p>
+<h3>1:20:11 — Example 2: all three mantras succeed</h3>
+<pre class='code'>class Mantra3Example2Valid {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        String o1 = (String) o;
+        // Mantra 1: Object ↔ String — relation OK
+        // Mantra 2: C = String, A = String — same OK
+        // Mantra 3: runtime object String ↔ String — same OK
+        // compiles and runs — perfectly valid
+        System.out.println(o1);
+        // prints Durga
+    }
+}</pre>
+<p>He runs it: compiles fine, runs fine.</p>
+<h3>1:22:17 — Three-mantra summary</h3>
+<p>Compiler → reference types. JVM → runtime object.</p>
+<h3>1:22:34 — Inheritance tree for practice casts</h3>
+<p>                Object
+               /      \
+           Base1      Base2
+          /    \      /    \
+   Derived1  Derived2 Derived3  Derived4</p>
+<pre class='code'>class Base1 { }
+class Base2 { }
+class Derived1 extends Base1 { }
+class Derived2 extends Base1 { }
+class Derived3 extends Base2 { }
+class Derived4 extends Base2 { }</pre>
+<p>Setup used on the board:</p>
+<pre class='code'>class HierarchySetup {
+    public static void main(String[] args) {
+        Base2 b = new Derived4();
+        // reference type: Base2
+        // runtime object: Derived4
+    }
+}</pre>
+<p>Decide each cast: valid / CE (which?) / ClassCastException.</p>
+<h3>1:23:57 — Case 1: `(Base2) b` into `Object` — valid</h3>
+<pre class='code'>class HierarchyCase1 {
+    public static void main(String[] args) {
+        Base2 b = new Derived4();
+        Object o = (Base2) b;
+        // Mantra 1: Base2 ↔ Base2 — same OK
+        // Mantra 2: C = Base2; A = Object — Base2 child of Object OK
+        // Mantra 3: runtime Derived4 is child of Base2 OK
+        // valid
+    }
+}</pre>
+<h3>1:26:06 — Case 2: `(Base1) b` into `Object` — CE Mantra 1</h3>
+<pre class='code'>class HierarchyCase2 {
+    public static void main(String[] args) {
+        Base2 b = new Derived4();
+        // Object o = (Base1) b; // CE
+    }
+}
+class HierarchyCase2CE {
+    public static void main(String[] args) {
+        Base2 b = new Derived4();
+        Object o = (Base1) b;
+        // CE: inconvertible types
+        // found: Base2
+        // required: Base1
+        // Base2 and Base1 — siblings under Object, no direct cast relation for Mantra 1
+    }
+}</pre>
+<h3>1:26:42 — Case 3: `(Derived3) b` into `Object` — `ClassCastException`</h3>
+<pre class='code'>class HierarchyCase3 {
+    public static void main(String[] args) {
+        Base2 b = new Derived4();
+        Object o = (Derived3) b;
+        // Mantra 1: Base2 ↔ Derived3 — parent/child OK
+        // Mantra 2: Derived3 → Object OK
+        // Mantra 3: runtime is Derived4; Derived4 is NOT same/child of Derived3
+        // ClassCastException
+    }
+}</pre>
+<h3>1:27:28 — Case 4: `(Base1) b` into `Base2` — CE Mantra 1 again</h3>
+<pre class='code'>class HierarchyCase4 {
+    public static void main(String[] args) {
+        Base2 b = new Derived4();
+        // Base2 b1 = (Base1) b; // CE: inconvertible types found Base2 required Base1
+    }
+}</pre>
+<h3>1:27:46 — Case 5: `(Derived4) b` into `Base1` — CE Mantra 2</h3>
+<pre class='code'>class HierarchyCase5 {
+    public static void main(String[] args) {
+        Base2 b = new Derived4();
+        // Base1 b1 = (Derived4) b; // CE
+    }
+}
+class HierarchyCase5CE {
+    public static void main(String[] args) {
+        Base2 b = new Derived4();
+        Base1 b1 = (Derived4) b;
+        // Mantra 1: Base2 ↔ Derived4 — relation OK
+        // Mantra 2: C = Derived4; A = Base1 — Derived4 is NOT child of Base1
+        // CE: incompatible types
+        // found: Derived4
+        // required: Base1
+    }
+}</pre>
+<h3>1:28:54 — Case 6: `(Derived1) b` into `Base1` — CE Mantra 1</h3>
+<pre class='code'>class HierarchyCase6 {
+    public static void main(String[] args) {
+        Base2 b = new Derived4();
+        // Base1 b1 = (Derived1) b; // CE
+    }
+}
+class HierarchyCase6CE {
+    public static void main(String[] args) {
+        Base2 b = new Derived4();
+        Base1 b1 = (Derived1) b;
+        // CE: inconvertible types
+        // found: Base2
+        // required: Derived1
+        // no relation between Base2 and Derived1
+    }
+}</pre>
+<h3>1:30:03 — Closing drill on the three rules</h3>
+<p>He stresses: these hierarchy examples are the most valuable drill for how to apply all three rules. Decide carefully:</p>
+<ol><li>Relation between type of d and C?</li></ol>
+<ol><li>Is C same as / child of A?</li></ol>
+<ol><li>Is runtime type of d same as / child of C?</li></ol>
+<pre class='code'>// Quick cheat-sheet with the original puzzle
+class OriginalPuzzleAnswer {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        StringBuffer sb = (StringBuffer) o;
+        // NOT CE — Mantra 1 + 2 pass
+        // Runtime: ClassCastException
+        // java.lang.String cannot be cast to java.lang.StringBuffer
+    }
+}
+// Contrast: no relation at all → never reaches JVM
+class ContrastNoRelation {
+    public static void main(String[] args) {
+        String s = new String(&quot;Durga&quot;);
+        // StringBuffer sb = (StringBuffer) s;
+        // CE: inconvertible types found String required StringBuffer
+    }
+}
+// Contrast: valid downcast
+class ContrastValidDowncast {
+    public static void main(String[] args) {
+        Object o = new String(&quot;Durga&quot;);
+        String s = (String) o;
+        System.out.println(s);
+        // prints Durga
+    }
+}</pre>
+<h3>1:33:06 — End of video</h3>
+<p>That’s all for this session.</p>
+<p>What this video actually taught</p>
+<ol><li>Coupling = degree of dependency; prefer loose coupling; tight coupling hurts enhancement, reuse, maintainability (A→B→C→D static chain).</li></ol>
+<ol><li>Cohesion = clear responsibility per component; prefer high cohesion; TotalServlet vs JSP/servlet split / MVC.</li></ol>
+<ol><li>Slogan: loosely coupling + high cohesion are good practices.</li></ol>
+<ol><li>Object type casting syntax A b = (C) d and three mantras (2 compile-time, 1 runtime) with String / StringBuffer / Object and the Base1/Base2/Derived* tree.</li></ol>
+<p>```java block count: 42</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 58 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 8</td></tr>
+<tr><td>Topic</td><td>coupling</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 33m 17s</td></tr>
+<tr><td>Video ID</td><td>HpJTGW9AwX0</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=HpJTGW9AwX0</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Feature</th><th>Role</th></tr>
+<tr><td>Coupling</td><td>Degree of dependency between components</td></tr>
+<tr><td>Cohesion</td><td>How cleanly each component’s responsibility is defined</td></tr>
+</table>
+<table>
+<tr><th>Dependency</th><th>Coupling</th></tr>
+<tr><td>More dependency</td><td>Tightly coupled</td></tr>
+<tr><td>Less dependency</td><td>Loosely coupled</td></tr>
+</table>
+<table>
+<tr><th>Cohesion</th><th>Meaning</th><th>Practice</th></tr>
+<tr><td>High</td><td>Clear, specialized responsibility per component</td><td>Good</td></tr>
+<tr><td>Low</td><td>Mixed / unclear responsibilities in one component</td><td>Bad</td></tr>
+</table>
+<table>
+<tr><th>MVC piece</th><th>Responsibility</th></tr>
+<tr><td>View</td><td>Presentation logic</td></tr>
+<tr><td>Controller</td><td>Controlling / coordinating logic</td></tr>
+<tr><td>Model</td><td>Business logic</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Prefer</th></tr>
+<tr><td>Coupling</td><td>Loose</td></tr>
+<tr><td>Cohesion</td><td>High</td></tr>
+</table>
+<table>
+<tr><th>Symbol</th><th>Meaning</th></tr>
+<tr><td>A</td><td>Class or interface name (type of left-hand reference)</td></tr>
+<tr><td>b</td><td>Name of reference variable</td></tr>
+<tr><td>C</td><td>Class or interface name (cast / destination type)</td></tr>
+<tr><td>d</td><td>Reference variable being cast</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Who</th><th>Rule</th><th>On failure</th></tr>
+<tr><td>1</td><td>Compiler</td><td>Type of d and C must be related (P↔C or same)</td><td>CE: inconvertible types found d required C</td></tr>
+<tr><td>2</td><td>Compiler</td><td>C same as A or child of A</td><td>CE: incompatible types found C required A</td></tr>
+<tr><td>3</td><td>JVM</td><td>Runtime type of d same as C or child of C</td><td>`ClassCastException`</td></tr>
+</table>
+</body></html>

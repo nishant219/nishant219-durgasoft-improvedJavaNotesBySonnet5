@@ -1,0 +1,300 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>176-generics-methods-wildcards</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 176 — Generics Part-4: Generic Methods &amp; Wildcard Characters (?)</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>Continuation of the Generics series. This session covers generic methods (brief intro before wildcards) and the full treatment of wildcard characters (`?`) — one of the two most dangerous OCJP topics (the other is inner classes).</p>
+<p>Board sub-topics:</p>
+<ol><li>Generic methods and wildcard character ?</li></ol>
+<ol><li>The problem of type-specific method overload explosion</li></ol>
+<ol><li>Four wildcard method-parameter forms and their calling rules</li></ol>
+<ol><li>For each form: what you can add inside the method</li></ol>
+<ol><li>Assignment compatibility with wildcards (LHS vs RHS rules)</li></ol>
+<ol><li>Live compile-time error messages from the IDE</li></ol>
+<p>Prerequisite: bounded type parameters at class level (T extends X), generic classes (class Test&lt;T&gt;).</p>
+<h2>00:05 — Topic introduction: generic methods &amp; wildcard `?`</h2>
+<h3>Board heading</h3>
+<p>Generic methods and wildcard character (?)</p>
+<p>Durga Sir marks this as a bit difficult — take special care. The ? symbol is described as a bit dangerous for the exam.</p>
+<h2>01:00 — The problem: one method per argument type</h2>
+<h3>Requirement walk-through</h3>
+<p>Suppose you have:</p>
+<pre class='code'>import java.util.*;
+
+class WildcardProblemDemo {
+    public static void main(String[] args) {
+        ArrayList&lt;String&gt; l = new ArrayList&lt;&gt;();
+        M1(l);   // OK — matches M1(ArrayList&lt;String&gt;)
+
+        ArrayList&lt;Integer&gt; l1 = new ArrayList&lt;&gt;();
+        M1(l1);  // CE — no matching method
+
+        ArrayList&lt;Double&gt; l2 = new ArrayList&lt;&gt;();
+        M1(l2);  // CE
+
+        ArrayList&lt;Student&gt; l3 = new ArrayList&lt;&gt;();
+        M1(l3);  // CE
+
+        ArrayList&lt;Customer&gt; l4 = new ArrayList&lt;&gt;();
+        M1(l4);  // CE
+    }
+
+    // Only accepts ArrayList&lt;String&gt;
+    public static void M1(ArrayList&lt;String&gt; l) { }
+}</pre>
+<p>Every time the argument type changes, you need a new overload:</p>
+<pre class='code'>public static void M1(ArrayList&lt;String&gt; l)   { }
+public static void M1(ArrayList&lt;Integer&gt; l)  { }
+public static void M1(ArrayList&lt;Double&gt; l)   { }
+public static void M1(ArrayList&lt;Student&gt; l)  { }
+public static void M1(ArrayList&lt;Customer&gt; l) { }</pre>
+<h3>Problems with overload explosion</h3>
+<h3>Solution — one method for any list type</h3>
+<p>Declare one method using wildcard ?:</p>
+<pre class='code'>public static void M1(ArrayList&lt;?&gt; l) { }</pre>
+<p>Now you can call M1 with ArrayList of any type: String, Integer, Double, Student, Customer, etc.</p>
+<h2>06:56 — Four wildcard method-parameter forms (overview)</h2>
+<p>Durga Sir presents four method signatures. If you understand these four, nothing else remains in wildcard theory for methods.</p>
+<h3>Critical distinction: `super` at method level vs class level</h3>
+<p>Most students feel ? super X is invalid because they confuse it with class-level bounds. At method level with `?`, super is allowed.</p>
+<h2>12:05 — Form 1: `ArrayList&lt;String&gt; l` — fixed type</h2>
+<h3>How to call</h3>
+<p>We can call this method by passing ArrayList of only String type. No other type is accepted.</p>
+<h3>What you can do inside the method</h3>
+<pre class='code'>public static void M1(ArrayList&lt;String&gt; l) {
+    l.add(&quot;a&quot;);    // VALID — String
+    l.add(null);   // VALID — null is valid for any reference type
+    l.add(10);     // CE — Integer not allowed
+}</pre>
+<p>Board note: Within the method we can add only String type objects (and null). Any other type → compile-time error.</p>
+<h2>17:42 — Form 2: `ArrayList&lt;?&gt; l` — unbounded wildcard</h2>
+<h3>How to call</h3>
+<p>We can call this method by passing ArrayList of any unknown type — any type at all.</p>
+<pre class='code'>public static void demoCalls() {
+    ArrayList&lt;String&gt; l1 = new ArrayList&lt;&gt;();
+    M1(l1);   // OK
+
+    ArrayList&lt;Integer&gt; l2 = new ArrayList&lt;&gt;();
+    M1(l2);   // OK
+
+    ArrayList&lt;Student&gt; l3 = new ArrayList&lt;&gt;();
+    M1(l3);   // OK
+}
+
+public static void M1(ArrayList&lt;?&gt; l) { }</pre>
+<h3>Universal rule: every advantage has a disadvantage</h3>
+<p>Advantage: Accept any ArrayList type.</p>
+<p>Disadvantage: Inside the method, the exact element type is unknown at compile time.</p>
+<pre class='code'>public static void M1(ArrayList&lt;?&gt; l) {
+    l.add(10.5);   // CE
+    l.add(&quot;a&quot;);    // CE
+    l.add(10);     // CE
+    l.add(null);   // VALID — only null allowed
+}</pre>
+<p>Why 10.5 fails even if caller passed ArrayList&lt;String&gt;: the compiler does not know which type you will pass — it may be Integer, String, etc. So no element can be safely added except null.</p>
+<h3>Best use case: read-only operations</h3>
+<pre class='code'>public static void M1(ArrayList&lt;?&gt; l) {
+    System.out.println(l);   // read-only — perfectly fine
+}</pre>
+<p>Board note: This type of method is best suitable for read-only operation, not for writing to the list.</p>
+<h2>28:02 — Form 3: `ArrayList&lt;? extends X&gt; l` — upper bounded wildcard</h2>
+<h3>How to call</h3>
+<p>X can be a class or interface.</p>
+<p>Example with Number:</p>
+<pre class='code'>public static void M1(ArrayList&lt;? extends Number&gt; l) { }
+
+// Valid calls:
+M1(new ArrayList&lt;Integer&gt;());   // Integer extends Number
+M1(new ArrayList&lt;Double&gt;());    // Double extends Number
+M1(new ArrayList&lt;Number&gt;());    // Number itself
+
+// Invalid:
+M1(new ArrayList&lt;String&gt;());    // CE — String is not child of Number</pre>
+<h3>What you can do inside the method</h3>
+<p>Same as unbounded ?: you don&#x27;t know which child of X was passed.</p>
+<pre class='code'>public static void M1(ArrayList&lt;? extends Number&gt; l) {
+    l.add(10);      // CE
+    l.add(10.5);    // CE
+    l.add(null);    // VALID
+}</pre>
+<p>Board note: Within the method we can&#x27;t add anything to the list except null, because we don&#x27;t know the type of X exactly. Best suitable for read-only operation.</p>
+<h2>33:09 — Form 4: `ArrayList&lt;? super X&gt; l` — lower bounded wildcard</h2>
+<h3>How to call — when X is a class</h3>
+<p>We can call this method by passing ArrayList of either X type or its super classes.</p>
+<p>Example with String:</p>
+<pre class='code'>public static void M1(ArrayList&lt;? super String&gt; l) { }
+
+M1(new ArrayList&lt;String&gt;());   // OK
+M1(new ArrayList&lt;Object&gt;());   // OK — Object is super class of String</pre>
+<h3>How to call — when X is an interface (special rule)</h3>
+<p>If X is an interface (e.g. Runnable), you can pass:</p>
+<ul><li>ArrayList of X type (Runnable), or</li></ul>
+<ul><li>Super class of implementation class of X</li></ul>
+<p>Example chain from board:</p>
+<p>Runnable (interface)
+    ↑ implements
+Thread
+    ↑ extends
+Object</p>
+<p>For ? super Runnable, valid lists include ArrayList&lt;Runnable&gt;, ArrayList&lt;Thread&gt;, ArrayList&lt;Object&gt;.</p>
+<p>Board statement: If X is an interface, we can call this method by passing a list of either X type or super class of implementation class of X.</p>
+<h3>What you can do inside the method — the key flexibility</h3>
+<p>Unlike ? and ? extends X, `? super X` allows adding X-type objects:</p>
+<pre class='code'>public static void M1(ArrayList&lt;? super String&gt; l) {
+    l.add(&quot;a&quot;);     // VALID — X type (String)
+    l.add(null);    // VALID
+    l.add(10);      // CE — not String
+}</pre>
+<p>Board note: Within the method we can add X type of objects and null to the list.</p>
+<h2>40:16 — Master comparison: all four forms</h2>
+<h2>41:59 — Exam-style assignment compatibility</h2>
+<h3>Valid assignments</h3>
+<p>ArrayList&lt;String&gt; l = new ArrayList&lt;String&gt;();           // OK
+ArrayList&lt;?&gt; l = new ArrayList&lt;String&gt;();                // OK — ? means any type on LHS
+ArrayList&lt;? extends Number&gt; l = new ArrayList&lt;Integer&gt;(); // OK — Integer is child of Number
+ArrayList&lt;? super String&gt; l = new ArrayList&lt;Object&gt;();   // OK — Object is super of String</p>
+<h3>Invalid assignments</h3>
+<p>ArrayList&lt;? extends Number&gt; l = new ArrayList&lt;String&gt;();
+// CE: incompatible types
+// found:    ArrayList&lt;String&gt;
+// required: ArrayList&lt;? extends Number&gt;</p>
+<h3>RHS wildcard rule — critical exam trap</h3>
+<p>On the right-hand side of assignment, you cannot use bare ? or bounded wildcards. You must specify a concrete class or interface without bounds.</p>
+<p>ArrayList&lt;?&gt; l = new ArrayList&lt;?&gt;();              // CE
+ArrayList&lt;?&gt; l = new ArrayList&lt;? extends Number&gt;(); // CE</p>
+<p>Compile error:</p>
+<p>unexpected type
+found:    ?
+required: class or interface without bounds</p>
+<p>Same error for ? extends Number on RHS — the compiler expects a real type name (String, Integer, Object, etc.), not a wildcard.</p>
+<h3>Live demo summary (from transcript execution)</h3>
+<h2>Full reference program — all four method forms</h2>
+<pre class='code'>import java.util.*;
+
+class Student { }
+class Customer { }
+
+public class WildcardMethodsDemo {
+
+    // Form 1 — exact type
+    public static void mExact(ArrayList&lt;String&gt; l) {
+        l.add(&quot;Durga&quot;);
+        l.add(null);
+        // l.add(10);  // CE
+    }
+
+    // Form 2 — unbounded wildcard
+    public static void mUnbounded(ArrayList&lt;?&gt; l) {
+        System.out.println(l);  // read-only
+        l.add(null);
+        // l.add(&quot;x&quot;);  // CE
+    }
+
+    // Form 3 — upper bound
+    public static void mExtends(ArrayList&lt;? extends Number&gt; l) {
+        for (Number n : l) {
+            System.out.println(n);
+        }
+        l.add(null);
+        // l.add(10);  // CE
+    }
+
+    // Form 4 — lower bound
+    public static void mSuper(ArrayList&lt;? super Integer&gt; l) {
+        l.add(10);
+        l.add(null);
+        // l.add(10.5);  // CE
+    }
+
+    public static void main(String[] args) {
+        mExact(new ArrayList&lt;String&gt;());
+        mUnbounded(new ArrayList&lt;Integer&gt;());
+        mExtends(new ArrayList&lt;Integer&gt;());
+        mSuper(new ArrayList&lt;Number&gt;());
+    }
+}</pre>
+<h2>OCJP exam traps (Video 176)</h2>
+<ol><li>`? super` at method level is valid even though T super X at class level is not.</li></ol>
+<ol><li>`ArrayList&lt;?&gt;` inside method: only null can be added — not even String if parameter is &lt;?&gt;.</li></ol>
+<ol><li>`? super X` inside method: can add objects of type X (and null).</li></ol>
+<ol><li>RHS of assignment: never new ArrayList&lt;?&gt; or new ArrayList&lt;? extends Number&gt;.</li></ol>
+<ol><li>`? extends` call rule: child/implementation classes only — String is not a child of Number.</li></ol>
+<ol><li>Read-only methods: ? and ? extends → use for printing/iterating, not mutating.</li></ol>
+<h2>Summary</h2>
+<p>Video 176 solves the &quot;one method per list element type&quot; problem using wildcard ?. Four method-parameter patterns govern who can call and what can be added inside. Unbounded ? and ? extends X trade write flexibility for universal/read-upper-bound acceptance and are read-only safe. ? super X is the write-friendly lower bound — you may add X-type elements. Assignment compatibility separates wildcard-on-LHS (flexible) from concrete-type-on-RHS (required). The ? symbol is exam-critical; Durga Sir recommends revisiting this lecture at least twice.</p>
+<h2>What&#x27;s next</h2>
+<p>Video 177 continues Generics Part-5 with generic methods (type parameter at method level) and communication with non-generic code.</p>
+<p>End of Video 176 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Generics Part-4 \</td><td>\</td><td>generics method \</td><td>\</td><td>generics wildcard characters (?)</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=ANzefryEvRo</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>ANzefryEvRo</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Duration</td><td>57m 07s</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Position</td><td>176 of 203</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Source</td><td>YouTube auto-captions (yt-dlp + node PO token)</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td><td></td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Issue</th><th>Effect</th></tr>
+<tr><td>Code length increases</td><td>Maintenance burden</td></tr>
+<tr><td>Reusability decreases</td><td>Same logic duplicated</td></tr>
+<tr><td>Every new type</td><td>Forces yet another method</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Method signature</th><th>Call with</th></tr>
+<tr><td>1</td><td>M1(ArrayList&lt;String&gt; l)</td><td>Only ArrayList&lt;String&gt;</td></tr>
+<tr><td>2</td><td>M1(ArrayList&lt;?&gt; l)</td><td>ArrayList of any type</td></tr>
+<tr><td>3</td><td>M1(ArrayList&lt;? extends X&gt; l)</td><td>ArrayList of X or its child classes (if X is class) or implementation classes (if X is interface)</td></tr>
+<tr><td>4</td><td>M1(ArrayList&lt;? super X&gt; l)</td><td>ArrayList of X or its super classes (if X is class); special rule if X is interface</td></tr>
+</table>
+<table>
+<tr><th>Location</th><th>super allowed?</th></tr>
+<tr><td>Class-level type parameter T</td><td>No — T super Number is invalid</td></tr>
+<tr><td>Method-level wildcard ? super X</td><td>Yes — valid syntax</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>Valid?</th><th>Reason</th></tr>
+<tr><td>l.add(&quot;a&quot;)</td><td>Yes</td><td>L is ArrayList&lt;String&gt;</td></tr>
+<tr><td>l.add(null)</td><td>Yes</td><td>Null is valid for every reference type</td></tr>
+<tr><td>l.add(10)</td><td>No (CE)</td><td>Only String objects allowed</td></tr>
+</table>
+<table>
+<tr><th>If X is…</th><th>You can pass ArrayList of…</th></tr>
+<tr><td>Class</td><td>X type or its child classes</td></tr>
+<tr><td>Interface</td><td>X type or its implementation classes</td></tr>
+</table>
+<table>
+<tr><th>Form</th><th>How to call</th><th>Add inside method</th><th>Best for</th></tr>
+<tr><td>ArrayList&lt;String&gt;</td><td>Only ArrayList&lt;String&gt;</td><td>String + null</td><td>Read + write (String only)</td></tr>
+<tr><td>ArrayList&lt;?&gt;</td><td>Any ArrayList</td><td>null only</td><td>Read-only</td></tr>
+<tr><td>ArrayList&lt;? extends X&gt;</td><td>X or child/impl</td><td>null only</td><td>Read-only</td></tr>
+<tr><td>ArrayList&lt;? super X&gt;</td><td>X or super/impl-super</td><td>X + null</td><td>Write producer (add X)</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>Result</th></tr>
+<tr><td>ArrayList&lt;?&gt; l = new ArrayList&lt;String&gt;();</td><td>Compiles</td></tr>
+<tr><td>ArrayList&lt;? extends Number&gt; l = new ArrayList&lt;String&gt;();</td><td>CE — incompatible types</td></tr>
+<tr><td>ArrayList&lt;? extends Number&gt; l = new ArrayList&lt;Integer&gt;();</td><td>Compiles</td></tr>
+<tr><td>ArrayList&lt;?&gt; l = new ArrayList&lt;?&gt;();</td><td>CE — unexpected type</td></tr>
+<tr><td>ArrayList&lt;?&gt; l = new ArrayList&lt;? extends Number&gt;();</td><td>CE — unexpected type</td></tr>
+</table>
+</body></html>

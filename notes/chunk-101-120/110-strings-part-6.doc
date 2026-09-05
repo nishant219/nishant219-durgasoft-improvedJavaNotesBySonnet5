@@ -1,0 +1,439 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>110-strings-part-6</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 110</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: java.lang.package Part-6 ||  Strings class</p>
+<p>Position: 110 of 203 · Series java.lang · Part 6</p>
+<p>Duration: 1h 43m 17s (from transcript)</p>
+<p>ID: 7zeOxAl19bg</p>
+<p>Watch: https://www.youtube.com/watch?v=7zeOxAl19bg</p>
+<p>Playlist: https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</p>
+<h3>00:07 — Session opening: String APIs (constructors + methods)</h3>
+<p>Durga Sir resumes after prior videos on String terminology — immutability, advantages/disadvantages, internal SCP (String Constant Pool) behavior. Remaining syllabus for this video: String class constructors and important methods.</p>
+<h3>00:43 — Constructors of `String` class (overview)</h3>
+<p>Board heading: Constructors of String class.</p>
+<p>Durga Sir covers the main constructors one by one. Additional constructors exist but are deferred; focus first on the foundational ones.</p>
+<h3>01:06 — Constructor 1: `new String()` — empty String object</h3>
+<p>Creates an empty String object on the heap — zero-length, not null.</p>
+<p>String s = new String();
+// Creates empty String object; length = 0
+// s.length() → 5? No → 0</p>
+<p>Critical distinction (exam favourite):</p>
+<p>Both are not the same. new String() is equivalent to &quot;&quot; in content (zero-length object), but not equivalent to null.</p>
+<p>String s1 = new String();   // empty object, length 0
+String s2 = &quot;&quot;;             // same idea — zero-length object (often pooled)
+String s3 = null;           // no object at all</p>
+<h3>02:36 — Constructor 2: `new String(String literal)`</h3>
+<p>For a given String literal, creates an equivalent String object in the heap. The literal still lives in SCP; new forces a separate heap object.</p>
+<p>String s = new String(&quot;Durga&quot;);
+// Literal &quot;Durga&quot; → SCP
+// new String(...) → separate object in heap
+// s refers to heap copy, not SCP literal reference</p>
+<h3>03:24 — Constructor 3: `new String(StringBuffer sb)`</h3>
+<p>Conversion / “dancing” between StringBuffer and String — for a given StringBuffer, create equivalent String.</p>
+<p>StringBuffer sb = new StringBuffer(&quot;Durga&quot;);
+String s = new String(sb);
+// Equivalent String object for contents of sb</p>
+<p>Same pattern works the other way (StringBuffer constructor from String) — bidirectional conversion is possible.</p>
+<h3>04:31 — Recap: first three constructors on board</h3>
+<pre class='code'>// 1. Empty
+String s1 = new String();
+
+// 2. From literal (heap copy)
+String s2 = new String(&quot;Durga&quot;);
+
+// 3. From StringBuffer
+StringBuffer sb = new StringBuffer(&quot;Durga&quot;);
+String s3 = new String(sb);</pre>
+<h3>07:08 — Constructor 4: `new String(char[] chars)`</h3>
+<p>For given char array, create equivalent String.</p>
+<p>char[] ch = {&#x27;a&#x27;, &#x27;b&#x27;, &#x27;c&#x27;, &#x27;d&#x27;};
+String s = new String(ch);
+System.out.println(s);
+// Prints: abcd</p>
+<p>By default the entire array becomes the String content.</p>
+<h3>08:22 — Constructor 5: `new String(char[] chars, int offset, int count)`</h3>
+<p>Subset of char array — from offset, for count characters.</p>
+<p>char[] ch = {&#x27;a&#x27;, &#x27;b&#x27;, &#x27;c&#x27;, &#x27;d&#x27;};
+String s = new String(ch, 0, 4);
+System.out.println(s);
+// Prints: abcd</p>
+<p>Same example array; constructor can take portion of array (offset + count).</p>
+<h3>10:06 — Constructor 6: `new String(byte[] bytes)`</h3>
+<p>For given byte array, create String using default charset (platform default). Bytes treated as character codes (Unicode code units in example).</p>
+<p>byte[] b = {100, 101, 102};  // ASCII/Unicode: d=100, e=101, f=102
+String s = new String(b);
+System.out.println(s);
+// Prints: def</p>
+<p>Board decoding (ASR “uncoded values” → Unicode values):</p>
+<p>Constructor interprets bytes per default charset; in lecture example, values map directly to characters.</p>
+<p>byte[] b = {97, 98, 99, 100};
+String s = new String(b);
+System.out.println(s);
+// Prints: abcd</p>
+<h3>13:41 — Transition: important methods of String class</h3>
+<p>Constructors related to byte[] and char[] are important for OCJP. Now shift to important methods — several are compulsory for exam and daily use.</p>
+<h3>14:27 — Method 1: `char charAt(int index)`</h3>
+<p>Returns the character at specified index (zero-based).</p>
+<p>String s = &quot;Durga&quot;;
+System.out.println(s.charAt(3));
+// Prints: g
+// Index: D=0, u=1, r=2, g=3, a=4</p>
+<p>Invalid index → runtime exception:</p>
+<p>String s = &quot;Durga&quot;;
+System.out.println(s.charAt(30));
+// Runtime: StringIndexOutOfBoundsException</p>
+<p>Signature on board:</p>
+<pre class='code'>public char charAt(int index)
+// Returns character at specified index</pre>
+<h3>17:38 — Method 2: `concat(String str)` (+ and `+=` overload)</h3>
+<p>Concatenation — join this String with argument.</p>
+<p>String s = &quot;Durga&quot;;
+s = s.concat(&quot; Software&quot;);
+System.out.println(s);
+// Prints: Durga Software</p>
+<p>`+` and `+=` are overloaded for String — also concatenation only:</p>
+<p>String s = &quot;Durga&quot;;
+s = s + &quot; Software&quot;;      // valid
+s += &quot; Solutions&quot;;         // valid — same purpose as concat
+System.out.println(s);
+// Prints: Durga Software Solutions</p>
+<p>No difference in purpose: concat, +, += all concatenate.</p>
+<h3>21:19 — Method 3: `equals(Object)` vs `equalsIgnoreCase(String)`</h3>
+<p>`equals` — content comparison, case-sensitive (overriding Object.equals).</p>
+<p>String s = &quot;Java&quot;;
+System.out.println(s.equals(&quot;java&quot;));
+// Prints: false   (case matters)</p>
+<p>Real-world use case:</p>
+<p>String email = &quot;User@Mail.com&quot;;
+System.out.println(email.equalsIgnoreCase(&quot;user@mail.com&quot;));
+// Prints: true</p>
+<p>`equalsIgnoreCase` — content comparison where case is NOT important; String-specific method (not on Object).</p>
+<pre class='code'>public boolean equals(Object obj)           // case important
+public boolean equalsIgnoreCase(String s)   // case NOT important</pre>
+<p>Board example:</p>
+<p>String s = &quot;Java&quot;;
+System.out.println(s.equals(&quot;java&quot;));              // false
+System.out.println(s.equalsIgnoreCase(&quot;java&quot;));    // true</p>
+<p>Exam note: Use equalsIgnoreCase to validate usernames; use equals to validate passwords where case matters.</p>
+<h3>28:50 — Method 4: `substring` — introduction via ABCDEFG example</h3>
+<p>String for substring demo (ASR: movie tagline joke — “A Boy Can Do Everything For Girl”):</p>
+<p>String s = &quot;a b c d e f g&quot;;
+// Or compact: &quot;abcdefg&quot; depending on board — lecture uses spaced form</p>
+<p>`substring(6)` — from begin index 6 to end of string:</p>
+<p>String s = &quot;a b c d e f g&quot;;
+System.out.println(s.substring(6));
+// Prints from index 6 to end → &quot;g&quot; (in spaced string) or &quot;g&quot; portion</p>
+<p>Two-argument form:</p>
+<p>String s = &quot;a b c d e f g&quot;;
+System.out.println(s.substring(2, 6));
+// From index 2 inclusive to index 6 EXCLUSIVE
+// Indices 2,3,4,5 → &quot;c d e&quot; (with spaces) or &quot;cdef&quot; in compact form
+// Lecture: begin=2, end=6 → characters at 2,3,4,5 only (end-1 rule)</p>
+<p>Common mistake (compile error): wrong casing — subString with capital S is invalid. Must be `substring` (lowercase s after “sub”).</p>
+<pre class='code'>// CE — cannot find symbol
+// s.subString(2);   // WRONG
+
+s.substring(2);        // CORRECT</pre>
+<h3>33:56 — `substring` method signatures</h3>
+<pre class='code'>public String substring(int beginIndex)
+// Returns substring from beginIndex to end of string
+
+public String substring(int beginIndex, int endIndex)
+// Returns substring from beginIndex to endIndex-1 (endIndex exclusive)</pre>
+<p>Board example:</p>
+<p>String s = &quot;abcdefg&quot;;
+System.out.println(s.substring(3));
+// Prints: defg
+
+System.out.println(s.substring(2, 6));
+// Prints: cdef   (indices 2,3,4,5)</p>
+<h3>36:35 — Method 5: `length()` vs `length` variable</h3>
+<p>Common confusion — arrays vs String:</p>
+<p>String s = &quot;Durga&quot;;
+System.out.println(s.length);
+// CE: cannot find symbol — length variable NOT for String
+
+System.out.println(s.length());
+// Prints: 5</p>
+<p>int[] a = {10, 20, 30};
+System.out.println(a.length);    // 3 — variable
+
+String s = &quot;Durga&quot;;
+System.out.println(s.length());  // 5 — method</p>
+<p>Signature:</p>
+<pre class='code'>public int length()
+// Returns number of characters in the String</pre>
+<h3>41:21 — Method 6: `replace(char oldChar, char newChar)`</h3>
+<p>Replace every occurrence of old character with new character; returns new String (immutability).</p>
+<p>String s = &quot;abababa&quot;;
+System.out.println(s.replace(&#x27;a&#x27;, &#x27;b&#x27;));
+// Prints: bbbbbbb
+// Every &#x27;a&#x27; replaced with &#x27;b&#x27;</p>
+<pre class='code'>public String replace(char oldChar, char newChar)</pre>
+<h3>43:27 — Methods 7 &amp; 8: `toLowerCase()` and `toUpperCase()`</h3>
+<p>Self-explanatory — convert case of all characters.</p>
+<pre class='code'>public String toLowerCase()
+// Every uppercase → lowercase
+
+public String toUpperCase()
+// Every lowercase → uppercase</pre>
+<p>No extra examples required on board — method names indicate purpose.</p>
+<h3>44:17 — Method 9: `trim()`</h3>
+<p>Problem scenario: User enters city name with leading/trailing spaces; database has &quot;Hyderabad&quot; but input is &quot;   Hyderabad&quot;. Comparison fails unless trimmed.</p>
+<p>Purpose: Remove blank spaces at beginning AND end — NOT middle spaces.</p>
+<p>String city = &quot;   Hyderabad   &quot;;
+System.out.println(city.trim());
+// Prints: Hyderabad
+// Leading and trailing spaces removed; middle spaces kept if any</p>
+<p>MCQ trap (exam):</p>
+<p>Middle spaces not removed by trim().</p>
+<pre class='code'>public String trim()
+// Remove blank spaces at beginning and end, NOT middle</pre>
+<h3>48:36 — Methods 10 &amp; 11: `indexOf(char)` and `lastIndexOf(char)`</h3>
+<p>Reverse of `charAt`: given character, find index.</p>
+<ul><li>charAt(index) → character</li></ul>
+<ul><li>indexOf(char) → first occurrence index</li></ul>
+<ul><li>lastIndexOf(char) → last occurrence index</li></ul>
+<p>Only first and last have ready-made methods — for 2nd, 3rd occurrence you must write explicit code.</p>
+<p>String s = &quot;ababa&quot;;
+System.out.println(s.indexOf(&#x27;a&#x27;));
+// Prints: 0   (first &#x27;a&#x27;)
+
+System.out.println(s.lastIndexOf(&#x27;a&#x27;));
+// Prints: 4   (last &#x27;a&#x27;)</p>
+<p>Signatures:</p>
+<pre class='code'>public int indexOf(char ch)
+// Returns index of first occurrence of specified character
+
+public int lastIndexOf(char ch)
+// Returns index of last occurrence of specified character</pre>
+<h3>52:57 — ★ MOST IMPORTANT: runtime String methods &amp; object creation</h3>
+<p>Exam trap: People assume == on results of toUpperCase() / toLowerCase() always gives false false — wrong in some cases.</p>
+<p>Case A — literal references (SCP), no `new`:</p>
+<p>String s1 = &quot;durga&quot;;
+String s2 = s1.toUpperCase();   // &quot;DURGA&quot; — content CHANGED → new heap object
+String s3 = s1.toLowerCase();   // &quot;durga&quot; — no content change → SAME object
+
+System.out.println(s1 == s2);   // false
+System.out.println(s1 == s3);   // true  ← surprise for many students</p>
+<p>Case B — `new String()` → heap object:</p>
+<p>String s1 = new String(&quot;Durga&quot;);   // heap object (literal &quot;Durga&quot; also in SCP)
+String s2 = s1.toUpperCase();      // &quot;DURGA&quot; — change → NEW heap object
+String s3 = s1.toLowerCase();      // &quot;durga&quot; — change → NEW heap object
+
+System.out.println(s1 == s2);   // false
+System.out.println(s1 == s3);   // false</p>
+<p>★ Golden rule (star note):</p>
+<p>Because of runtime operation: if there is change in content → new object created in heap only (NOT SCP). If no change in content → existing object returned (reuse).</p>
+<p>Same rule whether object came from heap, SCP, or both.</p>
+<h3>57:16 — Extended `==` examples with heap + SCP diagram</h3>
+<p>String s1 = new String(&quot;Durga&quot;);
+String s2 = s1.toUpperCase();    // &quot;DURGA&quot; — new object
+String s3 = s1.toLowerCase();    // &quot;durga&quot; — new object (content changed from &quot;Durga&quot;)
+
+System.out.println(s1 == s2);    // false
+System.out.println(s1 == s3);    // false</p>
+<p>When lowercase &quot;durga&quot; already exists in SCP, `toLowerCase()` still may create new heap object if called on heap String from new String(...) — because runtime method does not check SCP for reuse when source is heap object; it applies change rule on current object content.</p>
+<h3>1:03:00 — `s4 = s2.toLowerCase()` — new object even when SCP has match</h3>
+<p>String s1 = new String(&quot;Durga&quot;);
+String s2 = s1.toUpperCase();     // &quot;DURGA&quot; on heap
+String s4 = s2.toLowerCase();   // &quot;durga&quot; — CHANGE from &quot;DURGA&quot; → NEW object
+
+// Even if &quot;durga&quot; literal exists in SCP,
+// runtime call on heap &quot;DURGA&quot; → new heap &quot;durga&quot; object
+// Does NOT check &quot;is lowercase already in SCP?&quot;</p>
+<p>Key insight: At runtime method call, JVM creates new object on heap when content changes — does not search SCP for existing equal string to reuse (for these transform methods on non-literal-derived references).</p>
+<h3>1:06:31 — `toString()` on String — no content change</h3>
+<p>String s1 = &quot;Durga&quot;;              // SCP
+String s2 = s1.toString();        // already String, no change
+
+System.out.println(s1 == s2);     // true — same object</p>
+<p>String s1 = &quot;Durga&quot;;
+String s3 = s1.toUpperCase();     // &quot;DURGA&quot; — but if already upper? 
+// &quot;Durga&quot;.toUpperCase() → &quot;DURGA&quot; — content changed → new object
+
+String s1 = &quot;DURGA&quot;;
+String s3 = s1.toUpperCase();     // no change → same object
+System.out.println(s1 == s3);     // true</p>
+<p>Summary table:</p>
+<h3>1:11:00 — Immutability definition (formal) + link to String behavior</h3>
+<p>Immutability: Once object created, if you try to “change” it via operation:</p>
+<ul><li>Content changes → new object created with new content</li></ul>
+<ul><li>No content change → existing object reused</li></ul>
+<p>This behavior IS immutability for String. String class implements this pattern.</p>
+<p>Typo in ASR: “mutable” at opening often means immutable in context — String objects are immutable.</p>
+<h3>1:11:39 — How to create our own immutable class</h3>
+<p>Interview / OCJP question: “How to create immutable class?” — implement same behavior as String.</p>
+<p>Step 1: Understand immutability (above).</p>
+<p>Step 2: Implement modify-style methods that return new object on change, same object on no change.</p>
+<p>Step 3: Declare class `final` so nobody overrides your immutability logic.</p>
+<h3>1:18:12 — `Test` class: custom immutable class pattern</h3>
+<pre class='code'>public final class Test {
+    private int x;
+
+    public Test(int x) {
+        this.x = x;
+    }
+
+    public Test modify(int x) {
+        if (this.x == x) {
+            return this;              // no change → reuse current object
+        } else {
+            return new Test(x);         // change → new object
+        }
+    }
+}</pre>
+<p>Usage:</p>
+<p>Test t1 = new Test(10);
+Test t2 = t1.modify(100);    // 10 != 100 → NEW Test(100) object
+Test t3 = t1.modify(10);     // 10 == 10 → return t1 (same object)
+
+System.out.println(t1 == t2);   // false
+System.out.println(t1 == t3);   // true</p>
+<p>Why `final` class?</p>
+<ul><li>String is final</li></ul>
+<ul><li>All wrapper classes are final</li></ul>
+<ul><li>Prevents subclass from overriding methods and breaking immutability contract</li></ul>
+<h3>1:24:14 — Immutability implementation rule (board summary)</h3>
+<p>Once object created:</p>
+<ul><li>Any attempted change with different content → new object</li></ul>
+<ul><li>Same content → return current object (return this)</li></ul>
+<p>Immutability achieved through method implementation, not keyword alone.</p>
+<h3>1:30:02 — `final` vs `immutable` — DIFFERENT concepts</h3>
+<p>Most common student mistake: treating final and immutable as same — they are NOT.</p>
+<p>Both sound “non-changeable” but different dimensions.</p>
+<h3>1:31:28 — `final StringBuffer` example — object CAN still change</h3>
+<p>final StringBuffer sb = new StringBuffer(&quot;Durga&quot;);
+sb.append(&quot; Software&quot;);          // VALID — mutating object content
+System.out.println(sb);
+// Prints: Durga Software
+
+// sb = new StringBuffer(&quot;Solutions&quot;);  // CE — cannot assign to final variable sb</p>
+<p>`final` impact: only reassignment of sb forbidden. Append/modify object content allowed because StringBuffer is mutable.</p>
+<p>Even if two references are final, still can mutate object:</p>
+<p>final StringBuffer sb = new StringBuffer(&quot;Durga&quot;);
+sb.append(&quot; Software&quot;);   // OK
+System.out.println(sb);   // Durga Software</p>
+<p>Reassignment fails:</p>
+<p>final StringBuffer sb = new StringBuffer(&quot;Durga&quot;);
+sb = new StringBuffer(&quot;Solutions&quot;);
+// CE: cannot assign a value to final variable sb</p>
+<h3>1:36:37 — Board notes: final vs immutability</h3>
+<p>`final`:</p>
+<ul><li>Applicable for variable (reference)</li></ul>
+<ul><li>Not for making object immutable</li></ul>
+<ul><li>Declaring reference final → no immutability for object</li></ul>
+<ul><li>Even two final references → can still change object content if type is mutable</li></ul>
+<p>Immutability:</p>
+<ul><li>Applicable for object behavior</li></ul>
+<ul><li>Not controlled by final keyword on variable alone</li></ul>
+<ul><li>String immutability from class design + final class + method behavior</li></ul>
+<p>Non-final mutable example:</p>
+<p>StringBuffer sb = new StringBuffer(&quot;Durga&quot;);
+sb.append(&quot; Software&quot;);                    // valid
+System.out.println(sb);                    // Durga Software
+
+sb = new StringBuffer(&quot;Solutions&quot;);        // also valid — not final
+System.out.println(sb);                    // Solutions</p>
+<h3>1:41:18 — Quick review: four “meaningful” combinations (tick-mark exercise)</h3>
+<p>Durga Sir asks which phrases are meaningful:</p>
+<p>Important for interview + SCJP + day-to-day programming.</p>
+<h3>1:42:52 — Session wrap-up</h3>
+<p>Topics completed:</p>
+<ol><li>String constructors ((), literal, StringBuffer, char[], char[]+offset+count, byte[])</li></ol>
+<ol><li>String methods (charAt, concat/+/+=, equals/equalsIgnoreCase, substring, length, replace, toLowerCase/toUpperCase, trim, indexOf/lastIndexOf)</li></ol>
+<ol><li>Runtime object creation rule for String methods (★ exam star)</li></ol>
+<ol><li>Custom immutable class pattern (Test + modify)</li></ol>
+<ol><li>`final` vs immutable distinction</li></ol>
+<p>Next session preview: more String topics / related java.lang content (Covariant return types mentioned in passing for future).</p>
+<h2>Quick reference — String constructors covered</h2>
+<p>new String()
+new String(String original)
+new String(StringBuffer sb)
+new String(char[] value)
+new String(char[] value, int offset, int count)
+new String(byte[] bytes)</p>
+<h2>Quick reference — String methods covered</h2>
+<p>charAt(int index)
+concat(String str)          // + and += equivalent for concatenation
+equals(Object o)
+equalsIgnoreCase(String s)
+substring(int begin)
+substring(int begin, int end)
+length()
+replace(char old, char new)
+toLowerCase()
+toUpperCase()
+trim()
+indexOf(char ch)
+lastIndexOf(char ch)
+toString()                  // on String → same object</p>
+<p>Java block count: 48</p>
+<table>
+<tr><th>Code</th><th>Meaning</th></tr>
+<tr><td>String s = &quot;&quot;;</td><td>String object exists, length 0</td></tr>
+<tr><td>String s = null;</td><td>No String object; reference is null</td></tr>
+</table>
+<table>
+<tr><th>Byte value</th><th>Character</th></tr>
+<tr><td>97</td><td>a</td></tr>
+<tr><td>98</td><td>b</td></tr>
+<tr><td>99</td><td>c</td></tr>
+<tr><td>100</td><td>d</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Method</th></tr>
+<tr><td>Password validation</td><td>equals — case important</td></tr>
+<tr><td>Email / username validation</td><td>equalsIgnoreCase — case not important</td></tr>
+</table>
+<table>
+<tr><th>Feature</th><th>Applies to</th></tr>
+<tr><td>`length` variable</td><td>Arrays only</td></tr>
+<tr><td>`length()` method</td><td>String objects only</td></tr>
+</table>
+<table>
+<tr><th>Option</th><th>Correct?</th></tr>
+<tr><td>Remove spaces only at beginning</td><td>❌</td></tr>
+<tr><td>Remove spaces only at end</td><td>❌</td></tr>
+<tr><td>Remove spaces at beginning and end</td><td>✅</td></tr>
+<tr><td>Remove all spaces in string</td><td>❌</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>Content change?</th><th>Result</th></tr>
+<tr><td>toString() on String</td><td>No</td><td>Same object</td></tr>
+<tr><td>toUpperCase() when already upper</td><td>No</td><td>Same object</td></tr>
+<tr><td>toLowerCase() when already lower</td><td>No</td><td>Same object</td></tr>
+<tr><td>toUpperCase() / toLowerCase() / trim() / replace() when content differs</td><td>Yes</td><td>New heap object</td></tr>
+</table>
+<table>
+<tr><th>Concept</th><th>Applies to</th><th>Meaning</th></tr>
+<tr><td>`final` variable</td><td>Variable / reference</td><td>Re-assignment not allowed</td></tr>
+<tr><td>Immutability</td><td>Object</td><td>Object content cannot change; operations return new object</td></tr>
+</table>
+<table>
+<tr><th>Phrase</th><th>Valid?</th><th>Reason</th></tr>
+<tr><td>Final variable</td><td>✅ Yes</td><td>final applies to variables</td></tr>
+<tr><td>Null variable</td><td>❌ Invalid phrase</td><td>Variables can hold null; “null variable” not standard terminology</td></tr>
+<tr><td>Final object</td><td>❌ Invalid</td><td>Objects aren’t declared final — references are</td></tr>
+<tr><td>Null object</td><td>✅ Yes</td><td>Reference pointing to no object</td></tr>
+</table>
+</body></html>

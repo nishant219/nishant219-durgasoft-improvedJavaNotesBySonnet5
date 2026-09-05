@@ -1,0 +1,259 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>180-gc-requesting-gc</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 180 — Garbage Collection Part-3: Methods for Requesting JVM to Run GC</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>Assumes objects are already eligible for GC (Video 179). This session explains:</p>
+<ol><li>Eligible ≠ immediately destroyed — GC runs when JVM decides</li></ol>
+<ol><li>You can request JVM to run GC — but no guarantee</li></ol>
+<ol><li>Two ways to request: System.gc() and Runtime.getRuntime().gc()</li></ol>
+<ol><li>Runtime class — singleton, factory method, memory queries</li></ol>
+<ol><li>Live demo creating 10,000 Date objects + free memory before/after gc()</li></ol>
+<ol><li>Exam traps: static vs instance gc(), invalid call forms</li></ol>
+<ol><li>Convenient vs recommended — System.gc() vs Runtime.gc()</li></ol>
+<p>Prerequisite: Video 178 (GC intro), Video 179 (eligibility rules).</p>
+<h2>00:06 — Eligible for GC ≠ immediate destruction</h2>
+<h3>Key rule</h3>
+<p>Once we make an object eligible for GC:</p>
+<ul><li>It is NOT destroyed immediately</li></ul>
+<ul><li>Destruction happens only when JVM runs GC</li></ul>
+<ul><li>When JVM runs GC — we don&#x27;t know (varies JVM to JVM)</li></ul>
+<h3>Partial predictability</h3>
+<p>Some JVMs may favor morning, afternoon, or evening — not guaranteed, exam-wise treat timing as unpredictable.</p>
+<h2>01:51 — Analogy: house cleanup lady</h2>
+<p>Daily agreement: cleanup lady comes every morning at 7:00 AM.</p>
+<p>During the day you throw waste papers into the dustbin:</p>
+<ul><li>She does NOT come after every single paper</li></ul>
+<ul><li>She collects all at once when she arrives next scheduled time</li></ul>
+<p>If you need urgent cleanup (15 relatives coming for lunch at 10:00):</p>
+<ul><li>You call and request her to come early</li></ul>
+<ul><li>She may come — depends on relationship, health, location</li></ul>
+<ul><li>Not always guaranteed — sometimes &quot;next morning only&quot;</li></ul>
+<p>Parallel:</p>
+<h2>05:32 — Requesting JVM to run garbage collector</h2>
+<p>We can request JVM programmatically:</p>
+<p>&quot;JVM, can you please run garbage collector? Huge number of objects eligible for GC.&quot;</p>
+<h2>09:04 — Theory block (board notes)</h2>
+<p>Once we made an object eligible for GC:</p>
+<ul><li>It may not be destroyed immediately by garbage collector</li></ul>
+<ul><li>Whenever JVM runs a GC → then only objects destroyed</li></ul>
+<ul><li>When exactly JVM runs GC → can&#x27;t expect — varied from JVM to JVM</li></ul>
+<p>Instead of waiting until JVM runs GC on its own:</p>
+<ul><li>We can request JVM to run garbage collector programmatically</li></ul>
+<ul><li>Whether JVM accepts → no guarantee</li></ul>
+<ul><li>Most of the times → JVM accepts</li></ul>
+<h2>09:46 — Two ways to request JVM to run GC</h2>
+<h3>Way 1 — `System` class</h3>
+<p>System.gc();</p>
+<ul><li>System class contains static method gc()</li></ul>
+<ul><li>Purpose: requesting JVM to run garbage collector</li></ul>
+<ul><li>We are NOT calling garbage collector directly — we request JVM</li></ul>
+<h3>Way 2 — `Runtime` class</h3>
+<p>Runtime r = Runtime.getRuntime();
+r.gc();</p>
+<ul><li>Java application communicates with JVM via Runtime object</li></ul>
+<ul><li>Runtime class in java.lang package</li></ul>
+<ul><li>Singleton class — only one instance per JVM</li></ul>
+<ul><li>Cannot use new Runtime() — use factory method getRuntime()</li></ul>
+<h2>17:09 — Runtime class architecture</h2>
+<p>Java Application  ----communicates via----&gt;  Runtime object  ----&gt;  JVM
+                                                    |
+                                            totalMemory()
+                                            freeMemory()
+                                            gc()</p>
+<h3>Creating Runtime object</h3>
+<p>Runtime r = Runtime.getRuntime();   // factory method — NOT constructor</p>
+<p>Singleton / single-ton class: We are allowed to create only one object; constructor is private; factory method returns the instance.</p>
+<h3>Key Runtime methods (memory + GC)</h3>
+<h2>28:19 — Live demo: `RuntimeDemo` with 10,000 Date objects</h2>
+<pre class='code'>import java.util.*;
+
+public class RuntimeDemo {
+    public static void main(String[] args) {
+        Runtime r = Runtime.getRuntime();
+
+        System.out.println(&quot;Total memory: &quot; + r.totalMemory());
+        System.out.println(&quot;Free memory:  &quot; + r.freeMemory());
+
+        for (int i = 1; i &lt;= 10000; i++) {
+            Date d = new Date();   // create object
+            // d goes out of scope each iteration → eligible for GC
+        }
+
+        System.out.println(&quot;Free memory after 10000 objects: &quot; + r.freeMemory());
+
+        r.gc();   // request GC
+
+        System.out.println(&quot;Free memory after gc(): &quot; + r.freeMemory());
+    }
+}</pre>
+<h3>Conceptual numbers (board teaching example)</h3>
+<p>Assume total = 100 bytes, initial free = 60 bytes:</p>
+<h3>Possible free-memory values after `r.gc()` (exam reasoning)</h3>
+<p>Nothing is impossible — behavior varies by JVM. Durga Sir&#x27;s live run (JDK 1.6) showed free memory greater than initial after gc() because old useless objects were also collected.</p>
+<h3>Actual execution output (from transcript, JDK 1.6)</h3>
+<p>Numbers vary system to system — understand trend, not exact digits.</p>
+<h2>43:12 — Exam trap: which calls are valid?</h2>
+<p>Question: Which is a valid way to request JVM to run garbage collector?</p>
+<h3>Static vs instance distinction</h3>
+<p>Board note:</p>
+<ul><li>GC method present in System class is a static method</li></ul>
+<ul><li>GC method present in Runtime class is an instance method</li></ul>
+<h2>48:57 — Convenient vs recommended</h2>
+<h3>Why Runtime.gc() is recommended internally</h3>
+<p>System.gc() implementation (from JDK source — shown in class):</p>
+<pre class='code'>public final class System {
+    public static void gc() {
+        Runtime.getRuntime().gc();
+    }
+}</pre>
+<p>System.gc() internally calls Runtime.getRuntime().gc() only.</p>
+<p>So calling Runtime.getRuntime().gc() directly saves one method-call hop — fractionally better performance (nanosecond scale), but technically cleaner.</p>
+<p>Most programmers know only System.gc() — both are valid requests.</p>
+<h2>Complete reference program</h2>
+<pre class='code'>import java.util.*;
+
+public class GCRequestDemo {
+
+    public static void main(String[] args) {
+        // Way 1 — convenient
+        System.gc();
+
+        // Way 2 — recommended for performance
+        Runtime rt = Runtime.getRuntime();
+        System.out.println(&quot;Total: &quot; + rt.totalMemory());
+        System.out.println(&quot;Free:  &quot; + rt.freeMemory());
+
+        for (int i = 0; i &lt; 10000; i++) {
+            new Date();
+        }
+
+        System.out.println(&quot;Free after allocation: &quot; + rt.freeMemory());
+        rt.gc();
+        System.out.println(&quot;Free after gc(): &quot; + rt.freeMemory());
+    }
+}</pre>
+<h2>Important clarifications</h2>
+<h3>We do NOT &quot;call&quot; garbage collector</h3>
+<p>Correct phrasing: request JVM to run garbage collector.</p>
+<p>Programmer → JVM → (maybe) GC runs.</p>
+<h3>gc() vs finalize()</h3>
+<h2>OCJP exam traps (Video 180)</h2>
+<ol><li>Eligible object destroyed only when GC runs, not immediately</li></ol>
+<ol><li>GC timing unpredictable — varies JVM to JVM</li></ol>
+<ol><li>System.gc() — static; Runtime.gc() — instance on singleton</li></ol>
+<ol><li>Runtime.getRuntime() — only legal way to get Runtime reference</li></ol>
+<ol><li>new Runtime() — invalid (singleton)</li></ol>
+<ol><li>Runtime.gc() — invalid (non-static call on class)</li></ol>
+<ol><li>Request ≠ guarantee — JVM may ignore</li></ol>
+<ol><li>System.gc() delegates to Runtime.getRuntime().gc() internally</li></ol>
+<ol><li>Recommended: direct Runtime call; Convenient: System.gc()</li></ol>
+<ol><li>Free memory after gc() can exceed pre-allocation free memory (other garbage collected too)</li></ol>
+<h2>Summary</h2>
+<p>Video 180 bridges eligibility (Video 179) and actual reclamation. Objects eligible for GC wait until a GC cycle — like trash in a bin until scheduled pickup. Programmers may request early collection via `System.gc()` (static, convenient) or `Runtime.getRuntime().gc()` (instance on singleton Runtime, performance-recommended). JVM usually honors the request but is never obligated. The Runtime API also exposes `totalMemory()` and `freeMemory()` for heap inspection. The demo with 10,000 short-lived Date objects shows free memory dropping after allocation and typically rising after gc(). Exam focus: valid vs invalid call syntax and static/instance distinction.</p>
+<h2>What&#x27;s next</h2>
+<p>Finalization — finalize() method and object lifecycle before destruction (fourth GC subtopic).</p>
+<p>End of Video 180 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Garbage collection Part-3 \</td><td>\</td><td>The methods for requesting jvm to run GC</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=ECQlT9qwakA</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>ECQlT9qwakA</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>56m 05s</td><td></td><td></td></tr>
+<tr><td>Position</td><td>180 of 203</td><td></td><td></td></tr>
+<tr><td>Source</td><td>YouTube auto-captions (yt-dlp + node PO token)</td><td></td><td></td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Condition</th><th>Likely GC trigger</th></tr>
+<tr><td>Program running with low memory</td><td>JVM more likely to run GC</td></tr>
+<tr><td>Exact time/schedule</td><td>Unknown — differs per JVM implementation</td></tr>
+</table>
+<table>
+<tr><th>House</th><th>Java</th></tr>
+<tr><td>Waste paper in bin</td><td>Object eligible for GC</td></tr>
+<tr><td>Scheduled 7 AM cleanup</td><td>JVM&#x27;s automatic GC cycle</td></tr>
+<tr><td>Phone request for early visit</td><td>System.gc() / Runtime.gc()</td></tr>
+<tr><td>&quot;Maybe tomorrow&quot; response</td><td>JVM may ignore request</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>Detail</th></tr>
+<tr><td>Request possible?</td><td>Yes</td></tr>
+<tr><td>JVM must accept?</td><td>No guarantee</td></tr>
+<tr><td>Practical success rate</td><td>~99% — &quot;most of the times JVM accepts&quot;</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Returns</th><th>Meaning</th></tr>
+<tr><td>totalMemory()</td><td>long</td><td>Number of bytes of total heap memory (heap size)</td></tr>
+<tr><td>freeMemory()</td><td>long</td><td>Number of bytes of free memory currently in heap</td></tr>
+<tr><td>gc()</td><td>void</td><td>Request JVM to run garbage collector</td></tr>
+</table>
+<table>
+<tr><th>Stage</th><th>Free memory</th><th>Reason</th></tr>
+<tr><td>Start</td><td>60</td><td>Baseline</td></tr>
+<tr><td>After 10,000 Date objects</td><td>40</td><td>20 bytes consumed for object creation</td></tr>
+<tr><td>After r.gc() (if GC runs)</td><td>60 or higher</td><td>Eligible objects destroyed</td></tr>
+</table>
+<table>
+<tr><th>Value</th><th>Scenario</th></tr>
+<tr><td>30</td><td>GC did not run; JVM used ~10 bytes internally to run program</td></tr>
+<tr><td>40</td><td>GC did not run; no extra JVM overhead</td></tr>
+<tr><td>50</td><td>GC ran but destroyed only some eligible objects</td></tr>
+<tr><td>60</td><td>GC destroyed all 10,000 objects — back to initial free</td></tr>
+<tr><td>80</td><td>GC also destroyed pre-existing useless objects in heap</td></tr>
+</table>
+<table>
+<tr><th>Print statement</th><th>Approximate value</th></tr>
+<tr><td>Total memory</td><td>5173… bytes</td></tr>
+<tr><td>Initial free memory</td><td>4945… bytes</td></tr>
+<tr><td>After 10,000 objects</td><td>4714… bytes</td></tr>
+<tr><td>After r.gc()</td><td>5059352… bytes (greater than initial)</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>Valid?</th><th>Reason</th></tr>
+<tr><td>System.gc();</td><td>Yes</td><td>Static gc() on System</td></tr>
+<tr><td>Runtime.gc();</td><td>No</td><td>gc() is instance method, not static</td></tr>
+<tr><td>new Runtime().gc();</td><td>No</td><td>Runtime is singleton — cannot new</td></tr>
+<tr><td>Runtime.getRuntime().gc();</td><td>Yes</td><td>Correct factory + instance call</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>gc() method type</th><th>Call style</th></tr>
+<tr><td>System</td><td>static</td><td>System.gc()</td></tr>
+<tr><td>Runtime</td><td>instance</td><td>runtimeObject.gc()</td></tr>
+</table>
+<table>
+<tr><th>Criterion</th><th>Winner</th><th>Explanation</th></tr>
+<tr><td>Convenient to use</td><td>System.gc()</td><td>One call; no Runtime object needed</td></tr>
+<tr><td>Highly recommended (performance)</td><td>Runtime.getRuntime().gc()</td><td>Avoids extra indirection</td></tr>
+</table>
+<table>
+<tr><th></th><th>System.gc()</th><th>Runtime.getRuntime().gc()</th></tr>
+<tr><td>Convenience</td><td>Better</td><td>Need Runtime reference first</td></tr>
+<tr><td>Performance</td><td>One extra hop</td><td>Direct — recommended</td></tr>
+<tr><td>Functionality</td><td>Same request to JVM</td><td>Same request to JVM</td></tr>
+</table>
+<table>
+<tr><th></th><th>gc()</th><th>finalize()</th></tr>
+<tr><td>Who defines</td><td>System / Runtime</td><td>Object class</td></tr>
+<tr><td>Purpose</td><td>Request GC cycle</td><td>Last-chance cleanup before destruction</td></tr>
+<tr><td>Covered in</td><td>This video</td><td>Finalization session</td></tr>
+</table>
+</body></html>

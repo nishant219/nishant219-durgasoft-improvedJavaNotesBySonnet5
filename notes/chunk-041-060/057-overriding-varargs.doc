@@ -1,0 +1,1519 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>057-overriding-varargs</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 057 — Overriding and var-arg methods</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-7||overriding ||varargs method</p>
+<p>ASR decoded while reading the captions: wear / we Arch / where AR / VCH / wech / aarch / verar / V meod = var-arg methods; keep subing / keep supporting / keep supping = keep writing (board heading); into / INX / inex / Intex = int x; into dot dot dot X = int... x; public W / y / wi / War / vo / wide / vo vo M1 = public void m1; tri8 / 38 / trible 8 / 8 = 888; tri9 / 39 / 9 / 98 (as “9 then 8”) = 999 then 888; jum / JM = JVM; written types = return types; Co variant = covariant; polymeris / polymer ISM = polymorphism; whoops = OOPs; string ARR a = String[] args; Javas C test.Java = javac Test.java; PKA / Paka = pakka (definite); I exception / C exception = IOException; AR / VAR / aist / erist list = ArrayList; Linker / link list = LinkedList; list ENT = List interface; get Z / get off zero = get(0); subal lakmi / subaki / appal = Subbalakshmi; Nara / charmi / charm / Trisha = Nayanthara / Charmi / Trisha; method of hiding / iding = method hiding; Legion = listen.</p>
+<p>This video is OOPs Part 7. Last session finished static methods (mix static/non-static is CE; both static is method hiding, output parent / child / parent). This session: overriding with respect to var-arg methods (var-arg vs normal is overloading, output parent / child / parent; both var-arg is overriding, output parent / child / child), then overriding with respect to variables (always 888 999 888, compiler + reference type, four static/instance combinations), then nine differences overloading vs overriding plus the “check only two things vs check everything” note, then an exam-style parent/child method question (five options), then polymorphism (definition, life story, abs overloading, marry overriding, List parent-ref), then when to use parent vs child reference (get(0) returns Object; List as return type) with a three-row interview table, then three pillars of OOPs, a static vs dynamic polymorphism summary (overloading + method hiding vs overriding), and the internet “friendship” definition. Next session: coupling, cohesion, type casting, instance/static control flow, constructors.</p>
+<h3>00:05 — Recap: last session was static methods; this session is var-arg</h3>
+<p>Last session: overriding with respect to static methods — that chapter of overriding rules is complete.</p>
+<p>Now: overriding with respect to var-arg methods (ASR: “wear methods” / “we Arch methods”).</p>
+<p>He does not re-teach what a var-arg method is. He hopes the room already knows it from Language Fundamentals (video 012). He only needs a one-line reminder so the overriding rule makes sense.</p>
+<h3>00:26 — Board heading: Overriding with respect to var-arg methods</h3>
+<p>Keep writing (ASR: “keep subing”):</p>
+<p>Overriding with respect to var-arg methods</p>
+<h3>00:48 — Reminder: var-arg came in 1.5</h3>
+<p>A new concept in 1.5: var-arg methods (variable number of argument methods).</p>
+<p>Normal method — exactly one int:</p>
+<pre class='code'>class NormalOneInt {
+    public void m1(int x) {
+        System.out.println(&quot;exactly one int&quot;);
+    }
+
+    public static void main(String[] args) {
+        NormalOneInt t = new NormalOneInt();
+        t.m1(10);
+        // prints exactly one int
+        // t.m1();        // CE: m1(int) not applicable
+        // t.m1(10, 20);  // CE: m1(int) not applicable
+    }
+}</pre>
+<p>Var-arg method — any number of int values, including zero:</p>
+<pre class='code'>class VarArgAnyCount {
+    public void m1(int... x) {
+        System.out.println(&quot;var-arg method&quot;);
+    }
+
+    public static void main(String[] args) {
+        VarArgAnyCount t = new VarArgAnyCount();
+        t.m1();
+        t.m1(10);
+        t.m1(10, 20);
+        t.m1(10, 20, 30);
+        // prints var-arg method
+        // prints var-arg method
+        // prints var-arg method
+        // prints var-arg method
+    }
+}</pre>
+<p>He writes m1(int... x) on the board (ASR: “M1 off into dot dot dot X”). That is the 1.5 concept. Now the overriding rule.</p>
+<h3>01:40 — Board: parent var-arg `m1`, child **normal** `m1`</h3>
+<p>Take special care. Parent class P: var-arg method. Child class C extends P: normal method with the same name.</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int x) { // normal method, not var-arg
+        System.out.println(&quot;child&quot;);
+    }
+}</pre>
+<p>Parent method = var-arg. Child method = normal. Same name m1. He is about to put them in class Test with the usual three reference/object cases from the overriding videos.</p>
+<h3>02:41 — `class Test`: three calls `m1(10)`</h3>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int x) {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1(10);
+
+        C c = new C();
+        c.m1(10);
+
+        P p1 = new C();
+        p1.m1(10);
+    }
+}</pre>
+<p>Target: parent method is var-arg; child method is normal. Three cases, each passing one argument 10.</p>
+<h3>03:57 — Cases 1 and 2 are easy; case 3 is the trap</h3>
+<p>Case 1 — parent reference, parent object</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class Case1 {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1(10);
+        // prints parent
+    }
+}</pre>
+<p>Parent reference, parent object → parent method. No argument.</p>
+<p>Case 2 — child reference, child object</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int x) {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Case2 {
+    public static void main(String[] args) {
+        C c = new C();
+        c.m1(10);
+        // prints child
+    }
+}</pre>
+<p>Child reference, child object → child method. No argument.</p>
+<p>Case 3 — parent reference, child object (the dangerous one, same pattern as marry() in video 055)</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int x) {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Case3Trap {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.m1(10);
+        // most of the room shouts &quot;child&quot;
+        // actual: prints parent
+    }
+}</pre>
+<p>He asks the room: parent or child? Very important. People shout both. He says some explanation must be required — do not just guess.</p>
+<h3>04:46 — Why the room says child (the overriding reflex)</h3>
+<p>In overriding, method resolution is always taken care of by the JVM based on runtime object.</p>
+<p>Runtime object of p1 is a child object. So the reflex answer is: child method should execute.</p>
+<p>He then stops them: who told you this is the overriding concept?</p>
+<h3>05:16 — Answer is **parent**, not child</h3>
+<p>The answer is parent, not child.</p>
+<p>Most people will feel “parent reference + child object → child” like the marry() demo. That is wrong here. It is not child. Parent is the answer.</p>
+<h3>05:32 — Who told you it is overriding? Argument types are **different** → overloading</h3>
+<p>In overriding: method names must be same and argument types must be same.</p>
+<p>Here:</p>
+<ul><li>parent argument: int... x</li></ul>
+<ul><li>child argument: int x (normal)</li></ul>
+<p>Same name, different argument types.</p>
+<p>If two methods have the same name but different argument types, that is overloading, not overriding.</p>
+<p>Most people fail this: they call it overriding. It is overloading.</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int x) { // different argument type than int...
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class NotOverriding {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.m1(10);
+        // prints parent
+        // overloading, but not overriding
+        // compiler binds using reference type P → P.m1(int...)
+    }
+}</pre>
+<h3>06:37 — Rule: a var-arg method can be overridden with **another var-arg method only**</h3>
+<p>Board rule (he will dictate it slowly later):</p>
+<p>A var-arg method can be overridden with another var-arg method only.</p>
+<p>If you try to “override” it with a normal method, it becomes overloading but not overriding.</p>
+<p>In overloading, method resolution is always taken care of by the compiler based on reference type.</p>
+<p>So on the three calls:</p>
+<p>Take special care: we cannot override a var-arg method with a normal method.</p>
+<h3>07:37 — If child is **also** var-arg, then it **is** overriding → child on case 3</h3>
+<p>Suppose the child method is also m1(int... x). Now both are var-arg. Now it becomes overriding. Case 3 answer becomes child.</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int... x) { // also var-arg → real override
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class BothVarArg {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1(10);
+        // prints parent
+
+        C c = new C();
+        c.m1(10);
+        // prints child
+
+        P p1 = new C();
+        p1.m1(10);
+        // prints child  — JVM, runtime object C
+    }
+}</pre>
+<p>He will execute the first program (child = normal) live, then talk about this change.</p>
+<h3>08:21 — Live: save as `Test.java`, `javac Test.java`, `java Test`</h3>
+<p>He opens the same example: class P public void m1(int... x) parent method; class C extends P public void m1(int x) normal method; class Test with the three calls.</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int x) {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1(10);
+
+        C c = new C();
+        c.m1(10);
+
+        P p1 = new C();
+        p1.m1(10);
+    }
+}</pre>
+<p>Commands (ASR: “Javas C test.Java”):</p>
+<p>javac Test.java
+java Test</p>
+<p>Compiles. Output, he asks before running:</p>
+<ol><li>first time → parent</li></ol>
+<ol><li>second time → child</li></ol>
+<ol><li>third time → parent</li></ol>
+<p>Observed output: parent child parent.</p>
+<h3>09:38 — Same live file, child also var-arg → parent child child</h3>
+<p>Suppose child class method is also a var-arg method. What is the answer now?</p>
+<p>Parent, child, child. Because now it is overriding.</p>
+<p>Default output of the first program (normal child): parent child parent.</p>
+<p>If both var-arg: parent child child.</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int... x) {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1(10);
+
+        C c = new C();
+        c.m1(10);
+
+        P p1 = new C();
+        p1.m1(10);
+        // prints parent
+        // prints child
+        // prints child
+    }
+}</pre>
+<p>We can override a var-arg method with another var-arg method only. By mistake if we try to override with a normal method, it becomes overloading but not overriding.</p>
+<h3>10:17 — Board dictation of the rule (copy slowly)</h3>
+<p>Keep writing. He repeats each phrase several times:</p>
+<ul><li>We can override var-arg method with another var-arg method only.</li></ul>
+<ul><li>If we are trying to override with the normal method, then it will become overloading but not overriding.</li></ul>
+<p>That is the whole rule.</p>
+<h3>11:45 — Classroom: “we passed only one argument — still overloading?”</h3>
+<p>Student: if it is a normal method in both classes, then it is overriding (both normal, same int).</p>
+<pre class='code'>class P {
+    public void m1(int x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int x) {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class BothNormal {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1(10);
+        C c = new C();
+        c.m1(10);
+        P p1 = new C();
+        p1.m1(10);
+        // prints parent
+        // prints child
+        // prints child  — this IS overriding
+    }
+}</pre>
+<p>Follow-up: here we passed only one argument. Does that make it overriding?</p>
+<p>No. Even though we pass one argument, overloading still dominates because the declared argument types are different (int... vs int). Reference type decides which method is called.</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int x) {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class OneArgStillOverload {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.m1(10); // still only one int, still overloading
+        // prints parent
+    }
+}</pre>
+<h3>12:39 — If parent **also** declared the normal `m1(int)`, that one would win</h3>
+<p>This case is overloading. Compiler, reference type.</p>
+<p>On P p1 = new C(); p1.m1(10); the parent type has only m1(int...), so that is the only method that can get the chance.</p>
+<p>If parent also had the exact-match normal method, that method would get the chance instead of the var-arg (var-arg is weakest / least priority — same idea as video 012).</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent var-arg&quot;);
+    }
+
+    public void m1(int x) {
+        System.out.println(&quot;parent normal&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int x) {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class ParentAlsoHasNormal {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.m1(10);
+        // prints child
+        // P has m1(int) as well → that is the overload chosen (exact match)
+        // C overrides m1(int) → runtime object C → child
+    }
+}</pre>
+<p>Take clearly. Comment on the original program: overloading but not overriding.</p>
+<h3>13:33 — Full board program again, with the comment and the output line</h3>
+<p>He rewrites the first program cleanly and writes the output parent child parent.</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int x) {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1(10);
+
+        C c = new C();
+        c.m1(10);
+
+        P p1 = new C();
+        p1.m1(10);
+        // overloading but not overriding
+        // prints parent
+        // prints child
+        // prints parent
+    }
+}</pre>
+<h3>14:36 — In the above program, replace child method with var-arg → overriding</h3>
+<p>Keep writing:</p>
+<p>In the above program, if we replace child method with var-arg method, then it will become overriding.</p>
+<p>Because we are replacing the normal child method with a var-arg method. In this case the output is parent child child (he first slips “parent child parent”, then corrects: sorry, parent child child).</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int... x) { // replaced normal with var-arg
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.m1(10);
+
+        C c = new C();
+        c.m1(10);
+
+        P p1 = new C();
+        p1.m1(10);
+        // now overriding
+        // prints parent
+        // prints child
+        // prints child
+    }
+}</pre>
+<p>This is what you should be aware of: overriding with respect to var-arg methods.</p>
+<h3>16:06 — Next heading: Overriding with respect to **variables**</h3>
+<p>Keep writing:</p>
+<p>Overriding with respect to variables</p>
+<p>This example is also a bit important. Take special care.</p>
+<h3>16:42 — Board: parent `x = 888`, child `x = 999`</h3>
+<p>He starts to write int x = 10, then changes to a “strong value”: 888 and 999 (ASR: “tri8” / “38” / “888”; “tri9” / “39” / “999”). Same name x.</p>
+<pre class='code'>class P {
+    int x = 888;
+}
+
+class C extends P {
+    int x = 999;
+}</pre>
+<p>Parent contains 888. Child contains 999. Same x only.</p>
+<h3>17:29 — `class Test`: print `p.x`, `c.x`, `p1.x`</h3>
+<pre class='code'>class P {
+    int x = 888;
+}
+
+class C extends P {
+    int x = 999;
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        System.out.println(p.x);
+
+        C c = new C();
+        System.out.println(c.x);
+
+        P p1 = new C();
+        System.out.println(p1.x);
+    }
+}</pre>
+<h3>18:38 — Trap: people apply the **method** rule to **variables**</h3>
+<ul><li>p.x — parent reference, parent object → 888</li></ul>
+<ul><li>c.x — child reference, child object → 999</li></ul>
+<ul><li>p1.x — parent reference, child object</li></ul>
+<p>The room applies overriding: method resolution is based on runtime object; both are instance variables (not static); runtime object is child → they shout 999.</p>
+<p>He says the answer is 888. (ASR: “trible 8 is the answer.”)</p>
+<pre class='code'>class P {
+    int x = 888;
+}
+
+class C extends P {
+    int x = 999;
+}
+
+class VariableTrap {
+    public static void main(String[] args) {
+        P p1 = new C();
+        System.out.println(p1.x);
+        // room expects 999 (runtime object C)
+        // prints 888
+    }
+}</pre>
+<h3>19:40 — First point: overriding is applicable **only for methods**, not for variables</h3>
+<p>Who told you it is overriding?</p>
+<p>Overriding concept is applicable only for methods but not for variables.</p>
+<p>If it were a method, method resolution would be based on runtime object. This is not overriding, because overriding does not apply to variables.</p>
+<h3>20:11 — Variable resolution: compiler, reference type</h3>
+<p>Variable resolution always takes care by compiler based on reference type.</p>
+<p>Whether the variable is instance or static, there is no change. The value you get is always from the reference type.</p>
+<p>So:</p>
+<ul><li>parent reference → 888</li></ul>
+<ul><li>child reference → 999</li></ul>
+<ul><li>parent reference (even with child object) → 888</li></ul>
+<h3>20:34 — Four combinations: static / non-static matrix</h3>
+<p>He lists all four. The rule does not change.</p>
+<p>1. Both instance (non-static)</p>
+<pre class='code'>class P {
+    int x = 888;
+}
+
+class C extends P {
+    int x = 999;
+}
+
+class BothInstance {
+    public static void main(String[] args) {
+        P p = new P();
+        System.out.println(p.x);
+        C c = new C();
+        System.out.println(c.x);
+        P p1 = new C();
+        System.out.println(p1.x);
+        // prints 888
+        // prints 999
+        // prints 888
+    }
+}</pre>
+<p>2. Parent static, child non-static</p>
+<pre class='code'>class P {
+    static int x = 888;
+}
+
+class C extends P {
+    int x = 999;
+}
+
+class ParentStaticChildInstance {
+    public static void main(String[] args) {
+        P p = new P();
+        System.out.println(p.x);
+        C c = new C();
+        System.out.println(c.x);
+        P p1 = new C();
+        System.out.println(p1.x);
+        // prints 888
+        // prints 999
+        // prints 888
+    }
+}</pre>
+<p>3. Parent non-static, child static</p>
+<pre class='code'>class P {
+    int x = 888;
+}
+
+class C extends P {
+    static int x = 999;
+}
+
+class ParentInstanceChildStatic {
+    public static void main(String[] args) {
+        P p = new P();
+        System.out.println(p.x);
+        C c = new C();
+        System.out.println(c.x);
+        P p1 = new C();
+        System.out.println(p1.x);
+        // prints 888
+        // prints 999
+        // prints 888
+    }
+}</pre>
+<p>4. Both static</p>
+<pre class='code'>class P {
+    static int x = 888;
+}
+
+class C extends P {
+    static int x = 999;
+}
+
+class BothStatic {
+    public static void main(String[] args) {
+        P p = new P();
+        System.out.println(p.x);
+        C c = new C();
+        System.out.println(c.x);
+        P p1 = new C();
+        System.out.println(p1.x);
+        // prints 888
+        // prints 999
+        // prints 888
+    }
+}</pre>
+<p>Whether static/non-static, non-static/static, or static/static — no change in the rule. Variable resolution is always compiler + reference type. In all these cases the output is 888 999 888.</p>
+<h3>22:48 — Board dictation: variable resolution (copy slowly)</h3>
+<p>Keep writing:</p>
+<ul><li>Variable resolution always takes care by compiler based on reference type</li></ul>
+<ul><li>irrespective of whether the variable is static or non-static</li></ul>
+<ul><li>(in brackets) Overriding concept applicable only for methods but not for variables</li></ul>
+<h3>24:31 — Live execution of all four combinations</h3>
+<p>Same Test as the board: P.x = 888, C.x = 999, print p.x c.x p1.x.</p>
+<p>Both instance → 888 999 888.</p>
+<p>Parent static, child non-static — no problem, same answer 888 999 888.</p>
+<p>Parent non-static, child static — same output 888 999 888.</p>
+<p>Both static — same output 888 999 888.</p>
+<pre class='code'>class P {
+    int x = 888; // he then toggles static on P and/or C; output never changes
+}
+
+class C extends P {
+    int x = 999;
+}
+
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        System.out.println(p.x);
+        C c = new C();
+        System.out.println(c.x);
+        P p1 = new C();
+        System.out.println(p1.x);
+        // prints 888
+        // prints 999
+        // prints 888
+    }
+}</pre>
+<p>Irrespective of static or non-static, no change in the rule.</p>
+<h3>26:10 — Take the example **and the table**</h3>
+<p>Long board-copy pause (~26:27–28:06) while the room copies the four-row table.</p>
+<p>Overriding concept applicable only for methods but not for variables. Make sure you are aware.</p>
+<p>These are the various OOPs points you should know related to overriding. Overriding rules are now complete.</p>
+<h3>28:33 — Interview: difference between overloading and overriding</h3>
+<p>Very common, very important interview question: what is the difference between overloading and overriding? Tell all differences. There may be a chance they ask you to differentiate.</p>
+<p>Overriding-specific rules are done. Now generalized points that cover both.</p>
+<h3>28:58 — Board heading: Differences between overloading and overriding</h3>
+<p>Keep writing:</p>
+<p>Differences between overloading and overriding</p>
+<p>Three columns: property | overloading | overriding</p>
+<p>He will go point by point (nine points), then dictate the whole table slowly.</p>
+<h3>30:14 — Property 1: method names</h3>
+<p>Method names — must be same or different?</p>
+<p>Must be same in both overloading and overriding.</p>
+<pre class='code'>class OverloadNames {
+    public void m1(int i) { }
+    public void m1(float f) { } // same name
+}
+
+class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1() { // same name
+        System.out.println(&quot;child&quot;);
+    }
+}</pre>
+<h3>30:43 — Property 2: argument types</h3>
+<p>Overloading: must be different (at least order). Example he says: int, float vs float, int — change the order at least.</p>
+<p>Overriding: must be same including order.</p>
+<pre class='code'>class OverloadAtLeastOrder {
+    public void m1(int i, float f) {
+        System.out.println(&quot;int, float&quot;);
+    }
+
+    public void m1(float f, int i) {
+        System.out.println(&quot;float, int&quot;);
+    }
+
+    public static void main(String[] args) {
+        OverloadAtLeastOrder t = new OverloadAtLeastOrder();
+        t.m1(10, 10.5f);
+        t.m1(10.5f, 10);
+        // prints int, float
+        // prints float, int
+    }
+}
+class P {
+    public void m1(int i, float f) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int i, float f) { // same types including order
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class OverrideSameOrder {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.m1(10, 10.5f);
+        // prints child
+    }
+}</pre>
+<h3>31:33 — Property 3: method signatures</h3>
+<p>Method name + argument types = method signature.</p>
+<p>Overloading: signatures must be different (because argument types are different).</p>
+<p>Overriding: signatures must be same.</p>
+<pre class='code'>class OverloadDifferentSignatures {
+    public void m1(int i) { }   // m1(int)
+    public void m1(float f) { } // m1(float) — different signature
+}
+
+class P {
+    public void m1(int i) { } // m1(int)
+}
+
+class C extends P {
+    public void m1(int i) { } // m1(int) — same signature
+}</pre>
+<h3>32:18 — Property 4: return types</h3>
+<p>Overloading: we never worry about return type. Maybe same, maybe different. No restrictions. Check only: names same, arguments different.</p>
+<p>Overriding: must be same until 1.4 version. From 1.5 version onwards, covariant return types are also allowed.</p>
+<pre class='code'>class OverloadReturnIgnored {
+    public void m1(int i) { }
+    public int m1(double d) { // different args → return type free
+        return 10;
+    }
+}
+class P {
+    public Object m1() {
+        return null;
+    }
+}
+
+class C extends P {
+    public String m1() { // covariant return (1.5+)
+        return &quot;child&quot;;
+    }
+}</pre>
+<h3>33:33 — Property 5: private, static, final methods</h3>
+<p>Private methods can be overloaded. Static methods can be overloaded. Final methods can be overloaded.</p>
+<p>You cannot override private, static, or final (private is not even visible as override; static is hiding; final is CE).</p>
+<p>Overloading: can be overloaded — no restriction.</p>
+<p>Overriding: cannot be overridden.</p>
+<pre class='code'>class CanOverloadThese {
+    private void m1() { }
+    private void m1(int i) { } // private overloaded
+
+    static void m2() { }
+    static void m2(int i) { } // static overloaded
+
+    final void m3() { }
+    final void m3(int i) { } // final overloaded
+}
+class P {
+    private void m1() { }
+    static void m2() { }
+    final void m3() { }
+}
+
+class C extends P {
+    private void m1() { } // not overriding (parent private is not visible)
+    static void m2() { }  // method hiding, not overriding
+    // final void m3() { } // CE: m3() in C cannot override m3() in P; overridden method is final
+}</pre>
+<h3>34:24 — Property 6: access modifiers</h3>
+<p>Overloading: first method private, second public — no problem. First protected, second public — no problem. No restrictions.</p>
+<p>Overriding: while overriding, the scope of the access modifier cannot be reduced; if you want, you can increase.</p>
+<pre class='code'>class OverloadAccessFree {
+    private void m1(int i) { }
+    public void m1(float f) { } // different args — access free
+}
+class P {
+    public void m1() { }
+}
+
+class C extends P {
+    // void m1() { } // CE: attempting to assign weaker access privileges; was public
+    public void m1() { } // same public — OK
+}
+class P {
+    void m1() { } // default
+}
+
+class C extends P {
+    public void m1() { } // increased — OK
+}</pre>
+<h3>35:32 — Property 7: throws clause</h3>
+<p>Overloading: no such restrictions. No restrictions.</p>
+<p>Overriding: if a child class method throws any checked exception, compulsory parent class method should throw the same checked exception or its parent. No restrictions for unchecked exceptions.</p>
+<p>(He says he will dictate this; do not worry about copying at speech speed.)</p>
+<pre class='code'>class OverloadThrowsFree {
+    public void m1(int i) { }
+    public void m1(float f) throws Exception { } // different args — throws free
+}
+import java.io.IOException;
+import java.io.FileNotFoundException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws FileNotFoundException { } // child of IOException — OK
+}
+import java.io.IOException;
+
+class P {
+    public void m1() throws IOException { }
+}
+
+class C extends P {
+    public void m1() throws Exception { }
+    // CE: m1() in C cannot override m1() in P
+    // overridden method does not throw java.lang.Exception
+}
+class P {
+    public void m1() { }
+}
+
+class C extends P {
+    public void m1() throws ArithmeticException { } // unchecked — OK
+}</pre>
+<h3>36:59 — Property 8: method resolution</h3>
+<p>Overloading: always takes care by compiler based on reference type.</p>
+<p>Overriding: always takes care by JVM based on runtime object.</p>
+<pre class='code'>class P {
+    public void m1(int... x) {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1(int x) {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class ResolutionOverload {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.m1(10);
+        // prints parent — compiler, reference type P
+    }
+}
+class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class ResolutionOverride {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.m1();
+        // prints child — JVM, runtime object C
+    }
+}</pre>
+<h3>37:46 — Property 9: also known as</h3>
+<p>Overloading is also known as:</p>
+<ul><li>compile-time polymorphism</li></ul>
+<ul><li>or static polymorphism</li></ul>
+<ul><li>or early binding</li></ul>
+<p>(Method binding happens at compile time — early binding.)</p>
+<p>Overriding is also known as:</p>
+<ul><li>runtime polymorphism</li></ul>
+<ul><li>or dynamic polymorphism</li></ul>
+<ul><li>or late binding</li></ul>
+<p>If any person asks the difference between overloading and overriding, tell these nine differences — “we can give left and right to that interview person.” All possible differences with respect to syntax.</p>
+<h3>38:44 — Slow dictation of the full table</h3>
+<p>He draws the table and dictates each cell. Wait until he finishes a point; he also adds extra theory while dictating.</p>
+<p>Board table (final wording):</p>
+<h3>47:56 — Conclusion note at the top of the table</h3>
+<p>By seeing all nine rows, one simple conclusion:</p>
+<p>In overloading we have to check only method names and argument types — names must be same, argument types must be different. Remaining things we are not required to check: return type, access modifier, throws keyword, etc.</p>
+<p>In overriding everything we have to check — it is a complex process: method names, arguments, return types, access modifier, throws — complete prototype of the method.</p>
+<p>Keep writing this note after the table:</p>
+<p>In overloading we have to check only method names (must be same) and argument types (must be different). We are not required to check remaining like return types, access modifiers, etc.</p>
+<p>But in overriding everything we have to check like method names, argument types, return types, access modifiers, throws clause, etc.</p>
+<p>Overloading is the simple process. Overriding is complex because several things we have to take care of.</p>
+<h3>51:46 — Exam-style question: parent method + which child methods are valid</h3>
+<p>From this discussion, what can they ask in the exam? A simple example.</p>
+<p>Parent class contains:</p>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1(int x) throws IOException {
+    }
+}</pre>
+<p>In the corresponding child class, which methods can we take, and by which concept (overloading vs overriding) are they valid?</p>
+<p>He writes five options:</p>
+<pre class='code'>// 1
+public void m1(int i)
+
+// 2
+public static int m1(long l)
+
+// 3
+public static void m1(int i)
+
+// 4
+public void m1(int i) throws Exception
+
+// 5
+public static abstract void m1(double d)</pre>
+<h3>54:42 — Walk each option (he almost trips on option 2, then corrects)</h3>
+<p>Option 1 — `public void m1(int i)`</p>
+<p>Parent already has public void m1(int x) throws IOException. Same name, same argument. This is overriding. Child throws nothing — that is allowed (you may reduce checked exceptions). Valid by overriding.</p>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1(int x) throws IOException {
+    }
+}
+
+class C extends P {
+    public void m1(int i) { // valid overriding
+    }
+}</pre>
+<p>Option 2 — `public static int m1(long l)`</p>
+<p>Room first says no: non-static to static not allowed; also void replaced with int not allowed — if it were overriding. Then he stops the confusion: 100% pakka it is overloading. Method names same, arguments different (int vs long). If arguments are different we are not required to check return type, static, access modifier. Valid by overloading. Don’t get confusion.</p>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1(int x) throws IOException {
+    }
+}
+
+class C extends P {
+    public static int m1(long l) { // valid overloading
+        return 10;
+    }
+}</pre>
+<p>Option 3 — `public static void m1(int i)`</p>
+<p>Names same, arguments same → overriding. We are trying to override a non-static method with static. Non-static to static overriding is not possible. Invalid based on overriding rule.</p>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1(int x) throws IOException {
+    }
+}
+
+class C extends P {
+    public static void m1(int i) { }
+    // CE: m1(int) in C cannot override m1(int) in P
+    // overriding method is static
+}</pre>
+<p>Option 4 — `public void m1(int i) throws Exception`</p>
+<p>Names same, arguments same → overriding. If child throws a checked exception, parent must throw the same checked exception or its parent. Here child throws Exception (parent of IOException), parent throws IOException (the child type). Wrong direction. Invalid based on overriding.</p>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1(int x) throws IOException {
+    }
+}
+
+class C extends P {
+    public void m1(int i) throws Exception { }
+    // CE: m1(int) in C cannot override m1(int) in P
+    // overridden method does not throw java.lang.Exception
+}</pre>
+<p>Option 5 — `public static abstract void m1(double d)`</p>
+<p>Looks like overloading (double vs int) so people mark it valid. Invalid. static and abstract is an illegal combination of modifiers. We cannot declare a static method as abstract / an abstract method as static. Compile error.</p>
+<pre class='code'>import java.io.IOException;
+
+class P {
+    public void m1(int x) throws IOException {
+    }
+}
+
+class C extends P {
+    public static abstract void m1(double d);
+    // CE: illegal combination of modifiers: abstract and static
+}</pre>
+<p>Maybe a chance to ask this type of question: consider this method in the parent; in the child, which of the following methods can we take?</p>
+<h3>57:44 — Board: “Consider the following method in parent class”</h3>
+<p>Keep writing, better to take a bit of style, method inside a box:</p>
+<p>Consider the following method in parent class</p>
+<pre class='code'>public void m1(int x) throws IOException</pre>
+<p>In the child class, which of the following methods can we take?</p>
+<p>Then copy all five options. For each, decide valid/invalid and based on which concept.</p>
+<p>Long copy pause (~59:37–1:00:54) while he writes option 4 throws Exception and option 5 public static abstract.</p>
+<h3>1:00:54 — Last option trap: overloading **seems** valid, but `static`+`abstract` is CE</h3>
+<p>Take all. The last one is invalid because most people, by overloading, think it is valid. It is not. Static and abstract we cannot apply simultaneously for methods. If we try, compiler error.</p>
+<p>Parent method again on the board: public void m1(int x) throws IOException.</p>
+<h3>1:01:37 — Now summarize under **polymorphism**</h3>
+<p>That ends overloading vs overriding as a pair. Both are by default considered polymorphism. Keep writing the heading.</p>
+<h3>1:02:16 — What is polymorphism? (Greek: many forms)</h3>
+<p>Keep writing: polymorphism.</p>
+<p>It is a Greek word. Poly means many, morphs means forms → many forms.</p>
+<p>One name but multiple forms is the concept of polymorphism.</p>
+<h3>1:02:42 — Life example: same person, different behaviour by place</h3>
+<p>Best easy example: yourself.</p>
+<ul><li>Inside the house, in front of parents: very innocent. Parents may feel “how will this person get on in life with this innocent nature.” Words at home: books, college, temple.</li></ul>
+<ul><li>Outside, with friends: terminology changes. “Yesterday brand is not good, today we have to change the brand.” “Yesterday cinema release — first day first show only we have to see.”</li></ul>
+<ul><li>Coming to Hyderabad from the village: “different colour” by default. People may wonder whether this is the same person from the village. Talk is Park, cinemas. Innocent nature completely gone.</li></ul>
+<p>Person is the same, but based on the place the behaviour changes. Same person, multiple behaviours. That is polymorphism.</p>
+<h3>1:04:38 — Java example 1: `abs` — same name, different argument types → overloading</h3>
+<p>A method named abs. Same method name; you can apply for int, for long, for float. Same method, different argument types. Same but multiple forms → polymorphism. This concept is overloading. Overloading is under polymorphism.</p>
+<pre class='code'>class AbsOverload {
+    public int abs(int i) {
+        return i &lt; 0 ? -i : i;
+    }
+
+    public long abs(long l) {
+        return l &lt; 0 ? -l : l;
+    }
+
+    public float abs(float f) {
+        return f &lt; 0 ? -f : f;
+    }
+
+    public static void main(String[] args) {
+        AbsOverload t = new AbsOverload();
+        t.abs(10);
+        t.abs(10L);
+        t.abs(10.5f);
+        // same name abs, three forms — overloading — polymorphism
+    }
+}</pre>
+<h3>1:05:20 — Java example 2: `marry()` parent vs child → overriding</h3>
+<p>Parent class: marry() implementation for Subbalakshmi (ASR: subal lakmi / subaki; any name, Appal, whatever parents may arrange).</p>
+<p>Same method in the child: marry() implementation with whatever name you want — Trisha or Nayanthara or Charmi.</p>
+<p>Method name / method signature is the same, implementations are different. Parent implementation meant for Subbalakshmi; child implementation meant for Nayanthara (etc.). That is overriding. Is it polymorphism? Yes.</p>
+<p>Same signature: parent one type of implementation, child another type of implementation.</p>
+<p>Overloading is an example of polymorphism. Overriding is an example of polymorphism.</p>
+<p>One name but multiple forms is the concept of polymorphism.</p>
+<h3>1:07:00 — Board dictation of the definition</h3>
+<p>Keep writing:</p>
+<p>Polymorphism: one name but multiple forms is the concept of polymorphism.</p>
+<p>Example 1: method name is the same but we can apply for different types of arguments (overloading).</p>
+<p>Take the example: abs(int) abs(long) abs(float) — overloading. Overloading is an example of polymorphism only.</p>
+<pre class='code'>class Example1 {
+    void abs(int i) { }
+    void abs(long l) { }
+    void abs(float f) { }
+}</pre>
+<p>Example 2: method signature is the same but in parent class one type of implementation and in the child class another type of implementation (overriding).</p>
+<h3>1:09:56 — Board: `class P` `marry()` Subbalakshmi; `class C` `marry()` Charmi</h3>
+<pre class='code'>class P {
+    public void marry() {
+        System.out.println(&quot;Subbalakshmi&quot;);
+    }
+}
+
+class C extends P {
+    public void marry() {
+        System.out.println(&quot;Charmi&quot;);
+    }
+}</pre>
+<p>Any parent-arranged name is fine (Subbalakshmi / Appal). Child: fancy names, no problem — Charmi or Nayanthara. That is overriding. Overloading and overriding are the concept of polymorphism only.</p>
+<h3>1:10:51 — Example 3: same `List` reference, different runtime objects</h3>
+<p>Very commonly used. In collections there is List interface. Implementation classes: ArrayList, LinkedList, Vector, Stack. List is a child interface of Collection. (He will explain collections later; just use it now.)</p>
+<p>We can use the same List reference to hold either ArrayList or LinkedList or Stack or Vector:</p>
+<pre class='code'>import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
+import java.util.Vector;
+
+class ListParentRef {
+    public static void main(String[] args) {
+        List l1 = new ArrayList();
+        List l2 = new LinkedList();
+        List l3 = new Stack();
+        List l4 = new Vector();
+        // same List reference type; runtime object can be any List child
+    }
+}</pre>
+<p>List l = new ArrayList() valid. new LinkedList() valid. new Stack() valid. new Vector() valid.</p>
+<p>Reference is the same; runtime object can be anything. Usage of parent reference to hold any child-type object is also polymorphism.</p>
+<h3>1:12:36 — Board: Example 3 wording + the four assignments</h3>
+<p>Keep writing:</p>
+<p>Example 3: usage of parent reference to hold child object is the concept of polymorphism.</p>
+<p>Take the diagram (List with ArrayList, LinkedList, Vector, Stack under it) and the four lines:</p>
+<pre class='code'>import java.util.*;
+
+class Example3 {
+    public static void main(String[] args) {
+        List l = new ArrayList();
+        l = new LinkedList();
+        l = new Stack();
+        l = new Vector();
+    }
+}</pre>
+<p>Wherever parent reference can be used to hold child object is the concept of polymorphism only.</p>
+<h3>1:14:16 — Very important: **restriction** of parent reference (interview)</h3>
+<p>Advantage of parent reference to hold child object = polymorphism, he can tell. But:</p>
+<p>Parent p = new Child() is valid — parent reference can hold child object. By using that reference we can call only the methods available in the parent class. If we try to call a child-specific method, immediately compile-time error.</p>
+<p>Assume parent contains m1, child contains m2.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent m1&quot;);
+    }
+}
+
+class C extends P {
+    public void m2() {
+        System.out.println(&quot;child m2&quot;);
+    }
+}
+
+class ParentRefRestriction {
+    public static void main(String[] args) {
+        P p = new C(); // valid — parent ref holds child object
+        p.m1();
+        // prints parent m1
+        p.m2();
+        // CE: cannot find symbol
+        //   symbol:   method m2()
+        //   location: variable p of type P
+    }
+}</pre>
+<p>He dictates the CE the way javac prints it: cannot find symbol — which symbol? method m2 — in which location? class P.</p>
+<p>Very important: parent reference can be used to hold child object, but by using that reference we can call only methods available in the parent. Child-specific methods we cannot call.</p>
+<p>If the parent class method is overridden in the child, then the child method will execute — but that is still a method that exists on the parent type. Methods which are only in the child, not in the parent, we cannot call through that reference.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1() { // override — still callable via P
+        System.out.println(&quot;child&quot;);
+    }
+
+    public void m2() { // child-specific — not callable via P
+        System.out.println(&quot;m2&quot;);
+    }
+}
+
+class OverrideVsChildSpecific {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+        // prints child  — overridden, runtime object C
+        // p.m2(); // CE: cannot find symbol method m2() location: class P
+    }
+}</pre>
+<h3>1:16:32 — Then what is the use? Child reference can call **both**</h3>
+<p>Immediate question: then what is the use of giving the parent reference?</p>
+<p>If we use child reference:</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;m1&quot;);
+    }
+}
+
+class C extends P {
+    public void m2() {
+        System.out.println(&quot;m2&quot;);
+    }
+}
+
+class ChildRefBoth {
+    public static void main(String[] args) {
+        C c = new C();
+        c.m1(); // valid
+        c.m2(); // valid
+        // prints m1
+        // prints m2
+    }
+}</pre>
+<p>c.m1() valid, c.m2() valid. Then why parent reference? There is a restriction. Polymorphism benefit is there, but the problem is: by using parent reference we can call only methods available in parent class and we cannot call child-specific methods. In which case should we go for parent reference? He will explain after the board note.</p>
+<h3>1:17:37 — Board dictation of the restriction</h3>
+<p>Keep writing:</p>
+<p>Parent class reference can be used to hold child object, but by using that reference we can call only the methods available in parent class and we can&#x27;t call child-specific methods.</p>
+<p>Take this example and the diagram. Very important discussion — clear clarity.</p>
+<h3>1:19:55 — Board code: `P p = new C();` `p.m1();` `p.m2();`</h3>
+<pre class='code'>class P {
+    public void m1() { }
+}
+
+class C extends P {
+    public void m2() { }
+}
+
+class BoardParentRef {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1(); // valid
+        p.m2(); // CE: cannot find symbol method m2() in class P
+    }
+}</pre>
+<h3>1:20:16 — Child reference: both parent and child methods</h3>
+<p>Keep writing:</p>
+<p>But by using child reference we can call both parent and child class methods.</p>
+<pre class='code'>class P {
+    public void m1() { }
+}
+
+class C extends P {
+    public void m2() { }
+}
+
+class BoardChildRef {
+    public static void main(String[] args) {
+        C c = new C();
+        c.m1(); // valid
+        c.m2(); // valid
+    }
+}</pre>
+<p>Both methods are valid.</p>
+<h3>1:21:19 — When we should go for parent reference to hold child object</h3>
+<p>Keep writing:</p>
+<p>When we should go for parent reference to hold child object</p>
+<p>Very simple: sometimes we don’t know what is the exact runtime object. If we don’t know the exact runtime type of object, happily we can go for parent reference.</p>
+<h3>1:22:22 — Example 1: `ArrayList.get(0)` — return type is `Object`</h3>
+<p>A List / ArrayList can hold any type of object (heterogeneous — he says they covered or will cover in collections). It may be Student object or Customer object or any object.</p>
+<p>I want the first object: l.get(0) (ASR: “L do get Z” — zero index).</p>
+<p>Zero-index object: it may be Student or Customer or String or StringBuffer — any type. How can you hold it? We don’t know exact runtime type — student, customer, string, integer, …</p>
+<p>By using parent reference. That is why the return type of get present in ArrayList class is `Object`. Parent reference can hold any child object. In this type of situation parent reference is helpful to hold any type of runtime child-class object.</p>
+<pre class='code'>import java.util.ArrayList;
+
+class Student { }
+class Customer { }
+
+class GetZero {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        l.add(new Student());
+        l.add(new Customer());
+        l.add(&quot;hello&quot;);
+        l.add(new StringBuffer(&quot;hi&quot;));
+
+        Object o = l.get(0);
+        // get() return type is Object — we don&#x27;t know exact runtime type
+    }
+}</pre>
+<p>Is parent-reference-to-hold-child an advantage feature? Yes. Use this approach if we don’t know runtime type of object.</p>
+<h3>1:24:20 — Example 2: a method that may return ArrayList **or** LinkedList **or** Vector **or** Stack</h3>
+<p>m1 based on some functionality may return ArrayList or LinkedList or Vector or Stack.</p>
+<p>What return type to keep? If return type is ArrayList, we should return only ArrayList, not LinkedList/Vector/Stack.</p>
+<p>We may return any of those four. Which return type covers all possibilities? `List`.</p>
+<pre class='code'>import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
+import java.util.Vector;
+
+class ReturnAnyList {
+    public List m1() {
+        // based on functionality, any of these:
+        return new ArrayList();
+        // return new LinkedList();
+        // return new Vector();
+        // return new Stack();
+    }
+
+    public static void main(String[] args) {
+        ReturnAnyList t = new ReturnAnyList();
+        List l = t.m1(); // parent ref — don&#x27;t know exact runtime type
+    }
+}</pre>
+<p>Tomorrow you call m1(). It may be ArrayList or LinkedList or Vector or Stack. So you hold the result in a parent (List) reference.</p>
+<p>If we don’t know exact runtime type → parent reference.</p>
+<p>If we know exact runtime object — “it’s always going to return ArrayList only” — then use ArrayList reference only.</p>
+<pre class='code'>import java.util.ArrayList;
+
+class AlwaysArrayList {
+    public ArrayList m1() {
+        return new ArrayList();
+    }
+
+    public static void main(String[] args) {
+        AlwaysArrayList t = new AlwaysArrayList();
+        ArrayList l = t.m1(); // we know exact runtime type
+    }
+}</pre>
+<p>When parent reference vs child reference: if I know runtime type, hold with that particular reference. If I don’t know — runtime object can be any type — hold with common parent type.</p>
+<h3>1:26:32 — Board: if we don’t know exact runtime type → parent reference</h3>
+<p>Keep writing:</p>
+<p>If we don’t know exact runtime type of object, then we should go for parent reference.</p>
+<p>For example: the first element present in the ArrayList can be any type — it may be Student object or Customer object or String object or StringBuffer object. Hence the return type of get method is Object, which can hold any object.</p>
+<pre class='code'>import java.util.ArrayList;
+
+class BoardGetZero {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        Object o = l.get(0);
+    }
+}</pre>
+<p>If this facility were not there, how would you hold l.get(0)? You cannot, because you don’t know the runtime type. Usage of parent reference to hold child object is always an advantage feature. Make sure you are aware.</p>
+<h3>1:29:32 — Interview pair: `C c = new C()` vs `P p = new C()`</h3>
+<p>Summarize the differences. Very very important. A bit may be asked in the interview room.</p>
+<pre class='code'>class P { }
+
+class C extends P { }
+
+class Pair {
+    public static void main(String[] args) {
+        C c = new C();
+        P p = new C();
+    }
+}</pre>
+<p>More specifically they may ask:</p>
+<pre class='code'>import java.util.ArrayList;
+import java.util.List;
+
+class PairList {
+    public static void main(String[] args) {
+        ArrayList l1 = new ArrayList();
+        List l2 = new ArrayList();
+    }
+}</pre>
+<p>What is the difference between ArrayList l = new ArrayList() and List l = new ArrayList()? Same question as C c = new C() vs P p = new C().</p>
+<h3>1:30:55 — When for which approach</h3>
+<p>Child / ArrayList reference: if we know exact runtime type of object (always ArrayList only, always Student only, always Customer only) → this approach.</p>
+<p>Parent / List reference: if we don’t know exact runtime type of object → this approach.</p>
+<h3>1:31:37 — Advantage / problem of each (three differences)</h3>
+<p>Advantage of child reference: by using child reference we can call both parent and child class methods.</p>
+<p>“Advantage” of parent reference (actually the restriction): by using parent reference we can call only parent class methods; child-specific methods we can’t call.</p>
+<p>Problem with child reference: we can use child reference to hold only that particular child object. ArrayList reference can hold only ArrayList — not LinkedList.</p>
+<p>Advantage of parent reference: we can use parent reference to hold any child object.</p>
+<p>Polymorphism concept: advantage is there, problem is also there. Advantage: parent reference can hold any child object. Problem: by using that reference we can call only methods available in parent class.</p>
+<p>Take the table. Very important for the interview room.</p>
+<h3>1:33:28 — Table dictation: `C c = new C()` vs `P p = new C()`</h3>
+<p>He also writes the ArrayList / List pair as the same table. Copy pause ~1:33:49.</p>
+<p>Very important interview question: difference between P p = new C() and C c = new C(), or ArrayList l = new ArrayList() and List l = new ArrayList(). Observe advantage and disadvantage of both approaches, and when we should go for a particular approach.</p>
+<pre class='code'>class P {
+    public void m1() { }
+}
+
+class C extends P {
+    public void m2() { }
+}
+
+class ChildWhenWeKnow {
+    public static void main(String[] args) {
+        C c = new C(); // we know runtime type is C
+        c.m1();
+        c.m2();
+        // can call both; can hold only C (not some other sibling)
+    }
+}
+class P {
+    public void m1() { }
+}
+
+class C extends P {
+    public void m2() { }
+}
+
+class ParentWhenWeDontKnow {
+    public static void main(String[] args) {
+        P p = new C(); // we don&#x27;t know exact child type
+        p.m1();
+        // p.m2(); // CE: cannot find symbol method m2() in class P
+        // can hold any child of P
+    }
+}</pre>
+<h3>1:39:17 — Three pillars of OOPs</h3>
+<p>Summarize the three OOPs concepts. If you consider OOPs, three concepts act as pillars.</p>
+<ol><li>Encapsulation — covered already (data hiding session).</li></ol>
+<ol><li>Polymorphism — just now discussed.</li></ol>
+<ol><li>Inheritance — covered already.</li></ol>
+<h3>1:40:20 — One word each</h3>
+<ul><li>Encapsulation always talks about one word: security.</li></ul>
+<ul><li>Polymorphism always talks about one word: flexibility (flexibility to the programmer).</li></ul>
+<ul><li>Inheritance always talks about one concept: reusability.</li></ul>
+<p>These three are by default considered the three pillars of OOPs — basic important concepts of OOPs.</p>
+<p>Keep writing the diagram:</p>
+<p>Three pillars of OOPs</p>
+<ul><li>Encapsulation</li></ul>
+<ul><li>Polymorphism</li></ul>
+<ul><li>Inheritance</li></ul>
+<p>Long copy pause (~1:41:21–1:42:27). Then: encapsulation, polymorphism and inheritance.</p>
+<h3>1:42:44 — A popular internet definition (he will share, with a disclaimer)</h3>
+<p>There is one very popular definition for polymorphism circulated like anything on the internet. He will share it. Whether it is correct or not, he doesn’t know — he is not having any experience in that area.</p>
+<p>Before that, one small summary table for polymorphism, then the funny definition.</p>
+<h3>1:43:28 — Two types of polymorphism</h3>
+<p>Polymorphism — two types:</p>
+<p>1. Static polymorphism (or compile-time polymorphism, or early binding)</p>
+<p>Two examples:</p>
+<ul><li>overloading</li></ul>
+<ul><li>method hiding (ASR: “method of hiding” — last session)</li></ul>
+<p>Both are examples of compile-time / static polymorphism / early binding.</p>
+<p>2. Dynamic polymorphism (or runtime polymorphism, or late binding)</p>
+<p>Example: overriding.</p>
+<pre class='code'>class StaticPolyOverload {
+    public void m1(int i) { }
+    public void m1(float f) { } // overloading — compile-time / early binding
+}
+class P {
+    public static void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public static void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class StaticPolyHiding {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.m1();
+        // prints parent — method hiding — compiler, reference type
+    }
+}
+class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+
+class C extends P {
+    public void m1() {
+        System.out.println(&quot;child&quot;);
+    }
+}
+
+class DynamicPolyOverride {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.m1();
+        // prints child — overriding — JVM, runtime object — late binding
+    }
+}</pre>
+<h3>1:45:05 — Board summary table of polymorphism</h3>
+<p>Keep writing clearly:</p>
+<p>Polymorphism</p>
+<ul><li>Static polymorphism or compile-time polymorphism or early binding</li></ul>
+<p>Overloading and method hiding are examples</p>
+<ul><li>Dynamic polymorphism or runtime polymorphism or late binding</li></ul>
+<p>Example: overriding</p>
+<h3>1:46:14 — “Beautiful definition of polymorphism” (friendship story)</h3>
+<p>Keep writing: beautiful definition of polymorphism — but don’t ask whether it is correct or not; he is not having any experience in that. You can cross-check.</p>
+<p>The word:</p>
+<p>Your boy starts love with the word friendship. Usually gents start at bus stop or classroom: “why, we are just friends.” Then “the cinema is started.”</p>
+<p>Girl ends love with the same word friendship. On wedding day she comes and gives a wedding card saying “we are friends forever.”</p>
+<p>Whether this is correct or not, he doesn’t know. The word is the same; the attitude is different. One person used “friendship” to start; another person used the same word to end. This beautiful concept of OOPs is nothing but polymorphism.</p>
+<p>If you want you can replace boy with girl or girl with boy — he doesn’t know. Whether it’s correct or not, also he doesn’t know. But this is very popular, circulated like anything on the internet, a very popular line about polymorphism / OOPs.</p>
+<p>Better to take it whether you are accepting or not; if you are interested you can take, otherwise you can ignore.</p>
+<p>Keep writing the punch line: word is the same but attitude is the different. Don’t ask whether it’s correct. Even he is not having any experience in that.</p>
+<p>Copy pause ~1:48:19–1:48:43.</p>
+<h3>1:48:44 — Polymorphism chapter ends; next topics</h3>
+<p>That ends the concept of polymorphism.</p>
+<p>Next they have to discuss: coupling, cohesion, type casting, next instance control flow, static control flow, followed by constructors.</p>
+<h2>Board recap (what he wanted in the notebook)</h2>
+<p>Var-arg: we can override a var-arg method with another var-arg method only. Parent m1(int... x) + child m1(int x) = overloading not overriding; compiler + reference type; output parent child parent. Replace child with m1(int... x) = overriding; output parent child child. Passing one argument does not change that — declared types still differ. Both-normal m1(int) would be real overriding.</p>
+<p>Variables: overriding not applicable. P.x = 888, C.x = 999. Variable resolution always compiler based on reference type, irrespective of static or non-static. All four combinations print 888 999 888.</p>
+<p>Overloading vs overriding (9): names same/same; args different (at least order) / same including order; signatures different/same; return no restriction / same until 1.4, covariant from 1.5; private static final can overload / cannot override; access no restriction / cannot reduce, can increase; throws no restriction / child checked ⇒ parent same or parent-type, unchecked free; resolution compiler+reference / JVM+runtime object; also known as compile-time/static/early vs runtime/dynamic/late. Overloading: check only names + args. Overriding: check everything.</p>
+<p>Exam parent: public void m1(int x) throws IOException. Child: (1) void m1(int) valid overriding; (2) static int m1(long) valid overloading; (3) static void m1(int) CE overriding method is static; (4) void m1(int) throws Exception CE; (5) static abstract void m1(double) CE illegal combination abstract and static.</p>
+<p>Polymorphism: one name, multiple forms. abs(int/long/float) = overloading. marry() Subbalakshmi vs Charmi = overriding. List holding ArrayList/LinkedList/Vector/Stack = parent ref holding child object.</p>
+<p>Parent ref: can hold child; can call only parent methods; child-specific → CE cannot find symbol. Child ref can call both. Use parent ref when exact runtime type unknown (ArrayList.get(0) returns Object; method returning any List). Interview table: know type vs don’t; both methods vs parent-only; particular child vs any child.</p>
+<p>Three pillars: encapsulation = security; polymorphism = flexibility; inheritance = reusability.</p>
+<p>Poly types: static/compile-time/early = overloading and method hiding; dynamic/runtime/late = overriding.</p>
+<p>Internet line (optional): boy starts love with “friendship”, girl ends love with “friendship” (“we are friends forever” on the wedding card). Word same, attitude different. He does not vouch for it.</p>
+<p>Next: coupling, cohesion, type casting, instance control flow, static control flow, constructors.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 57 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 7</td></tr>
+<tr><td>Topic</td><td>overriding, varargs method</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 49m 12s</td></tr>
+<tr><td>Video ID</td><td>SrveBABPMFc</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=SrveBABPMFc</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Reference</th><th>Bound method</th></tr>
+<tr><td>p.m1(10)</td><td>parent</td><td>parent (var-arg)</td></tr>
+<tr><td>c.m1(10)</td><td>child</td><td>child (normal int)</td></tr>
+<tr><td>p1.m1(10)</td><td>parent</td><td>parent (var-arg)</td></tr>
+</table>
+<table>
+<tr><th>Parent x</th><th>Child x</th><th>p.x</th><th>c.x</th><th>p1.x</th></tr>
+<tr><td>instance</td><td>instance</td><td>888</td><td>999</td><td>888</td></tr>
+<tr><td>static</td><td>instance</td><td>888</td><td>999</td><td>888</td></tr>
+<tr><td>instance</td><td>static</td><td>888</td><td>999</td><td>888</td></tr>
+<tr><td>static</td><td>static</td><td>888</td><td>999</td><td>888</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>Overloading</th><th>Overriding</th></tr>
+<tr><td>Method names</td><td>must be same</td><td>must be same</td></tr>
+<tr><td>Argument types</td><td>must be different (at least order)</td><td>must be same including order</td></tr>
+<tr><td>Method signatures</td><td>must be different</td><td>must be same</td></tr>
+<tr><td>Return types</td><td>no restrictions</td><td>must be same until 1.4 version, but from 1.5 version onwards covariant return types also allowed</td></tr>
+<tr><td>Private, static and final methods</td><td>can be overloaded</td><td>cannot be overridden</td></tr>
+<tr><td>Access modifiers</td><td>no restrictions</td><td>we can&#x27;t reduce scope of access modifier, but we can increase the scope</td></tr>
+<tr><td>Throws clause</td><td>no restrictions</td><td>if child class method throws any checked exception, compulsory parent class method should throw the same checked exception or its parent; but no restrictions for unchecked exceptions</td></tr>
+<tr><td>Method resolution</td><td>always takes care by compiler based on reference type</td><td>always takes care by JVM based on runtime object</td></tr>
+<tr><td>It is also known as</td><td>compile-time polymorphism or static polymorphism or early binding</td><td>runtime polymorphism or dynamic polymorphism or late binding</td></tr>
+</table>
+<table>
+<tr><th></th><th>C c = new C();  /  ArrayList l = new ArrayList();</th><th>P p = new C();  /  List l = new ArrayList();</th></tr>
+<tr><td>1. When</td><td>We can use this approach if we know exact runtime type of object</td><td>We can use this approach if we don’t know exact runtime type of object</td></tr>
+<tr><td>2. Methods</td><td>By using child reference we can call both parent class and child class methods *(this is the advantage of this approach)*</td><td>By using parent reference we can call only methods available in the parent class and we can’t call child-specific methods *(this is the disadvantage of this approach — we don’t know the runtime child type)*</td></tr>
+<tr><td>3. What it can hold</td><td>We can use a child reference to hold only particular child class object *(this is the disadvantage of this approach)*</td><td>We can use a parent reference to hold any child class object *(this is the advantage of this approach)*</td></tr>
+</table>
+<table>
+<tr><th>Kind</th><th>Also known as</th><th>Examples</th></tr>
+<tr><td>Static polymorphism</td><td>compile-time polymorphism, early binding</td><td>overloading, method hiding</td></tr>
+<tr><td>Dynamic polymorphism</td><td>runtime polymorphism, late binding</td><td>overriding</td></tr>
+</table>
+</body></html>

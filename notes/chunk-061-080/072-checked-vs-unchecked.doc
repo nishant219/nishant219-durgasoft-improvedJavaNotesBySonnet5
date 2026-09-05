@@ -1,0 +1,912 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>072-checked-vs-unchecked</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 072 — Checked vs unchecked exceptions</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Exception Handling Part-3A || Checked vs Unchecked Exceptions</p>
+<p>Source: real YouTube auto-captions (.transcripts/072-piqjRl-Dngc.txt). ASR decoded in place: checkered / checker exception = checked exception; unchecker exception = unchecked exception; entry room / entryum = interview; compulsor / compat / compar = compulsory / compile-time error; 100% paka / pakka = 100% sure; yet compile time / yet runtime = at compile time / at runtime; ABC.xt / ABC.ext / abc txt = abc.txt; print writer / print of = PrintWriter; pw.print lm / pw.print print len = pw.println; public static vid / v main string array = public static void main(String[] args); SOP / system.out.t print a / print print len = System.out.println; 10 by0 = 10 / 0; slet exception = ServletException; class exception = ClassCastException; index out of bounds = IndexOutOfBoundsException; IIO / I exception / IIO exception = IOException; npo pointer = NullPointerException; V M error = VirtualMachineError; stack of overflow = StackOverflowError; exception initializer error = ExceptionInInitializerError; all ticket / alicate / all ticket missing = hall ticket / HallTicketMissingException; Stephanie tire / Steph = stepney (spare tyre); Vijada = Vijayawada; Shamshapadi = Shamshabad (Hyderabad international airport); travel to DI / go to I = Delhi; Amirad / Amir = Ameerpet; invisilator = invigilator; RP networking exception = pen-not-working exception; whitehead people = white-haired elders; must have be caught = must be caught; keep sing / keep writing = keep copying the board.</p>
+<p>This video is Exception Handling Part 3A. He does not teach the syntax of try-catch or the full meaning of throws here (throws is “I will discuss soon”). He types one live program (PrintWriter → abc.txt), shows the unreported exception compile error, then adds throws FileNotFoundException plus 10 / 0 to prove ArithmeticException is unchecked. The rest is definition, 10th-class / car / function stories, the last-class hierarchy, fully vs partially checked, and a closing oral drill. Do not invent a try-catch solution as if he wrote it on this board.</p>
+<h3>00:05 — Next topic: checked vs unchecked (most valuable)</h3>
+<p>Next topic: checked exception vs unchecked exception. He calls it the most valuable concept. If you understand this, the remaining exception syllabus becomes easy.</p>
+<h3>00:22 — Why you must get the complete picture now</h3>
+<p>In the next sessions: throw / throws. Have you observed — `throws` is purely meant for checked exceptions only. If you do not know what a checked exception is, throws is nothing; you cannot understand it easily.</p>
+<p>Next: customized / user-defined exceptions — that topic also purely talks about checked vs unchecked.</p>
+<p>Make sure: which are checked, which are unchecked, what is checked, what is unchecked. Clear idea required.</p>
+<h3>00:51 — Interview: two compulsory exception questions</h3>
+<p>He asks the room: what is the difference between checked exception and unchecked exception?</p>
+<p>Most valuable, repeatedly asked in the interview. In the exception area, only three questions are compulsory in every interview, and these should be there.</p>
+<p>Top-most important from exception handling, his priority:</p>
+<ol><li>Priority one: what is the difference between checked exception and unchecked exception</li></ol>
+<ol><li>Priority two: what is the difference between `final`, `finally`, `finalize`</li></ol>
+<p>Compulsory you people should have clear clarity.</p>
+<h3>01:47 — The wrong answer everyone gives</h3>
+<p>He asks: what is checked exception? What is unchecked? What is the difference?</p>
+<p>A student-style answer he puts on the table:</p>
+<p>Checked exceptions are the exceptions which occur at compile time. Unchecked exceptions are the exceptions which occur at runtime.</p>
+<p>He repeats it: checked will occur at compile time, unchecked at runtime. Correct or not?</p>
+<p>Majority of the people are going to fail this. Luckily, he says, you are not failing yet — he is about to stop you.</p>
+<pre class='code'>class WrongInterviewLine {
+    public static void main(String[] args) {
+        // WRONG — majority fail in the interview with this line:
+        // &quot;Checked exceptions occur at compile time.
+        //  Unchecked exceptions occur at runtime.&quot;
+        System.out.println(&quot;this statement is 100% pakka wrong&quot;);
+    }
+}
+// prints this statement is 100% pakka wrong</pre>
+<h3>02:21 — 100% pakka wrong: every exception occurs at runtime</h3>
+<p>100% pakka this statement is wrong.</p>
+<p>Whether it is a checked exception or an unchecked exception, every exception should occur at runtime only. There is no chance of occurring any exception at compile time.</p>
+<p>Compile-time errors are syntactical mistakes. What we are getting there are not exceptions.</p>
+<p>So: whether checked or unchecked, compulsory that exception should occur at runtime only. There is no chance of occurring any exception at compile time.</p>
+<p>Then: sir, can you tell what is the checked exception? Take a bit special care to understand this concept.</p>
+<pre class='code'>class EveryExceptionIsRuntime {
+    public static void main(String[] args) {
+        // NOTE he will write again at 42:39:
+        // whether checked or unchecked, every exception occurs at runtime only
+        // compile-time errors = syntactical mistakes, not exceptions
+        System.out.println(&quot;exceptions occur at runtime only&quot;);
+        System.out.println(&quot;compile-time errors are syntactical mistakes&quot;);
+    }
+}
+// prints exceptions occur at runtime only
+// prints compile-time errors are syntactical mistakes</pre>
+<h3>02:57 — 10th class: first real public exams (setup)</h3>
+<p>I hope you people completed 10th class. Direct SCJP? No — 10th completed.</p>
+<p>In your lifetime, first time you wrote public exams is 10th class only. Seventh class is a namesake public exam. Can you please show at least one student who failed in seventh class? Never. But he can show hundreds who failed in 10th. Real public exams are 10th; 7th is namesake.</p>
+<h3>04:03 — Golden days vs neighbors: job and marriage</h3>
+<p>10th class days are golden days — not much responsibility, just go to school, read. Now: number of responsibilities.</p>
+<p>Festival day, travel to native place, the neighbor asks: when will you get the job? Course already completed. Some people did not go to native place for four days / five days because everyone is asking: one year back you completed B.Tech or M.Tech or MCA — when will you get the job? With family members not much problem; with neighbors much problem. Two questions: when will you get the job, when will be your marriage. Until getting the job, some decided they don’t want to go to native place. Some students spend more than 3 years in Ameerpet without going to native place just because of this.</p>
+<p>Compared with these days, 10th class days are golden days: no one asks marriage or job.</p>
+<h3>05:40 — First exam day: panic, including parents</h3>
+<p>10th class exams: first time public exams, everyone is a bit panic, including parents. Most people feel 10th is a life turning point with respect to education.</p>
+<p>That day is the first exam — maybe local language paper. Ready to go, but before starting, at the house any number of formalities by default.</p>
+<h3>06:03 — Formalities: hall ticket, pen, puja, coconut, seven hills</h3>
+<ul><li>ID card / hall ticket and a pen</li></ul>
+<ul><li>Special puja should be required</li></ul>
+<ul><li>Coconut</li></ul>
+<ul><li>Special agreement with the god: if I will get 500 marks, then I will come to seven hills (Tirupati). God will tell: okay I will take care, please continue</li></ul>
+<ul><li>Mother or sister, sentimental kind of thing, by default on first exam day</li></ul>
+<ul><li>Brother or father may come up to the exam hall — at least for the first exam</li></ul>
+<p>Very important stage: 10th class public exams.</p>
+<h3>07:22 — Mother: have you took hall ticket? Cross check</h3>
+<p>You are ready to start. Immediately mother may ask: have you took hall ticket or not? Can you please cross check?</p>
+<p>You check your pocket: yeah I took hall ticket. You showed.</p>
+<h3>08:11 — HallTicketMissingException — problem at runtime</h3>
+<p>If really you are missing hall ticket, when will be the problem? The problem at runtime. Examiner won’t allow inside the exam hall.</p>
+<p>If the mother is going to check at the beginning, at runtime my execution of the program will be smooth.</p>
+<p>Hall ticket missing exception is a very common exception. Mother: there may be a chance of hall-ticket-missing exception; can you please cross check whether you took hall ticket or not.</p>
+<p>If we are checking at the beginning, at runtime execution becomes very smooth.</p>
+<p>He says: single word, don’t give space in the middle — HallTicketMissingException.</p>
+<pre class='code'>class HallTicketMissingExceptionDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;first 10th exam — ready to start&quot;);
+        System.out.println(&quot;mother: have you took hall ticket? cross check&quot;);
+        System.out.println(&quot;pocket check — yes I took hall ticket&quot;);
+        // if really missing: problem at RUNTIME — examiner won&#x27;t allow inside
+        System.out.println(&quot;HallTicketMissingException is a very common exception&quot;);
+    }
+}
+// prints first 10th exam — ready to start
+// prints mother: have you took hall ticket? cross check
+// prints pocket check — yes I took hall ticket
+// prints HallTicketMissingException is a very common exception</pre>
+<p>Classroom name only for the story type — not in the Java API. The Java type he will compile next is FileNotFoundException.</p>
+<h3>08:40 — PenNotWorkingException — extra pens</h3>
+<p>You conveyed to mother: I took hall ticket, no problem. Second question: while writing exam there may be a chance of pen not working. Pen not working exception is a very common exception. Do you have extra pen or not? Can you please check?</p>
+<p>Immediately you show four pens: yes I’m taking extra four pens, not required to worry.</p>
+<p>If the mother will check all these things at the beginning, at runtime my execution of the program will be very smooth.</p>
+<pre class='code'>class PenNotWorkingExceptionDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;mother: pen not working is very common&quot;);
+        System.out.println(&quot;do you have extra pen? check&quot;);
+        System.out.println(&quot;show four pens — not required to worry&quot;);
+        System.out.println(&quot;PenNotWorkingException&quot;);
+    }
+}
+// prints mother: pen not working is very common
+// prints do you have extra pen? check
+// prints show four pens — not required to worry
+// prints PenNotWorkingException</pre>
+<h3>09:07 — Compiler plays the mother role — what is a checked exception</h3>
+<p>The exceptions which are checked by mother for smooth execution of the program at runtime — these exceptions are by default considered checked exceptions.</p>
+<p>Who is going to play mother role here? Compiler.</p>
+<p>The exceptions which are checked by compiler for smooth execution of the program at runtime. These exceptions are by default considered as checked exceptions.</p>
+<p>He repeats that sentence so the room can say it.</p>
+<pre class='code'>class CompilerPlaysMother {
+    public static void main(String[] args) {
+        // BOARD meaning (he writes the long form at 18:52):
+        // The exceptions which are checked by compiler
+        // for smooth execution of the program at runtime
+        // are called checked exceptions.
+        System.out.println(&quot;compiler = mother&quot;);
+        System.out.println(&quot;checked = checked by compiler for smooth runtime&quot;);
+    }
+}
+// prints compiler = mother
+// prints checked = checked by compiler for smooth runtime</pre>
+<h3>09:55 — Board program: `PrintWriter` writes `hello` to `abc.txt`</h3>
+<p>Let me write a simple program so you can get away what is the checked exception.</p>
+<pre class='code'>class Test, public static void main(String[] args).</pre>
+<p>Target: write hello to `abc.txt`.</p>
+<p>PrintWriter is available inside `java.io` — import java.io also he is taking.</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+        pw.println(&quot;hello&quot;);
+    }
+}
+// CE: unreported exception java.io.FileNotFoundException; must be caught or declared to be thrown</pre>
+<p>He also mentions an SOP statement and then says that SOP is anyway not required for this target — the target is only write hello to the file. The compile error below is about PrintWriter, not about a println on the console.</p>
+<h3>11:06 — Compiler: I can’t compile until you show how you handle it</h3>
+<p>He asks compiler: can you please compile this code?</p>
+<p>Immediately compiler gives left and right: I can’t compile this code. What is the problem?</p>
+<p>You are trying to write hello to abc.txt. At runtime there may be a chance abc.txt may not be available, and there may be a chance of `FileNotFoundException`.</p>
+<p>It doesn’t mean compulsory that exception is going to occur. There may be a chance. If FileNotFoundException occurs, how you are going to handle — let me know, then only I can compile.</p>
+<p>Compiler is telling very decently: boss there is a possibility; if you are not preparing mentally how to handle, at runtime you may face a big problem. First show how you are going to handle, then only I can compile.</p>
+<h3>12:11 — Exact compile-time error (read it)</h3>
+<p>Exact compile-time error. Observe:</p>
+<p>unreported exception `java.io.FileNotFoundException` must be caught or declared to be thrown.</p>
+<p>That is the compile-time error by default we are going to get.</p>
+<p>Read it: unreported exception java.io.FileNotFoundException must be caught or declared to be thrown.</p>
+<p>It doesn’t mean `FileNotFoundException` occurs. You didn’t report about FileNotFoundException. There is a possibility — you should catch or declare to be thrown. That is the compile-time error.</p>
+<pre class='code'>import java.io.*;
+
+class UnreportedExceptionMessage {
+    public static void main(String[] args) {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+        pw.println(&quot;hello&quot;);
+        // compiler is NOT saying FileNotFoundException occurs
+        // compiler is saying: UNREPORTED — you didn&#x27;t report about this possibility
+    }
+}
+// CE: unreported exception java.io.FileNotFoundException; must be caught or declared to be thrown</pre>
+<h3>13:21 — Same sentence in mother language</h3>
+<p>There may be a chance of hall-ticket-missing exception. If it is going to come, how you can handle — first let me know, then only I’m allow you to go for the exam.</p>
+<p>There may be a chance of pen-not-working exception. If it occurs, how you can handle — let me show the solution, then I’m allow you — because these are very common problems.</p>
+<p>There may be a chance of FileNotFoundException. If it occurs, how you can handle — let me know, then only I can compile. Compiler is going to tell that.</p>
+<h3>13:53 — Frequently occurred → compiler objects → checked</h3>
+<p>For frequently occurred exceptions, compiler will object whether you are handling or not. These type of exceptions are by default considered checked exceptions.</p>
+<p>Definition again: the exceptions which are checked by compiler for smooth execution of the program at runtime are called checked exceptions.</p>
+<h3>14:16 — Live compile of `Test.java` (one-minute pause)</h3>
+<p>He takes one minute and types the same program again: class Test, PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;), pw.println(&quot;hello&quot;), import java.io, save as `test.java`.</p>
+<p>javac Test.java (he says “Java C tester on Java”). Compiler: DA, there may be a chance of FileNotFoundException. How you can handle first? Let me know. Then only I can compile.</p>
+<p>Read this compile error (he reads it off the screen):</p>
+<p>unreported exception `java.io.FileNotFoundException` must be caught or declared to be thrown.</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+        pw.println(&quot;hello&quot;);
+    }
+}
+// CE: unreported exception java.io.FileNotFoundException; must be caught or declared to be thrown</pre>
+<p>Same point: it doesn’t mean `FileNotFoundException` occurs.</p>
+<h3>16:05 — If there is any chance of checked: try-catch or throws, or CE</h3>
+<p>What is checked exception? The exceptions which are checked by compiler for smooth execution of the program at runtime. These are by default considered checked exceptions.</p>
+<p>In our program if there is any chance of rising checked exception, compulsory programmer should handle — either by try-catch or by `throws` keyword (I will discuss anyway).</p>
+<ul><li>must be caught means: use try-catch</li></ul>
+<ul><li>declared to be thrown means: you have to use `throws` keyword</li></ul>
+<p>We should handle, otherwise the code won’t compile — compile-time error by default. It doesn’t mean FileNotFoundException occurs.</p>
+<p>He does not write a try-catch on this board. He only names the two options from the error message.</p>
+<pre class='code'>import java.io.*;
+
+class MustBeCaughtOrDeclared {
+    public static void main(String[] args) {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+        pw.println(&quot;hello&quot;);
+        // must be caught  = try-catch   (he will discuss later)
+        // declared thrown = throws      (he types throws at 23:35)
+    }
+}
+// CE: unreported exception java.io.FileNotFoundException; must be caught or declared to be thrown</pre>
+<h3>16:43 — Why people fail by seeing that CE line</h3>
+<p>Most of the people, by seeing this line — unreported exception java.io.FileNotFoundException must be caught or declared to be thrown — are going to fail:</p>
+<p>Exceptions which occur at compile time are called checked. Exceptions which occur at runtime are called unchecked. ArithmeticException never comes at compile time that’s why it is unchecked. FileNotFoundException occurs at compile time that’s why it is checked.</p>
+<p>No. Here the compiler is not telling FileNotFoundException occurs. Compiler is telling: there may be a chance of FileNotFoundException. You didn’t report about this exception. Observe the terminology.</p>
+<p>Can you tell what is checked exception? The exceptions which are checked by compiler for smooth execution of the program at runtime. These are by default considered as checked exceptions.</p>
+<p>In our program if there is any chance of rising checked exception, compulsory we should handle — either by try-catch or by throws — otherwise the code won’t compile. Compile-time error we are getting.</p>
+<pre class='code'>class CompilerDidNotSayItOccurs {
+    public static void main(String[] args) {
+        // CE line is NOT: FileNotFoundException occurs at compile time
+        // CE line IS:     unreported exception ... must be caught or declared to be thrown
+        System.out.println(&quot;unreported = you didn&#x27;t report the possibility&quot;);
+        System.out.println(&quot;there may be a chance — not: it occurs now&quot;);
+    }
+}
+// prints unreported = you didn&#x27;t report the possibility
+// prints there may be a chance — not: it occurs now</pre>
+<h3>17:53 — Examples of checked exceptions</h3>
+<p>Can you please give an example for checked exception?</p>
+<p>In our scope whatever we discussed:</p>
+<ol><li>HallTicketMissingException — checked (very common)</li></ol>
+<ol><li>PenNotWorkingException — checked (very common)</li></ol>
+<ol><li>`FileNotFoundException` — checked</li></ol>
+<ol><li>`ServletException`, `RemoteException`, `SQLException`</li></ol>
+<p>There are several. Wherever `throws` followed by some exception — all these predefined exceptions are checked exceptions only. throws followed by something is there — it is the checked exception only.</p>
+<pre class='code'>class CheckedExamplesHeNamed {
+    public static void main(String[] args) {
+        System.out.println(&quot;HallTicketMissingException&quot;); // classroom name, not in API
+        System.out.println(&quot;PenNotWorkingException&quot;);     // classroom name, not in API
+        System.out.println(&quot;FileNotFoundException&quot;);
+        System.out.println(&quot;ServletException&quot;);
+        System.out.println(&quot;RemoteException&quot;);
+        System.out.println(&quot;SQLException&quot;);
+        System.out.println(&quot;throws followed by X  =&gt;  X is checked&quot;);
+    }
+}
+// prints HallTicketMissingException
+// prints PenNotWorkingException
+// prints FileNotFoundException
+// prints ServletException
+// prints RemoteException
+// prints SQLException
+// prints throws followed by X  =&gt;  X is checked</pre>
+<h3>18:29 — Board heading: checked vs unchecked (five stars)</h3>
+<p>Keeping: checked exceptions versus unchecked exceptions. The most valuable concept — at least five stars you have to give.</p>
+<p>Long copy pause. He dictates the checked definition many times, slowly.</p>
+<h3>18:52 — Board dictation: what is a checked exception</h3>
+<p>Keep writing.</p>
+<p>The exceptions which are checked by compiler for smooth execution of the program are called checked exceptions.</p>
+<p>Example (single word, don’t give space in the middle):</p>
+<ul><li>HallTicketMissingException</li></ul>
+<ul><li>PenNotWorkingException</li></ul>
+<ul><li>FileNotFoundException etc.</li></ul>
+<pre class='code'>class CheckedExceptionBoard {
+    public static void main(String[] args) {
+        // BOARD:
+        // The exceptions which are checked by compiler
+        // for smooth execution of the program
+        // are called checked exceptions.
+        //
+        // Example: HallTicketMissingException
+        //          PenNotWorkingException
+        //          FileNotFoundException etc.
+        System.out.println(&quot;checked = checked by compiler for smooth execution&quot;);
+    }
+}
+// prints checked = checked by compiler for smooth execution</pre>
+<h3>20:40 — Board dictation: if chance of checked, handle or CE</h3>
+<p>In our program if there is a chance of occurring checked exception, compulsory we should handle either by try-catch or by throws keyword, otherwise the code won’t compile.</p>
+<p>Compile-time, boss: it doesn’t mean FileNotFoundException occur. Boss there is a possibility, there is a chance — where you are handling first let me know, then only I can compile.</p>
+<p>Keep writing:</p>
+<p>In our program, if there is a chance of rising checked exception, then compulsory we should handle that checked exception (either by try-catch or by `throws` keyword) otherwise we will get compile-time error.</p>
+<p>throws we will discuss in the future — not required to worry now.</p>
+<p>What is checked exception? What is the meaning? Is it clear for all of you?</p>
+<pre class='code'>class HandleCheckedOrCE {
+    public static void main(String[] args) {
+        // BOARD:
+        // In our program if there is a chance of rising checked exception
+        // then compulsory we should handle that checked exception
+        // (either by try-catch or by throws keyword)
+        // otherwise we will get compile time error.
+        System.out.println(&quot;chance of checked =&gt; handle (try-catch or throws) or CE&quot;);
+    }
+}
+// prints chance of checked =&gt; handle (try-catch or throws) or CE</pre>
+<h3>22:35 — Unchecked: some exceptions compiler does not check</h3>
+<p>There are some exceptions which are not checked by compiler. Maybe very rarely occurred exceptions, or until runtime I don’t know.</p>
+<p>Those exceptions are by default considered as unchecked. Compiler not checked these exceptions — pass — whether you are handling or not.</p>
+<p>The exceptions which are not checked by compiler whether the programmer handling or not. These exceptions are by default considered as unchecked exceptions.</p>
+<h3>23:09 — Same `Test` + `10 / 0` + `throws FileNotFoundException`</h3>
+<p>Same program he is taking. Also System.out.println(10 / 0).</p>
+<p>He asks compiler: can you please compile this code?</p>
+<p>Immediately compiler will give left and right only about: there may be a chance of rising FileNotFoundException. How you can handle?</p>
+<p>What he did: he kept `throws FileNotFoundException`.</p>
+<p>Will the code compile or not? Yes. Compiler happily the code is going to compile even though there is a chance of raising `ArithmeticException`. 10 / 0 — there may be a chance of raising ArithmeticException, but compiler won’t object. Happily compiler is going to compile, because compiler will check only FileNotFoundException but not ArithmeticException.</p>
+<p>ArithmeticException: checked or unchecked? Unchecked exception.</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws FileNotFoundException {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+        pw.println(&quot;hello&quot;);
+        System.out.println(10 / 0);
+    }
+}
+// compiles — compiler objects only about FileNotFoundException
+// runtime: ArithmeticException</pre>
+<p>He says: I will explain what is the need of throws later — just showing the basic idea / purpose.</p>
+<h3>24:25 — Live: compiles; run gets `ArithmeticException`</h3>
+<p>He types System.out.println(10 / 0). Compiler is always going to object about FileNotFoundException — unreported exception — so he takes throws FileNotFoundException.</p>
+<p>Compile: happily the code compiles fine. There may be a chance of ArithmeticException, but why is compiler not objecting? Because compiler will check only file-not-found, not arithmetic. ArithmeticException is unchecked.</p>
+<p>Let me run. Really at runtime we got `ArithmeticException`, but compiler unable to identify this exception. Even though we are getting at runtime arithmetic, compiler unable to identify. Such type of exceptions are by default considered unchecked exceptions.</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws FileNotFoundException {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+        pw.println(&quot;hello&quot;);
+        System.out.println(10 / 0);
+    }
+}
+// compiles
+// runtime: ArithmeticException
+class ArithmeticExceptionIsUnchecked {
+    public static void main(String[] args) {
+        System.out.println(10 / 0);
+    }
+}
+// compiles — compiler does not ask how you handle ArithmeticException
+// runtime: ArithmeticException</pre>
+<p>He did not type the second class on the board. The live file is still Test with PrintWriter + throws FileNotFoundException + 10 / 0. The tiny class is the same 10/0 rule in isolation: unchecked means the compiler does not object.</p>
+<p>There are some exceptions which are not checked by compiler whether programmer handling or not — these are unchecked.</p>
+<h3>25:46 — Unchecked examples; mother still checks hall ticket</h3>
+<p>Example for unchecked: `ArithmeticException`, `NullPointerException`, `ClassCastException`.</p>
+<p>Best example: mother can ask — there may be a chance of hall-ticket-missing exception. Have you took hall ticket? Cross check. If you miss hall ticket, compulsory you should be aware how to get duplicate hall ticket. If hall-ticket-missing exception, you can handle — let me know — then I can compile.</p>
+<p>If you don’t know how to handle: no problem, 20 rupees you can pay in the office, then they will issue a duplicate hall ticket. You are not required to be panic. If you know that process, at runtime if really you miss the ticket — no problem — you are in a position to handle that situation.</p>
+<p>Pen not working: already duplicate pen; with that I can able to run the show.</p>
+<p>Mother can ask hall-ticket-missing, pen-not-working — maybe a chance.</p>
+<pre class='code'>class DuplicateHallTicketFor20Rupees {
+    public static void main(String[] args) {
+        System.out.println(&quot;HallTicketMissingException — how will you handle?&quot;);
+        System.out.println(&quot;20 rupees in the office — duplicate hall ticket&quot;);
+        System.out.println(&quot;PenNotWorkingException — already extra pen&quot;);
+    }
+}
+// prints HallTicketMissingException — how will you handle?
+// prints 20 rupees in the office — duplicate hall ticket
+// prints PenNotWorkingException — already extra pen</pre>
+<h3>27:02 — Exam started: bomb blast — mother never asks</h3>
+<p>Exam started. You are writing the paper.</p>
+<p>Meanwhile, just beside you, there’s a big bomb blast happening. Then how you can handle?</p>
+<p>If the mother can ask this type of question to the exam student — never. Because: there may be a chance of bomb blast exception in the exam hall, maybe a chance, but how many times is it possible? Out of one crore, maybe one time. Very rarely occurred. Mother is not going to check; not required to check.</p>
+<p>In India as of today, in the exam hall bomb blast not reported. Maybe in the future I don’t know. If we are keeping bomb in the classroom it may blast — bomb doesn’t aware whether it is the temple or the masjid or the classroom — wherever you are keeping, blast is going to happen. Still the mother never going to ask.</p>
+<p>By mistake if the mother asked: if bomb-blast exception how you can handle? Then while writing, my mind is always nearby — is there any bomb or not — definitely I will be the failed student in that exam.</p>
+<p>That’s why there are some exceptions which are not checked by compiler, because maybe rarely occurred, or maybe until runtime we don’t know. Such type of exceptions are by default considered unchecked exceptions.</p>
+<p>He says: single word, don’t give space — BombBlastException.</p>
+<pre class='code'>class BombBlastExceptionDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;exam started — writing the paper&quot;);
+        // mother NEVER asks: if bomb blast how will you handle?
+        // out of 1 crore maybe one time — as of today not reported in exam hall
+        System.out.println(&quot;BombBlastException — rarely occurred — unchecked&quot;);
+    }
+}
+// prints exam started — writing the paper
+// prints BombBlastException — rarely occurred — unchecked</pre>
+<h3>28:38 — Oral quiz on the stories</h3>
+<ul><li>BombBlastException — checked or unchecked? Unchecked</li></ul>
+<ul><li>HallTicketMissingException — Checked</li></ul>
+<ul><li>PenNotWorkingException — Checked</li></ul>
+<ul><li>`ArithmeticException` — Unchecked</li></ul>
+<p>Clear for all of you at this point.</p>
+<pre class='code'>class StoryQuiz {
+    public static void main(String[] args) {
+        System.out.println(&quot;BombBlastException — unchecked&quot;);
+        System.out.println(&quot;HallTicketMissingException — checked&quot;);
+        System.out.println(&quot;PenNotWorkingException — checked&quot;);
+        System.out.println(&quot;ArithmeticException — unchecked&quot;);
+    }
+}
+// prints BombBlastException — unchecked
+// prints HallTicketMissingException — checked
+// prints PenNotWorkingException — checked
+// prints ArithmeticException — unchecked</pre>
+<h3>29:07 — Board dictation: what is an unchecked exception</h3>
+<p>Keep writing. He repeats each fragment many times for copy.</p>
+<p>The exceptions which are not checked by compiler whether programmer handling or not, such type of exceptions are called unchecked exceptions.</p>
+<p>Example:</p>
+<ul><li>ArithmeticException</li></ul>
+<ul><li>BombBlastException etc.</li></ul>
+<p>(Single word, don’t give space in the middle.)</p>
+<p>Terminology is very very clear. What is checked, what is unchecked. Still he adds one or two examples so you get much much clarity.</p>
+<pre class='code'>class UncheckedExceptionBoard {
+    public static void main(String[] args) {
+        // BOARD:
+        // The exceptions which are not checked by compiler
+        // whether programmer handling or not,
+        // such type of exceptions are called unchecked exceptions.
+        //
+        // Example: ArithmeticException
+        //          BombBlastException etc.
+        System.out.println(&quot;unchecked = compiler does not check handling&quot;);
+    }
+}
+// prints unchecked = compiler does not check handling</pre>
+<h3>30:59 — Vijayawada 4 a.m. by car: father checks diesel</h3>
+<p>Assume you required to travel to Vijayawada. Early morning at 4:00 you have to start by car. You are alone traveling. Ready to start. Father also came down from the house, just to give the send-off. Early morning 4:00 father also woke up, came near to the car.</p>
+<p>Immediately father may ask a number of questions.</p>
+<p>Can you please cross check whether diesel is there or not? If diesel not there, don’t depend on highway. Better to within the city only, better to full tank. Otherwise you may face a problem at highway — maybe a chance if the petrol bunks got closed, then you will be in the trouble.</p>
+<p>If diesel not there, the problem is at runtime. If father is going to check at the beginning, at runtime my execution of the program will become very smooth.</p>
+<p>Diesel completed exception / diesel not available exception is a checked exception, because it is a very common problem.</p>
+<pre class='code'>class DieselNotAvailableExceptionDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;4:00 start alone by car to Vijayawada&quot;);
+        System.out.println(&quot;father: cross check diesel — full tank in the city&quot;);
+        System.out.println(&quot;don&#x27;t depend on highway if bunks closed&quot;);
+        System.out.println(&quot;DieselNotAvailableException — very common — checked&quot;);
+    }
+}
+// prints 4:00 start alone by car to Vijayawada
+// prints father: cross check diesel — full tank in the city
+// prints don&#x27;t depend on highway if bunks closed
+// prints DieselNotAvailableException — very common — checked</pre>
+<h3>32:33 — Stepney / spare tyre (checked)</h3>
+<p>Second: have you took stepney (spare tyre) or not? Can you please cross check? While traveling, tyre got punctured — then it’s very horrible. If it is the bike, no problem; if it is the car, viable? If the stepney is not there, then what we have to do? Leave the car there, travel to near city, go and come back — until that whether the car is secured or not — a number of problems.</p>
+<p>That’s why: can you please cross check whether stepney is there or not? Yes it is there, not required to worry.</p>
+<p>If I’m not checking at the beginning, problem is at runtime.</p>
+<pre class='code'>class StepneyNotAvailableExceptionDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;father: have you took stepney or not? cross check&quot;);
+        System.out.println(&quot;car tyre punctured without spare — leave the car — horrible&quot;);
+        System.out.println(&quot;StepneyNotAvailableException — common — checked&quot;);
+    }
+}
+// prints father: have you took stepney or not? cross check
+// prints car tyre punctured without spare — leave the car — horrible
+// prints StepneyNotAvailableException — common — checked</pre>
+<h3>33:20 — Mineral water from the house (still father checking)</h3>
+<p>Don’t take water anywhere outside. Better to take mineral water bottle only, or please bring the bottle from the house only.</p>
+<p>If the father is going to check, at runtime I won’t face any problem.</p>
+<p>These kind of things the father can check — by default considered checked exceptions.</p>
+<p>It doesn’t mean tyre-punctured exception occurs. It not occurs — maybe a chance. Can you please prepare mentally with the stepney. Diesel-complete exception not happen — maybe a chance — prepare mentally how to handle.</p>
+<p>At the beginning if the father is going to check, at runtime my execution of the program will be very smooth. Such type of exceptions are checked exceptions.</p>
+<pre class='code'>class MineralWaterFromHouse {
+    public static void main(String[] args) {
+        System.out.println(&quot;father: don&#x27;t take water outside — bottle from the house&quot;);
+        System.out.println(&quot;father checks at beginning =&gt; runtime is smooth&quot;);
+        System.out.println(&quot;does not mean the exception occurs — maybe a chance&quot;);
+    }
+}
+// prints father: don&#x27;t take water outside — bottle from the house
+// prints father checks at beginning =&gt; runtime is smooth
+// prints does not mean the exception occurs — maybe a chance</pre>
+<h3>34:15 — AccidentException — father must not ask (unchecked)</h3>
+<p>Suppose father may ask: while traveling, suddenly some accident happened, you gone, then how you can…?</p>
+<p>Father is going to ask that early morning 4:00 just before starting? If father can ask, even we can’t see the father — we will give left and right — because the father can’t ask this one.</p>
+<p>But there may be a chance: every day several people are dying in accidents, maybe a chance. But the father should not ask, because very rarely occurred exceptions.</p>
+<p>Accident exception — checked or unchecked? Unchecked.</p>
+<p>If it is a checked exception, why these many accidents are happening? It is not checked. We can’t expect that; accidentally it is happening. This type of thing is unchecked exception.</p>
+<p>You have to get complete picture in your mind; then the remaining things will become easy.</p>
+<pre class='code'>class AccidentExceptionDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;4:00 send-off — father must NOT ask accident-how-to-handle&quot;);
+        System.out.println(&quot;people die in accidents every day — maybe a chance&quot;);
+        System.out.println(&quot;AccidentException — rarely / unexpected — unchecked&quot;);
+    }
+}
+// prints 4:00 send-off — father must NOT ask accident-how-to-handle
+// prints people die in accidents every day — maybe a chance
+// prints AccidentException — rarely / unexpected — unchecked</pre>
+<h3>35:16 — House function: father to Delhi, you lead, grandfather monitors</h3>
+<p>One more last example, then he finishes this terminology.</p>
+<p>Assume in your house there is a big function scheduled in another one week. Father is responsible to arrange all the activities. Suddenly father got some urgent work. He required to travel somewhere. He will come back only on function day.</p>
+<p>Father called you: I require to travel to Delhi. You are responsible. Take the responsibility for all these function activities. This is money — if you want, contact accountant, accountant will provide how much you required, no problem. Take each and everything very much care — almost I invited several guests, maybe a chance of problem.</p>
+<p>First time in your life he gave the opportunity for leading this activity. You felt very happy: dad not required to worry, happily you can go, I will take care each and everything. You gave the word. Father felt very happy.</p>
+<p>What father did: he called his father — your grandfather. Dad, I give complete responsibility for my kid. He is not having experience whether he’s doing activities properly or not. Can you please monitor. If he’s not doing any activity properly, please guide. Still if he’s not listening, then make a phone call to me, I will give left and right to this kid.</p>
+<p>For monitoring purpose, father arranged his father at the corner. In our functions also, white-haired people are always sitting in the corner and observing the things, because they have experience.</p>
+<p>Grandfather observing: you got first time in your life leadership activity, almost you are flying in the air — do that, do this. Grandfather felt very happy: yes this kid is doing good.</p>
+<p>Grandfather = compiler (monitor in the corner). You = programmer. Father = the one who assigned the work.</p>
+<pre class='code'>class GrandfatherMonitorsTheFunction {
+    public static void main(String[] args) {
+        System.out.println(&quot;father to Delhi — kid leads the function&quot;);
+        System.out.println(&quot;grandfather sits in the corner and monitors&quot;);
+        System.out.println(&quot;if not proper: guide; still not listening: phone the father&quot;);
+        System.out.println(&quot;grandfather = compiler&quot;);
+    }
+}
+// prints father to Delhi — kid leads the function
+// prints grandfather sits in the corner and monitors
+// prints if not proper: guide; still not listening: phone the father
+// prints grandfather = compiler</pre>
+<h3>38:01 — Exactly 452 invitation cards</h3>
+<p>After some time grandfather: Durga can you please come? Have you preparing the dinner all the things properly? Oh perfect. Now I have one doubt: for how many members you are preparing the dinner?</p>
+<p>Immediately: exactly 452 members, grandpa.</p>
+<p>Grandfather gave left and right: exactly 452 members — how you got that number?</p>
+<p>Because I distributed exactly 452 invitation cards. That’s why I’m expecting 452 members.</p>
+<h3>39:19 — InsufficientDinnerException (checked) — prepare for 500</h3>
+<p>Grandpa: suppose you give invitation card to your friend; while coming your friend bring his parents also. Then are you going to stop — this invitation only for you but not for your parents? I can’t.</p>
+<p>Then there may be a chance of count more than 452. Then insufficient dinner exception occurs. There is a possibility. In the functions it is a very common problem. If a minimum 100 functions are happening, 70 functions this type of problem is there.</p>
+<p>How you can handle? Let me know. Grandfather reasonably correct.</p>
+<p>Solution: 452 members right? Prepare for 500 members. If 500, okay; if more than that, max 500, then no problem.</p>
+<p>Immediately instructed catering: not 452, 500 members, can you please prepare dinner.</p>
+<pre class='code'>class InsufficientDinnerExceptionDemo {
+    public static void main(String[] args) {
+        int cardsIssued = 452;
+        int preparedFor = 500; // grandfather: common problem — prepare extra
+        System.out.println(&quot;cards issued &quot; + cardsIssued);
+        System.out.println(&quot;InsufficientDinnerException is very common — checked&quot;);
+        System.out.println(&quot;handle: prepare for &quot; + preparedFor + &quot; members&quot;);
+    }
+}
+// prints cards issued 452
+// prints InsufficientDinnerException is very common — checked
+// prints handle: prepare for 500 members</pre>
+<h3>40:21 — Function day: 487 came — program can handle</h3>
+<p>Runtime: function started. That day 487 members came. Can you tell: is my program in a position to handle or not? Yes.</p>
+<p>That’s what: if compiler is going to check at the beginning, happily my program will be smooth.</p>
+<p>Insufficient dinner exception — checked or unchecked? Checked exception.</p>
+<pre class='code'>class FunctionDay487 {
+    public static void main(String[] args) {
+        int preparedFor = 500;
+        int came = 487;
+        if (came &lt;= preparedFor) {
+            System.out.println(&quot;487 came, prepared 500 — program can handle&quot;);
+        }
+    }
+}
+// prints 487 came, prepared 500 — program can handle</pre>
+<h3>40:50 — Short-circuit / fire-accident (unchecked)</h3>
+<p>After some time grandpa called: can you please come? You went for colorful lighting all these things. There may be a chance of short circuit exception occurs, all the people who came for the function got died. How you can handle?</p>
+<p>Is the grandfather can ask this type of thing? By mistake if grandpa asked this, I will give left and right to grandpa and intimate to father: grandfather is asking this one, what I have to do.</p>
+<p>Fire accident exception maybe a chance in the functions, maybe a chance — but how many times? Out of one crore, one or two times. Such type of rarely occurred exceptions we are not required to check. These kind of exceptions are by default unchecked exceptions.</p>
+<p>Complete examples covered. In your mind: what is checked, what is unchecked — clear. Advantage of compiler checking some exception — you also know (runtime becomes smooth).</p>
+<pre class='code'>class ShortCircuitExceptionDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;colorful lighting — grandpa must NOT ask short-circuit deaths&quot;);
+        System.out.println(&quot;FireAccidentException / ShortCircuitException&quot;);
+        System.out.println(&quot;out of 1 crore one or two times — unchecked&quot;);
+    }
+}
+// prints colorful lighting — grandpa must NOT ask short-circuit deaths
+// prints FireAccidentException / ShortCircuitException
+// prints out of 1 crore one or two times — unchecked</pre>
+<h3>41:54 — Spoken summary (both definitions)</h3>
+<p>Checked exception: the exceptions which are checked by compiler for smooth execution of the program at runtime are called checked exception.</p>
+<p>Example: FileNotFoundException, HallTicketMissingException, PenNotWorkingException.</p>
+<p>Unchecked exception: the exceptions which are not checked by compiler whether programmer handling or not. These are by default considered unchecked exception.</p>
+<p>BombBlastException, ArithmeticException, NullPointerException. These are unchecked exceptions.</p>
+<p>Clear for all of you?</p>
+<pre class='code'>class SpokenSummary {
+    public static void main(String[] args) {
+        System.out.println(&quot;checked: FileNotFoundException, HallTicketMissingException, PenNotWorkingException&quot;);
+        System.out.println(&quot;unchecked: BombBlastException, ArithmeticException, NullPointerException&quot;);
+    }
+}
+// prints checked: FileNotFoundException, HallTicketMissingException, PenNotWorkingException
+// prints unchecked: BombBlastException, ArithmeticException, NullPointerException</pre>
+<h3>42:39 — Note 1: whether checked or unchecked, occurs at runtime only</h3>
+<p>First point: whether the exception is checked or unchecked, compulsory this exception should occur at runtime only. There is no chance of occurring any exception at compile time. Compile time = syntactical mistakes.</p>
+<p>Keep writing. Note. He repeats every fragment.</p>
+<p>Whether it is checked or unchecked, every exception occurs at runtime only. There is no chance of occurring any exception at compile time.</p>
+<p>Point number one is clear.</p>
+<pre class='code'>class Note1EveryExceptionAtRuntime {
+    public static void main(String[] args) {
+        // BOARD NOTE 1:
+        // Whether it is checked or unchecked,
+        // every exception occurs at runtime only.
+        // There is no chance of occurring any exception at compile time.
+        System.out.println(&quot;checked or unchecked =&gt; runtime only&quot;);
+        System.out.println(&quot;no exception occurs at compile time&quot;);
+    }
+}
+// prints checked or unchecked =&gt; runtime only
+// prints no exception occurs at compile time</pre>
+<h3>44:09 — Last class hierarchy back on the board</h3>
+<p>Second one — listen. In the last session somewhere I took exception hierarchy. We remember.</p>
+<p>Which class acts as the root? `Throwable`.</p>
+<p>Throwable contains `Exception` and second class `Error`.</p>
+<p>Under Exception several child classes. `RuntimeException`. For RuntimeException: ArithmeticException, NullPointerException, ClassCastException, IndexOutOfBoundsException … several.</p>
+<p>Here `IOException` is there. Same diagram only. IOException child classes: `EOFException`, `FileNotFoundException`, `InterruptedIOException`.</p>
+<p>Next: `InterruptedException` — child of Exception only. `ServletException`, `RemoteException`, dot dot dot. Several. We covered this diagram somewhere in the last class.</p>
+<p>For Error also several: `VirtualMachineError`, `StackOverflowError`, `OutOfMemoryError`. Next: `ExceptionInInitializerError`, `AssertionError`, dot dot dot.</p>
+<p>Now among all, which are checked and which are unchecked — compulsory you should just observe. Think a bit logically. Don’t remember the conclusion blindly.</p>
+<pre class='code'>class ExceptionHierarchyBoard {
+    public static void main(String[] args) {
+        // BOARD (same diagram as last class):
+        // Throwable
+        //   Exception
+        //     RuntimeException
+        //       ArithmeticException
+        //       NullPointerException
+        //       ClassCastException
+        //       IndexOutOfBoundsException
+        //     IOException
+        //       EOFException
+        //       FileNotFoundException
+        //       InterruptedIOException
+        //     InterruptedException
+        //     ServletException
+        //     RemoteException
+        //   Error
+        //     VirtualMachineError
+        //       StackOverflowError
+        //       OutOfMemoryError
+        //     ExceptionInInitializerError
+        //     AssertionError
+        System.out.println(&quot;root = Throwable; children = Exception and Error&quot;);
+    }
+}
+// prints root = Throwable; children = Exception and Error</pre>
+<h3>45:57 — Errors: not our program; lack of system resources; non-recoverable</h3>
+<p>Have you observed Error. In the last class: most of the times errors are not caused by our program. These are due to lack of system resources. Errors are non-recoverable.</p>
+<p>If `OutOfMemoryError` occurs, being a programmer we can’t do anything. The program is going to be shut down. The program will be terminated abnormally. Being a programmer we can’t do anything.</p>
+<pre class='code'>class OutOfMemoryErrorIsNotOurJob {
+    public static void main(String[] args) {
+        // if OutOfMemoryError occurs: programmer can&#x27;t do anything
+        // program shut down / terminated abnormally
+        // due to lack of system resources — non-recoverable
+        System.out.println(&quot;Error = lack of system resources, non-recoverable&quot;);
+    }
+}
+// prints Error = lack of system resources, non-recoverable</pre>
+<h3>46:36 — Compiler must not ask how you handle `OutOfMemoryError`</h3>
+<p>If the compiler can ask: was there may be a chance of OutOfMemoryError, how you can handle, can you please let me know? If the compiler will ask like this, I will give left and right.</p>
+<p>Handling error is my responsibility? No. I’m not responsible for that. These are due to lack of system resources. Being a programmer, what I can do? It’s not my job. It’s not my responsibility.</p>
+<p>That’s why these are checked or unchecked? Unchecked. Compiler should not ask how you can handle the error.</p>
+<pre class='code'>class CompilerMustNotAskAboutError {
+    public static void main(String[] args) {
+        // compiler must NOT ask: OutOfMemoryError — how will you handle?
+        System.out.println(&quot;handling Error is not the programmer&#x27;s job&quot;);
+        System.out.println(&quot;Error and child classes are unchecked&quot;);
+    }
+}
+// prints handling Error is not the programmer&#x27;s job
+// prints Error and child classes are unchecked</pre>
+<h3>47:10 — Invigilator not came — not the student’s job</h3>
+<p>Mother can ask hall-ticket-missing, pen-not-working — these mother can ask.</p>
+<p>Invigilator not came exception — how you can handle? Mother cannot ask this type of thing, because if invigilator not came, is it my responsibility to handle that? No. My management is going to take care. Why I have to worry about that.</p>
+<p>If Error occurs, programmer not responsible. My system admin or server admin is the responsible. That’s why in the case of errors, how you can handle — compiler never going to ask the programmer. That’s why these are unchecked. All errors are unchecked.</p>
+<pre class='code'>class InvigilatorNotCameExceptionDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;InvigilatorNotCameException — not the student&#x27;s job&quot;);
+        System.out.println(&quot;management / admin will take care&quot;);
+        System.out.println(&quot;Error =&gt; system admin / server admin, not programmer&quot;);
+    }
+}
+// prints InvigilatorNotCameException — not the student&#x27;s job
+// prints management / admin will take care
+// prints Error =&gt; system admin / server admin, not programmer</pre>
+<h3>47:51 — Note 2: `RuntimeException` + `Error` (+ children) are unchecked; remaining checked</h3>
+<p>Next: RuntimeException and its child classes.</p>
+<p>Keep writing. Second note.</p>
+<p>`RuntimeException` and its child classes, `Error` and its child classes, are unchecked. Except these, remaining are checked.</p>
+<p>Which are unchecked, which are checked — you people should have clarity. Meaning of unchecked, meaning of checked — clear.</p>
+<pre class='code'>class Note2UncheckedRule {
+    public static void main(String[] args) {
+        // BOARD NOTE 2:
+        // RuntimeException and its child classes,
+        // Error and its child classes,
+        // are unchecked.
+        // Except these, remaining are checked.
+        System.out.println(&quot;unchecked: RuntimeException + children, Error + children&quot;);
+        System.out.println(&quot;remaining are checked&quot;);
+    }
+}
+// prints unchecked: RuntimeException + children, Error + children
+// prints remaining are checked</pre>
+<p>So from the diagram:</p>
+<ul><li>Unchecked: RuntimeException, ArithmeticException, NullPointerException, ClassCastException, IndexOutOfBoundsException, Error, VirtualMachineError, StackOverflowError, OutOfMemoryError, ExceptionInInitializerError, AssertionError</li></ul>
+<ul><li>Checked (the remaining): Throwable, Exception, IOException, EOFException, FileNotFoundException, InterruptedIOException, InterruptedException, ServletException, RemoteException, …</li></ul>
+<h3>49:13 — Fully checked vs partially checked (inside checked only)</h3>
+<p>There is another point. Fully checked versus partially checked. In the checked only there is another division: fully checked and partially checked.</p>
+<p>Keep writing the heading: fully checked versus partially checked.</p>
+<p>Checked and unchecked only we are facing the problem — but what is the second category? Fully checked and partially checked. Simple. What is full checking, what is partial checking? Just observe.</p>
+<h3>50:05 — Shopping mall vs Shamshabad airport</h3>
+<p>Assume you went to the shopping mall with your kid. Do you have the kids? Soon. Assume you went to the shopping with your kid.</p>
+<p>These days security checking is very common. Security people checked you with the scanner. You required to walk through metal detector. But for your kid, security people won’t check — kid wearing the bombs and so on, very rare. They never going to check the kids; only parents are going to be checked.</p>
+<p>This type of checking is partial checking or full checking? Partial checking.</p>
+<p>Next: if you go for Shamshabad airport, international airport. He went with his kid, required to travel to America. Compulsory in the airport checking should be happened. In the airport checking, whether parent or kid, compulsory each and every person should be checked.</p>
+<p>Such type of checking is by default full check. Parent should be checked and the kid also should be checked = full checking.</p>
+<p>Parent should be checked but kid not required to check = partial checking.</p>
+<pre class='code'>class PartialVsFullCheckingStory {
+    public static void main(String[] args) {
+        System.out.println(&quot;shopping mall: parent scanned, kid not checked = partial&quot;);
+        System.out.println(&quot;Shamshabad airport: parent and kid both checked = full&quot;);
+    }
+}
+// prints shopping mall: parent scanned, kid not checked = partial
+// prints Shamshabad airport: parent and kid both checked = full</pre>
+<h3>51:49 — `IOException` fully checked; `Exception` partially checked</h3>
+<p>Observe a bit carefully. `IOException` is there. Is it checked or not? Checked — because RuntimeException and Error these categories are unchecked; except that all the remaining are checked. So checked.</p>
+<p>All the childs checked or not? All the childs checked.</p>
+<p>A checked exception is said to be fully checked if and only if all its child classes are also checked.</p>
+<p>IOException is checked, all its children also checked. That’s why this one is fully checked exception.</p>
+<p>Here `Exception` is there. It is checked (it’s not under runtime). But some child classes are checked, some child classes are unchecked. Some childs checked, some childs unchecked. This type of checking is partial checking.</p>
+<p>Full check / partial check — I hope you people can identify the difference already.</p>
+<pre class='code'>class IoExceptionFullyExceptionPartially {
+    public static void main(String[] args) {
+        // IOException: checked, and EOFException / FileNotFoundException /
+        // InterruptedIOException are also checked  =&gt; fully checked
+        // Exception: checked, but RuntimeException child is unchecked
+        //            and IOException child is checked  =&gt; partially checked
+        System.out.println(&quot;IOException — fully checked&quot;);
+        System.out.println(&quot;Exception — partially checked&quot;);
+    }
+}
+// prints IOException — fully checked
+// prints Exception — partially checked</pre>
+<h3>52:58 — Board dictation: fully checked</h3>
+<p>Keep writing.</p>
+<p>A checked exception is said to be fully checked if and only if all its child classes are also checked.</p>
+<p>Example: `IOException`. Next: `InterruptedException`. Sir, only parent is there, no child — it’s always fully checked only. InterruptedException is fully checked.</p>
+<pre class='code'>class FullyCheckedBoard {
+    public static void main(String[] args) {
+        // BOARD:
+        // A checked exception is said to be fully checked
+        // if and only if all its child classes are also checked.
+        //
+        // Example: IOException
+        //          InterruptedException  (no child =&gt; always fully checked)
+        System.out.println(&quot;fully checked: IOException, InterruptedException&quot;);
+    }
+}
+// prints fully checked: IOException, InterruptedException</pre>
+<h3>54:12 — Board dictation: partially checked</h3>
+<p>Second.</p>
+<p>A checked exception is said to be partially checked if and only if some of its child classes are unchecked.</p>
+<p>Example: `Exception` — some of its child classes are unchecked.</p>
+<p>Second example: `Throwable`. Some child classes are unchecked, some child classes are checked. `Throwable`.</p>
+<p>That’s all. Take a note.</p>
+<pre class='code'>class PartiallyCheckedBoard {
+    public static void main(String[] args) {
+        // BOARD:
+        // A checked exception is said to be partially checked
+        // if and only if some of its child classes are unchecked.
+        //
+        // Example: Exception
+        //          Throwable
+        System.out.println(&quot;partially checked: Exception, Throwable&quot;);
+    }
+}
+// prints partially checked: Exception, Throwable</pre>
+<h3>55:22 — Quiz: any three partially checked? Trap on the board</h3>
+<p>Note. Can you tell any three partially checked exceptions?</p>
+<p>Just now two I spelled out. One is Exception. The other one is Throwable. Third one. Can you tell? Already there on the board. I can able to see. Already there on the board.</p>
+<p>Third partially checked exception other than Exception and Throwable?</p>
+<p>He walks the board so they don’t pick the wrong boxes:</p>
+<ul><li>`IOException` is fully checked — it is checked; if any child is there, checked only, because this area is checked area only</li></ul>
+<ul><li>`InterruptedException` we listed already — checked, fully checked</li></ul>
+<ul><li>`Error` is unchecked — fully checked and partially checked applicable only for checked, not for unchecked exceptions</li></ul>
+<p>Long pause (~56:37–56:49) while the room hunts for a third name.</p>
+<p>Which are checked, which are partially checked, which are fully checked. Any three partially checked exceptions?</p>
+<p>RuntimeException is unchecked. RuntimeException and child classes are unchecked. Next Error and its child classes are unchecked.</p>
+<p>Don’t break your heads.</p>
+<pre class='code'>class NoThirdOnTheBoard {
+    public static void main(String[] args) {
+        // students hunt the hierarchy for a third partially checked name
+        // IOException — fully checked (not the answer)
+        // InterruptedException — fully checked (not the answer)
+        // Error — unchecked — fully/partially does not apply
+        // RuntimeException — unchecked
+        System.out.println(&quot;fully/partially applies only to checked exceptions&quot;);
+    }
+}
+// prints fully/partially applies only to checked exceptions</pre>
+<h3>57:16 — Note: the only possible partially checked exceptions in Java are two</h3>
+<p>Use the word note.</p>
+<p>The only possible partially checked exceptions in Java are: first one `Exception`, second one `Throwable`.</p>
+<p>That’s all. Third one is not there. Exception, second one Throwable — that’s all. Because all the remaining are either fully checked or unchecked. Partially checked exceptions in Java: only two things are there. One is Throwable. Second one is Exception.</p>
+<p>Make sure you people should be aware: checked, unchecked, partially checked, fully checked. Now you have clarity.</p>
+<pre class='code'>class OnlyTwoPartiallyChecked {
+    public static void main(String[] args) {
+        // BOARD NOTE:
+        // The only possible partially checked exceptions in Java are
+        // Exception and Throwable.
+        System.out.println(&quot;partially checked in Java: Exception, Throwable&quot;);
+        System.out.println(&quot;no third — remaining are fully checked or unchecked&quot;);
+    }
+}
+// prints partially checked in Java: Exception, Throwable
+// prints no third — remaining are fully checked or unchecked</pre>
+<h3>58:13 — Exercise: describe the behavior of the following exceptions</h3>
+<p>Now I will give some list of exceptions. You have to describe the behavior: whether it is checked or unchecked, fully checked or partially checked.</p>
+<p>Better to take a bit style. Keep writing:</p>
+<p>Describe the behavior of following exceptions.</p>
+<p>Take this list first and then we will decide. “Take this.” Long copy silence (~58:59–59:52) while the list goes on the board.</p>
+<h3>59:52 — The list (then answers)</h3>
+<p>Completed right. So that we will discuss: which are checked, which are unchecked, which are partially checked, which are fully checked.</p>
+<p>The list he spells:</p>
+<ul><li>IOException</li></ul>
+<ul><li>RuntimeException</li></ul>
+<ul><li>InterruptedException</li></ul>
+<ul><li>Error</li></ul>
+<ul><li>Throwable</li></ul>
+<ul><li>ArithmeticException</li></ul>
+<ul><li>NullPointerException</li></ul>
+<p>…and then as he answers he also does `Exception` and `FileNotFoundException`.</p>
+<h3>1:00:22 — Answers, one by one (spell out in that style)</h3>
+<p>Better to spell out in that style.</p>
+<p>IOException: checked or unchecked first? Checked. Within bracket, fully or partially? Fully checked. Spell out: checked, fully checked.</p>
+<p>RuntimeException: checked or unchecked? Unchecked.</p>
+<p>InterruptedException: checked, but fully or partially? Fully checked. Checked, fully checked.</p>
+<p>Error: checked or unchecked? Unchecked.</p>
+<p>Throwable: checked, within bracket partially checked.</p>
+<p>ArithmeticException: unchecked.</p>
+<p>NullPointerException: unchecked. Same.</p>
+<p>Exception: checked, within bracket partially checked.</p>
+<p>FileNotFoundException: checked, within bracket fully checked.</p>
+<p>That’s all. Are you able to understand?</p>
+<pre class='code'>class DescribeTheBehavior {
+    public static void main(String[] args) {
+        System.out.println(&quot;IOException — checked (fully checked)&quot;);
+        System.out.println(&quot;RuntimeException — unchecked&quot;);
+        System.out.println(&quot;InterruptedException — checked (fully checked)&quot;);
+        System.out.println(&quot;Error — unchecked&quot;);
+        System.out.println(&quot;Throwable — checked (partially checked)&quot;);
+        System.out.println(&quot;ArithmeticException — unchecked&quot;);
+        System.out.println(&quot;NullPointerException — unchecked&quot;);
+        System.out.println(&quot;Exception — checked (partially checked)&quot;);
+        System.out.println(&quot;FileNotFoundException — checked (fully checked)&quot;);
+    }
+}
+// prints IOException — checked (fully checked)
+// prints RuntimeException — unchecked
+// prints InterruptedException — checked (fully checked)
+// prints Error — unchecked
+// prints Throwable — checked (partially checked)
+// prints ArithmeticException — unchecked
+// prints NullPointerException — unchecked
+// prints Exception — checked (partially checked)
+// prints FileNotFoundException — checked (fully checked)</pre>
+<h3>1:02:16 — Close: terminology clear; next things get easy</h3>
+<p>This is what you people should require. What is the difference between checked, unchecked, partially checked, fully checked. Now the terminology is clear. If you are able to understand now, the next things will become very easy for you. That’s what you have to remember.</p>
+<p>Video ends 1:02:44. He does not start throw / throws syntax in this Part-3A.</p>
+<h2>Board recap he wants in the notebook</h2>
+<p>Interview (priority one from exception handling): difference between checked and unchecked. (Priority two, named only: final vs finally vs finalize.)</p>
+<p>Wrong line: “checked occur at compile time, unchecked at runtime.” 100% pakka wrong.</p>
+<p>Note 1: whether checked or unchecked, every exception occurs at runtime only. No exception at compile time. Compile-time errors are syntactical mistakes.</p>
+<p>Checked: exceptions checked by compiler for smooth execution of the program at runtime. If there is a chance of a checked exception, compulsory handle (try-catch or `throws`), otherwise compile-time error. The CE unreported exception … must be caught or declared to be thrown does not mean the exception occurs.</p>
+<p>This video’s live checked demo:</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+        pw.println(&quot;hello&quot;);
+    }
+}
+// CE: unreported exception java.io.FileNotFoundException; must be caught or declared to be thrown</pre>
+<p>Unchecked: exceptions not checked by compiler whether programmer handling or not (rarely occurred, or unknown until runtime). ArithmeticException, NullPointerException, ClassCastException, BombBlastException (classroom name).</p>
+<p>Live proof compiler ignores unchecked:</p>
+<pre class='code'>import java.io.*;
+
+class Test {
+    public static void main(String[] args) throws FileNotFoundException {
+        PrintWriter pw = new PrintWriter(&quot;abc.txt&quot;);
+        pw.println(&quot;hello&quot;);
+        System.out.println(10 / 0);
+    }
+}
+// compiles
+// runtime: ArithmeticException</pre>
+<p>Note 2: RuntimeException and its child classes, Error and its child classes, are unchecked. Except these, remaining are checked. All errors are unchecked (not caused by our program; lack of system resources; non-recoverable; system/server admin, not programmer).</p>
+<p>Fully checked (checked only): a checked exception is fully checked iff all its child classes are also checked. Examples: IOException, InterruptedException (no child ⇒ always fully checked). Leaf checked types like FileNotFoundException he also spells checked (fully checked).</p>
+<p>Partially checked: a checked exception is partially checked iff some of its child classes are unchecked. The only possible partially checked exceptions in Java are `Exception` and `Throwable`. No third.</p>
+<p>Stories → Java names he wrote (single word, no spaces): HallTicketMissingException, PenNotWorkingException, BombBlastException — classroom names, not API. Real API types he compiled or listed: FileNotFoundException, SQLException, ServletException, RemoteException, IOException, EOFException, InterruptedIOException, InterruptedException, ArithmeticException, NullPointerException, ClassCastException, IndexOutOfBoundsException, Error, OutOfMemoryError, StackOverflowError, ExceptionInInitializerError, AssertionError, Throwable, Exception, RuntimeException.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 72 of 203</td></tr>
+<tr><td>Series</td><td>Exception Handling · Part 3A</td></tr>
+<tr><td>Topic</td><td>Checked vs Unchecked Exceptions</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 02m 44s</td></tr>
+<tr><td>Video ID</td><td>piqjRl-Dngc</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=piqjRl-Dngc</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Exception</th><th>What he wants you to say</th></tr>
+<tr><td>IOException</td><td>Checked (fully checked)</td></tr>
+<tr><td>RuntimeException</td><td>Unchecked</td></tr>
+<tr><td>InterruptedException</td><td>Checked (fully checked)</td></tr>
+<tr><td>Error</td><td>Unchecked</td></tr>
+<tr><td>Throwable</td><td>Checked (partially checked)</td></tr>
+<tr><td>ArithmeticException</td><td>Unchecked</td></tr>
+<tr><td>NullPointerException</td><td>Unchecked</td></tr>
+<tr><td>Exception</td><td>Checked (partially checked)</td></tr>
+<tr><td>FileNotFoundException</td><td>Checked (fully checked)</td></tr>
+</table>
+</body></html>

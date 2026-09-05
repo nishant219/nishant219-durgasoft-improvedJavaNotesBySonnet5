@@ -1,0 +1,398 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>005-literals-part-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 005 — Literals part 2</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-5 || Literals part-2</p>
+<p>This lecture starts at `char` literals. Integral / floating-point / boolean literals were part 1 (video 004). Do not expect a recap of decimal vs octal vs hex integer forms except where they are reused as Unicode code points.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Four ways to specify a char literal</li></ol>
+<ol><li>Way 1: single character in single quotes — plus every invalid variant (A without quotes, &quot;A&quot;, &#x27;AB&#x27;)</li></ol>
+<ol><li>Way 2: integral literal as the Unicode value (decimal / octal / hex), range 0 to 65,535</li></ol>
+<ol><li>Twist: printing “unknown” code points as `?` — missing font, not missing character; check unicode.org</li></ol>
+<ol><li>Way 3: Unicode representation &#x27;\uXXXX&#x27; (four hex digits)</li></ol>
+<ol><li>Way 4: every escape character is a valid char literal; the list of eight escapes; \&#x27; \&quot; \\; illegal escape</li></ol>
+<ol><li>Exam drill: which of these char assignments are valid?</li></ol>
+<ol><li>`String` literals: any sequence of characters in double quotes</li></ol>
+<ol><li>Java 1.7 enhancement 1: binary literals (0b / 0B)</li></ol>
+<ol><li>Java 1.7 enhancement 2: underscore between digits of numeric literals (readability; compiler strips them; only between digits)</li></ol>
+<ol><li>Implicit conversion / widening diagram he will reuse ~20 times: byte → short → int → long → float → double and char → int</li></ol>
+<ol><li>Why 8-byte `long` can be assigned to 4-byte `float` (different memory representation; classroom-chairs analogy)</li></ol>
+<ol><li>Why `char` and `short` cannot be assigned to each other even though both are 2 bytes (unsigned vs signed)</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:06] `char` literals — how many ways?</h3>
+<p>For char, there are several / multiple ways to specify a literal. He teaches four.</p>
+<h3>[00:22] Way 1 — single character within single quotes</h3>
+<p>Board:</p>
+<p>We can specify a char literal as a single character within single quotes.</p>
+<p>char ch = &#x27;A&#x27;;
+System.out.println(ch);   // A</p>
+<p>Valid. Output: A.</p>
+<h4>Quiz 1 — quotes missing</h4>
+<p>char ch = A;    // no quotes</p>
+<p>Invalid.</p>
+<p>Without single quotes it is not a char literal, not a String literal, not a valid value for any type. The compiler treats A as a variable.</p>
+<p>`cannot find symbol` — which symbol: variable `A` — location: class `Test`</p>
+<p>(Same compiler thinking as boolean b = True; in video 003.)</p>
+<h4>Quiz 2 — double quotes instead of single quotes</h4>
+<p>char ch = &quot;A&quot;;</p>
+<p>Invalid. Double quotes mean `String`. You cannot assign a String to char.</p>
+<p>`incompatible types` — found: java.lang.String, required: char</p>
+<h4>Quiz 3 — two characters in single quotes</h4>
+<p>char ch = &#x27;AB&#x27;;</p>
+<p>Invalid. Students guess “it’s a String.” No — a String uses double quotes.</p>
+<p>Think like the compiler (he says this is mandatory):</p>
+<ol><li>First &#x27; — start of a character literal. Valid so far.</li></ol>
+<ol><li>Character A — valid.</li></ol>
+<ol><li>After one character the compiler expects the closing `&#x27;`.</li></ol>
+<ol><li>You did not close it (B is sitting there). → `unclosed character literal`</li></ol>
+<ol><li>The second &#x27; is its own problem: matching quote not found → another `unclosed character literal`</li></ol>
+<ol><li>What remains is not a Java statement → `not a statement`</li></ol>
+<p>So you get multiple compile errors for one line: unclosed character literal (twice) + not a statement.</p>
+<p>He compiles live: &#x27;A&#x27; prints A; bare A → cannot find symbol; &quot;A&quot; → found String required char; &#x27;AB&#x27; → unclosed character literal / not a statement.</p>
+<h3>[08:41] Way 2 — integral literal that is the Unicode value</h3>
+<p>Every character has a Unicode value. Example: `&#x27;A&#x27;` / `&#x27;a&#x27;` related value 97 (he uses 97; &#x27;A&#x27; is 65 in ASCII/Unicode, &#x27;a&#x27; is 97 — the live demo with 97 printing a matches `&#x27;a&#x27;`. Learn: 97 → `a` as he runs it.)</p>
+<p>Board:</p>
+<p>We can specify a char literal as an integral literal which represents the Unicode value of the character.</p>
+<p>char ch = 97;
+System.out.println(ch);   // a</p>
+<p>That integral literal can be specified in decimal, octal, or hexadecimal. No problem.</p>
+<p>Allowed range: 0 to 65,535 only (the char range from video 003).</p>
+<h4>Examples</h4>
+<p>For 65536:</p>
+<p>`possible loss of precision` — found: int, required: char</p>
+<h3>[14:19] Twist — why some code points print as `?`</h3>
+<p>char ch = 97;
+System.out.println(ch);    // a   — valid</p>
+<p>char ch = 197;
+System.out.println(ch);    // valid; he shows a special / plus-like character</p>
+<p>char ch = 1970;
+System.out.println(ch);    // ?</p>
+<p>char ch = 1971;
+System.out.println(ch);    // ?   same</p>
+<p>char ch = 19710;
+System.out.println(ch);    // ?   same question mark</p>
+<p>(He also jokes “our favourite symbol will come” — the question mark.)</p>
+<p>Why `?`? Two options he puts to the class:</p>
+<ol><li>Option 1: The corresponding character is not defined / not associated with 1970, 1971, …</li></ol>
+<ol><li>Option 2: The character exists, but this system does not have that font, so it cannot print it.</li></ol>
+<p>Correct: option 2. There is a character (maybe Arabic, etc.) but the font is not installed, so the console shows ?. Same reason you can type Telugu/Hindi on a machine only after the font is there.</p>
+<p>If you want to know which character 1970 is: open https://www.unicode.org and look it up.</p>
+<h3>[17:34] Way 3 — Unicode representation `&#x27;\uXXXX&#x27;`</h3>
+<p>Form:</p>
+<p>&#x27; \ u  X X X X &#x27;</p>
+<ul><li>single quote</li></ul>
+<ul><li>backslash</li></ul>
+<ul><li>`u`</li></ul>
+<ul><li>four-digit hexadecimal number</li></ul>
+<ul><li>single quote</li></ul>
+<p>Example: &#x27;a&#x27; Unicode 97. Convert 97 to hex:</p>
+<ul><li>16 × 6 = 96, remainder 1 → hex 61</li></ul>
+<ul><li>Need four digits → `0061`</li></ul>
+<p>char ch = &#x27;\u0061&#x27;;
+System.out.println(ch);   // a</p>
+<p>61 hex = 97 decimal = &#x27;a&#x27;.</p>
+<p>char ch = &#x27;\u0062&#x27;;
+System.out.println(ch);   // b   (0x62 = 98)</p>
+<p>Board:</p>
+<p>We can represent a char literal in Unicode representation, which is nothing but &#x27;\uXXXX&#x27; where XXXX is a four-digit hexadecimal number.</p>
+<h3>[22:02] Way 4 — every escape character is a valid `char` literal</h3>
+<p>char ch = &#x27;\n&#x27;;   // valid — newline
+char ch = &#x27;\t&#x27;;   // valid — horizontal tab</p>
+<p>char ch = &#x27;\m&#x27;;   // invalid</p>
+<p>n = newline, t = horizontal tab. `m` is not an escape (joke: “mute character?” — no).</p>
+<p>`illegal escape character`</p>
+<p>Board:</p>
+<p>Every escape character is a valid char literal.</p>
+<p>You must know the list of valid escapes vs invalid.</p>
+<h3>[24:43] How many escape characters? **Eight**</h3>
+<p>Table: escape character | description.</p>
+<p>He groups the first five as `n t r b f` (mnemonic joke: NTR + film Badshah — flop/average; then “Dawood Ibrahim style” makeup — classroom humour, not exam content). Then three more: quote, double-quote, backslash.</p>
+<p>5 + 3 = 8 escape characters.</p>
+<h4>Why `\&#x27;`, `\&quot;`, `\\` exist</h4>
+<p>Single quote as a character to print:</p>
+<p>System.out.println(&#x27;);     // WRONG — compiler sees unclosed character literal
+System.out.println(&#x27;\&#x27;&#x27;);  // tell the compiler: treat &#x27; as a *symbol*, not as start/end of a char literal</p>
+<p>He also shows it inside a string: print “this is &#x27; symbol” using \&#x27;.</p>
+<p>Double quote inside a String:</p>
+<p>System.out.println(&quot;this is &quot; symbol&quot;);   // WRONG — unclosed string literal
+System.out.println(&quot;this is \&quot; symbol&quot;);  // treat &quot; as a symbol, not string delimiter</p>
+<p>Backslash as a symbol:</p>
+<p>Wherever the compiler sees \, its habit is “this is an escape.” \c is not an escape → `illegal escape character`.</p>
+<p>To print a backslash:</p>
+<pre class='code'>System.out.println(&quot;this is \\ character&quot;);</pre>
+<p>File I/O path example (preview of later File topic):</p>
+<p>File f = new File(&quot;C:\Durga classes&quot;);   // WRONG — \D is not an escape → illegal escape character
+File f = new File(&quot;C:\\Durga classes&quot;);  // treat \ as a symbol: write \\</p>
+<p>\\ in source → one \ in the actual path.</p>
+<h3>[32:08] Summary of the four ways + “which are valid?” drill</h3>
+<p>Four ways:</p>
+<ol><li>Single character within single quotes</li></ol>
+<ol><li>Integral literal = Unicode value (decimal / octal / hex, 0–65535)</li></ol>
+<ol><li>Unicode representation &#x27;\uXXXX&#x27;</li></ol>
+<ol><li>Escape character</li></ol>
+<h4>Which of the following are valid?</h4>
+<p>He writes a set like this (reconstructed from the spoken quiz: 65536, 0xbeer, \uface, &#x27;\ubeef&#x27;, \m, \iface):</p>
+<p>Loopholes to remember: range, hex alphabet, quotes around \u, legal vs illegal escapes.</p>
+<h3>[35:42] `String` literals</h3>
+<p>String is not a primitive, but there is a string literal form. Short point.</p>
+<p>Board:</p>
+<p>Any sequence of characters within double quotes is treated as a string literal.</p>
+<pre class='code'>String s = &quot;Durga&quot;;</pre>
+<p>That closes the literals concept as a set: integral, floating-point, boolean, char, and string.</p>
+<h3>[37:14] Java 1.7 enhancements with respect to literals</h3>
+<p>Two new concepts in 1.7.</p>
+<h3>[38:01] Enhancement 1 — binary literals</h3>
+<p>Until 1.6, for integral types (byte, short, int, long) you could specify a literal in three ways (from part 1):</p>
+<ol><li>decimal</li></ol>
+<ol><li>octal</li></ol>
+<ol><li>hexadecimal</li></ol>
+<p>From 1.7 onwards, you can also specify in binary form.</p>
+<ul><li>Allowed digits: 0 and 1 only</li></ul>
+<ul><li>Prefix: `0b` or `0B` (zero, then small b or capital B)</li></ul>
+<ul><li>Compare: 0x / 0X means hexadecimal; 0b / 0B means binary</li></ul>
+<p>int x = 0b1111;
+System.out.println(x);   // 15</p>
+<p>Four 1-bits → decimal 15. Printing always shows the decimal value.</p>
+<p>Board:</p>
+<p>For integral data types, until 1.6 we can specify literal value in decimal, octal, hexadecimal form.</p>
+<p>But from 1.7 version onwards we can specify even in binary form.</p>
+<p>Allowed digits: 0 and 1.</p>
+<p>Literal should be prefixed with `0b` or `0B`.</p>
+<h3>[42:57] Enhancement 2 — underscore in numeric literals</h3>
+<p>Applies to all numeric literals — integral and floating-point.</p>
+<p>Problem: a long digit dump is hard to read.</p>
+<p>101101101</p>
+<p>Is that thousands, lakhs, crores? People take time; grouping is confusing.</p>
+<p>From 1.7, Sun allowed `_` between digits (he first jokes “they keep full stop,” then writes underscore).</p>
+<p>Indian grouping example:</p>
+<p>double d = 10_11_01_101;   // easier to read as 10 crores / 11 lakhs style grouping (his spoken example)</p>
+<p>US grouping of 123456.789:</p>
+<p>double d = 123456.789;           // original
+double d = 1_23_456.789;         // Indian-style groups: 1 lakh 23 thousand 456.789
+double d = 123_456.789;          // US-style: 123 thousand 456.789</p>
+<p>Board:</p>
+<p>Usage of underscore symbol in numeric literals.</p>
+<p>From 1.7 version onwards we can use underscore symbol between digits of a numeric literal.</p>
+<p>Main advantage: readability of the code will be improved.</p>
+<h3>[48:28] Underscores exist only in `.java` — compiler removes them</h3>
+<p>Doubt: some people write one underscore, some write two. How does the JVM know they are the same number?</p>
+<p>Readability is required in the `.java` file, not in the `.class` file. Nobody opens .class to read code.</p>
+<p>At compile time, the compiler automatically removes the underscores.</p>
+<p>After compilation, both of these become the same:</p>
+<p>double d = 1_23_456.789;
+double d = 123456.789;</p>
+<p>JVM never sees the underscores. No effect on the JVM.</p>
+<p>Board:</p>
+<p>At the time of compilation these underscore symbols will be removed automatically.</p>
+<p>Hence after compilation the above lines will become double d = 123456.789;.</p>
+<h3>[51:00] Underscore rules — two conclusions</h3>
+<h4>Conclusion 1 — more than one underscore between digits is OK</h4>
+<p>double d = 1__23_4_56.789;   // valid</p>
+<p>Compiler will delete every _ anyway. Based on your comfort, you can add any number of underscores between digits. Both of his “messy vs neat” versions are valid.</p>
+<p>Board: We can use more than one underscore symbol also between the digits.</p>
+<h4>Conclusion 2 — only between digits; anywhere else is a compile error</h4>
+<p>Invalid examples he writes:</p>
+<p>double d = _1_23_456.789;     // underscore at the beginning
+double d = 1_23_456_.789;     // underscore next to the decimal point (before it)
+double d = 1_23_456._789;     // underscore next to the decimal point (after it)
+double d = 1_23_456.789_;     // underscore at the end</p>
+<p>Why invalid? The need of _ is readability of place values between digits.</p>
+<ul><li>At the beginning: no use</li></ul>
+<ul><li>Between decimal point and a digit: no use</li></ul>
+<ul><li>At the end: waste</li></ul>
+<p>You are misusing the syntax. Compile-time error.</p>
+<p>Board:</p>
+<p>We can use underscore symbol only between the digits.</p>
+<p>If we are using anywhere else, we will get compile-time error.</p>
+<p>Valid (underscores only between digits, not touching .):</p>
+<p>double d = 1_23_456.789;   // valid</p>
+<p>That ends the 1.7 literal enhancements: (1) binary literals (2) underscore.</p>
+<h3>[56:56] Implicit assignment diagram (he will use this ~20 times)</h3>
+<p>Take this diagram seriously. Minimum ~20 times in later classes.</p>
+<p>Widening / left-to-right assignments are always acceptable: lower type value to higher type variable.</p>
+<p>byte  →  short  →  int  →  long  →  float  →  double
+                       ↑
+                      char</p>
+<p>Spoken assignments he lists as valid:</p>
+<ul><li>byte value → short variable (1 byte into 2-byte place — no problem)</li></ul>
+<ul><li>short → int (2 → 4)</li></ul>
+<ul><li>char → int (char is 2 bytes, int is 4)</li></ul>
+<ul><li>int → long</li></ul>
+<ul><li>long → float</li></ul>
+<ul><li>float → double</li></ul>
+<p>Left to right = always OK.</p>
+<h3>[58:51] Doubt: how can 8-byte `long` go into 4-byte `float`?</h3>
+<p>The chain looks like:</p>
+<ul><li>1 byte → 2 byte: OK</li></ul>
+<ul><li>2 → 4: OK</li></ul>
+<ul><li>4 → 8 (int → long): OK</li></ul>
+<ul><li>4 → 8 (float → double): OK</li></ul>
+<p>But `long` is 8 bytes and `float` is 4 bytes. How is long → float allowed?</p>
+<p>It is perfectly acceptable.</p>
+<p>Those left types are integral; float/double are floating-point. Representation in memory is completely different.</p>
+<h4>Classroom / chairs analogy</h4>
+<ul><li>Room 1: 100 chairs, one person per chair → 100 students.</li></ul>
+<ul><li>Room 2: 50 chairs, but two people allowed per chair (big chairs) → still 100 people.</li></ul>
+<p>Number of chairs is not the same, but capacity can still be 100 because internal arrangement differs.</p>
+<p>Integral numbers and floating-point numbers use different memory representations. An 8-byte long value can be placed using 4 bytes in the floating-point representation.</p>
+<p>float f = 10L;              // valid — long value to float variable
+System.out.println(f);      // 10.0</p>
+<p>Board:</p>
+<p>8-byte long value we can assign to 4-byte float variable because both are following different memory representations internally.</p>
+<h3>[1:03:28] Why `char` and `short` are *not* assignment-compatible</h3>
+<p>Both are 2 bytes. Still:</p>
+<ul><li>char value cannot assign to short</li></ul>
+<ul><li>short value cannot assign to char</li></ul>
+<p>Reason: sign.</p>
+<ul><li>char of 65,535 is valid for char but cannot go into short (not in short range). For char, 16 bits represent value; for short, only 15 bits represent value (one reserved for sign).</li></ul>
+<ul><li>short of −32,768 cannot go into char (char cannot consider negative values).</li></ul>
+<p>Even though both are two bytes, no compatibility — one signed, one unsigned.</p>
+<p>Literals topic ends here: char forms, 1.7 binary + underscore, and possible assignments.</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // Way 1
+        char ch1 = &#x27;A&#x27;;
+        System.out.println(ch1);          // A
+        // char chBad1 = A;               // CE: cannot find symbol, variable A
+        // char chBad2 = &quot;A&quot;;             // CE: incompatible types, found String, required char
+        // char chBad3 = &#x27;AB&#x27;;            // CE: unclosed character literal; not a statement
+
+        // Way 2
+        char ch2 = 97;
+        System.out.println(ch2);          // a
+        char hex = 0xFACE;                // 64206 — valid
+        char oct = 0777;                  // 511 — valid
+        char max = 65535;                 // valid
+        // char tooBig = 65536;           // CE: possible loss of precision, found int, required char
+
+        char mystery = 1970;
+        System.out.println(mystery);      // often &#x27;?&#x27; if font missing — character still exists (unicode.org)
+
+        // Way 3
+        char u = &#x27;\u0061&#x27;;
+        System.out.println(u);            // a
+        char u2 = &#x27;\u0062&#x27;;
+        System.out.println(u2);           // b
+
+        // Way 4
+        char nl = &#x27;\n&#x27;;
+        char tab = &#x27;\t&#x27;;
+        // char mute = &#x27;\m&#x27;;              // CE: illegal escape character
+
+        System.out.println(&#x27;\&#x27;&#x27;);         // single-quote symbol
+        System.out.println(&quot;this is \&quot; symbol&quot;);
+        System.out.println(&quot;this is \\ character&quot;);
+        // File f = new File(&quot;C:\\Durga classes&quot;);
+
+        String s = &quot;Durga&quot;;
+
+        // Java 1.7
+        int bin = 0b1111;
+        System.out.println(bin);          // 15
+        double d = 1_23_456.789;          // valid; compiler strips _
+        double d2 = 1__23_4_56.789;       // also valid — multiple underscores
+        // double bad1 = _123.45;         // CE — underscore not between digits
+        // double bad2 = 123_.45;         // CE
+        // double bad3 = 123._45;         // CE
+        // double bad4 = 123.45_;         // CE
+
+        float f = 10L;
+        System.out.println(f);            // 10.0
+    }
+}</pre>
+<h2>Rules to memorize</h2>
+<ol><li>Four ways for char: &#x27;X&#x27;; integral Unicode (decimal/octal/hex, 0–65535); &#x27;\uXXXX&#x27;; escape.</li></ol>
+<ol><li>Missing quotes on a letter → cannot find symbol (variable). &quot;A&quot; → found String. &#x27;AB&#x27; → unclosed character literal / not a statement.</li></ol>
+<ol><li>char ch = 65536; → possible loss of precision, found int, required char.</li></ol>
+<ol><li>? on the console ≠ “Unicode not defined.” Usually font missing. Look up unicode.org.</li></ol>
+<ol><li>Unicode escape: &#x27;\u&#x27; + exactly four hex digits. &#x27;\u0061&#x27; is &#x27;a&#x27;.</li></ol>
+<ol><li>Eight escapes: \n \t \r \b \f \&#x27; \&quot; \\. Anything else (\m, \i, \D) → illegal escape character.</li></ol>
+<ol><li>To use &#x27;, &quot;, or \ as a symbol, escape them. Windows paths need \\.</li></ol>
+<ol><li>String literal = any sequence of characters in double quotes.</li></ol>
+<ol><li>1.7 binary: prefix `0b`/`0B`, digits 0,1. 0b1111 prints 15.</li></ol>
+<ol><li>1.7 underscore: between digits of numeric literals for readability. Compiler removes them. Multiple _ OK between digits. Not at start, end, or beside ..</li></ol>
+<ol><li>Widening: byte → short → int → long → float → double, and char → int. Left to right OK.</li></ol>
+<ol><li>long (8 bytes) → float (4 bytes) is valid because representations differ. float f = 10L; prints `10.0`.</li></ol>
+<ol><li>char ↛ short and short ↛ char: unsigned vs signed, even though both are 2 bytes.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>&#x27;AB&#x27; is not a String error. It is unclosed character literal.</li></ul>
+<ul><li>0xBeer is invalid because of `R`, not because hex is forbidden for char.</li></ul>
+<ul><li>\uface without quotes is invalid; &#x27;\ubeef&#x27; is valid; &#x27;\uface&#x27; would be valid.</li></ul>
+<ul><li>\m / \i → illegal escape character, not “incompatible types.”</li></ul>
+<ul><li>\b is backspace, not blank space.</li></ul>
+<ul><li>Binary prefix is `0b`, not 0x. 0x is still hex.</li></ul>
+<ul><li>0b1111 printed value is 15, not 1111.</li></ul>
+<ul><li>_ in 1_23_456.789 does not reach the JVM.</li></ul>
+<ul><li>_123 or 123_ or 123_.45 or 123._45 — all compile errors.</li></ul>
+<ul><li>“8-byte value cannot fit in 4-byte variable” is wrong for long → float.</li></ul>
+<ul><li>“char and short are both 2 bytes so they are compatible” is wrong.</li></ul>
+<ul><li>This diagram (byte→short→int→long→float→double, char→int) is reused constantly later (assignment, type casting, operators). Copy it into your notes and keep it.</li></ul>
+<h2>Recap</h2>
+<p>Part 2 of literals is the `char` cookbook (four forms + eight escapes + a brutal valid/invalid drill), a one-line `String` rule, the two Java 1.7 literal features (binary + underscore), and the widening diagram with the two famous exceptions to “compare the byte sizes”: long→float is OK, char↔short is not. Next lecture starts arrays.</p>
+<p>Next video: 006-arrays-part-1.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 5 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 5 of 16</td></tr>
+<tr><td>Topic</td><td>Literals part 2 — char literals (four ways), escape characters, String literals, Java 1.7 binary literals and underscores, implicit conversion diagram</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 05m 28s (3928 seconds)</td></tr>
+<tr><td>Video ID</td><td>IJ0xCDR_Dlw</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=IJ0xCDR_Dlw</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>Valid?</th><th>Notes</th></tr>
+<tr><td>char ch = 97;</td><td>valid</td><td>prints a</td></tr>
+<tr><td>char ch = 0xFACE;</td><td>valid</td><td>hex form; value 64,206; corresponding character assigned. (0xFACE = 64206, within 0–65535.) He says “0 x of f” / FACE on the board.</td></tr>
+<tr><td>char ch = 0777;</td><td>valid</td><td>octal; value 511 (or “511 or something”); corresponding character assigned</td></tr>
+<tr><td>char ch = 65535;</td><td>valid</td><td>max char</td></tr>
+<tr><td>char ch = 65536;</td><td>invalid</td><td>out of range</td></tr>
+</table>
+<table>
+<tr><th>Escape</th><th>Meaning</th></tr>
+<tr><td>\n</td><td>new line</td></tr>
+<tr><td>\t</td><td>horizontal tab</td></tr>
+<tr><td>\r</td><td>carriage return — he explains: move to the first cell of the next line (like hitting return while typing)</td></tr>
+<tr><td>\b</td><td>backspace (not blank space). Keyboard key that moves one cell back and removes a character if present</td></tr>
+<tr><td>\f</td><td>form feed (“maybe replacement; I’m not sure — check C books; as a programmer not required to worry”)</td></tr>
+<tr><td>\&#x27;</td><td>single quote as a symbol</td></tr>
+<tr><td>\&quot;</td><td>double quote as a symbol</td></tr>
+<tr><td>\\</td><td>backslash as a symbol</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>Valid?</th><th>Why</th></tr>
+<tr><td>char ch = 65536;</td><td>invalid</td><td>out of range (max 65535)</td></tr>
+<tr><td>char ch = 0xBeer;</td><td>invalid</td><td>hex digits are 0–9, A–F. `R` is not hex. (0xBEEF would be fine; beer is not)</td></tr>
+<tr><td>char ch = \uface;</td><td>invalid</td><td>single quotes missing. Unicode form must be &#x27;\uface&#x27;</td></tr>
+<tr><td>char ch = &#x27;\ubeef&#x27;;</td><td>valid</td><td>BEEF is four hex digits; quotes present</td></tr>
+<tr><td>char ch = &#x27;\m&#x27;;</td><td>invalid</td><td>illegal escape character</td></tr>
+<tr><td>char ch = &#x27;\iface&#x27;;</td><td>invalid</td><td>`\i` is not an escape. (FACE as Unicode would be valid if written &#x27;\uface&#x27;)</td></tr>
+</table>
+<table>
+<tr><th></th><th>char</th><th>short</th></tr>
+<tr><td>Size</td><td>2 bytes</td><td>2 bytes</td></tr>
+<tr><td>Signed?</td><td>unsigned (in the sense he teaches: no negative, all 16 bits are value)</td><td>signed (1 bit sign, 15 bits value)</td></tr>
+<tr><td>Range</td><td>0 to 65,535</td><td>−32,768 to 32,767</td></tr>
+</table>
+</body></html>

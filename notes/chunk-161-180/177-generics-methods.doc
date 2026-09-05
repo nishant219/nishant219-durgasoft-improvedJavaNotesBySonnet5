@@ -1,0 +1,269 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>177-generics-methods</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 177 — Generics Part-5: Generic Methods</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>Final major Generics lecture. Builds on Video 176 (wildcards). Topics:</p>
+<ol><li>Recap — role of wildcard ?</li></ol>
+<ol><li>Generic methods — type parameter at method level</li></ol>
+<ol><li>Bounded type parameters at method level (same rules as class level)</li></ol>
+<ol><li>Communication with non-generic code — behavior follows location</li></ol>
+<ol><li>Purpose of generics — type safety + resolve type-casting problems</li></ol>
+<ol><li>Generics applicable only at compile time — type erasure proofs</li></ol>
+<ol><li>Name clash / same erasure — duplicate method signatures after erasure</li></ol>
+<p>Durga Sir closes by calling Generics one of the two most dangerous SCJP topics (with inner classes). Expect 1–2 exam questions.</p>
+<p>Prerequisite: Videos 173–176 (generic classes, bounded types, wildcards).</p>
+<h2>00:05 — Recap: wildcard `?` and next topic</h2>
+<p>Last session covered wildcard character ?. This session: generic methods — when you want type safety at method level only, not at class level.</p>
+<h2>00:49 — Generic class vs generic method</h2>
+<h3>Generic class — type parameter at class level</h3>
+<pre class='code'>class Test&lt;T&gt; {
+    // T declared just after class name
+    // We can use T anywhere within this class based on requirement
+}</pre>
+<ul><li>Declaring type parameter at class level</li></ul>
+<ul><li>Parameterized class = generic class</li></ul>
+<h3>Generic method — type parameter at method level only</h3>
+<pre class='code'>class Test {   // normal (non-generic) class
+
+    public &lt;T&gt; void m1(T t) {
+        // T declared just BEFORE return type
+        // We can use T anywhere within this method based on requirement
+    }
+}</pre>
+<ul><li>Class is normal; only the method is generic</li></ul>
+<ul><li>Use when you need type safety for one particular method, not the whole class</li></ul>
+<h3>Where to declare type parameter</h3>
+<p>Board note: We can declare type parameter in two places — either at class level or at method level.</p>
+<h2>08:18 — Bounded types at method level</h2>
+<p>Same bounded-type rules as class level apply at method level.</p>
+<h3>Valid bounded method declarations</h3>
+<pre class='code'>class Test {
+    public &lt;T extends Number&gt; void m1(T t) { }
+    public &lt;T extends Runnable&gt; void m2(T t) { }
+    public &lt;T extends Number &amp; Runnable&gt; void m3(T t) { }
+    public &lt;T extends Comparable &amp; Runnable&gt; void m4(T t) { }
+    public &lt;T extends Number &amp; Comparable &amp; Runnable&gt; void m5(T t) { }
+}</pre>
+<h3>Invalid bounded method declarations</h3>
+<pre class='code'>// INVALID — interface before class
+public &lt;T extends Runnable &amp; Number&gt; void bad1(T t) { }
+
+// INVALID — cannot extend more than one class
+public &lt;T extends Number &amp; Thread&gt; void bad2(T t) { }</pre>
+<h3>Rules (same as class level)</h3>
+<ol><li>First bound must be a class (if any class is present)</li></ol>
+<ol><li>Then interfaces with &amp;</li></ol>
+<ol><li>Cannot extend more than one class</li></ol>
+<p>Board note: We can define bounded types even at method level also. These are not new rules — copy-paste from class-level generics.</p>
+<h2>15:30 — Communication with non-generic code</h2>
+<h3>Core principle: behavior depends on location</h3>
+<p>The location in which the object is present — based on that, behavior will be defined.</p>
+<p>Analogy (Durga Sir&#x27;s classroom story): Same person behaves differently at Shashi&#x27;s house (pure vegetarian) vs at Durga Sir&#x27;s house (non-vegetarian). Person is the same; location changes behavior.</p>
+<p>Applied to generics:</p>
+<h2>25:19 — Live demo: generic list passed to non-generic method</h2>
+<pre class='code'>import java.util.*;
+
+public class GenericNonGenericDemo {
+
+    public static void main(String[] args) {
+        // GENERIC AREA — main method
+        ArrayList&lt;String&gt; l = new ArrayList&lt;&gt;();
+        l.add(&quot;Durga&quot;);
+        l.add(&quot;Ravi&quot;);
+        // l.add(10);  // CE — generic area enforces String
+
+        M1(l);   // pass generic object to non-generic method
+
+        // Back in GENERIC AREA
+        // l.add(10.5);  // CE — again type-safe
+        System.out.println(l);
+    }
+
+    // NON-GENERIC AREA
+    public static void M1(ArrayList l) {   // raw type — no type parameter
+        l.add(10);
+        l.add(10.5);
+        l.add(true);
+        // end of M1
+    }
+}</pre>
+<h3>Step-by-step behavior</h3>
+<p>After M1 returns, l contains: [Durga, Ravi, 10, 10.5, true] — but in main you still cannot add 10.5 because the reference type is ArrayList&lt;String&gt;.</p>
+<h3>Why is passing generic → raw allowed?</h3>
+<p>Backward compatibility with pre-1.5 (1.4) code. Old libraries use raw types; new generic objects must interoperate.</p>
+<p>Board notes:</p>
+<ul><li>If we send a generic object to non-generic area → it starts behaving like non-generic object</li></ul>
+<ul><li>If we send a non-generic object to generic area → it starts behaving like generic object</li></ul>
+<h2>35:06 — Conclusions: purpose and compile-time nature of generics</h2>
+<h3>Main purpose of generics</h3>
+<ol><li>Provide type safety</li></ol>
+<ol><li>Resolve type-casting problems</li></ol>
+<p>Both are compile-time concerns:</p>
+<ul><li>Wrong type added → compile-time error</li></ul>
+<ul><li>Missing cast where required → compile-time error</li></ul>
+<h3>Generics applicable only at compile time, NOT at runtime</h3>
+<p>Generics is a template — like an architect&#x27;s plan:</p>
+<ul><li>Plan needed at the beginning (compile time) to build the building</li></ul>
+<ul><li>Once building exists, you live in the building — not in the plan</li></ul>
+<ul><li>At runtime, no generic concept exists for JVM</li></ul>
+<p>Board note: Generics concept is applicable only at compile time, but not at runtime.</p>
+<h3>Type erasure — last step of compilation</h3>
+<p>At the time of compilation, as the last step, generic syntax is removed. For JVM, ArrayList&lt;String&gt; becomes plain ArrayList.</p>
+<h2>40:16 — Proof 1: raw reference + generic object</h2>
+<pre class='code'>import java.util.*;
+
+public class ErasureProof1 {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList&lt;String&gt;();  // raw ref, generic object
+        l.add(10);
+        l.add(10.5);
+        l.add(true);
+        System.out.println(l);   // [10, 10.5, true]
+    }
+}</pre>
+<p>If generics existed at runtime, adding Integer to a String list would throw exception. It does not — proving erasure.</p>
+<h2>47:07 — Proof 2: all raw declarations equal at runtime</h2>
+<p>These are functionally equal at runtime (JVM ignores type arguments):</p>
+<pre class='code'>ArrayList l1 = new ArrayList();
+ArrayList l2 = new ArrayList&lt;String&gt;();
+ArrayList l3 = new ArrayList&lt;Integer&gt;();
+ArrayList l4 = new ArrayList&lt;Double&gt;();</pre>
+<p>Compiler checks reference type on LHS. All references are raw ArrayList → all equal for assignment/add rules at compile time when LHS is raw.</p>
+<p>Board note: Hence the following declarations are equal (for runtime/JVM perspective after erasure).</p>
+<h2>50:55 — Proof 3: generic LHS enforces type at compile time</h2>
+<p>ArrayList&lt;String&gt; l1 = new ArrayList&lt;String&gt;();
+ArrayList&lt;String&gt; l2 = new ArrayList&lt;&gt;();   // diamond — same</p>
+<p>Both equal — compiler always checks l is ArrayList&lt;String&gt;. Only String objects can be added.</p>
+<h2>53:55 — Proof 4: name clash / same erasure</h2>
+<p>Normal Java — duplicate signatures illegal:</p>
+<pre class='code'>class Test {
+    public int m1(int i) { return 10; }
+    public int m1(int i) { return 20; }  // CE: m1(int) already defined
+}</pre>
+<p>Method signature = method name + argument types (return type not part of signature).</p>
+<h3>With generics — erasure causes clash</h3>
+<pre class='code'>import java.util.*;
+
+class Test {
+    public static void m1(ArrayList&lt;String&gt; l) { }
+    public static void m1(ArrayList&lt;Integer&gt; l) { }  // CE after erasure!
+}</pre>
+<p>Compiler steps at compile time:</p>
+<ol><li>Compile code normally considering generic syntax — both methods look distinct</li></ol>
+<ol><li>Remove generic syntax (erasure)</li></ol>
+<ol><li>Compile resultant code again — both become m1(ArrayList l) → duplicate signature</li></ol>
+<p>Compile error:</p>
+<p>name clash: both methods have the same erasure</p>
+<p>Erasure = method signature after removing generic syntax.</p>
+<p>If generics existed at runtime, these would be two different methods — no clash. The error itself proves compile-time-only generics.</p>
+<h2>Live execution proof (from transcript)</h2>
+<pre class='code'>import java.util.*;
+
+public class ErasureDemo {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList&lt;String&gt;();
+        l.add(10);
+        l.add(10.5);
+        l.add(true);
+        System.out.println(l);
+    }
+}</pre>
+<ul><li>javac ErasureDemo.java — compiles fine</li></ul>
+<ul><li>java ErasureDemo — runs fine, prints 10, 10.5, true</li></ul>
+<ul><li>No runtime exception despite &quot;String list&quot; on RHS</li></ul>
+<h2>Full generic method example</h2>
+<pre class='code'>class GenericMethodDemo {
+
+    // Generic method — T scoped to this method only
+    public static &lt;T&gt; void printArray(T[] arr) {
+        for (T element : arr) {
+            System.out.println(element);
+        }
+    }
+
+    // Bounded generic method
+    public static &lt;T extends Number&gt; double sum(T[] arr) {
+        double total = 0;
+        for (T n : arr) {
+            total += n.doubleValue();
+        }
+        return total;
+    }
+
+    public static void main(String[] args) {
+        String[] names = {&quot;A&quot;, &quot;B&quot;};
+        Integer[] nums = {1, 2, 3};
+
+        printArray(names);
+        printArray(nums);
+        System.out.println(sum(nums));
+    }
+}</pre>
+<h2>OCJP exam traps (Video 177)</h2>
+<h2>Summary</h2>
+<p>Video 177 completes the Generics arc. Generic methods declare &lt;T&gt; before the return type when only one method needs parameterization. Bounded types at method level mirror class-level rules. Location determines behavior when generic and raw code interact — a generic ArrayList&lt;String&gt; passed to raw M1(ArrayList l) allows any add inside M1. Generics exists only at compile time; the compiler erases type parameters so JVM sees raw types — demonstrated by no runtime exception on &quot;wrong&quot; adds and by name clash errors when erasure produces duplicate signatures. This is the last Generics lecture; Durga Sir advises watching Generics videos at least twice.</p>
+<h2>What&#x27;s next</h2>
+<p>Video 178 begins Garbage Collection — introduction and agenda for ~4 sessions.</p>
+<p>End of Video 177 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Generics Part-5 \</td><td>\</td><td>generics method</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=OddYBiLxZ9Y</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>OddYBiLxZ9Y</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 05m 52s</td><td></td><td></td></tr>
+<tr><td>Position</td><td>177 of 203</td><td></td><td></td></tr>
+<tr><td>Source</td><td>YouTube auto-captions (yt-dlp + node PO token)</td><td></td><td></td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Level</th><th>Syntax position</th><th>Example</th></tr>
+<tr><td>Class level</td><td>Just after class name</td><td>class Test&lt;T&gt;</td></tr>
+<tr><td>Method level</td><td>Just before return type</td><td>public &lt;T&gt; void m1(T t)</td></tr>
+</table>
+<table>
+<tr><th>Movement</th><th>Behavior</th></tr>
+<tr><td>Generic object → non-generic area</td><td>Starts behaving like non-generic object</td></tr>
+<tr><td>Non-generic object → generic area</td><td>Starts behaving like generic object</td></tr>
+</table>
+<table>
+<tr><th>Location</th><th>l reference type</th><th>Can add 10?</th><th>Can add &quot;Durga&quot;?</th></tr>
+<tr><td>main (generic)</td><td>ArrayList&lt;String&gt;</td><td>No (CE)</td><td>Yes</td></tr>
+<tr><td>Inside M1 (non-generic)</td><td>Raw ArrayList</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Back in main (generic)</td><td>ArrayList&lt;String&gt;</td><td>No (CE)</td><td>Yes</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>Compile error?</td><td>No — compiler checks reference type (ArrayList raw)</td></tr>
+<tr><td>Runtime exception?</td><td>No — JVM sees plain ArrayList, any object OK</td></tr>
+<tr><td>Output</td><td>10, 10.5, true</td></tr>
+</table>
+<table>
+<tr><th>Trap</th><th>Correct understanding</th></tr>
+<tr><td>Type parameter location</td><td>Class: after name; Method: before return type</td></tr>
+<tr><td>T extends Runnable &amp; Number</td><td>Invalid — class must come first</td></tr>
+<tr><td>Generic → raw method call</td><td>Allowed (compatibility); loses type safety inside raw method</td></tr>
+<tr><td>Generics at runtime?</td><td>No — erasure removes type args</td></tr>
+<tr><td>ArrayList l = new ArrayList&lt;String&gt;(); l.add(10);</td><td>Compiles — ref is raw</td></tr>
+<tr><td>Two methods differing only by type arg</td><td>Name clash after erasure</td></tr>
+<tr><td>Purpose of generics</td><td>Type safety + eliminate casting; compile-time only</td></tr>
+</table>
+</body></html>

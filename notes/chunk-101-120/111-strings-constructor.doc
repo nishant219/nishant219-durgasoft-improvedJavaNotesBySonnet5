@@ -1,0 +1,243 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>111-strings-constructor</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 111</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: java.lang.package Part-7 || Strings||constructor</p>
+<p>Caption title says “constructors of StringsBuffer”; session follows prior String deep-dive and covers StringBuffer/StringBuilder.</p>
+<h3>00:06 — Recap: moving from String to StringBuffer / StringBuilder</h3>
+<p>Last session completed postmortem on String. Now: StringBuffer, then StringBuilder.</p>
+<h3>00:30 — When to use String vs StringBuffer</h3>
+<p>String objects are immutable.</p>
+<p>Problem with String for changing content:</p>
+<p>String s = &quot;Durga&quot;;
+// want &quot;soft&quot; → new object &quot;Durgasoft&quot;
+// want &quot;software&quot; → new object &quot;Durgasoftware&quot;
+// want &quot;Durga Software Solutions&quot; → yet another new object</p>
+<p>For every small change (even comma → semicolon), a new object is created → memory / performance issues at scale.</p>
+<p>Solution for changing content: `StringBuffer`</p>
+<p>Main advantage of StringBuffer over String: all required changes happen in the existing object only (mutable).</p>
+<h3>10:44 — String: length = size = capacity (no separate capacity)</h3>
+<p>For String s = &quot;Durga&quot; (length 5):</p>
+<ul><li>length = size = capacity = 5</li></ul>
+<ul><li>Cannot add/remove after creation → only talk about length for String</li></ul>
+<p>For StringBuffer with &quot;Durga&quot; (length 5):</p>
+<ul><li>length = characters already inserted</li></ul>
+<ul><li>capacity = total characters the buffer can hold (can grow)</li></ul>
+<ul><li>Must distinguish length vs capacity</li></ul>
+<p>Analogy:</p>
+<ul><li>Array ≈ String (fixed size, no capacity talk)</li></ul>
+<ul><li>Collection / ArrayList ≈ StringBuffer (size vs capacity)</li></ul>
+<ul><li>Default ArrayList capacity: 10; default StringBuffer capacity: 16</li></ul>
+<h3>13:12 — StringBuffer Constructor 1: no-arg (default capacity 16)</h3>
+<p>StringBuffer sb = new StringBuffer();
+// Creates empty StringBuffer with default initial capacity = 16</p>
+<p>When 17th character is appended: internal resize (like ArrayList):</p>
+<ol><li>New StringBuffer object created</li></ol>
+<ol><li>Existing 16 chars copied</li></ol>
+<ol><li>17th char added</li></ol>
+<ol><li>Reference repointed; old object eligible for GC</li></ol>
+<p>Growth formula (StringBuffer):</p>
+<p>newCapacity = (currentCapacity + 1) * 2</p>
+<p>ArrayList formula (contrast):</p>
+<p>newCapacity = currentCapacity * 3 / 2 + 1</p>
+<p>Demo:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        StringBuffer sb = new StringBuffer();
+        System.out.println(sb.capacity()); // 16
+
+        sb.append(&quot;abcdefghijklmnop&quot;);     // 16 chars
+        System.out.println(sb.capacity()); // still 16
+
+        sb.append(&quot;q&quot;);                    // 17th char triggers resize
+        System.out.println(sb.capacity()); // 34  → (16+1)*2
+    }
+}</pre>
+<p>Further growth example on board: after filling 34 chars, next append → capacity 70 → (34+1)*2.</p>
+<h3>27:51 — StringBuffer Constructor 2: `int initialCapacity`</h3>
+<p>If you know you&#x27;ll add ~1000 characters, don&#x27;t grow 16→34→70→142→… wastefully:</p>
+<p>StringBuffer sb = new StringBuffer(1000);
+// Empty buffer, initial capacity = 1000 → better performance</p>
+<h3>30:27 — StringBuffer Constructor 3: `String str`</h3>
+<p>Create equivalent StringBuffer for a given String:</p>
+<pre class='code'>String s = &quot;Durga&quot;;
+StringBuffer sb = new StringBuffer(s);</pre>
+<p>Interview twist — capacity is NOT 16 or 5:</p>
+<p>capacity = s.length() + 16</p>
+<p>For &quot;Durga&quot; (length 5): capacity = 5 + 16 = 21</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        StringBuffer sb = new StringBuffer(&quot;Durga&quot;);
+        System.out.println(sb.capacity()); // 21
+    }
+}</pre>
+<p>Three constructors summary:</p>
+<ol><li>new StringBuffer() → empty, capacity 16</li></ol>
+<ol><li>new StringBuffer(int initialCapacity) → empty, specified capacity</li></ol>
+<ol><li>new StringBuffer(String s) → content from string, capacity s.length() + 16</li></ol>
+<h3>36:38 — Important StringBuffer methods (part 1)</h3>
+<p>`charAt` example:</p>
+<p>StringBuffer sb = new StringBuffer(&quot;Durga&quot;);
+System.out.println(sb.charAt(3));  // &#x27;g&#x27; — index 3
+System.out.println(sb.charAt(30)); // StringIndexOutOfBoundsException</p>
+<p>Note: Even for StringBuffer, exception name is `StringIndexOutOfBoundsException` (no separate StringBufferIndexOutOfBoundsException).</p>
+<p>`setCharAt`: replace character at specified index with new character.</p>
+<h3>42:18 — `append()` — overloaded, not String-only</h3>
+<pre class='code'>public StringBuffer append(/* many types */)</pre>
+<p>Return type: `StringBuffer` (enables chaining).</p>
+<p>Overloads exist for: String, int, long, char, double, boolean, etc.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(&quot;pi value is &quot;);
+        sb.append(3.14);      // double
+        sb.append(&quot; it is exactly &quot;);
+        sb.append(true);      // boolean
+        System.out.println(sb);
+    }
+}</pre>
+<p>Output:</p>
+<p>pi value is 3.14 it is exactly true</p>
+<h3>48:18 — `insert(int index, …)` vs `append`</h3>
+<ul><li>`append`: always adds at end</li></ul>
+<ul><li>`insert`: inserts at specified index (also overloaded)</li></ul>
+<pre class='code'>StringBuffer sb = new StringBuffer(&quot;abcdefgh&quot;);
+sb.insert(2, &quot;XYZ&quot;);
+System.out.println(sb);</pre>
+<p>Output: abXYZcdefgh — XYZ inserted at index 2.</p>
+<h3>53:53 — `delete()` methods</h3>
+<ol><li>public StringBuffer delete(int begin, int end) — deletes from begin to `end - 1` (same half-open interval idea as substring)</li></ol>
+<ol><li>public StringBuffer deleteCharAt(int index) — delete single char at index</li></ol>
+<h3>56:30 — `reverse()`</h3>
+<p>No reverse() in String; exists in StringBuffer.</p>
+<pre class='code'>StringBuffer sb = new StringBuffer(&quot;Durga&quot;);
+System.out.println(sb.reverse());</pre>
+<p>Output: agruD</p>
+<ul><li>Reverses order of characters, not each character&#x27;s internal spelling</li></ul>
+<ul><li>&#x27;a&#x27; stays &#x27;a&#x27;, order flips</li></ul>
+<h3>59:26 — `setLength(int newLength)`</h3>
+<pre class='code'>StringBuffer sb = new StringBuffer(&quot;iswarabi&quot;);
+sb.setLength(8);
+System.out.println(sb);</pre>
+<p>Output: iswarabi truncated to first 8 characters → iswarabi → board example keeps first 8 chars (iswarabi → iswarabi trimmed conceptually to length 8).</p>
+<p>If length set shorter, trailing characters removed.</p>
+<h3>1:02:29 — `ensureCapacity(int minimumCapacity)`</h3>
+<p>Increase capacity on the fly after object already created:</p>
+<p>StringBuffer sb = new StringBuffer();  // capacity 16
+sb.ensureCapacity(1000);
+System.out.println(sb.capacity());     // 1000</p>
+<p>Opposite of constructor-with-capacity when you discover size requirement later.</p>
+<h3>1:06:46 — `trimToSize()`</h3>
+<p>Reverse of ensureCapacity — release unused capacity:</p>
+<p>StringBuffer sb = new StringBuffer(1000);  // capacity 1000
+sb.append(&quot;abc&quot;);                          // length 3 only
+sb.trimToSize();
+System.out.println(sb.capacity());         // 3 — deallocate extra</p>
+<h3>1:09:46 — ~12 important StringBuffer methods covered</h3>
+<p>Length, capacity, charAt, setCharAt, append, insert, delete, deleteCharAt, reverse, setLength, ensureCapacity, trimToSize.</p>
+<h3>1:10:08 — Critical: every StringBuffer method is **synchronized**</h3>
+<ul><li>All StringBuffer methods → synchronized</li></ul>
+<ul><li>At a time, only one thread can operate on a given StringBuffer (even reads)</li></ul>
+<ul><li>Thread-safe but performance may suffer (threads wait)</li></ul>
+<p>Java 1.5 response: `StringBuilder` — same API idea, non-synchronized.</p>
+<h3>1:14:48 — StringBuilder origin story (Durga Sir’s explanation)</h3>
+<p>Legend (teaching mnemonic): Sun took StringBuffer.java, replaced buffer → builder, removed `synchronized` keyword → StringBuilder.java.</p>
+<p>Top-level definition: Non-synchronized version of StringBuffer.</p>
+<p>Everything else same (methods, constructors) except above differences.</p>
+<h3>1:27:17 — When String vs StringBuffer vs StringBuilder</h3>
+<h3>1:33:22 — Method chaining</h3>
+<p>Most StringBuffer/StringBuilder mutating methods return `StringBuffer` / `StringBuilder` (same type) → chain calls:</p>
+<pre class='code'>StringBuffer sb = new StringBuffer()
+    .append(&quot;Durga&quot;)
+    .append(&quot;software&quot;)
+    .append(&quot;solutions&quot;)
+    .insert(2, &quot;XYZ&quot;)
+    .reverse()
+    .delete(2, 10);
+System.out.println(sb);</pre>
+<p>Rules:</p>
+<ul><li>Method chaining: after one method, call another on the result</li></ul>
+<ul><li>Execution order: left to right (M1 then M2 then M3 …)</li></ul>
+<p>Board full example:</p>
+<p>StringBuffer sb = new StringBuffer()
+    .append(&quot;Durga&quot;)
+    .append(&quot;software&quot;)
+    .append(&quot;solutions&quot;)
+    .insert(2, &quot;XYZ&quot;)
+    .reverse()
+    .delete(2, 10);
+System.out.println(sb);
+// Output depends on intermediate steps after live demo</p>
+<h3>1:41:40 — Session end</h3>
+<p>StringBuffer constructors, methods, StringBuilder comparison, selection criteria, and method chaining complete.</p>
+<h2>ASR decode notes</h2>
+<p>Java code block count: 16</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP (java.lang package series)</td></tr>
+<tr><td>Position</td><td>111 of 203</td></tr>
+<tr><td>Series</td><td>java.lang.package</td></tr>
+<tr><td>Topic</td><td>String vs StringBuffer; StringBuffer constructors &amp; methods; StringBuilder</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 42m 01s</td></tr>
+<tr><td>Video ID</td><td>JEaVfaRJiZw</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=JEaVfaRJiZw</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Content behavior</th><th>Recommendation</th></tr>
+<tr><td>Fixed, won&#x27;t change frequently</td><td>Use `String`</td></tr>
+<tr><td>Not fixed, keeps changing</td><td>Not recommended to use String</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Purpose</th></tr>
+<tr><td>public int length()</td><td>Number of characters already present</td></tr>
+<tr><td>public int capacity()</td><td>Total characters buffer can accommodate</td></tr>
+<tr><td>public char charAt(int index)</td><td>Character at index (zero-based)</td></tr>
+<tr><td>public void setCharAt(int index, char ch)</td><td>Replace char at index</td></tr>
+</table>
+<table>
+<tr><th></th><th>StringBuffer</th><th>StringBuilder</th></tr>
+<tr><td>Methods synchronized?</td><td>Yes</td><td>No</td></tr>
+<tr><td>Threads at a time</td><td>One</td><td>Multiple</td></tr>
+<tr><td>Thread-safe?</td><td>Yes</td><td>No</td></tr>
+<tr><td>Performance</td><td>Relatively lower (waiting)</td><td>Relatively higher</td></tr>
+<tr><td>Introduced in</td><td>1.0</td><td>1.5</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Choice</th></tr>
+<tr><td>Content fixed, won&#x27;t change often (city name, college name)</td><td>String</td></tr>
+<tr><td>Content changes + thread safety required</td><td>StringBuffer</td></tr>
+<tr><td>Content changes + thread safety NOT required</td><td>StringBuilder</td></tr>
+</table>
+<table>
+<tr><th>Heard</th><th>Intended</th></tr>
+<tr><td>sing / single buffer</td><td>StringBuffer</td></tr>
+<tr><td>sting buffer / singer</td><td>StringBuffer</td></tr>
+<tr><td>upend / P</td><td>append</td></tr>
+<tr><td>Kat / karat / car get</td><td>charAt</td></tr>
+<tr><td>set car get</td><td>setCharAt</td></tr>
+<tr><td>Prim to size</td><td>trimToSize</td></tr>
+<tr><td>insure capacity</td><td>ensureCapacity</td></tr>
+<tr><td>threat / thre</td><td>thread</td></tr>
+<tr><td>build / Builder</td><td>StringBuilder</td></tr>
+</table>
+</body></html>

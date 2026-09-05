@@ -1,0 +1,212 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>017-increment-decrement-arithmetic</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 017 — Increment, decrement, and arithmetic operators</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Operators &amp; Assignments Part-1  || Increment &amp; Decrement , Arithmetic</p>
+<p>English captions were not available (YouTube only offered Hindi auto-captions of this upload, which do not track the lecture). Video 016 ends Language Fundamentals. Video 018 opens with “last session we covered arithmetic operators and increment and decrement; now string concatenation +.” These notes are that Part-1 operators lecture.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Operators &amp; Assignments module starts here</li></ol>
+<ol><li>Increment and decrement: pre vs post</li></ol>
+<ol><li>What ++ may be applied to (and what is a compile error)</li></ol>
+<ol><li>The byte b++ vs b = b + 1 difference (the most famous example)</li></ol>
+<ol><li>Arithmetic operators and result-type rule (max(int, type of a, type of b))</li></ol>
+<ol><li>/ and % with integers vs floating point: ArithmeticException, Infinity, NaN</li></ol>
+<ol><li>String + is next lecture — only a teaser if mentioned</li></ol>
+<h2>Detailed notes</h2>
+<h3>Increment and decrement</h3>
+<p>Operators: ++ (plus one) and -- (minus one).</p>
+<p>int x = 10;
+int y = ++x;  // x = 11, y = 11
+int x2 = 10;
+int y2 = x2++; // y2 = 10, x2 = 11</p>
+<p>int x = 10;
+System.out.println(++x); // 11, x is 11
+int a = 10;
+System.out.println(a++); // 10, a is 11
+System.out.println(a);   // 11</p>
+<p>Durga’s spoken shortcut: pre means “first change, then remaining operation”; post means “first remaining operation, then change.”</p>
+<h3>What you may apply `++` / `--` to</h3>
+<p>Must be a variable (something that can be stored back).</p>
+<p>int x = 10;
+x++;          // valid
+++x;          // valid
+final int y = 10;
+y++;          // CE — cannot assign to final
+10++;         // CE — increment needs a variable, not a literal
+(x+1)++;      // CE — (x+1) is a value, not a variable</p>
+<p>Cannot nest:</p>
+<p>int x = 10;
+++(++x);      // CE</p>
+<p>Cannot apply to `boolean`:</p>
+<p>boolean b = true;
+b++;          // CE</p>
+<p>Cannot apply to a `double`? You can — floating variables accept ++ (x = x + 1 with promotion). Durga’s invalid list is: literals, expressions, final, boolean, nested ++.</p>
+<h3>The `byte` puzzle (memorize cold)</h3>
+<p>byte b = 10;
+b++;          // valid</p>
+<p>byte b = 10;
+b = b + 1;    // CE: possible loss of precision — int to byte</p>
+<p>Why: ++ is internally like b = (type of b) (b + 1). The compiler inserts a cast back to byte.</p>
+<p>b = b + 1 uses the arithmetic rule: byte + int → int. Assigning int to byte is CE without a cast.</p>
+<p>byte b = 10;
+b = (byte) (b + 1);  // valid — this is what ++ does</p>
+<p>Same for short and char:</p>
+<p>char ch = &#x27;a&#x27;;
+ch++;                 // valid — becomes &#x27;b&#x27;
+ch = ch + 1;          // CE</p>
+<p>short s = 10;
+s++;                  // valid
+s = s + 1;            // CE</p>
+<p>int and wider: both forms are fine because int + int is int.</p>
+<p>int x = 10;
+x = x + 1;  // valid
+x++;        // valid</p>
+<p>Overflow: byte b = 127; b++; wraps to -128 (silent two’s complement). No exception. Exam may ask the printed value.</p>
+<h3>Expression questions</h3>
+<pre class='code'>int x = 10;
+int y = x++ + ++x + x--;</pre>
+<p>Walk left to right, applying post/pre at each term. Durga spends a long time on these. Method:</p>
+<ol><li>Write current x</li></ol>
+<ol><li>For each operand, if post: use then change; if pre: change then use</li></ol>
+<ol><li>Sum</li></ol>
+<p>Example:</p>
+<p>int x = 10;
+int y = x++;    // y=10, x=11</p>
+<p>A typical board sum:</p>
+<p>int x = 4;
+int y = x++ + ++x;  // 4 + 6 = 10, final x = 6</p>
+<p>(After x++, x is 5; ++x makes 6 and uses 6.)</p>
+<p>Always recompute; don’t memorize one magic total.</p>
+<h3>Arithmetic operators</h3>
+<p>Binary: + - * / %</p>
+<p>Unary: +x -x</p>
+<p>+ on strings is concatenation — next lecture. In this lecture, + is numeric addition unless a String is already in the expression.</p>
+<h3>Result type rule</h3>
+<p>For a + b (and - * / % on numbers):</p>
+<p>Result type = `max(int, type of a, type of b)`</p>
+<p>“Max” in the family: byte/short/char → int → long → float → double.</p>
+<p>Consequences:</p>
+<p>byte a = 10, b = 20;
+byte c = a + b;     // CE — a+b is int
+int i = a + b;      // valid (30)</p>
+<p>byte a = 10;
+int b = 20;
+int c = a + b;      // valid</p>
+<p>int a = 10;
+float b = 20.5f;
+float c = a + b;    // 30.5f</p>
+<p>long a = 10L;
+double b = 2.0;
+double c = a * b;</p>
+<p>char + char is int (Unicode values added):</p>
+<p>System.out.println(&#x27;a&#x27; + &#x27;b&#x27;);  // 97+98 = 195</p>
+<h3>Division and remainder — integers</h3>
+<p>System.out.println(10 / 2);   // 5
+System.out.println(10 / 3);   // 3  (truncates toward zero)
+System.out.println(10 % 3);   // 1</p>
+<p>Integer divide by zero:</p>
+<p>System.out.println(10 / 0);   // Runtime: ArithmeticException: / by zero
+System.out.println(10 % 0);   // ArithmeticException</p>
+<p>ArithmeticException is an unchecked RuntimeException. No throws needed. Program crashes unless you catch it.</p>
+<p>There is no integer Infinity.</p>
+<h3>Division — floating point</h3>
+<p>System.out.println(10.0 / 0);    // Infinity
+System.out.println(-10.0 / 0);   // -Infinity
+System.out.println(0.0 / 0.0);   // NaN
+System.out.println(-0.0 / 0.0);  // NaN</p>
+<p>10 / 0.0 — one operand is double (or float), so floating rules apply → Infinity, not exception.</p>
+<p>System.out.println(10 / 0.0);    // Infinity
+System.out.println(10.0 / 0);    // Infinity</p>
+<p>Constants:</p>
+<ul><li>Float.POSITIVE_INFINITY / Double.POSITIVE_INFINITY</li></ul>
+<ul><li>NEGATIVE_INFINITY</li></ul>
+<ul><li>Float.NaN / Double.NaN</li></ul>
+<p>NaN is not equal to itself:</p>
+<p>System.out.println(Float.NaN == Float.NaN);  // false
+System.out.println(Float.isNaN(0.0f / 0.0f)); // true</p>
+<h3>`%` with floating point</h3>
+<p>Java allows 10.0 % 0.0 → NaN, and 10.5 % 3 → 1.5. This is different from some students’ C mental model.</p>
+<h3>Unary minus</h3>
+<p>int x = 10;
+System.out.println(-x);  // -10</p>
+<p>-10 is unary minus on the literal 10, still an int.</p>
+<h3>What this lecture is not</h3>
+<ul><li>+ with &quot;durga&quot; + 10 → video 018</li></ul>
+<ul><li>== vs equals → 018</li></ul>
+<ul><li>instanceof, bitwise → 019</li></ul>
+<ul><li>&amp;&amp; vs &amp; → 020</li></ul>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Operators1 {
+    public static void main(String[] args) {
+        byte b = 10;
+        b++;
+        // b = b + 1; // CE
+
+        int x = 10;
+        System.out.println(x++); // 10
+        System.out.println(++x); // 12
+
+        System.out.println(&#x27;a&#x27; + 1);     // 98
+        System.out.println(10 / 0.0);    // Infinity
+        System.out.println(0.0 / 0.0);   // NaN
+        try {
+            System.out.println(10 / 0);
+        } catch (ArithmeticException e) {
+            System.out.println(&quot;int / 0 → &quot; + e);
+        }
+    }
+}</pre>
+<h2>Rules to memorize</h2>
+<ol><li>++/-- need a non-final variable; no literals, no nested ++, no boolean.</li></ol>
+<ol><li>b++ is valid for byte/short/char; b = b + 1 is CE.</li></ol>
+<ol><li>Arithmetic result type = max(int, typeof a, typeof b).</li></ol>
+<ol><li>byte + byte is int.</li></ol>
+<ol><li>int / 0 → ArithmeticException; floating / 0 → Infinity / -Infinity / NaN.</li></ol>
+<ol><li>NaN == NaN is false.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>byte b = 10; b = b + 1; CE vs b++ valid.</li></ul>
+<ul><li>127 as byte then ++ → -128.</li></ul>
+<ul><li>10 / 0 vs 10.0 / 0 — exception vs Infinity.</li></ul>
+<ul><li>&#x27;a&#x27; + &#x27;b&#x27; prints 195, not ab (no String involved).</li></ul>
+<ul><li>final int x = 10; x++; CE.</li></ul>
+<h2>Recap</h2>
+<p>Operators module is open. Next: + as concatenation, then relational and equality.</p>
+<p>Next video: 018-concatenation-relational-equality.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 17 of 203</td></tr>
+<tr><td>Series</td><td>Operators &amp; Assignments · Part 1 of 7</td></tr>
+<tr><td>Topic</td><td>Increment / decrement (++ --) and arithmetic (+ - * / %)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 37m 49s (5869 seconds)</td></tr>
+<tr><td>Video ID</td><td>1JGOPhIyhAM</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=1JGOPhIyhAM</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Form</th><th>Name</th><th>Meaning</th></tr>
+<tr><td>++x</td><td>pre-increment</td><td>increment, then use the new value</td></tr>
+<tr><td>x++</td><td>post-increment</td><td>use the old value, then increment</td></tr>
+<tr><td>--x</td><td>pre-decrement</td><td>decrement, then use</td></tr>
+<tr><td>x--</td><td>post-decrement</td><td>use, then decrement</td></tr>
+</table>
+</body></html>

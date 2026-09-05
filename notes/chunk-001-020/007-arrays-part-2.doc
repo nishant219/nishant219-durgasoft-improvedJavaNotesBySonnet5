@@ -1,0 +1,268 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>007-arrays-part-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 007 — Arrays part 2</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-7 || Arrays part-2</p>
+<h2>What this lecture covers</h2>
+<p>Continues the arrays agenda from video 006.</p>
+<ol><li>Two-dimensional (and three-dimensional) creation — not a C/C++ matrix; array of arrays</li></ol>
+<ol><li>Exam drill: which of ten new expressions are valid (base size vs later sizes)</li></ol>
+<ol><li>Array initialization — default values; printing a reference vs printing an element</li></ol>
+<ol><li>2-D print drill (x, x[0], x[0][0]) including the new int[2][] + NullPointerException case</li></ol>
+<ol><li>Overriding default values with customized values</li></ol>
+<ol><li>Out-of-range index (ArrayIndexOutOfBoundsException) vs non-int index (compile-time error)</li></ol>
+<p>Single-line {10, 20, 30} shortcut, length vs length(), anonymous arrays, and element assignments are not in this video (they are video 008).</p>
+<h2>Detailed notes</h2>
+<h3>Two-dimensional creation — not a matrix ([00:06]–[07:37])</h3>
+<p>Up to here, one-dimensional creation is done. Now: how to create two-dimensional arrays.</p>
+<p>In C / C++, a two-dimensional array is also known as a matrix: a group of rows and columns (first row, second row, …; first column, second column, …). That word is very popular there.</p>
+<h4>Why a matrix wastes memory — supplementary marks example ([01:21]–[03:16])</h4>
+<p>Four students’ supplementary (not regular) marks, out of 100:</p>
+<p>If you store this as a 4×5 matrix:</p>
+<ul><li>S1 uses all five cells.</li></ul>
+<ul><li>S2 uses two; three cells wasted.</li></ul>
+<ul><li>S3 uses one; four cells wasted.</li></ul>
+<ul><li>S4 uses three; two cells wasted.</li></ul>
+<p>Going for arrays is already a memory bet (fixed size). A matrix on top of that wastes more memory.</p>
+<h4>Java’s approach: array of arrays ([03:16]–[05:26])</h4>
+<p>Some languages did not implement multi-dimensional arrays in matrix style. They followed a different memory approach: array of arrays (for 3-D: array of array of arrays).</p>
+<p>Same four students in Java:</p>
+<ul><li>Base array size 4 (four students).</li></ul>
+<ul><li>First student: an array of size 5 → 10, 12, 07, 09, 15.</li></ul>
+<ul><li>Second student: an array of size 2 → 28, 67.</li></ul>
+<ul><li>Third student: an array of size 1 → 80.</li></ul>
+<ul><li>Fourth student: an array of size 3 → 40, 50, 28.</li></ul>
+<p>Each element of the base array is itself an array. Inner lengths need not be equal. No wasted slots.</p>
+<p>In Java, two-dimensional arrays are not implemented using matrix style. Some people followed the array of arrays approach for multi-dimensional array creation.</p>
+<p>Main advantage of this approach: memory utilization will be improved.</p>
+<p>A 2-D array is an array where each element is an array. A 3-D array is an array of array of arrays (one more level).</p>
+<h3>Example 1 — jagged 2-D, write the Java ([07:40]–[10:39])</h3>
+<p>Memory structure:</p>
+<ul><li>Base size 2.</li></ul>
+<ul><li>First element: 1-D array of size 2.</li></ul>
+<ul><li>Second element: 1-D array of size 3.</li></ul>
+<p>Overall dimension: 2 (array of arrays).</p>
+<pre class='code'>int[][] x = new int[2][];   // base size is 2; next-level size is not fixed, so leave it
+x[0] = new int[2];
+x[1] = new int[3];</pre>
+<p>At least the base size we have to specify. Remaining sizes are not required in that same new. If the next level is sometimes 2 and sometimes 3, it is not fixed — leave it; fill it in later lines.</p>
+<h3>Example 2 — jagged 3-D ([10:43]–[17:04])</h3>
+<p>Memory structure (listen carefully):</p>
+<ul><li>Base size 2 (two “wings”).</li></ul>
+<ul><li>First wing: a 2-D array whose base size is 3, and the innermost arrays have sizes 1, 2, and 3 (not fixed).</li></ul>
+<ul><li>Second wing: a 2-D array whose base size is 2, and every innermost array has size 2 (fixed).</li></ul>
+<p>Dimension: array of array of arrays → 3-D.</p>
+<p>int[][][] x = new int[2][][];   // only base size 2 is fixed
+
+x[0] = new int[3][];            // first wing: 2-D with base 3; innermost sizes vary
+x[0][0] = new int[1];
+x[0][1] = new int[2];
+x[0][2] = new int[3];
+
+x[1] = new int[2][2];           // second wing: innermost size always 2, so you may fix it here</p>
+<p>Rules he wants you to internalise while writing this:</p>
+<ul><li>Specify sizes from the left (base) as far as they are fixed.</li></ul>
+<ul><li>If a later size varies, omit it in that new and assign inner arrays on later lines.</li></ul>
+<ul><li>If a later size is always the same, you may specify it in the same new (new int[2][2]).</li></ul>
+<h3>Exam drill — which of the following array creations are valid ([17:09]–[21:29])</h3>
+<p>Ten lines. Decide valid / invalid. Pattern: you may omit trailing sizes, but you must never skip a size and then specify a later one. At least the base size is required.</p>
+<p>| # | Code | Valid? | Why |</p>
+<p>| --: | --- | --- | --- |</p>
+<p>| 1 | int[] a = new int[]; | no | at least base size must be specified |</p>
+<p>| 2 | int[] a = new int[3]; | yes | (he also writes a new int[10] 1-D as the same idea) |</p>
+<p>| 3 | int[][] a = new int[][]; | no | at least base size must be specified |</p>
+<p>| 4 | int[][] a = new int[3][]; | yes | base given; second dimension left for later |</p>
+<p>| 5 | int[][] a = new int[][4]; | no | without specifying base size you cannot specify the next level |</p>
+<p>| 6 | int[][] a = new int[3][4]; | yes | both sizes given |</p>
+<p>| 7 | int[][][] a = new int[3][4][5]; | yes | all three sizes given |</p>
+<p>| 8 | int[][][] a = new int[3][4][]; | yes | first two dimensions specified; last left open |</p>
+<p>| 9 | int[][][] a = new int[3][][5]; | no | without specifying the second dimension size you cannot talk about the third |</p>
+<p>| 10 | int[][][] a = new int[][4][5]; | no | without specifying the first dimension size you cannot specify second and third |</p>
+<p>Recite the key: 1 invalid, 2 valid, 3 invalid, 4 valid, 5 invalid, 6 valid, 7 valid, 8 valid, 9 and 10 invalid.</p>
+<p>That finishes array creation (1-D loopholes were in part 1; 2-D/3-D new rules are here).</p>
+<h3>Array initialization ([21:35]–[48:08])</h3>
+<h4>Example 1 — 1-D: printing the reference vs printing an element ([21:51]–[26:08])</h4>
+<pre class='code'>int[] x = new int[3];
+System.out.println(x);
+System.out.println(x[0]);</pre>
+<p>He compiles and runs.</p>
+<p>First line — `println(x)`: x is a reference variable. Whenever we try to print any reference variable, internally `toString()` is called. Default Object.toString() (he says he will explain it properly in java.lang) returns:</p>
+<p>classname@hashcode_in_hexadecimal</p>
+<p>For int[] the class name is [I, so output looks like:</p>
+<p>[I@d0c6</p>
+<p>(He actually got [I@d0c6 in this run.) The hex number is not fixed — it varies from system to system and version to version. Do not memorise the digits.</p>
+<p>Second line — `println(x[0])`: once we create an array, every array element is by default initialized with default values. For int that is 0. So x[0] prints `0`.</p>
+<p>Board note:</p>
+<p>Once we create an array, every array element is by default initialized with default values.</p>
+<h4>Note on printing a reference ([26:13]–[27:53])</h4>
+<p>Whenever we try to print any reference variable, internally toString() will be called, which is implemented by default to return the string in the form:</p>
+<p>`classname@hashcode_in_hexadecimal`</p>
+<p>He will expand this in the java.lang package. For now, arrays prove the rule because every array is an object.</p>
+<h4>Example 2 — 2-D fully sized ([28:06]–[33:22])</h4>
+<pre class='code'>int[][] x = new int[2][3];   // or new int[3][2] — he says either 2,3 or 3,2 is fine
+System.out.println(x);
+System.out.println(x[0]);
+System.out.println(x[0][0]);</pre>
+<p>He also writes it as base size 3 and next-level size 2 in the talking example, then runs new int[3][2]. Same idea.</p>
+<p>He ran it: [[I@… then [I@… then 0. Hash codes not fixed (3825A5, 19821F are just examples he says aloud).</p>
+<p>Terminology to recite:</p>
+<ul><li>x is a two-dimensional array reference.</li></ul>
+<ul><li>x[0] is a one-dimensional array reference.</li></ul>
+<ul><li>x[0][0] is 0.</li></ul>
+<p>Every inner int is default 0. The inner objects exist because the second dimension was specified.</p>
+<h4>Example 3 — 2-D with only base size: `null` then NPE ([33:25]–[37:46])</h4>
+<p>Small change: drop the second dimension.</p>
+<pre class='code'>int[][] x = new int[2][];
+System.out.println(x);
+System.out.println(x[0]);
+System.out.println(x[0][0]);</pre>
+<p>Base size is still 2. x is still a 2-D array object, so the first println still prints [[I@….</p>
+<p>The next-level size was not specified, so each slot of x is supposed to point to a 1-D array object, but no such object was created. Default value of an object reference is `null`. So x[0] is null.</p>
+<p>x[0][0] means: take null and ask for its first element. You cannot perform any operation on null. Runtime exception:</p>
+<p>`NullPointerException`</p>
+<p>He runs it: [[I@12dcdb8c (hex not fixed), then null, then NPE.</p>
+<p>Note: if we try to perform any operation on null, we will get a runtime exception saying NullPointerException.</p>
+<h4>Overriding default values ([38:40]–[42:33])</h4>
+<pre class='code'>int[] x = new int[6];</pre>
+<p>Size 6. Every element default 0. If you are not satisfied with the defaults, override them with customized values:</p>
+<p>x[0] = 10;
+x[1] = 20;
+x[2] = 30;
+x[3] = 40;
+x[4] = 50;
+x[5] = 60;</p>
+<p>Draw the diagram: six boxes, zeros replaced by 10, 20, 30, 40, 50, 60.</p>
+<p>Board:</p>
+<p>Once we create an array, every array element is by default initialized with default values. If we are not satisfied with the default values, then we can override these values with our customized values.</p>
+<h4>Out-of-range index vs illegal index type ([42:35]–[48:08])</h4>
+<p>Valid indexes for size 6 are 0 to 5.</p>
+<p>x[6] = 70;     // runtime: ArrayIndexOutOfBoundsException
+x[-6] = 80;    // runtime: ArrayIndexOutOfBoundsException  (same — still out of range)
+x[2.5] = 90;   // compile-time error, not runtime</p>
+<p>`x[6]` and `x[-6]`: whether +6 or −6, both are out of the valid range 0…5. Same runtime exception: `ArrayIndexOutOfBoundsException`. (He also says “index out of bounds exception” when dictating the note.)</p>
+<p>`x[2.5]`: the compiler checks whether the index is a valid `int` value. Plus/minus and in-range/out-of-range are JVM jobs. 2.5 is double, not int → syntactical mistake → compile-time error:</p>
+<p>possible loss of precision
+found    : double
+required : int</p>
+<p>Logical mistake (wrong index, but still an int) → runtime. Syntactical mistake (not an int index) → compile time.</p>
+<p>Note: if we try to access an array element with an out-of-range index (either a positive or a negative int value), we will get a runtime exception saying ArrayIndexOutOfBoundsException.</p>
+<p>The video ends on that note. Shortcut {…} initialization is the next session.</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // Example 1 — jagged 2-D
+        int[][] x2 = new int[2][];
+        x2[0] = new int[2];
+        x2[1] = new int[3];
+
+        // Example 2 — jagged 3-D
+        int[][][] x3 = new int[2][][];
+        x3[0] = new int[3][];
+        x3[0][0] = new int[1];
+        x3[0][1] = new int[2];
+        x3[0][2] = new int[3];
+        x3[1] = new int[2][2];
+
+        // 10-line exam set
+        // int[] a = new int[];              // CE
+        int[] a = new int[3];                // OK
+        // int[][] b = new int[][];          // CE
+        int[][] b = new int[3][];            // OK
+        // int[][] c = new int[][4];         // CE
+        int[][] d = new int[3][4];           // OK
+        int[][][] e = new int[3][4][5];      // OK
+        int[][][] f = new int[3][4][];       // OK
+        // int[][][] g = new int[3][][5];    // CE
+        // int[][][] h = new int[][4][5];    // CE
+
+        int[] x = new int[3];
+        System.out.println(x);      // [I@&lt;hex&gt;
+        System.out.println(x[0]);   // 0
+
+        int[][] y = new int[3][2];
+        System.out.println(y);         // [[I@&lt;hex&gt;
+        System.out.println(y[0]);      // [I@&lt;hex&gt;
+        System.out.println(y[0][0]);   // 0
+
+        int[][] z = new int[2][];
+        System.out.println(z);         // [[I@&lt;hex&gt;
+        System.out.println(z[0]);      // null
+        // System.out.println(z[0][0]); // RE: NullPointerException
+
+        int[] w = new int[6];
+        w[0] = 10; w[1] = 20; w[2] = 30;
+        w[3] = 40; w[4] = 50; w[5] = 60;
+        // w[6] = 70;     // RE: ArrayIndexOutOfBoundsException
+        // w[-6] = 80;    // RE: ArrayIndexOutOfBoundsException
+        // w[2.5] = 90;   // CE: possible loss of precision, found double, required int
+    }
+}</pre>
+<h2>Rules to memorize</h2>
+<ol><li>Java 2-D arrays are not matrices. They are arrays of arrays. Advantage: better memory utilization (jagged rows).</li></ol>
+<ol><li>3-D = array of array of arrays.</li></ol>
+<ol><li>In new, specify sizes left-to-right as far as they are known. At least the base size is required.</li></ol>
+<ol><li>You may write new int[3][] and new int[3][4][]. You may not write new int[][4], new int[3][][5], or new int[][4][5] — you cannot skip a dimension and then fill a later one.</li></ol>
+<ol><li>Creating an array default-initializes every element (int → 0, reference → null, etc.).</li></ol>
+<ol><li>Printing a reference calls toString() → classname@hexHash ([I@…, [[I@…). The hex is not fixed.</li></ol>
+<ol><li>x 2-D ref, x[0] 1-D ref, x[0][0] the int (or NPE if x[0] is null).</li></ol>
+<ol><li>new int[2][] → x[0] is null; x[0][0] → `NullPointerException`.</li></ol>
+<ol><li>Override defaults with assignments x[i] = value.</li></ol>
+<ol><li>Index must be int. Out-of-range int (positive or negative) → `ArrayIndexOutOfBoundsException`. Non-int (e.g. 2.5) → CE possible loss of precision.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>“2-D array means matrix” is the C story. In Java it is array of arrays; inner lengths can differ.</li></ul>
+<ul><li>new int[3][] is valid. new int[][3] is invalid. This pair is asked constantly.</li></ul>
+<ul><li>new int[3][][5] is invalid even though “3” (base) is present — the hole is in the middle.</li></ul>
+<ul><li>System.out.println(x) for an array does not print elements. It prints [I@….</li></ul>
+<ul><li>System.out.println(x[0]) for int[][] created with new int[2][3] prints a 1-D reference, not 0. 0 is x[0][0].</li></ul>
+<ul><li>new int[2][] then x[0][0] is NPE, not ArrayIndexOutOfBoundsException.</li></ul>
+<ul><li>x[-1] is not a compile error. Same AIOOB as x[length].</li></ul>
+<ul><li>x[2.5] is a compile error. Do not say AIOOB for a double index.</li></ul>
+<ul><li>Compiler vs JVM: compiler checks “is the index int?”; JVM checks “is it in 0 … length-1?”</li></ul>
+<h2>Recap</h2>
+<p>Part 2 is multi-dimensional creation (array-of-arrays, base size, the ten new lines) and initialization (defaults, toString of a reference, NPE on null inner array, customized values, AIOOB vs CE on the index).</p>
+<p>Next lecture (video 008) is the shortcut int[] x = {10, 20, 30}, then length vs length(), anonymous arrays, and array element assignments.</p>
+<p>Next video: 008-arrays-part-3.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 7 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 7 of 16</td></tr>
+<tr><td>Topic</td><td>Arrays part 2</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>48m 20s (2900 seconds)</td></tr>
+<tr><td>Video ID</td><td>Qtw3nVWqf-w</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=Qtw3nVWqf-w</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Student</th><th>Marks</th><th>Count</th></tr>
+<tr><td>S1 (very “intelligent” even in supplementary)</td><td>10, 12, 07, 09, 15</td><td>5 subjects</td></tr>
+<tr><td>S2</td><td>28, 67</td><td>2</td></tr>
+<tr><td>S3</td><td>80</td><td>1</td></tr>
+<tr><td>S4</td><td>40, 50, 28</td><td>3</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>What it is</th><th>Output</th></tr>
+<tr><td>x</td><td>reference to the 2-D array object</td><td>[[I@someHex (class name two-dimensional int)</td></tr>
+<tr><td>x[0]</td><td>reference to a 1-D array object (an inner row that does exist)</td><td>[I@someOtherHex</td></tr>
+<tr><td>x[0][0]</td><td>an int element</td><td>0 (default)</td></tr>
+</table>
+</body></html>

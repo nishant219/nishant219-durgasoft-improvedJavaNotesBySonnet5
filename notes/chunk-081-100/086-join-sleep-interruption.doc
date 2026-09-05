@@ -1,0 +1,601 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>086-join-sleep-interruption</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 086 — join(), sleep(), and thread interruption</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-6 || join() || sleep() || Thread Interruption</p>
+<h2>Overview</h2>
+<p>This lecture continues the multithreading series (Part 6). It covers three major areas:</p>
+<ol><li>`join()` loopholes — child waiting for main, mutual join deadlock, self-join deadlock</li></ol>
+<ol><li>`sleep()` — purpose, signatures, lifecycle impact, slide-rotator demo</li></ol>
+<ol><li>Thread interruption — interrupt(), deferred interrupt behavior, comparison of yield / join / sleep</li></ol>
+<p>ASR glossary (decode Whisper errors):</p>
+<h3>00:10 — Recap: main waiting for child (Case 1 review)</h3>
+<p>In the previous example (Part 5), the main thread called t.join() and had to wait until the child thread completed its work.</p>
+<p>Case 2 (new): Reverse the scenario — the child thread must wait until the main thread completes.</p>
+<p>Waiting of child thread until completing main thread.</p>
+<p>Terminology matters: which thread must call join(), and on which thread object?</p>
+<h3>01:17 — Case 2 setup: child calls join on main</h3>
+<p>Problem: Inside MyThread.run(), the child thread must call join() on the main thread object. But the child does not have a reference to the main thread by default.</p>
+<p>Twist: How can the child get the main thread reference?</p>
+<p>Solution: Use a static `Thread` variable in MyThread and assign it from main before starting the child.</p>
+<pre class='code'>class MyThread extends Thread {
+    static Thread mt;  // will hold main thread reference
+
+    public void run() {
+        // child will call join on main via mt
+    }
+}</pre>
+<p>Key insight: run() is executed by the child thread, not main. The child needs access to the main thread object to call mt.join().</p>
+<h3>02:38 — MyThread.run() with mt.join()</h3>
+<p>Inside run(), the child thread calls join() on the main thread object stored in mt:</p>
+<pre class='code'>class MyThread extends Thread {
+    static Thread mt;
+
+    public void run() {
+        try {
+            mt.join();  // child waits until main completes
+        } catch (InterruptedException e) {
+            // handle
+        }
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Child Thread&quot;);
+        }
+    }
+}</pre>
+<p>Flow after `t.start()`:</p>
+<h3>03:55 — ThreadJoinDemo1: assigning main reference</h3>
+<pre class='code'>class ThreadJoinDemo1 {
+    public static void main(String[] args) throws InterruptedException {
+        MyThread.mt = Thread.currentThread();  // mt → main thread
+
+        MyThread t = new MyThread();
+        t.start();
+
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Main Thread&quot;);
+            Thread.sleep(2000);  // main sleeps 2 seconds each iteration
+        }
+    }
+}</pre>
+<p>Why `MyThread.mt = Thread.currentThread()`?</p>
+<ul><li>Thread.currentThread() returns the currently executing thread — here, the main thread</li></ul>
+<ul><li>mt is static, so it is accessible as MyThread.mt from main</li></ul>
+<ul><li>After this assignment, mt points to the main thread object for the child to use in run()</li></ul>
+<p>Thread count after `t.start()`: 2 threads — main and child.</p>
+<h3>05:26 — Main thread loop with sleep</h3>
+<p>Main continues its job while child waits:</p>
+<pre class='code'>for (int i = 0; i &lt; 10; i++) {
+    System.out.println(&quot;Main Thread&quot;);
+    Thread.sleep(2000);
+}</pre>
+<p>Main uses Thread.sleep(2000) — must handle InterruptedException (here via throws on main).</p>
+<h3>06:32 — Child enters waiting via mt.join()</h3>
+<p>try {
+    mt.join();  // child thread calls join on main thread object
+} catch (InterruptedException e) {
+}</p>
+<p>Semantics:</p>
+<ul><li>Executed by: child thread</li></ul>
+<ul><li>Called on: main thread object (mt)</li></ul>
+<ul><li>Effect: child enters waiting state until main thread completes (finishes main method)</li></ul>
+<p>After main completes → child resumes → prints &quot;Child Thread&quot; 10 times.</p>
+<h3>08:13 — Case 2 expected output</h3>
+<p>Output order:</p>
+<p>Main Thread
+Main Thread
+... (10 times)
+Child Thread
+Child Thread
+... (10 times)</p>
+<p>Rule: Child cannot print until main finishes, because mt.join() blocks the child.</p>
+<p>Main can wait for child. Child can wait for main. Both are possible via `join()`.</p>
+<h3>09:56 — Live demo: ThreadJoinDemo1</h3>
+<p>Durga Sir runs ThreadJoinDemo1.java:</p>
+<ul><li>Main thread prints repeatedly (with 2-second pauses)</li></ul>
+<ul><li>Child thread waits silently</li></ul>
+<ul><li>After main completes, child prints 10 times</li></ul>
+<ul><li>Same output even on a slow machine — child must wait</li></ul>
+<p>Theory note for notes:</p>
+<p>In the above example, child thread calls `join()` on main thread object. Hence, child thread has to wait until completing main thread.</p>
+<h3>15:15 — Case 2 output summary</h3>
+<p>Main Thread .......... (×10)
+Child Thread ......... (×10)</p>
+<h3>15:52 — Case 3: mutual join → deadlock</h3>
+<p>Scenario: Both threads call join() on each other.</p>
+<pre class='code'>// After t.start():
+t.join();        // main waits for child  — executed by MAIN
+// Inside child run():
+mt.join();       // child waits for main — executed by CHILD</pre>
+<p>After `t.start()` — 2 threads:</p>
+<p>Result: Deadlock — both wait forever for each other.</p>
+<h3>17:10 — Case 3 code structure</h3>
+<pre class='code'>class MyThread extends Thread {
+    static Thread mt;
+
+    public void run() {
+        try {
+            mt.join();  // child waits for main
+        } catch (InterruptedException e) {
+        }
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Child Thread&quot;);
+        }
+    }
+}
+
+class ThreadJoinDemo3 {
+    public static void main(String[] args) throws InterruptedException {
+        MyThread.mt = Thread.currentThread();
+        MyThread t = new MyThread();
+        t.start();
+        t.join();  // main waits for child — DEADLOCK with mt.join()
+    }
+}</pre>
+<p>Behavior:</p>
+<ul><li>Code compiles fine</li></ul>
+<ul><li>Program runs but cursor blinks forever</li></ul>
+<ul><li>Neither thread can proceed — classic deadlock</li></ul>
+<p>If main thread calls join() on child, and child calls join() on main thread object, both threads wait forever. Program stuck — deadlock.</p>
+<h3>19:54 — Case 4: self-join deadlock</h3>
+<p>Scenario: A thread calls join() on itself.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) throws InterruptedException {
+        Thread.currentThread().join();
+    }
+}</pre>
+<p>Analysis:</p>
+<p>Paradox: Main must complete to satisfy join(), but it cannot complete without passing the join() line → infinite wait.</p>
+<pre class='code'>// Equivalent logic:
+// main thread calls join on main thread itself
+// → main enters waiting until main completes
+// → impossible → program stuck (deadlock)</pre>
+<p>Demo: Test.java compiles; on run, cursor blinks forever.</p>
+<p>If a thread calls join() on the same thread itself, the program will be stuck (deadlock). Thread waits infinite amount of time.</p>
+<h3>25:08 — Case 4 theory summary</h3>
+<p>Four join loopholes covered:</p>
+<h3>25:45 — Introduction to sleep()</h3>
+<p>Next method: Thread.sleep()</p>
+<p>Human analogy: When tired, you rest. For threads: when a thread should not perform any operation for a particular amount of time, use `sleep()`.</p>
+<p>Thread requirement:</p>
+<p>If a thread does not want to perform any operation for a particular amount of time → use sleep method.</p>
+<p>(Durga Sir&#x27;s motivational aside: control sleeping habits; Proverbs — &quot;sleep makes man poor&quot;; max ~6 hours sleep recommended.)</p>
+<h3>33:12 — Real-world sleep examples</h3>
+<p>1. PowerPoint slide rotator</p>
+<ul><li>One thread rotates slides</li></ul>
+<ul><li>After each slide → sleep 2 minutes → next slide auto-advances</li></ul>
+<p>2. Blinking bulb (GUI)</p>
+<ul><li>Thread displays bulb ON</li></ul>
+<ul><li>Sleep 1 second</li></ul>
+<ul><li>OFF, sleep, ON — blinking effect</li></ul>
+<p>Pattern: Wherever pausing for a specific duration is required programmatically → `Thread.sleep()`.</p>
+<h3>36:37 — sleep() method signatures</h3>
+<p>Two overloaded `sleep` methods (unlike join which has three):</p>
+<pre class='code'>public static native void sleep(long millis) throws InterruptedException;
+
+public static void sleep(long millis, int nanos) throws InterruptedException;</pre>
+<p>Why only 2 sleep methods, not 3?</p>
+<ul><li>join() has a no-argument form: wait forever until target completes</li></ul>
+<ul><li>sleep() always requires a time period — &quot;sleep forever without time&quot; is meaningless</li></ul>
+<ul><li>You must specify: 6 seconds, 6 hours, etc.</li></ul>
+<pre class='code'>// NO such method exists:
+// Thread.sleep();  // forever — NOT in API</pre>
+<h3>40:11 — InterruptedException on every sleep()</h3>
+<p>Every sleep method throws `InterruptedException` — a checked exception.</p>
+<pre class='code'>// Must handle via try-catch OR throws
+try {
+    Thread.sleep(2000);
+} catch (InterruptedException e) {
+    // handle interruption
+}</pre>
+<p>Or:</p>
+<pre class='code'>public static void main(String[] args) throws InterruptedException {
+    Thread.sleep(2000);
+}</pre>
+<p>Otherwise: compile-time error.</p>
+<p>Whenever we use sleep method, compulsory we should handle InterruptedException either by try-catch or by throws. Otherwise compile-time error.</p>
+<h3>43:46 — sleep() impact on thread lifecycle</h3>
+<p>Normal lifecycle:</p>
+<p>NEW/BORN → start() → READY/RUNNABLE → scheduler assigns CPU → RUNNING
+    → run() completes → DEAD</p>
+<p>When running thread calls sleep:</p>
+<p>Thread.sleep(1000);                    // overload 1
+Thread.sleep(1000, 100);               // overload 2 — millis + nanos</p>
+<p>Running thread → enters sleeping state (similar to waiting).</p>
+<p>When does sleeping thread wake up?</p>
+<p>After either → thread returns to READY/RUNNABLE → scheduler may assign CPU → RUNNING → eventually DEAD.</p>
+<p>RUNNING --sleep()--&gt; SLEEPING --time expires OR interrupt--&gt; READY/RUNNABLE --&gt; RUNNING --&gt; DEAD</p>
+<h3>49:44 — SlideRotator example</h3>
+<pre class='code'>class SlideRotator {
+    public static void main(String[] args) throws InterruptedException {
+        for (int i = 1; i &lt;= 10; i++) {
+            System.out.println(&quot;Slide &quot; + i);
+            Thread.sleep(5000);  // 5 second pause between slides
+        }
+    }
+}</pre>
+<p>Output behavior:</p>
+<ul><li>Slide 1 displayed</li></ul>
+<ul><li>Wait 5 seconds</li></ul>
+<ul><li>Slide 2 displayed</li></ul>
+<ul><li>... up to Slide 10</li></ul>
+<p>Use cases: PPT auto-advance, photo album slideshow (configure 20s, 30s per image).</p>
+<h3>51:36 — SlideRotator live demo</h3>
+<p>Durga Sir compiles and runs SlideRotator.java:</p>
+<ul><li>Code compiles fine</li></ul>
+<ul><li>Each slide appears after 5-second gap</li></ul>
+<ul><li>Duration configurable per requirement</li></ul>
+<pre class='code'>// Photo album variant — same pattern
+for (int i = 1; i &lt;= photoCount; i++) {
+    System.out.println(&quot;Photo &quot; + i);
+    Thread.sleep(20000);  // 20 seconds per photo
+}</pre>
+<h3>54:33 — Bridge to thread interruption</h3>
+<p>While covering join() and sleep(), a recurring theme appears:</p>
+<ul><li>A waiting thread (due to join) may be interrupted</li></ul>
+<ul><li>A sleeping thread may be interrupted</li></ul>
+<p>Question: How can one thread interrupt another? Is interruption good or bad?</p>
+<p>Depends on situation — mostly considered bad, but sometimes required.</p>
+<h3>55:53 — Interruption analogy: missing the last bus</h3>
+<p>Story: Traveling to native place (~50 km). Last bus at 11:30 PM. You ask fellow villagers: &quot;I&#x27;m sleeping; wake me when the bus comes.&quot;</p>
+<p>They forget → you miss the bus → wait hours for next day.</p>
+<p>Lesson: Sometimes interruption is required — not always bad.</p>
+<h3>57:51 — interrupt() method</h3>
+<p>How one thread interrupts another:</p>
+<pre class='code'>public void interrupt()</pre>
+<p>Thread class provides interrupt() — instance method (not static).</p>
+<p>Targets:</p>
+<p>A thread can interrupt a sleeping or waiting thread using `interrupt()` method of Thread class.</p>
+<h3>1:00:06 — MyThread lazy thread (interrupt demo part 1)</h3>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        try {
+            for (int i = 0; i &lt; 10; i++) {
+                System.out.println(&quot;I am lazy thread&quot;);
+                Thread.sleep(2000);  // sleeps 2 seconds each iteration
+            }
+        } catch (InterruptedException e) {
+            System.out.println(&quot;I got interrupted&quot;);
+        }
+    }
+}</pre>
+<p>Without interruption: Loop runs 10 times, printing + sleeping each time.</p>
+<h3>1:02:15 — ThreadInterruptDemo</h3>
+<pre class='code'>class ThreadInterruptDemo {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+        t.interrupt();  // main interrupts child — LINE 1
+        System.out.println(&quot;End of main&quot;);
+    }
+}</pre>
+<p>Execution analysis:</p>
+<p>Output (with `t.interrupt()` active):</p>
+<p>I am lazy thread
+I got interrupted
+End of main</p>
+<p>Child loop: Runs only 1 time (not 10), because interrupt during sleep throws exception → catch block → run ends.</p>
+<h3>1:04:49 — Commenting out t.interrupt()</h3>
+<pre class='code'>class ThreadInterruptDemo {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+        // t.interrupt();  // COMMENTED — no interruption
+        System.out.println(&quot;End of main&quot;);
+    }
+}</pre>
+<p>Result:</p>
+<ul><li>&quot;I am lazy thread&quot; prints 10 times</li></ul>
+<ul><li>Catch block not executed</li></ul>
+<ul><li>InterruptedException never raised</li></ul>
+<h3>1:06:41 — Re-enable interrupt: confirmed behavior</h3>
+<p>With comment removed:</p>
+<p>I am lazy thread
+I got interrupted
+End of main</p>
+<p>Summary:</p>
+<p>Who interrupts whom? Main thread interrupts child thread.</p>
+<h3>1:12:20 — Critical loophole: interrupt when target NOT sleeping/waiting</h3>
+<p>Question: Main calls t.interrupt() but child is not in sleeping or waiting state — child is actively running (e.g. long loop). What happens?</p>
+<p>Options considered:</p>
+<p>Answer: Interrupt call behaves like a snake (movie Swetha Nagu analogy) — it waits until the target enters sleeping or waiting state, then strikes.</p>
+<p>If target thread is not in sleeping/waiting state when interrupt() is called → no immediate impact. Interrupt call is queued/waiting until target enters sleeping or waiting state.</p>
+<h3>1:17:48 — Deferred interrupt demo: 10,000 iteration loop</h3>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i &lt; 10000; i++) {
+            System.out.println(&quot;I am lazy thread &quot; + i);
+        }
+        try {
+            System.out.println(&quot;I want to sleep&quot;);
+            Thread.sleep(10000);  // 10 seconds
+        } catch (InterruptedException e) {
+            System.out.println(&quot;I got interrupted&quot;);
+        }
+    }
+}
+class ThreadSleepDemo1 {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+        t.interrupt();  // called while child still in for-loop
+    }
+}</pre>
+<p>Timeline:</p>
+<ol><li>Child starts 10,000-iteration loop (NOT sleeping yet)</li></ol>
+<ol><li>Main immediately calls t.interrupt()</li></ol>
+<ol><li>No immediate effect — JVM holds the interrupt request</li></ol>
+<ol><li>Main continues (does not wait)</li></ol>
+<ol><li>Child completes all 10,000 iterations</li></ol>
+<ol><li>Child tries Thread.sleep(10000)</li></ol>
+<ol><li>Immediately — pending interrupt fires → InterruptedException → &quot;I got interrupted&quot;</li></ol>
+<p>Key points:</p>
+<ul><li>Main thread does not wait — JVM handles deferred interrupt</li></ul>
+<ul><li>Interrupt call never wasted (unless target dies without ever sleeping/waiting)</li></ul>
+<h3>1:21:51 — Demo without interrupt (commented)</h3>
+<pre class='code'>class ThreadSleepDemo1 {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+        // t.interrupt();  // commented
+    }
+}</pre>
+<p>Result:</p>
+<ul><li>10,000 &quot;I am lazy thread&quot; lines print</li></ul>
+<ul><li>&quot;I want to sleep&quot; prints</li></ul>
+<ul><li>Sleeps full 10 seconds</li></ul>
+<ul><li>No &quot;I got interrupted&quot;</li></ul>
+<ul><li>Program ends normally</li></ul>
+<h3>1:23:04 — Demo with interrupt enabled</h3>
+<p>Uncomment t.interrupt():</p>
+<ul><li>10,000 loop iterations complete first</li></ul>
+<ul><li>&quot;I want to sleep&quot; appears</li></ul>
+<ul><li>Immediately &quot;I got interrupted&quot; — no 10-second sleep</li></ul>
+<ul><li>Pending interrupt consumed at first sleep/wait opportunity</li></ul>
+<h3>1:26:08 — Star note: deferred interrupt rules</h3>
+<p>⭐ If you call `interrupt()` and target thread is NOT in sleeping/waiting state:</p>
+<p>- No immediate impact</p>
+<p>- Interrupt call will wait until target thread enters sleeping or waiting state</p>
+<p>- Once target enters sleeping/waiting → interrupt fires → InterruptedException</p>
+<p>Analogy: Snake follows heroine everywhere until it gets a chance to bite.</p>
+<h3>1:29:57 — When interrupt call IS wasted</h3>
+<p>Edge case: What if target thread dies before ever entering sleeping or waiting?</p>
+<p>Example: Heroine dies in plane crash before snake gets chance to bite → snake has no target.</p>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i &lt; 10000; i++) {
+            System.out.println(&quot;I am lazy thread &quot; + i);
+        }
+        // NO sleep(), NO join() — thread ends without ever waiting/sleeping
+    }
+}</pre>
+<p>MyThread t = new MyThread();
+t.start();
+t.interrupt();  // child busy in loop, then dies — never sleeps
+// interrupt call WASTED — only case where it has no effect</p>
+<p>Only case where interrupt call is wasted: Target thread never enters sleeping or waiting state in its entire lifetime, then terminates. If target dies without sleeping/waiting → interrupt has no impact.</p>
+<h3>1:31:49 — Theory: interrupt call waiting (10,000 loop example)</h3>
+<p>In the above example, interrupt call waited until child thread completes for loop 10,000 times. Once child entered sleeping state → interrupt immediately fired.</p>
+<h3>1:36:10 — Comparison table: yield vs join vs sleep</h3>
+<p>Durga Sir summarizes all three methods with a comparison table.</p>
+<h4>Purpose</h4>
+<pre class='code'>// yield — give chance to same-priority threads
+Thread.yield();
+
+// join — wait for another thread to finish
+t.join();
+t.join(5000);           // wait max 5 seconds
+t.join(5000, 0);        // millis + nanos
+
+// sleep — pause this thread
+Thread.sleep(3000);
+Thread.sleep(3000, 500000);  // millis + nanos</pre>
+<h4>Overloaded?</h4>
+<h4>final?</h4>
+<h4>Throws InterruptedException?</h4>
+<pre class='code'>// join and sleep require handling
+try {
+    t.join();
+    Thread.sleep(1000);
+} catch (InterruptedException e) {
+}</pre>
+<h4>Native?</h4>
+<h4>Static?</h4>
+<pre class='code'>// Static vs instance
+Thread.yield();           // static
+Thread.sleep(1000);       // static
+t.join();                 // instance — called on Thread object</pre>
+<p>Important exam point: You cannot replace one method with another — each has distinct purpose.</p>
+<h3>1:38:42 — Exam FAQ from comparison</h3>
+<p>Common interview questions from this table:</p>
+<ul><li>What is the purpose of yield / join / sleep?</li></ul>
+<ul><li>Difference between yield and join?</li></ul>
+<ul><li>Difference between join and sleep?</li></ul>
+<ul><li>Is join overloaded? Is sleep overloaded?</li></ul>
+<ul><li>Which methods are final? Which throw InterruptedException?</li></ul>
+<ul><li>Which are native? Which are static?</li></ul>
+<h3>1:46:05 — Session wrap-up</h3>
+<p>Topics completed in Part 6:</p>
+<ol><li>join() loopholes — Case 2 (child waits main), Case 3 (mutual deadlock), Case 4 (self-join deadlock)</li></ol>
+<ol><li>sleep() — signatures, checked exception, lifecycle, slide rotator</li></ol>
+<ol><li>interrupt() — interrupt sleeping/waiting threads, deferred interrupt, wasted interrupt edge case</li></ol>
+<ol><li>Comparison table — yield vs join vs sleep (purpose, overload, final, throws IE, native, static)</li></ol>
+<p>Next video (087): Synchronization Part 1.</p>
+<h2>Quick reference — join() signatures (from prior video, used here)</h2>
+<pre class='code'>public final void join() throws InterruptedException;
+
+public final void join(long millis) throws InterruptedException;
+
+public final void join(long millis, int nanos) throws InterruptedException;</pre>
+<p>All three are final instance methods — called on a Thread reference:</p>
+<p>t.join();              // wait forever
+t.join(5000);          // wait up to 5 seconds
+t.join(5000, 0);       // wait up to 5 seconds + 0 nanos</p>
+<h2>Quick reference — sleep() signatures</h2>
+<pre class='code'>public static native void sleep(long millis) throws InterruptedException;
+
+public static void sleep(long millis, int nanos) throws InterruptedException;</pre>
+<h2>Quick reference — interrupt()</h2>
+<pre class='code'>public void interrupt()</pre>
+<ul><li>Interrupts sleeping or waiting threads</li></ul>
+<ul><li>If target not sleeping/waiting → interrupt waits (deferred)</li></ul>
+<ul><li>If target never sleeps/waits in lifetime → interrupt wasted</li></ul>
+<h2>Complete runnable examples index</h2>
+<h2>Exam traps (OCJP/SCJP style)</h2>
+<ol><li>Child joining main requires a way to get main thread reference (Thread.currentThread() stored in static variable).</li></ol>
+<ol><li>Mutual join = deadlock; self join = deadlock.</li></ol>
+<ol><li>sleep() always needs time argument — no forever-sleep overload.</li></ol>
+<ol><li>All sleep methods throw checked InterruptedException.</li></ol>
+<ol><li>interrupt() on running thread → deferred until sleep/wait.</li></ol>
+<ol><li>interrupt() wasted only if target never enters sleep/wait before dying.</li></ol>
+<ol><li>join is instance + final; sleep/yield are static.</li></ol>
+<ol><li>sleep(long) is native; sleep(long, int) is not.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 86 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 6</td></tr>
+<tr><td>Topic</td><td>join(), sleep(), Thread Interruption</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 46m 34s</td></tr>
+<tr><td>Video ID</td><td>naQZrm9XNFI</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=naQZrm9XNFI</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Heard (ASR)</th><th>Correct term</th></tr>
+<tr><td>Chailithrad / chelithrad / chile thread</td><td>child thread</td></tr>
+<tr><td>Mintrad / mean thread / mantra</td><td>main thread</td></tr>
+<tr><td>Vichitrad / uchitrad</td><td>which thread</td></tr>
+<tr><td>jim / jain / joyin</td><td>join</td></tr>
+<tr><td>slip / slipender</td><td>sleep</td></tr>
+<tr><td>empty / emting</td><td>mt (static Thread reference)</td></tr>
+<tr><td>intraption / entrap</td><td>interrupt</td></tr>
+<tr><td>atimata / attima</td><td>immediately</td></tr>
+<tr><td>throsa / through ski</td><td>throws</td></tr>
+</table>
+<table>
+<tr><th>Thread</th><th>Responsibility</th></tr>
+<tr><td>Main</td><td>Runs the for loop in main, prints &quot;Main Thread&quot;</td></tr>
+<tr><td>Child</td><td>Calls mt.join() → enters waiting state until main finishes</td></tr>
+</table>
+<table>
+<tr><th>Thread</th><th>Action</th></tr>
+<tr><td>Main</td><td>t.join() → waits for child to complete</td></tr>
+<tr><td>Child</td><td>mt.join() → waits for main to complete</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>How many threads?</td><td>1 — main only</td></tr>
+<tr><td>Who executes join()?</td><td>Main thread</td></tr>
+<tr><td>Thread.currentThread() means?</td><td>Main thread</td></tr>
+<tr><td>Meaning?</td><td>Main wants to wait until itself completes</td></tr>
+</table>
+<table>
+<tr><th>Case</th><th>Description</th><th>Result</th></tr>
+<tr><td>1 (prev video)</td><td>Main joins child</td><td>Main waits for child</td></tr>
+<tr><td>2</td><td>Child joins main (via static mt)</td><td>Child waits for main</td></tr>
+<tr><td>3</td><td>Both join each other</td><td>Deadlock</td></tr>
+<tr><td>4</td><td>Thread joins itself</td><td>Deadlock</td></tr>
+</table>
+<table>
+<tr><th>Overload</th><th>Native?</th><th>Parameters</th></tr>
+<tr><td>sleep(long millis)</td><td>Yes (JNI)</td><td>milliseconds only</td></tr>
+<tr><td>sleep(long millis, int nanos)</td><td>No (Java impl)</td><td>milliseconds + nanoseconds</td></tr>
+</table>
+<table>
+<tr><th>Option</th><th>Condition</th></tr>
+<tr><td>1</td><td>Time expires — sleep duration elapses</td></tr>
+<tr><td>2</td><td>Interrupted — sleeping thread receives interrupt</td></tr>
+</table>
+<table>
+<tr><th>Target state</th><th>Can interrupt?</th></tr>
+<tr><td>Sleeping thread</td><td>Yes</td></tr>
+<tr><td>Waiting thread (e.g. blocked on join)</td><td>Yes</td></tr>
+<tr><td>Running (not sleeping/waiting)</td><td>Special behavior (see loophole)</td></tr>
+</table>
+<table>
+<tr><th>Line</th><th>Executed by</th><th>Effect</th></tr>
+<tr><td>t.start()</td><td>Main</td><td>Starts child</td></tr>
+<tr><td>t.interrupt()</td><td>Main</td><td>Sends interrupt to child</td></tr>
+<tr><td>Child in sleep(2000)</td><td>Child</td><td>Receives interrupt → InterruptedException</td></tr>
+</table>
+<table>
+<tr><th>t.interrupt()</th><th>Child iterations</th><th>Catch executed?</th></tr>
+<tr><td>Active</td><td>1</td><td>Yes</td></tr>
+<tr><td>Commented</td><td>10</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>Option</th><th>Correct?</th></tr>
+<tr><td>Exception thrown immediately</td><td>No</td></tr>
+<tr><td>Interrupt call wasted immediately</td><td>No (not immediately)</td></tr>
+<tr><td>Interrupt call waits</td><td>Yes</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>When to use</th></tr>
+<tr><td>yield()</td><td>Thread wants to pass execution to give chance to remaining waiting threads of same priority</td></tr>
+<tr><td>join()</td><td>Thread wants to wait until completing some other thread</td></tr>
+<tr><td>sleep()</td><td>Thread does not want to perform any operation for a particular amount of time</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Overloaded?</th></tr>
+<tr><td>yield</td><td>No (only one form)</td></tr>
+<tr><td>join</td><td>Yes (3 forms: no-arg, millis, millis+nanos)</td></tr>
+<tr><td>sleep</td><td>Yes (2 forms)</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>final?</th></tr>
+<tr><td>yield</td><td>No</td></tr>
+<tr><td>join</td><td>Yes — every join method is final</td></tr>
+<tr><td>sleep</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Throws IE?</th></tr>
+<tr><td>yield</td><td>No</td></tr>
+<tr><td>join</td><td>Yes</td></tr>
+<tr><td>sleep</td><td>Yes</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Native?</th></tr>
+<tr><td>yield</td><td>Yes</td></tr>
+<tr><td>join</td><td>No (all implemented in Java)</td></tr>
+<tr><td>sleep(long)</td><td>Yes</td></tr>
+<tr><td>sleep(long, int)</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Static?</th></tr>
+<tr><td>yield</td><td>Yes — Thread.yield()</td></tr>
+<tr><td>join</td><td>No — instance method: t.join()</td></tr>
+<tr><td>sleep</td><td>Yes — Thread.sleep()</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Class</th><th>Purpose</th></tr>
+<tr><td>1</td><td>MyThread (Case 2)</td><td>Static mt + child joins main</td></tr>
+<tr><td>2</td><td>ThreadJoinDemo1</td><td>Assign main ref, demo Case 2</td></tr>
+<tr><td>3</td><td>ThreadJoinDemo3</td><td>Mutual join deadlock</td></tr>
+<tr><td>4</td><td>Test (Case 4)</td><td>Self-join deadlock</td></tr>
+<tr><td>5</td><td>SlideRotator</td><td>sleep() demo</td></tr>
+<tr><td>6</td><td>MyThread (lazy)</td><td>Interrupt during sleep</td></tr>
+<tr><td>7</td><td>ThreadInterruptDemo</td><td>Main interrupts child</td></tr>
+<tr><td>8</td><td>MyThread (10K loop)</td><td>Deferred interrupt</td></tr>
+<tr><td>9</td><td>ThreadSleepDemo1</td><td>Full deferred interrupt demo</td></tr>
+</table>
+</body></html>

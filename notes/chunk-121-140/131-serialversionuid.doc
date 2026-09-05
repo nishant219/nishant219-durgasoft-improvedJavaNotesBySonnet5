@@ -1,0 +1,463 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>131-serialversionuid</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 131</h1>
+<h2>Video info</h2>
+<h3>00:04 — Session opening: why SerialVersionUID was added to the course</h3>
+<ul><li>This is the last concept in the Serialization series (Part 7).</li></ul>
+<ul><li>Durga Sir admits he did not cover serialVersionUID in earlier batches.</li></ul>
+<ul><li>When students asked &quot;Sir, what is serialVersionUID?&quot;, his standard reply was: &quot;It is internally required by the JVM; as a programmer we are not required to worry.&quot;</li></ul>
+<ul><li>One day a student came back and said: &quot;Sir, in today&#x27;s interview I faced this question.&quot;</li></ul>
+<ul><li>From that batch onward, Durga Sir added this topic — and while preparing it, he felt: &quot;Why did I miss such a worthy concept for so many days?&quot;</li></ul>
+<ul><li>Important framing: The concept is theoretical and students may feel bored — but it is very worthy for interviews and real distributed systems. Take special care.</li></ul>
+<h3>02:39 — What is the role of serialVersionUID?</h3>
+<p>Before diving into UID, Durga Sir establishes three prerequisite conclusions from the ~10 serialization programs already covered in the classroom.</p>
+<h3>02:54 — Prerequisite #1: Sender and receiver need NOT be the same</h3>
+<p>Classroom demo context (same person, same machine):</p>
+<ul><li>In the classroom, one person serializes on one machine, and the same person deserializes on the same machine.</li></ul>
+<ul><li>Person = same, mission (machine) = same, location = same.</li></ul>
+<p>Real-world distributed context (different person, different machine):</p>
+<p>London (UK)                              Hyderabad (India)
+┌─────────────────┐                      ┌─────────────────┐
+│ Person A        │                      │ Person B        │
+│ Windows / JVM   │  ── abc.ser file ──► │ Linux / JVM     │
+│ Serializes Dog  │   (remote transfer)  │ Deserializes Dog│
+└─────────────────┘                      └─────────────────┘</p>
+<ul><li>Person A in London serializes an object to a file.</li></ul>
+<ul><li>Person B in Hyderabad receives the file (even a remote file) and tries to deserialize.</li></ul>
+<ul><li>Sender and receiver are different persons, different missions (machines), different locations.</li></ul>
+<p>Board conclusion (Point #1):</p>
+<p>In serialization, both the sender and receiver:</p>
+<p>- Need not be the same person</p>
+<p>- Need not use the same mission (machine)</p>
+<p>- Need not be from the same location</p>
+<p>The person may be different, the missions may be different, and the locations may be different.</p>
+<h3>07:40 — Prerequisite #2: Which code runs where?</h3>
+<p>Sender-side code (serialization):</p>
+<p>Dog d1 = new Dog();                                    // create object
+FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+ObjectOutputStream oos = new ObjectOutputStream(fos);
+oos.writeObject(d1);                                   // serialize</p>
+<p>Receiver-side code (deserialization):</p>
+<p>FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+ObjectInputStream ois = new ObjectInputStream(fis);
+Dog d2 = (Dog) ois.readObject();                       // deserialize</p>
+<ul><li>First block = sender code (runs on sender machine).</li></ul>
+<ul><li>Second block = receiver code (runs on receiver machine).</li></ul>
+<h3>09:36 — Prerequisite #3: `.class` file must exist on BOTH machines</h3>
+<p>On sender machine — to create `Dog d1`:</p>
+<ul><li>Compulsory: Dog.class must be available.</li></ul>
+<ul><li>Without Dog.class, you cannot compile or create a Dog object → cannot serialize.</li></ul>
+<p>On receiver machine — to declare `Dog d2`:</p>
+<ul><li>Compulsory: Dog.class must be available.</li></ul>
+<ul><li>Without Dog.class, the receiver code will not even compile (reference variable type Dog requires the class).</li></ul>
+<p>Critical conclusion:</p>
+<p>In serialization, the .class file must be present on both sender and receiver missions at the beginning (before serialization/deserialization).</p>
+<p>What travels from sender to receiver? Only the state of the object — NOT the .class file.</p>
+<p>Common mistake (interview trap):</p>
+<ul><li>Many people think the .class file also travels over the network.</li></ul>
+<ul><li>Wrong. Receiver must already have the same class definition locally.</li></ul>
+<h3>12:08 — Analogy: why not just `new Dog()` on the receiver side?</h3>
+<p>Dog class (both machines have this `.class` file):</p>
+<pre class='code'>class Dog implements Serializable {
+    int i = 10;
+    int j = 20;
+}</pre>
+<p>Scenario:</p>
+<ol><li>Sender creates Dog d1 → i=10, j=20.</li></ol>
+<ol><li>Sender communicates with a database and updates state → i=38, j=39.</li></ol>
+<ol><li>Sender serializes the object (current state: i=38, j=39).</li></ol>
+<ol><li>Receiver gets the file.</li></ol>
+<p>Student doubt: &quot;If receiver also has `Dog.class`, why not just `new Dog()` directly? Default values would be `i=10, j=20` anyway.&quot;</p>
+<p>Answer:</p>
+<ul><li>Receiver can create a new object with default values (i=10, j=20).</li></ul>
+<ul><li>But receiver cannot get the sender&#x27;s updated state (i=38, j=39) without deserialization.</li></ul>
+<ul><li>Receiver may not have database credentials or access permissions to connect to sender&#x27;s database.</li></ul>
+<ul><li>Serialization shares the updated state that only the sender had access to.</li></ul>
+<p>Board conclusion (repeated for notes):</p>
+<p>In serialization, both sender and receiver should have the .class file at the beginning only.</p>
+<p>Just the state of the object is traveling from sender to receiver. That&#x27;s all.</p>
+<h3>16:18 — Prerequisite #4: Unique identity number at serialization time</h3>
+<p>Internal JVM behavior at serialization time:</p>
+<ol><li>With every object being serialized, the JVM assigns a unique identity number.</li></ol>
+<ol><li>Who assigns it? JVM.</li></ol>
+<ol><li>How does JVM get this number? JVM generates it by analyzing the `.class` file` (structure, fields, methods, etc.).</li></ol>
+<ol><li>This unique identity number is saved into the serialized file along with the object.</li></ol>
+<p>At deserialization time (receiver side JVM):</p>
+<ol><li>JVM reads the unique identity number from the file: &quot;This object belongs to `Dog` class; its unique identifier is 101.&quot;</li></ol>
+<ol><li>Receiver-side JVM generates its own unique identifier for the local Dog.class file.</li></ol>
+<ol><li>If both numbers match (101 == 101) → deserialization proceeds happily.</li></ol>
+<ol><li>If numbers do NOT match (101 != 103) → JVM refuses: &quot;This is not a valid object of this class&quot; → `InvalidClassException` at runtime.</li></ol>
+<p>This unique identity number IS `serialVersionUID`.</p>
+<h3>19:20 — serialVersionUID defined</h3>
+<p>Why programmers often ignore it:</p>
+<ul><li>Everything is handled internally by the JVM.</li></ul>
+<ul><li>Programmer does not explicitly write or compare the number.</li></ul>
+<ul><li>That is why Durga Sir previously said &quot;not required for the programmer&quot; — but interviewers do ask.</li></ul>
+<p>Board notes (central point):</p>
+<p>At time of serialization:
+  → With every object, sender-side JVM saves a unique identifier.
+  → JVM generates this identifier based on that .class file.
+
+At time of deserialization:
+  → Receiver-side JVM compares unique identifier in file
+    with unique identifier of local .class file.
+  → If both match → deserialization performed.
+  → Otherwise → InvalidClassException (runtime).</p>
+<h3>24:42 — OCJP course ID card analogy</h3>
+<p>Durga Sir uses the SCJP classroom registration analogy:</p>
+<ol><li>You pay the fee and receive an ID card with a unique number (e.g., ID #107).</li></ol>
+<ol><li>At the classroom door, Instructor Sinjad asks: &quot;Which class? SCJP? Show your ID card.&quot;</li></ol>
+<ol><li>He checks his register: &quot;ID 107 belongs to which name?&quot;</li></ol>
+<ol><li>If ID matches → allowed to enter class (deserialization succeeds).</li></ol>
+<ol><li>If photo on ID was replaced / ID doesn&#x27;t match → &quot;Not a valid student&quot; → not allowed (InvalidClassException).</li></ol>
+<h3>26:36 — Who generates serialVersionUID?</h3>
+<h3>26:52 — Problems with DEFAULT (JVM-generated) serialVersionUID</h3>
+<p>Durga Sir warns: Do NOT depend on the default serialVersionUID generated by JVM. There are three problems.</p>
+<h4>Problem #1 — Different JVM / OS / vendor generates different UID</h4>
+<p>Scenario:</p>
+<ul><li>Same .class file (bytecode identical).</li></ul>
+<ul><li>But sender JVM generates UID 111, receiver JVM generates UID 112.</li></ul>
+<ul><li>File says 111, local class says 112 → mismatch → receiver unable to deserialize.</li></ul>
+<p>Board conclusion (Problem #1):</p>
+<p>If we depend on default serialVersionUID generated by JVM:</p>
+<p>Both sender and receiver should use the same JVM with respect to:</p>
+<p>- Vendor</p>
+<p>- Platform (OS)</p>
+<p>- Version</p>
+<p>Otherwise receiver unable to deserialize because of different serialVersionUIDs.</p>
+<ul><li>Sender in UK cannot force receiver in India to use Windows + JVM 1.6.</li></ul>
+<ul><li>This makes default UID unreliable in distributed / cross-platform systems.</li></ul>
+<h4>Problem #2 — Class file modified after serialization</h4>
+<p>Scenario (same JVM on both sides — still fails):</p>
+<ol><li>Sender and receiver both use same Windows + JVM 1.6.</li></ol>
+<ol><li>Sender serializes Dog with int i=10; int j=20; → file UID = 111.</li></ol>
+<ol><li>After serialization, someone modifies Dog.class on receiver side — adds int k=30;.</li></ol>
+<ol><li>Receiver JVM now generates UID 113 for the updated class (new field = different structure).</li></ol>
+<ol><li>File still has UID 111, local class has 113 → mismatch → InvalidClassException.</li></ol>
+<p>Board conclusion (Problem #2):</p>
+<p>Both sender and receiver should use the same `.class` file version.</p>
+<p>After serialization, if there is any change in .class file at receiver side → receiver unable to deserialize.</p>
+<p>This is extremely common in real projects: you serialize today, deploy a new version of the class tomorrow, try to read old .ser files → crash.</p>
+<h4>Problem #3 — Performance impact</h4>
+<ul><li>To generate default serialVersionUID, JVM uses a complex algorithm.</li></ul>
+<ul><li>It must analyze every property (field, method signature, etc.) in the .class file.</li></ul>
+<ul><li>For every object serialized: generate UID + save it.</li></ul>
+<ul><li>For every object deserialized: generate local UID + compare.</li></ul>
+<ul><li>This may create performance problems on high-throughput systems.</li></ul>
+<p>Board note:</p>
+<p>To generate serialVersionUID, internally JVM may use a complex algorithm, which may create performance problems.</p>
+<h3>39:40 — Solution: Configure your OWN serialVersionUID</h3>
+<p>Simple rule: Don&#x27;t depend on JVM-generated UID. Configure your own.</p>
+<p>private static final long serialVersionUID = 1L;</p>
+<ul><li>If you declare this in your class, JVM will NOT generate its own — it always uses your number.</li></ul>
+<ul><li>All three problems above are solved.</li></ul>
+<h3>42:26 — Demo Program 1: Default UID — class modification breaks deserialization</h3>
+<p>Three files:</p>
+<h4>`Dog1.java` (initial version)</h4>
+<pre class='code'>import java.io.Serializable;
+
+class Dog1 implements Serializable {
+    int i = 10;
+    int j = 20;
+}</pre>
+<h4>`Sender.java`</h4>
+<pre class='code'>import java.io.*;
+
+class Sender {
+    public static void main(String[] args) throws Exception {
+        Dog1 d1 = new Dog1();
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(d1);
+        System.out.println(&quot;Serialization completed&quot;);
+    }
+}</pre>
+<h4>`Receiver.java`</h4>
+<pre class='code'>import java.io.*;
+
+class Receiver {
+    public static void main(String[] args) throws Exception {
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Dog1 d2 = (Dog1) ois.readObject();
+        System.out.println(d2.i + &quot;...&quot; + d2.j);
+    }
+}</pre>
+<p>Step 1 — Compile all (same class version):</p>
+<p>javac Dog1.java
+javac Sender.java Dog1.java
+javac Receiver.java Dog1.java</p>
+<p>Step 2 — Serialize:</p>
+<p>java Sender
+# Output: Serialization completed</p>
+<p>Step 3 — Deserialize (no changes yet):</p>
+<p>java Receiver
+# Output: 10...20   ← works fine</p>
+<p>Step 4 — Modify `Dog1.java` AFTER serialization (add field `k`):</p>
+<pre class='code'>class Dog1 implements Serializable {
+    int i = 10;
+    int j = 20;
+    int k = 30;   // NEW field added after .ser file was created
+}</pre>
+<p>Step 5 — Recompile and try deserialize:</p>
+<p>javac Dog1.java
+java Receiver</p>
+<p>Result:</p>
+<p>Exception in thread &quot;main&quot; java.io.InvalidClassException: Dog1;
+local class incompatible: stream classdesc serialVersionUID = &lt;old&gt;, local class serialVersionUID = &lt;new&gt;</p>
+<ul><li>File contains old UID (generated when class had 2 fields).</li></ul>
+<ul><li>Local class has new UID (generated after adding k).</li></ul>
+<ul><li>Mismatch → InvalidClassException.</li></ul>
+<h3>46:50 — Demo Program 2: Custom UID — class modification still works</h3>
+<p>Modify `Dog1.java` — declare explicit UID BEFORE adding fields:</p>
+<pre class='code'>import java.io.Serializable;
+
+class Dog1 implements Serializable {
+    private static final long serialVersionUID = 1L;   // OUR number, not JVM&#x27;s
+
+    int i = 10;
+    int j = 20;
+}</pre>
+<p>Sender serializes → file stores UID = `1L`.</p>
+<p>Then modify class (add more fields):</p>
+<pre class='code'>class Dog1 implements Serializable {
+    private static final long serialVersionUID = 1L;   // SAME value kept
+
+    int i = 10;
+    int j = 20;
+    int k = 30;
+    int l = 40;
+}</pre>
+<p>At deserialization:</p>
+<ul><li>File UID = 1L</li></ul>
+<ul><li>Local class UID = 1L (declared constant, not regenerated)</li></ul>
+<ul><li>Both match → deserialization succeeds even with extra fields.</li></ul>
+<p>Compile, serialize, modify, deserialize:</p>
+<p>javac Dog1.java
+javac Sender.java Dog1.java
+java Sender
+# Modify Dog1.java — add k, l — keep serialVersionUID = 1L
+javac Dog1.java
+javac Receiver.java Dog1.java
+java Receiver
+# Output: 10...20   ← works! (k, l get default 0 if not in file)</p>
+<p>Key teaching point:</p>
+<ul><li>Even though class structure changed (2 fields → 4 fields), deserialization works because UIDs match.</li></ul>
+<ul><li>Extra fields (k, l) get default values (0) since they were not in the original serialized stream.</li></ul>
+<h3>50:59 — How to configure serialVersionUID (syntax)</h3>
+<p>Exact declaration (board line — memorize for exam):</p>
+<p>private static final long serialVersionUID = 1L;</p>
+<p>Rules:</p>
+<ul><li>Must be declared inside the class that implements Serializable.</li></ul>
+<ul><li>JVM checks: &quot;Does current class contain serialVersionUID?&quot;</li></ul>
+<ul><li>Yes → use declared value; do not run generation algorithm.</li></ul>
+<ul><li>No → JVM generates one based on class structure.</li></ul>
+<h3>57:23 — After configuring custom UID: what is NO LONGER required?</h3>
+<p>Once you set your own serialVersionUID:</p>
+<p>Board conclusion:</p>
+<p>We can solve / overcome the above problems by configuring our own serialVersionUID.</p>
+<h3>58:43 — IDE behavior (Eclipse and others)</h3>
+<ul><li>Modern IDEs (Eclipse, IntelliJ, etc.) prompt the programmer to enter serialVersionUID explicitly when a class implements Serializable.</li></ul>
+<ul><li>Warning message类似: &quot;If you depend on JVM-generated serialVersionUID there may be a problem.&quot;</li></ul>
+<ul><li>Some IDEs automatically generate the line when you create a Serializable class:</li></ul>
+<p>private static final long serialVersionUID = 8929389482398234L;</p>
+<ul><li>That auto-generated long value is IDE&#x27;s calculation (similar to what JVM would do once) — you can replace it with your own simple value like 1L if you prefer stability across versions.</li></ul>
+<p>Board note:</p>
+<p>Some IDEs prompt programmer to enter serialVersionUID explicitly.</p>
+<p>Some IDEs may generate serialVersionUID automatically.</p>
+<h3>1:00:56 — Session summary: one line, big story</h3>
+<p>Durga Sir&#x27;s closing message:</p>
+<p>&quot;Just only one line, this much story.&quot;</p>
+<p>&quot;Don&#x27;t depend on default serialVersionUID.&quot;</p>
+<p>&quot;Whenever we take a class that implements Serializable, it is recommended to add this line so these problems are overcome by default.&quot;</p>
+<p>With this video, the Serialization topic is complete (Parts 1–7).</p>
+<h2>Complete demo program (consolidated — custom UID)</h2>
+<pre class='code'>// ========== Dog1.java ==========
+import java.io.Serializable;
+
+class Dog1 implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    int i = 10;
+    int j = 20;
+    // After serialization you MAY add: int k = 30; int l = 40;
+}
+
+// ========== Sender.java ==========
+import java.io.*;
+
+class Sender {
+    public static void main(String[] args) throws Exception {
+        Dog1 d1 = new Dog1();
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(d1);
+        System.out.println(&quot;Serialization completed&quot;);
+    }
+}
+
+// ========== Receiver.java ==========
+import java.io.*;
+
+class Receiver {
+    public static void main(String[] args) throws Exception {
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Dog1 d2 = (Dog1) ois.readObject();
+        System.out.println(&quot;i=&quot; + d2.i + &quot;, j=&quot; + d2.j);
+    }
+}</pre>
+<p>Execution flow:</p>
+<p>javac Dog1.java Sender.java Receiver.java
+java Sender          # creates abc.ser with UID=1L, i=10, j=20
+# (optional) modify Dog1.java — add fields, keep serialVersionUID=1L
+javac Dog1.java Receiver.java
+java Receiver        # i=10, j=20 — success</p>
+<h2>Quick reference</h2>
+<h3>serialVersionUID lifecycle</h3>
+<p>SERIALIZATION (sender JVM)                    DESERIALIZATION (receiver JVM)
+─────────────────────────                    ───────────────────────────────
+1. Object created                            1. Read .ser file
+2. JVM checks: serialVersionUID declared?    2. Read UID from file (e.g. 1L)
+   YES → use 1L                               3. JVM checks local class:
+   NO  → generate from .class analysis           serialVersionUID declared?
+3. Save UID + object state into file              YES → use 1L
+                                                  NO  → generate from .class
+                                               4. Compare: file UID == local UID?
+                                                  YES → deserialize
+                                                  NO  → InvalidClassException</p>
+<h3>Three problems of default UID vs one-line fix</h3>
+<h3>InvalidClassException — when it occurs</h3>
+<h3>Exam / interview one-liners</h3>
+<ol><li>What is serialVersionUID? — Unique identity number for a Serializable class, used to verify compatibility at deserialization.</li></ol>
+<ol><li>Who generates it by default? — JVM, based on class structure (fields, methods, etc.).</li></ol>
+<ol><li>Who compares it? — Receiver-side JVM at deserialization time.</li></ol>
+<ol><li>What if mismatch? — InvalidClassException (unchecked / runtime).</li></ol>
+<ol><li>How to declare? — private static final long serialVersionUID = 1L;</li></ol>
+<ol><li>Why declare explicitly? — Avoid cross-JVM, cross-version, and post-serialization class-change failures.</li></ol>
+<ol><li>Does `.class` file travel in serialization? — No. Only object state travels. Class must exist on both sides beforehand.</li></ol>
+<ol><li>Can sender and receiver be different machines? — Yes. Person, machine, and location can all differ.</li></ol>
+<h3>Relationship to prior serialization videos (121–130)</h3>
+<h2>Board notes (verbatim-style for revision)</h2>
+<p>Point 1 — Distributed serialization:</p>
+<p>In serialization, both sender and receiver need not be the same person, need not use the same mission, need not be from the same location.</p>
+<p>Point 2 — Class file vs state:</p>
+<p>Both sender and receiver should have .class file at the beginning only. Just the state of object is traveling from sender to receiver.</p>
+<p>Point 3 — UID at serialization:</p>
+<p>At time of serialization, with every object, sender-side JVM will save a unique identifier. JVM generates this based on that .class file.</p>
+<p>Point 4 — UID at deserialization:</p>
+<p>At time of deserialization, receiver-side JVM compares unique identifier associated with object with local class unique identifier. If both matched → deserialization. Otherwise → InvalidClassException.</p>
+<p>Point 5 — Problems of default UID:</p>
+<p>1. Both sender and receiver should use same JVM (vendor, platform, version).</p>
+<p>2. Both should use same .class file version; any change after serialization → fail.</p>
+<p>3. JVM complex algorithm → performance problems.</p>
+<p>Point 6 — Solution:</p>
+<p>Configure our own serialVersionUID: private static final long serialVersionUID = 1L;</p>
+<p>Point 7 — After custom UID:</p>
+<p>Sender and receiver not required to maintain same JVM versions.</p>
+<p>Java code block count: 8</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td><td></td></tr>
+<tr><td>Position</td><td>131 of 203</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Serialization Part-7 \</td><td>\</td><td>SerialVersion UID</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 01m 39s</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>2kGvax307EM</td><td></td><td></td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=2kGvax307EM</td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>What travels?</th><th>Answer</th></tr>
+<tr><td>.class file</td><td>NO — must already exist on both sides</td></tr>
+<tr><td>Object state (instance variable values)</td><td>YES — this is what serialization transfers</td></tr>
+</table>
+<table>
+<tr><th>Term</th><th>Meaning</th></tr>
+<tr><td>serialVersionUID</td><td>Unique identity number associated with a serializable class</td></tr>
+<tr><td>Generated by</td><td>JVM (by default), based on .class file analysis</td></tr>
+<tr><td>Saved when</td><td>At serialization time (embedded in .ser file)</td></tr>
+<tr><td>Compared when</td><td>At deserialization time (file UID vs local class UID)</td></tr>
+<tr><td>Match</td><td>Deserialization succeeds</td></tr>
+<tr><td>Mismatch</td><td>InvalidClassException at runtime</td></tr>
+</table>
+<table>
+<tr><th>Analogy</th><th>Serialization</th></tr>
+<tr><td>ID card number</td><td>serialVersionUID in .ser file</td></tr>
+<tr><td>Register at door</td><td>Local .class file UID generated by receiver JVM</td></tr>
+<tr><td>Match → enter class</td><td>Match → deserialize</td></tr>
+<tr><td>Mismatch → rejected</td><td>Mismatch → InvalidClassException</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>Who generates?</td><td>JVM</td></tr>
+<tr><td>Based on what?</td><td>That `.class` file (analyzes class structure)</td></tr>
+<tr><td>Who compares?</td><td>JVM (receiver side)</td></tr>
+<tr><td>Programmer role?</td><td>None (unless you configure your own)</td></tr>
+</table>
+<table>
+<tr><th>Side</th><th>OS</th><th>JVM Version</th><th>Generated UID for same Dog.class</th></tr>
+<tr><td>Sender</td><td>Windows</td><td>1.6</td><td>111</td></tr>
+<tr><td>Receiver</td><td>Linux</td><td>1.8</td><td>112</td></tr>
+</table>
+<table>
+<tr><th>Problem</th><th>How custom UID fixes it</th></tr>
+<tr><td>Different JVM/OS/version</td><td>Both sides use your 1L, not JVM-calculated values</td></tr>
+<tr><td>Class file modified after serialization</td><td>UID stays 1L even if you add fields (as long as you keep the same declared UID)</td></tr>
+<tr><td>Performance</td><td>No complex algorithm — JVM just reads your constant</td></tr>
+</table>
+<table>
+<tr><th>Modifier</th><th>Required?</th><th>Reason</th></tr>
+<tr><td>private</td><td>Yes (convention)</td><td>Implementation detail of serialization</td></tr>
+<tr><td>static</td><td>Yes</td><td>Belongs to class, not instance</td></tr>
+<tr><td>final</td><td>Yes</td><td>Must never change once assigned</td></tr>
+<tr><td>long</td><td>Yes</td><td>UID is a 64-bit long value</td></tr>
+<tr><td>1L</td><td>Example</td><td>Any long literal; 1L is common convention</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>Still needed?</th></tr>
+<tr><td>Same JVM version on sender &amp; receiver</td><td>NO — your UID is used, not JVM-generated</td></tr>
+<tr><td>Same OS / platform</td><td>NO</td></tr>
+<tr><td>Same JVM vendor</td><td>NO</td></tr>
+<tr><td>Same .class file version (no changes ever)</td><td>NO — you can add fields if UID stays same</td></tr>
+<tr><td>Performance impact from UID algorithm</td><td>NO — constant lookup only</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Problem (default JVM UID)</th><th>Fix (custom UID)</th></tr>
+<tr><td>1</td><td>Different JVM vendor/platform/version → different UID → deserialize fails</td><td>Declare private static final long serialVersionUID = 1L; on both sides</td></tr>
+<tr><td>2</td><td>Class modified after serialization → new UID → deserialize fails</td><td>Keep same declared UID even after adding/removing fields</td></tr>
+<tr><td>3</td><td>JVM runs complex algorithm per object → performance hit</td><td>Constant value — no algorithm needed</td></tr>
+</table>
+<table>
+<tr><th>Condition</th><th>Result</th></tr>
+<tr><td>File UID == Local class UID</td><td>Deserialization OK</td></tr>
+<tr><td>File UID != Local class UID</td><td>InvalidClassException</td></tr>
+<tr><td>Local class not found at all</td><td>ClassNotFoundException (different exception)</td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th><th>Link to 131</th></tr>
+<tr><td>125</td><td>Serialization intro</td><td>Foundation — Serializable marker interface</td></tr>
+<tr><td>126</td><td>Serialization Part 2</td><td>transient, static fields</td></tr>
+<tr><td>127</td><td>Customized serialization</td><td>writeObject / readObject</td></tr>
+<tr><td>130</td><td>Externalization</td><td>Separate mechanism; also implements Serializable hierarchy</td></tr>
+<tr><td>131</td><td>serialVersionUID</td><td>Compatibility check at deserialize time</td></tr>
+</table>
+</body></html>

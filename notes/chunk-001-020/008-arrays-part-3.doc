@@ -1,0 +1,398 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>008-arrays-part-3</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 008 — Arrays part 3</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Language Fundamentals Part-8 || Arrays Part-3</p>
+<h2>What this lecture covers</h2>
+<p>Last session finished initialization (defaults, overriding, AIOOB). This session takes the next agenda items.</p>
+<ol><li>Array declaration, creation and initialization in a single line (shortcut {…})</li></ol>
+<ol><li>Extending the shortcut to multi-dimensional arrays, plus an exam-style 3-D indexing drill</li></ol>
+<ol><li>Why the shortcut cannot be split across two statements (illegal start of expression)</li></ol>
+<ol><li>`length` versus `length()` — array final variable vs String final method; multi-dimensional length is base size only</li></ol>
+<ol><li>Anonymous arrays — nameless, one-time use; new int[]{10,20,30}; no size in that form; naming one later means it is no longer anonymous</li></ol>
+<ol><li>Array element assignments</li></ol>
+<ul><li>Case 1: primitive arrays (implicit promotion)</li></ul>
+<ul><li>Case 2: object-type arrays (declared type or child)</li></ul>
+<ul><li>Abstract-class type (Number) — child-class objects</li></ul>
+<ul><li>Case 3: interface-type arrays (implementation-class objects, e.g. Runnable[] + Thread)</li></ul>
+<ol><li>Summary table of allowed element types</li></ol>
+<p>Bridge to part 4 (do not treat this as the part-4 lecture): the last spoken heading is array variable assignments. That topic is introduced here and taught next.</p>
+<h2>Detailed notes</h2>
+<h3>Declaration + creation + initialization in one line ([00:05]–[06:32])</h3>
+<p>The long form was five lines:</p>
+<pre class='code'>int[] x;                 // declare
+x = new int[3];          // create
+x[0] = 10;               // initialize
+x[1] = 20;
+x[2] = 30;</pre>
+<p>Shortcut — declare, create, and initialize in a single line:</p>
+<p>int[] x = {10, 20, 30};</p>
+<p>Internally the same work happens. There is no performance difference. It is only convenient: five lines become one.</p>
+<p>Same shortcut for any element type:</p>
+<p>char[] ch = {&#x27;a&#x27;, &#x27;e&#x27;, &#x27;i&#x27;, &#x27;o&#x27;, &#x27;u&#x27;};           // vowels
+String[] s = {&quot;A&quot;, &quot;AA&quot;, &quot;AAA&quot;};                 // group of String objects</p>
+<p>You do not write the size. Specifying the number of elements is the size.</p>
+<h4>Heap vs SCP for the `String[]` shortcut ([05:36]–[06:29])</h4>
+<p>Every Java object is created on the heap. The array object lives on the heap.</p>
+<p>The &quot;A&quot;, &quot;AA&quot;, &quot;AAA&quot; pieces are string literals. For every literal, one object goes in the SCP (string constant pool). The references to those SCP objects are stored in the heap array.</p>
+<ul><li>Array object → heap</li></ul>
+<ul><li>String literals → SCP</li></ul>
+<ul><li>Array slots → references to those literals</li></ul>
+<p>(This is the same SCP idea as in the String / literals discussion; he only needs it so you do not think the strings themselves sit inside the array object.)</p>
+<h3>Shortcut for multi-dimensional arrays ([06:53]–[09:47])</h3>
+<p>The shortcut is not 1-D only. Two-dimensional and three-dimensional arrays can use it too.</p>
+<p>Jagged 2-D: first inner array 10, 20; second inner array 30, 40, 50.</p>
+<p>A 2-D array is internally still “one dimension of arrays”: first element is a 1-D of two values, second element is a 1-D of three values:</p>
+<p>int[][] x = {{10, 20}, {30, 40, 50}};</p>
+<p>Draw the memory picture and the equivalent Java. We can extend this shortcut even for multi-dimensional arrays also.</p>
+<h3>Exam drill — 3-D shortcut, convert to memory first ([09:51]–[17:04])</h3>
+<p>Do not answer x[i][j][k] by staring at nested braces. Most of the time you will be wrong. Convert to a diagram, then read indexes.</p>
+<p>Three-dimensional initializer he puts on the board:</p>
+<p>int[][][] x = {
+    { {10, 20, 30}, {40, 50, 60} },
+    { {70, 80}, {90, 100, 110} }
+};</p>
+<p>(He dictates 10 20 30, 40 50 60 as the first 2-D; 70 80 and 90 100 110 as the second 2-D. “900 110” in the caption is 90 and 110.)</p>
+<p>Memory:</p>
+<ul><li>Dimension 3. Base size 2 (two 2-D arrays).</li></ul>
+<ul><li>x[0]: 2-D whose base is 2</li></ul>
+<ul><li>x[0][0] = {10, 20, 30}</li></ul>
+<ul><li>x[0][1] = {40, 50, 60}</li></ul>
+<ul><li>x[1]: 2-D</li></ul>
+<ul><li>x[1][0] = {70, 80} (length 2)</li></ul>
+<ul><li>x[1][1] = {90, 100, 110}</li></ul>
+<p>Students guess 70 / 60 / 40 with no confidence. After the diagram the answers are mechanical.</p>
+<h3>Shortcut must stay in one statement ([17:15]–[21:54])</h3>
+<p>Ordinary int:</p>
+<p>int x = 10;     // valid
+int x;
+x = 10;         // also valid — you may split into two lines</p>
+<p>People apply the same split to the array shortcut:</p>
+<p>int[] x = {10, 20, 30};   // VALID
+
+int[] x;
+x = {10, 20, 30};         // INVALID — compile-time error</p>
+<p>He compiles the one-liner: fine. He compiles the split: `illegal start of expression`, and the compiler may also say not a statement / semicolon expected.</p>
+<p>If we want to use this shortcut, compulsory we should perform all activities in a single line. If we try to divide into multiple lines / statements, compile-time error.</p>
+<pre class='code'>{10, 20, 30} is not a general expression you can put on the right of any assignment. It is legal only in the declaration (or in new int[]{…} — anonymous arrays, later in this video).</pre>
+<p>That finishes “declaration, creation and initialization in a single line.”</p>
+<h3>`length` versus `length()` ([22:07]–[46:28])</h3>
+<h4>Array: `length` is a variable, not a method ([22:40]–[26:26])</h4>
+<p>int[] x = new int[6];
+System.out.println(x.length());   // CE
+System.out.println(x.length);     // 6</p>
+<p>x.length() → cannot find symbol: symbol method length, location class `int[]` (he says “class int array”). There is no length method on the array type.</p>
+<p>x.length → 6. length is a variable applicable for arrays. It represents the size of the array.</p>
+<h4>Is `length` final? ([24:33]–[25:01])</h4>
+<p>Yes. Once we create an array there is no chance of changing the size. Size is always fixed. So `length` is a final variable applicable for arrays.</p>
+<p>Board:</p>
+<ul><li>length is a final variable applicable for arrays.</li></ul>
+<ul><li>length variable represents the size of the array.</li></ul>
+<h4>`String`: `length()` is a method, not a variable ([27:02]–[32:37])</h4>
+<p>String s = &quot;durga&quot;;
+System.out.println(s.length);     // CE
+System.out.println(s.length());   // 5</p>
+<p>length variable is not applicable for String. CE:</p>
+<p>cannot find symbol
+symbol  : variable length
+location: class java.lang.String</p>
+<p>s.length() → 5 (number of characters: d-u-r-g-a).</p>
+<p>`length()` is a method applicable for String objects. It returns the number of characters present in the string.</p>
+<h4>Is `length()` a final method? ([29:02]–[31:09])</h4>
+<p>Yes, in the sense he wants for the exam:</p>
+<ul><li>length() is declared in `String`.</li></ul>
+<ul><li>String is a final class.</li></ul>
+<ul><li>If the class is final, you cannot create a child.</li></ul>
+<ul><li>Overriding happens in a child class. No child → no override.</li></ul>
+<ul><li>Therefore every method present inside a final class is always final by default.</li></ul>
+<p>He says he will repeat this conclusion in oops: every method present inside a final class is always final by default, because you cannot override those methods (you cannot create the child class).</p>
+<p>So: length (array) is a final variable; length() (String) is a final method.</p>
+<h4>Note that pairs them ([32:42]–[34:01])</h4>
+<p>length variable applicable for arrays but not for String objects, whereas length() method applicable for String objects but not for arrays.</p>
+<h4>Exam combo — `String[]` ([34:06]–[39:51])</h4>
+<pre class='code'>String[] s = {&quot;A&quot;, &quot;AA&quot;, &quot;AAA&quot;};
+System.out.println(s.length);
+System.out.println(s.length());
+System.out.println(s[0].length);
+System.out.println(s[0].length());</pre>
+<p>This four-liner is the classic trap: mix array length with String length().</p>
+<h4>Multi-dimensional: `length` is only the base size ([40:05]–[46:19])</h4>
+<p>int[][] x = new int[6][3];
+System.out.println(x.length);      // ?
+System.out.println(x[0].length);   // ?</p>
+<p>Total number of ints you can store is 18. Is x.length 6, 18, or 9?</p>
+<p>6. Even a 2-D array is basically one-dimensional: size 6, and every element is an array of size 3.</p>
+<p>In multi-dimensional arrays, the `length` variable represents only the base size, not the total size.</p>
+<p>x[0].length is 3.</p>
+<p>There is no direct way to find the total length of a multi-dimensional array. Reason: the next-level size is not fixed (sometimes 2, sometimes 3, sometimes 4). Indirectly:</p>
+<p>x[0].length + x[1].length + x[2].length + … </p>
+<p>That finishes length vs length().</p>
+<h3>Anonymous arrays ([46:30]–[1:12:47])</h3>
+<h4>What and why ([46:36]–[53:33])</h4>
+<p>Anonymous = nameless. Sometimes we declare an array without a name. Nameless arrays are anonymous arrays.</p>
+<p>If the array has a name:</p>
+<p>int[] x = {10, 20, 30};</p>
+<p>Name is x. Size is x.length. First element x[0], second x[1]. Every later use goes through the name. So how can a nameless array be used at all?</p>
+<p>Only for instant / one-time use. If you will not need the array in the next lines, you need not give it a name.</p>
+<p>Stories he uses (same moral):</p>
+<ol><li>SCJP demo class. Someone on the road tells you where the bank building / second floor is. You do not take that person’s name, mail id, or mobile number, because in the future you are not going to communicate with that person anymore.</li></ol>
+<ol><li>City bus. The conductor sells you a ticket to SR Nagar. You never take the conductor’s contact details. Tomorrow another conductor will be there. Instant service, no name.</li></ol>
+<ol><li>Train to Bangalore (later, same section): auto driver, ticket clerk, person at the coach gate, chai-wala (₹5), samosa-wala (₹10) — all anonymous. Then a senior beside you for a 6-hour journey: after a long talk you take his visiting card (Infosys senior project manager) because you will communicate later. Once you give a name / contact, it is no longer anonymous.</li></ol>
+<p>Board:</p>
+<ul><li>Sometimes we can declare an array without name. Such nameless arrays are called anonymous arrays.</li></ul>
+<ul><li>The main purpose of anonymous arrays is just for instant use (one-time usage).</li></ul>
+<h4>How to write one — `sum` example ([53:36]–[58:16])</h4>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        sum(new int[]{10, 20, 30, 40});
+    }
+
+    public static void sum(int[] x) {
+        int total = 0;
+        for (int x1 : x) {          // for-each loop
+            total = total + x1;
+        }
+        System.out.println(&quot;The sum is &quot; + total);
+    }
+}</pre>
+<p>sum expects an int[]. You have the values 10, 20, 30, 40. You need an array only to make the call. After sum returns you never use that array again — you cannot even print its first element, because there is no name. Best choice: anonymous array.</p>
+<p>Creation form:</p>
+<pre class='code'>new int[] {10, 20, 30, 40}</pre>
+<p>new, then the type, then the values. (Works for char[], etc.)</p>
+<h4>Trap: do not put a size ([58:56]–[1:01:25])</h4>
+<p>Muscle memory after new int is to write a size: new int[3]. If you then also list values:</p>
+<p>new int[3]{10, 20, 30};   // INVALID — compile-time error
+new int[]{10, 20, 30};    // VALID</p>
+<p>While creating anonymous arrays we cannot specify the size, because we are already providing the number of elements. If you specify size as well → CE.</p>
+<h4>Multi-dimensional anonymous arrays ([1:01:28]–[1:03:13])</h4>
+<pre class='code'>new int[][]{{10, 20}, {30, 40, 50}}</pre>
+<p>Valid 2-D anonymous array (array of arrays: {10,20} and {30,40,50}). We can create multi-dimensional anonymous arrays also.</p>
+<h4>Giving a name later — no longer anonymous ([1:03:19]–[1:09:40])</h4>
+<p>The train neighbour starts anonymous; after you take his card he is not anonymous.</p>
+<pre class='code'>int[] x = new int[]{10, 20, 30};</pre>
+<p>You created it in anonymous style, then bound it to x because you need it in later lines. Based on our requirement we can give the name for an anonymous array; then it is no longer anonymous. Perfectly valid.</p>
+<h4>Why anonymous was the right choice in `sum` ([1:11:04]–[1:12:47])</h4>
+<p>In the above example, just to call sum we required an array, but after completing the sum method call we are not using that array anymore. Hence for this one-time requirement, anonymous is the best choice.</p>
+<h3>Array element assignments ([1:12:55]–[1:38:31])</h3>
+<p>Multiple cases. This is element assignment (a[i] = …), not assigning one array variable to another (that heading is next).</p>
+<h4>Case 1 — primitive type arrays ([1:13:14]–[1:19:30])</h4>
+<p>int[] x = new int[5];   // or size 6; primitive int array
+
+x[0] = 10;     // valid — int
+x[1] = &#x27;a&#x27;;    // valid — char promoted to int; **97** stored
+byte b = 20;
+x[2] = b;      // valid — byte → int
+short s = 30;
+x[3] = s;      // valid — short → int
+x[4] = 10L;    // INVALID — CE possible loss of precision
+               // found    : long
+               // required : int</p>
+<p>Promotion chart (same as data types): byte → short → int ← char, then int → long → float → double.</p>
+<p>Wherever int is required, byte, short, char, and int are allowed.</p>
+<p>In the case of primitive type arrays, as array elements we can provide any type which can be implicitly promoted to the declared type.</p>
+<p>If the array is int[], allowed element types: byte, short, char, int.</p>
+<p>If the array is `float[]`, allowed: byte, short, char, int, long, float — everything that promotes to float, i.e. everything except double (and boolean).</p>
+<h4>Case 2 — object type arrays ([1:19:33]–[1:26:52])</h4>
+<p>Object[], String[], Student[], Customer[] — object-type arrays.</p>
+<p>Example 1 — `Object[]`:</p>
+<p>Object[] a = new Object[10];
+a[0] = new Object();           // valid — declared type
+a[1] = new String(&quot;durga&quot;);    // valid — child of Object
+a[2] = new Integer(10);        // valid — child of Object</p>
+<p>Example 2 — `Number[]`:</p>
+<p>Number’s (direct) numeric subclasses: Byte, Short, Integer, Long, Float, Double.</p>
+<p>Number[] n = new Number[10];
+n[0] = new Integer(10);        // valid — child of Number
+n[1] = new Double(10.5);       // valid
+n[2] = new String(&quot;durga&quot;);    // INVALID</p>
+<p>CE:</p>
+<p>incompatible types
+found    : java.lang.String
+required : java.lang.Number</p>
+<p>String is not a child of Number.</p>
+<p>In the case of object type arrays, as array elements we can provide either declared-type objects or its child-class objects.</p>
+<h4>Abstract-class type arrays ([1:34:36]–[1:35:37])</h4>
+<p>He later labels this as its own row, but the example is the `Number[]` already covered. Number is an abstract class. You cannot create new Number(), but you can create a Number[] and store child-class objects (Integer, Double, …).</p>
+<p>Abstract class type arrays: child-class objects are allowed.</p>
+<p>(Someone asks if this case was covered — “yes boss, Number.”)</p>
+<h4>Case 3 — interface type arrays ([1:26:55]–[1:32:26])</h4>
+<pre class='code'>Runnable[] r = new Runnable[10];</pre>
+<p>Students shout invalid: Runnable is an interface, you cannot create an object for an interface.</p>
+<p>It is valid. You are not creating a Runnable object. You are creating a `Runnable` type array object. Interface-type array objects are allowed. Interface instances are not.</p>
+<p>What can you store? Runnable has implementation class `Thread`. A Thread object is-a Runnable. For an interface-type array, implementation-class objects are allowed.</p>
+<p>r[0] = new Thread();           // valid
+r[1] = new String(&quot;durga&quot;);    // INVALID — String does not implement Runnable</p>
+<p>CE:</p>
+<p>incompatible types
+found    : java.lang.String
+required : java.lang.Runnable</p>
+<p>A student offers Throwable — Durga rejects it: Throwable does not implement Runnable (directly or indirectly). Throwable is the exception hierarchy, not threads.</p>
+<p>For interface type arrays, as array elements its implementation-class objects are allowed.</p>
+<h4>Summary table he draws at the end ([1:32:26]–[1:38:31])</h4>
+<p>That is array element assignments.</p>
+<h3>Bridge — array *variable* assignments ([1:38:31]–[1:38:56])</h3>
+<p>Last heading on the board: array variable assignments.</p>
+<p>Element assignment was a[i] = value. Variable assignment is assigning one array reference to another (int[] a = b, mixing 1-D/2-D, and so on). He names the topic and the video ends. That is Language Fundamentals arrays part 4 — not written here.</p>
+<h2>Code from the lecture</h2>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // five lines vs one line
+        int[] x = {10, 20, 30};
+        char[] ch = {&#x27;a&#x27;, &#x27;e&#x27;, &#x27;i&#x27;, &#x27;o&#x27;, &#x27;u&#x27;};
+        String[] names = {&quot;A&quot;, &quot;AA&quot;, &quot;AAA&quot;};
+
+        int[][] two = {{10, 20}, {30, 40, 50}};
+
+        int[][][] three = {{{10, 20, 30}, {40, 50, 60}}, {{70, 80}, {90, 100, 110}}};
+        System.out.println(three[0][1][2]); // 60
+        System.out.println(three[1][0][1]); // 80
+        System.out.println(three[1][1][1]); // 100
+        // three[2][0][0]  → ArrayIndexOutOfBoundsException
+        // three[1][2][0]  → ArrayIndexOutOfBoundsException
+
+        // int[] split;
+        // split = {10, 20, 30};           // CE: illegal start of expression
+
+        int[] six = new int[6];
+        // System.out.println(six.length()); // CE: cannot find symbol, method length, class int[]
+        System.out.println(six.length);      // 6
+
+        String s = &quot;durga&quot;;
+        // System.out.println(s.length);    // CE: cannot find symbol, variable length, class java.lang.String
+        System.out.println(s.length());      // 5
+
+        String[] arr = {&quot;A&quot;, &quot;AA&quot;, &quot;AAA&quot;};
+        System.out.println(arr.length);      // 3
+        // System.out.println(arr.length());
+        // System.out.println(arr[0].length);
+        System.out.println(arr[0].length()); // 1
+
+        int[][] m = new int[6][3];
+        System.out.println(m.length);        // 6  (base only, not 18)
+        System.out.println(m[0].length);     // 3
+        // total size indirectly: m[0].length + m[1].length + ...
+
+        sum(new int[]{10, 20, 30, 40});
+        // new int[3]{10, 20, 30};           // CE — size not allowed on anonymous
+        int[] named = new int[]{10, 20, 30}; // no longer anonymous
+
+        // Case 1 — primitive
+        int[] p = new int[5];
+        p[0] = 10;
+        p[1] = &#x27;a&#x27;;          // 97
+        byte b = 20;
+        p[2] = b;
+        short sh = 30;
+        p[3] = sh;
+        // p[4] = 10L;       // CE: possible loss of precision, found long, required int
+
+        // Case 2 — Object / Number
+        Object[] o = new Object[10];
+        o[0] = new Object();
+        o[1] = new String(&quot;durga&quot;);
+        o[2] = new Integer(10);
+
+        Number[] n = new Number[10];
+        n[0] = new Integer(10);
+        n[1] = new Double(10.5);
+        // n[2] = new String(&quot;durga&quot;); // CE: incompatible types, found String, required Number
+
+        // Case 3 — interface
+        Runnable[] r = new Runnable[10]; // valid: array object, not a Runnable instance
+        r[0] = new Thread();
+        // r[1] = new String(&quot;durga&quot;);   // CE: incompatible types, found String, required Runnable
+    }
+
+    public static void sum(int[] x) {
+        int total = 0;
+        for (int x1 : x) {
+            total = total + x1;
+        }
+        System.out.println(&quot;The sum is &quot; + total);
+    }
+}</pre>
+<h2>Rules to memorize</h2>
+<ol><li>Shortcut: int[] x = {10, 20, 30}; — declare + create + initialize in one line. Size is implied by the number of elements.</li></ol>
+<ol><li>Same shortcut for char[], String[], and multi-D: int[][] x = {{10,20},{30,40,50}}.</li></ol>
+<ol><li>String[] shortcut: array object on the heap; literals in SCP; slots hold references.</li></ol>
+<ol><li>The {…} shortcut must be on the declaration. int[] x; x = {10,20,30}; → illegal start of expression.</li></ol>
+<ol><li>For 3-D brace soup, draw the memory before answering x[i][j][k].</li></ol>
+<ol><li>`length`: final variable, arrays only, means size (in multi-D: base size only, not total cells).</li></ol>
+<ol><li>`length()`: final method (because String is final), String objects only, means character count.</li></ol>
+<ol><li>String[] s: s.length OK; s.length() CE; s[0].length CE; s[0].length() OK.</li></ol>
+<ol><li>No direct total-size API for multi-D; sum the inner .length values.</li></ol>
+<ol><li>Anonymous array = nameless, one-time / instant use. Syntax new int[]{10,20,30}. Do not write new int[3]{…}.</li></ol>
+<ol><li>int[] x = new int[]{10,20,30}; is valid; then it is not anonymous anymore.</li></ol>
+<ol><li>Primitive elements: any type implicitly promotable to the component type (int[] ← byte/short/char/int; float[] ← those plus long/float; not double/long-into-int).</li></ol>
+<ol><li>Object elements: declared type or child. Number[] cannot hold String.</li></ol>
+<ol><li>Abstract component type (Number): child-class objects.</li></ol>
+<ol><li>Interface component type: you may write new Runnable[10] (array object). Elements must be implementation-class objects (Thread, not String, not Throwable).</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>int[] x; x = {1,2,3}; looks like splitting int x; x = 10;. It is a compile error. The legal two-step creation is x = new int[]{1,2,3};.</li></ul>
+<ul><li>x.length() on an array → CE method length. s.length on a String → CE variable length. The error kind (method vs variable) is itself a question.</li></ul>
+<ul><li>new int[6][3] then x.length == 18 is the trap. Answer is 6.</li></ul>
+<ul><li>new int[3]{1,2,3} is illegal; new int[]{1,2,3} is legal.</li></ul>
+<ul><li>“Runnable[] r = new Runnable[10]; is CE because you cannot instantiate an interface.” False. You instantiate an array.</li></ul>
+<ul><li>r[0] = new Thread(); is valid; r[0] = new String(&quot;x&quot;); is CE incompatible types.</li></ul>
+<ul><li>Number is abstract: new Number() is illegal, new Number[10] is legal, n[0] = new Integer(10) is legal.</li></ul>
+<ul><li>x[1] = &#x27;a&#x27; in an int[] stores 97, not the character &#x27;a&#x27; as a char.</li></ul>
+<ul><li>x[i] = 10L in an int[] is CE possible loss of precision — same message as new int[10L] in part 1, different place.</li></ul>
+<ul><li>Do not confuse element assignment (a[i] = …) with variable assignment (a = b). The second is the next video.</li></ul>
+<h2>Recap</h2>
+<p>Part 3 is the {…} shortcut (including 2-D/3-D and the “must be one statement” rule), length vs length(), anonymous arrays, and what you may store inside an array: promotion for primitives, children for classes, implementations for interfaces.</p>
+<p>The lecture stops as it opens array variable assignments — that is arrays part 4.</p>
+<p>Next video: 009-arrays-part-4.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 8 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 8 of 16</td></tr>
+<tr><td>Topic</td><td>Arrays part 3</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 38m 56s (5936 seconds)</td></tr>
+<tr><td>Video ID</td><td>I_aJgAmDYPk</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=I_aJgAmDYPk</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>Result</th></tr>
+<tr><td>x[0][1][2]</td><td>60</td></tr>
+<tr><td>x[1][0][1]</td><td>80 (not 70 — 70 is [1][0][0])</td></tr>
+<tr><td>x[2][0][0]</td><td>RE `ArrayIndexOutOfBoundsException` — top level has no index 2</td></tr>
+<tr><td>x[1][2][0]</td><td>RE `ArrayIndexOutOfBoundsException` — x[1] has no index 2</td></tr>
+<tr><td>x[1][1][1]</td><td>100</td></tr>
+<tr><td>x[2][1][0] (he also rattles extra indexes like x[2][2][1][0])</td><td>AIOOB — index 2 does not exist at the top</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>Valid?</th><th>Result</th></tr>
+<tr><td>s.length</td><td>yes</td><td>3 — s is an array; three elements</td></tr>
+<tr><td>s.length()</td><td>no</td><td>CE cannot find symbol: method length, location class `String[]` (caption “Stringer” = String array type)</td></tr>
+<tr><td>s[0].length</td><td>no</td><td>CE cannot find symbol: variable length, location class `java.lang.String`</td></tr>
+<tr><td>s[0].length()</td><td>yes</td><td>1 — first element is &quot;A&quot;</td></tr>
+</table>
+<table>
+<tr><th>Array type</th><th>Allowed element types</th></tr>
+<tr><td>Primitive arrays</td><td>any type which can be implicitly promoted to the declared type</td></tr>
+<tr><td>Object type arrays</td><td>declared type or its child-class objects</td></tr>
+<tr><td>Abstract class type arrays</td><td>child-class objects</td></tr>
+<tr><td>Interface type arrays</td><td>implementation-class objects</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,516 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>102-anonymous-innerclass-part-3</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 102</h1>
+<h2>Video info</h2>
+<h3>00:03 — Session opening: third category of inner classes</h3>
+<p>Up to this point in the inner-class series, two categories were already covered:</p>
+<ol><li>Normal / regular inner class</li></ol>
+<ol><li>Method-local inner class</li></ol>
+<p>The third category — and the most valuable, most repeatedly used — is Anonymous Inner Classes.</p>
+<h3>00:32 — What is an Anonymous Inner Class?</h3>
+<p>Definition: An inner class without a name.</p>
+<ul><li>Sometimes we can declare an inner class without giving it a name.</li></ul>
+<ul><li>Such nameless inner classes are called Anonymous Inner Classes.</li></ul>
+<p>Immediate doubt: Without a name, how can we access or use it?</p>
+<p>Answer: There is a clear usage pattern — discussed next.</p>
+<h3>01:10 — Real-life analogy: one-time help, no contact details</h3>
+<p>Scenario (Canara Bank / demo-class analogy):</p>
+<ul><li>You ask someone on the road: &quot;Where is Canara Bank building?&quot;</li></ul>
+<ul><li>He replies: &quot;Two minutes walk, right-hand side.&quot;</li></ul>
+<ul><li>You find the building, attend the demo — but you never ask his name, mobile number, or address.</li></ul>
+<p>Why? Because you need him only once — instant use, one-time usage. You are not going to meet him again in your life, so there is no need to record his contact information.</p>
+<p>Same idea in Java: Classes created purely for instant / one-time use do not need a permanent name → Anonymous Inner Classes.</p>
+<h3>05:04 — Bus conductor analogy (reinforcement)</h3>
+<ul><li>You travel by city bus, buy a ticket from the conductor, get down at your stop.</li></ul>
+<ul><li>You never ask the conductor&#x27;s name, mobile, or email.</li></ul>
+<ul><li>Tomorrow another conductor will be on a different bus — you use whoever is available at that moment.</li></ul>
+<ul><li>If you tried to permanently &quot;recruit&quot; a conductor for a one-time trip, it would be meaningless.</li></ul>
+<p>Conclusion: One-time-usage classes → anonymous (nameless).</p>
+<h3>05:22 — Two anonymous constructs in Java</h3>
+<p>In Java there are two anonymous constructs:</p>
+<ol><li>Anonymous inner class</li></ol>
+<ol><li>Anonymous array (covered elsewhere)</li></ol>
+<h3>05:31 — Main purpose of Anonymous Inner Classes</h3>
+<p>Just for instant use / one-time usage.</p>
+<p>Not for permanent, repeated use.</p>
+<h3>08:18 — Three types of Anonymous Inner Classes</h3>
+<p>Based on declaration / behavior, there are exactly three categories.</p>
+<h3>12:36 — New syntax introduction (critical)</h3>
+<p>Sir emphasizes: some new syntax appears here. Take special care — once this syntax is clear, anonymous inner classes become easy.</p>
+<h3>12:56 — Syntax pattern 1: extends `Popcorn`</h3>
+<p>Normal object creation:</p>
+<p>Popcorn p = new Popcorn();  // CE: OK — creates Popcorn object</p>
+<p>Anonymous inner class syntax (extends a class):</p>
+<p>Popcorn p = new Popcorn() {   // CE: OK — anonymous subclass of Popcorn
+};                             // semicolon AFTER closing brace — mandatory</p>
+<p>What happens (two activities):</p>
+<ol><li>A nameless class is declared that extends `Popcorn`.</li></ol>
+<ol><li>An object of that child class is created, held by a parent reference (Popcorn p).</li></ol>
+<p>Key twist: Even though new Popcorn() appears, it is NOT a plain Popcorn object — it is a child-class object with parent reference.</p>
+<h3>15:37 — Syntax pattern 2: extends `Thread`</h3>
+<p>Normal:</p>
+<p>Thread t = new Thread();  // CE: OK</p>
+<p>Anonymous (extends Thread):</p>
+<pre class='code'>Thread t = new Thread() {  // CE: OK — anonymous subclass of Thread
+};</pre>
+<p>Same two activities: declare unnamed class extending Thread, create child object with parent reference.</p>
+<h3>17:13 — Syntax pattern 3: implements `Runnable`</h3>
+<p>Runnable r = new Runnable();  // CE: cannot instantiate interface</p>
+<p>Why semicolon alone fails: Runnable is an interface — you cannot create an object with new Runnable(); alone.</p>
+<p>Correct anonymous form:</p>
+<pre class='code'>Runnable r = new Runnable() {  // CE: OK — anonymous class implementing Runnable
+    public void run() { }
+};</pre>
+<p>What happens:</p>
+<ol><li>A nameless class implements `Runnable`.</li></ol>
+<ol><li>Object of that implementing class is created with interface reference.</li></ol>
+<p>Summary of three syntax demos:</p>
+<h3>19:17 — Category 1 deep dive: Anonymous inner class that **extends a class**</h3>
+<p>Recap points before the Popcorn example:</p>
+<ul><li>Anonymous inner class = inner class without name</li></ul>
+<ul><li>Purpose = instant / one-time use</li></ul>
+<ul><li>Three types: extends class, implements interface, inside arguments</li></ul>
+<h3>21:46 — `Popcorn` base class (board)</h3>
+<p>Popcorn is a class with a taste() method (and ~100 other methods in the real-world analogy):</p>
+<pre class='code'>class Popcorn {
+    public void taste() {
+        System.out.println(&quot;salty&quot;);  // default salty implementation
+    }
+    // ... ~100 more methods available as-is ...
+}</pre>
+<p>Movie-theatre context: Popcorn at big cinemas can cost ₹450–500 for 2 cokes + 3 popcorns (~₹100–150 each). Default taste printed: salty.</p>
+<h3>24:34 — When overriding is needed</h3>
+<p>Requirement: Popcorn functionality is needed, but not the default salty taste() — want spicy instead. All other ~100 methods should remain unchanged.</p>
+<p>Permanent requirement → named top-level child class:</p>
+<pre class='code'>class SpicyPopcorn extends Popcorn {
+    public void taste() {
+        System.out.println(&quot;spicy&quot;);  // override only taste()
+    }
+    // remaining 100 methods inherited from Popcorn as-is
+}</pre>
+<ul><li>People wanting salty → new Popcorn() and call methods.</li></ul>
+<ul><li>People wanting spicy → new SpicyPopcorn() and call methods.</li></ul>
+<ul><li>This is classic method overriding.</li></ul>
+<p>Problem: If spicy taste is needed only once, creating a separate top-level class is not recommended — like buying a bus for a once-in-five-months trip, or hiring a permanent doctor for a once-a-year fever.</p>
+<h3>27:51 — One-time vs permanent requirement (decision rule)</h3>
+<h3>28:15 — Full `Test` class: spicy via anonymous inner class</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // One-time spicy requirement — anonymous inner class
+        Popcorn p = new Popcorn() {
+            public void taste() {
+                System.out.println(&quot;spicy&quot;);  // override taste() only
+            }
+        };  // end anonymous class + object creation
+
+        p.taste();  // prints: spicy  (overriding method runs — child object via parent ref)
+    }
+}</pre>
+<p>Polymorphism / overriding: Parent reference p holds child object → p.taste() invokes overridden spicy implementation.</p>
+<p>Output: spicy</p>
+<h3>30:42 — Salty: normal Popcorn object</h3>
+<p>Student asks: What if I want salty (default), not spicy?</p>
+<p>Popcorn p1 = new Popcorn();
+p1.taste();  // prints: salty</p>
+<p>Normal Popcorn object → Popcorn class taste() method → salty.</p>
+<h3>31:18 — Sweet: second anonymous inner class (one-time)</h3>
+<p>Sweet taste is also a one-time requirement → anonymous inner class again:</p>
+<p>Popcorn p2 = new Popcorn() {
+    public void taste() {
+        System.out.println(&quot;sweet&quot;);
+    }
+};
+p2.taste();  // prints: sweet</p>
+<h3>32:38 — Complete program on screen (compile &amp; run)</h3>
+<p>Full combined program Sir runs (Test.java):</p>
+<pre class='code'>class Popcorn {
+    public void taste() {
+        System.out.println(&quot;salty&quot;);
+    }
+    // 100+ more methods exist conceptually
+}
+
+class Test {
+    public static void main(String[] args) {
+        // Anonymous — spicy (one-time)
+        Popcorn p = new Popcorn() {
+            public void taste() {
+                System.out.println(&quot;spicy&quot;);
+            }
+        };
+        p.taste();  // → spicy
+
+        // Normal Popcorn — salty
+        Popcorn p1 = new Popcorn();
+        p1.taste();  // → salty
+
+        // Anonymous — sweet (one-time)
+        Popcorn p2 = new Popcorn() {
+            public void taste() {
+                System.out.println(&quot;sweet&quot;);
+            }
+        };
+        p2.taste();  // → sweet
+    }
+}</pre>
+<p>Compile: javac Test.java — CE: OK</p>
+<p>Run: java Test</p>
+<p>Output (in order):</p>
+<p>spicy
+salty
+sweet</p>
+<h3>34:41 — Decision recap: top-level class vs anonymous</h3>
+<ul><li>Permanent requirement, several times → top-level class</li></ul>
+<ul><li>One-time / temporary requirement, only once → anonymous inner class</li></ul>
+<h3>35:06 — How many `.class` files are generated?</h3>
+<p>For the program above, four .class files:</p>
+<p>Naming rule: Anonymous inner classes get compiler-generated names:</p>
+<ul><li>Format: `OuterClass$N.class`</li></ul>
+<ul><li>N = sequential number (1, 2, 3, …) for each anonymous class within that outer class</li></ul>
+<ul><li>No human-readable name exists for the inner class itself</li></ul>
+<p>Mapping:</p>
+<ul><li>p (spicy anonymous) → object of class `Test$1`, NOT plain Popcorn</li></ul>
+<ul><li>p1 (normal) → object of class `Popcorn`</li></ul>
+<ul><li>p2 (sweet anonymous) → object of class `Test$2`</li></ul>
+<h3>38:33 — Proving runtime class names with `getClass().getName()`</h3>
+<p>Sir adds SOP lines to show actual classes programmatically:</p>
+<pre class='code'>class Popcorn {
+    public void taste() {
+        System.out.println(&quot;salty&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Popcorn p = new Popcorn() {
+            public void taste() {
+                System.out.println(&quot;spicy&quot;);
+            }
+        };
+        Popcorn p1 = new Popcorn();
+        Popcorn p2 = new Popcorn() {
+            public void taste() {
+                System.out.println(&quot;sweet&quot;);
+            }
+        };
+
+        p.taste();   // spicy
+        p1.taste();  // salty
+        p2.taste();  // sweet
+
+        System.out.println(p.getClass().getName());   // Test$1
+        System.out.println(p1.getClass().getName());  // Popcorn
+        System.out.println(p2.getClass().getName());  // Test$2
+    }
+}</pre>
+<p>Output:</p>
+<p>spicy
+salty
+sweet
+Test$1
+Popcorn
+Test$2</p>
+<p>Key insight: Popcorn p = new Popcorn() { ... } — reference type is Popcorn, but runtime object class is Test$1 (anonymous subclass).</p>
+<h3>47:10 — Analysis board: three activities in full anonymous + override code</h3>
+<p>For the complete spicy example:</p>
+<pre class='code'>Popcorn p = new Popcorn() {
+    public void taste() {
+        System.out.println(&quot;spicy&quot;);
+    }
+};</pre>
+<p>Three activities:</p>
+<ol><li>Declare a class that extends Popcorn without a name → anonymous inner class</li></ol>
+<ol><li>Override taste() method inside that class</li></ol>
+<ol><li>Create an object of that child class with parent reference (Popcorn p)</li></ol>
+<h3>48:08 — Analysis board: two activities in empty-body anonymous</h3>
+<p>For syntax without override:</p>
+<pre class='code'>Popcorn p = new Popcorn() {
+};</pre>
+<p>Two activities:</p>
+<ol><li>Declare anonymous class extending Popcorn (no name)</li></ol>
+<ol><li>Create child object with parent reference</li></ol>
+<h3>53:21 — Multithreading + Anonymous Inner Classes (exam-hot topic)</h3>
+<p>Sir states: Multi-threading and anonymous inner classes is a very common exam combination — must know clearly.</p>
+<p>Two ways to define a thread:</p>
+<ol><li>By extending `Thread` class</li></ol>
+<ol><li>By implementing `Runnable` interface</li></ol>
+<p>Both will be shown with normal class approach and anonymous inner class approach.</p>
+<h3>54:15 — Normal class approach: extend `Thread`</h3>
+<p>Step 1 — Define thread by extending Thread:</p>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;child thread&quot;);
+        }
+    }
+}</pre>
+<ul><li>Write a class extending Thread</li></ul>
+<ul><li>Override run() method</li></ul>
+<ul><li>Code inside run() = job of the thread</li></ul>
+<p>Step 2 — Use in demo:</p>
+<pre class='code'>class ThreadDemo {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();  // main thread creates child thread object
+        t.start();                     // main thread starts child thread
+
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;main thread&quot;);
+        }
+    }
+}</pre>
+<p>After `t.start()`: Two threads — main thread + child thread.</p>
+<ul><li>Child thread → executes run() job (prints &quot;child thread&quot;)</li></ul>
+<ul><li>Main thread → executes remaining code (prints &quot;main thread&quot;)</li></ul>
+<ul><li>Both run simultaneously → mixed / interleaved output (order not guaranteed)</li></ul>
+<p>Example mixed output pattern: main thread, child thread, child thread, main thread, …</p>
+<h3>58:47 — Anonymous inner class approach: extend `Thread` (one-time job)</h3>
+<p>If the thread job is temporary / one-time only, do not create top-level MyThread — use anonymous inner class:</p>
+<pre class='code'>class ThreadDemo {
+    public static void main(String[] args) {
+        Thread t = new Thread() {           // anonymous class extends Thread
+            public void run() {
+                for (int i = 0; i &lt; 10; i++) {
+                    System.out.println(&quot;child thread&quot;);
+                }
+            }
+        };                                   // end anonymous class + object
+
+        t.start();                           // now 2 threads
+
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;main thread&quot;);
+        }
+    }
+}</pre>
+<p>Same pattern as Popcorn: extends class without name, optionally override method (run here), create object with parent reference, use immediately.</p>
+<p>Sir also writes equivalent in Test.java and runs it — mixed output observed; exact order varies on each run due to thread scheduling.</p>
+<h3>1:02:12 — Runnable anonymous preview (extends Thread run demo)</h3>
+<p>Executed Test.java with anonymous Thread — output interleaves child thread and main thread lines; not always same order each execution.</p>
+<h3>1:05:34 — Normal vs Anonymous thread-defining approaches (summary)</h3>
+<p>Both must be known for the exam.</p>
+<h3>1:09:23 — Category 2: Anonymous inner class that **implements an interface**</h3>
+<p>Second type: Anonymous inner class that implements an interface.</p>
+<p>Example chosen: Defining a thread by implementing `Runnable` interface.</p>
+<h3>1:10:48 — Normal class approach: implement `Runnable`</h3>
+<p>Step 1 — `MyRunnable` class:</p>
+<pre class='code'>class MyRunnable implements Runnable {
+    public void run() {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;child thread&quot;);
+        }
+    }
+}</pre>
+<ul><li>Runnable interface has one method: run()</li></ul>
+<ul><li>Provide implementation in run()</li></ul>
+<p>Step 2 — `ThreadDemo` using Runnable:</p>
+<pre class='code'>class ThreadDemo {
+    public static void main(String[] args) {
+        MyRunnable r = new MyRunnable();   // Runnable target object (like a &quot;car&quot;)
+        Thread t = new Thread(r);          // Thread &quot;drives&quot; the Runnable — has start()
+        t.start();                         // 2 threads after start
+
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;main thread&quot;);
+        }
+    }
+}</pre>
+<p>Key multithreading concepts (recap):</p>
+<ul><li>MyRunnable object alone has no `start()` — like a car without a driver</li></ul>
+<ul><li>`Thread` class has start() capability</li></ul>
+<ul><li>new Thread(r) → thread will execute `r.run()` as its job when started</li></ul>
+<ul><li>r = target Runnable</li></ul>
+<p>Output: Mixed — main thread + child thread interleaved.</p>
+<h3>1:15:08 — Anonymous inner class approach: implement `Runnable`</h3>
+<p>One-time temporary job → anonymous Runnable:</p>
+<pre class='code'>class ThreadDemo {
+    public static void main(String[] args) {
+        Runnable r = new Runnable() {        // anonymous class implements Runnable
+            public void run() {
+                for (int i = 0; i &lt; 10; i++) {
+                    System.out.println(&quot;child thread&quot;);
+                }
+            }
+        };                                   // Runnable target ready
+
+        Thread t = new Thread(r);            // wrap with Thread for start()
+        t.start();
+
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;main thread&quot;);
+        }
+    }
+}</pre>
+<p>Common student doubt: Runnable r = new Runnable() { ... } — is this a Runnable object or implementing-class object?</p>
+<p>Answer: It is an implementing-class object (anonymous), held by interface reference Runnable r. You cannot do new Runnable(); alone (interface), but anonymous class body makes it valid.</p>
+<h3>1:18:28 — Runnable anonymous demo in `Test.java` (executed)</h3>
+<p>Sir writes and runs in Test.java with labels child thread 1 / main thread 1 for clarity:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Runnable r = new Runnable() {
+            public void run() {
+                for (int i = 0; i &lt; 10; i++) {
+                    System.out.println(&quot;child thread 1&quot;);
+                }
+            }
+        };
+
+        Thread t = new Thread(r);
+        t.start();
+
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;main thread 1&quot;);
+        }
+    }
+}</pre>
+<p>CE: OK. Output: Mixed; example run showed interleaved main/child lines.</p>
+<h3>1:20:11 — Category 2 summary</h3>
+<p>Both options for Runnable-based threads:</p>
+<ol><li>Normal class approach — class MyRunnable implements Runnable</li></ol>
+<ol><li>Anonymous inner class approach — new Runnable() { public void run() { ... } }</li></ol>
+<p>Core concept: Anonymous class that implements an interface.</p>
+<h3>1:23:38 — Category 1 (Thread extends) completed; transition to Category 3</h3>
+<p>By extending Thread class — completed.</p>
+<h3>1:23:59 — Category 3: Anonymous inner class **defined inside arguments**</h3>
+<p>Third type: Anonymous inner class that is defined inside arguments — declared directly as a method argument, not stored in a separate variable first.</p>
+<h3>1:24:37 — Same Runnable example, inlined into `Thread` constructor</h3>
+<p>Instead of:</p>
+<pre class='code'>Runnable r = new Runnable() { ... };
+Thread t = new Thread(r);
+t.start();</pre>
+<p>Inline inside the argument of `new Thread(...)`:</p>
+<pre class='code'>class ThreadDemo {
+    public static void main(String[] args) {
+        new Thread(new Runnable() {          // anonymous Runnable passed as argument
+            public void run() {
+                for (int i = 0; i &lt; 10; i++) {
+                    System.out.println(&quot;child thread&quot;);
+                }
+            }
+        }).start();                          // .start() chained on same statement
+
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;main thread&quot;);
+        }
+    }
+}</pre>
+<p>What happens:</p>
+<ol><li>Anonymous class implementing Runnable is declared inside the constructor argument</li></ol>
+<ol><li>Object created and passed directly to Thread constructor</li></ol>
+<ol><li>.start() called immediately via chaining</li></ol>
+<ol><li>After start() → 2 threads (main + child)</li></ol>
+<ol><li>Child executes run(); main executes the for-loop</li></ol>
+<p>Sir notes: code looks unusual but is perfectly valid, acceptable Java — he compiles and executes it successfully.</p>
+<h3>1:28:24 — Category 3 demo in `Test.java` (executed)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        new Thread(new Runnable() {
+            public void run() {
+                for (int i = 0; i &lt; 10; i++) {
+                    System.out.println(&quot;child thread 2&quot;);
+                }
+            }
+        }).start();
+
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;main thread 2&quot;);
+        }
+    }
+}</pre>
+<p>Compile &amp; run: CE: OK.</p>
+<p>Sample output: main thread 2 and child thread 2 lines interleaved (exact order varies).</p>
+<p>Sir humorously warns: &quot;Don&#x27;t show this code everywhere — people may ask if it&#x27;s Java or not&quot; — but confirms it is valid Java, executed in class.</p>
+<h3>1:30:45 — Session wrap-up</h3>
+<p>All three types of Anonymous Inner Classes covered:</p>
+<p>Universal rules to remember:</p>
+<ul><li>Purpose: instant / one-time use only</li></ul>
+<ul><li>No class name — compiler assigns Outer$1, Outer$2, …</li></ul>
+<ul><li>Reference vs object: parent/interface reference may hold anonymous child/implementor object</li></ul>
+<ul><li>Overriding: override methods inside { } body as needed</li></ul>
+<ul><li>Permanent need → named top-level class; one-time need → anonymous inner class at point of use</li></ul>
+<ul><li>Multithreading combo (extends Thread / implements Runnable + anonymous) is high-frequency for OCJP/SCJP</li></ul>
+<h2>Quick reference — Anonymous inner class syntax cheat sheet</h2>
+<pre class='code'>// Type 1: extends class
+SuperType ref = new SuperType() {
+    // optional method overrides
+};
+
+// Type 2: implements interface
+InterfaceType ref = new InterfaceType() {
+    // must implement abstract methods
+};
+
+// Type 3: inside arguments
+someMethod(new SomeType() {
+    // body
+});
+// e.g. threading:
+new Thread(new Runnable() {
+    public void run() { /* job */ }
+}).start();</pre>
+<p>Java code block count: 26</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Title:</td><td>Core Java With OCJP/SCJP: Innerclass Part-3 \</td><td>\</td><td>anonymous inner class</td></tr>
+<tr><td>Position</td><td>102 of 203</td><td></td><td></td></tr>
+<tr><td>Series</td><td>Inner Classes · Part 3</td><td></td><td></td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 31m 18s</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>QSvPY-Y71-k</td><td></td><td></td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=QSvPY-Y71-k</td><td></td><td></td></tr>
+<tr><td>Playlist</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Type</th><th>Declaration form</th></tr>
+<tr><td>1</td><td>Anonymous inner class that extends a class</td><td>new SuperClass() { ... }</td></tr>
+<tr><td>2</td><td>Anonymous inner class that implements an interface</td><td>new InterfaceName() { ... }</td></tr>
+<tr><td>3</td><td>Anonymous inner class defined inside arguments</td><td>Passed directly as a method argument</td></tr>
+</table>
+<table>
+<tr><th>Reference type</th><th>Syntax</th><th>Actual object type</th></tr>
+<tr><td>Popcorn p</td><td>new Popcorn() { }</td><td>Child class object (anonymous subclass)</td></tr>
+<tr><td>Thread t</td><td>new Thread() { }</td><td>Child class object (anonymous subclass)</td></tr>
+<tr><td>Runnable r</td><td>new Runnable() { }</td><td>Implementing class object (anonymous)</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>Approach</th></tr>
+<tr><td>Permanent — needed several times, by many people</td><td>Top-level named class</td></tr>
+<tr><td>Temporary / one-time — needed only once, at one place</td><td>Anonymous inner class at that exact location</td></tr>
+</table>
+<table>
+<tr><th>Generated file</th><th>For what</th></tr>
+<tr><td>Popcorn.class</td><td>Popcorn class</td></tr>
+<tr><td>Test.class</td><td>Test class (outer class)</td></tr>
+<tr><td>Test$1.class</td><td>1st anonymous inner class in Test (spicy)</td></tr>
+<tr><td>Test$2.class</td><td>2nd anonymous inner class in Test (sweet)</td></tr>
+</table>
+<table>
+<tr><th>Approach</th><th>When</th></tr>
+<tr><td>Normal class approach</td><td>Permanent job, reused many times</td></tr>
+<tr><td>Anonymous inner class approach</td><td>Temporary / one-time job</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Type</th><th>Example pattern</th></tr>
+<tr><td>1</td><td>Extends a class</td><td>Popcorn p = new Popcorn() { ... };</td></tr>
+<tr><td>2</td><td>Implements an interface</td><td>Runnable r = new Runnable() { ... };</td></tr>
+<tr><td>3</td><td>Defined inside arguments</td><td>new Thread(new Runnable() { ... }).start();</td></tr>
+</table>
+</body></html>

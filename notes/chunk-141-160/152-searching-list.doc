@@ -1,0 +1,450 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>152-searching-list</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 152 — Collections Part-17: Searching Elements of List, `reverse()` &amp; `reverseOrder()`</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This is Collections Part-17 — the second of three utility-method sessions on the Collections class (after sort, before additional utilities). Durga Sir covers searching, reversing, and the easy-to-confuse `reverse()` vs `reverseOrder()` distinction.</p>
+<p>What this lecture covers:</p>
+<ol><li>Recap: Collections as a utility class; last session = sort()</li></ol>
+<ol><li>Collections.binarySearch() — searching for an object in a List (ArrayList, LinkedList, etc.)</li></ol>
+<ol><li>Return type trap: int, not boolean</li></ol>
+<ol><li>Successful search → index; unsuccessful search → insertion point (negative value)</li></ol>
+<ol><li>Mandatory precondition: list must be sorted before calling binarySearch()</li></ol>
+<ol><li>Two overloads: default natural sorting vs customized Comparator sorting</li></ol>
+<ol><li>Six board conclusions (exam-critical)</li></ol>
+<ol><li>Live demo 1: natural-order sort + binary search (CollectionsSearchDemo)</li></ol>
+<ol><li>Live demo 2: comparator sort + binary search (CollectionsSearchDemo1)</li></ol>
+<ol><li>Unsorted-list trap demo (unpredictable results, no exception)</li></ol>
+<ol><li>Missing-comparator trap demo (unpredictable results when list was comparator-sorted)</li></ol>
+<ol><li>Arrays.binarySearch() — same rules in one sentence</li></ol>
+<ol><li>Mathematical result-range formulas for a list of n elements</li></ol>
+<ol><li>Collections.reverse(List) — reverse element order in-place</li></ol>
+<ol><li>Collections.reverseOrder(Comparator) — get a reversed Comparator (not the same as reverse())</li></ol>
+<p>Exam mantra: Sort first. Return type is int. Successful = non-negative index. Unsuccessful = negative insertion point. Comparator used at sort time must be passed again at search time. Know reverse() vs reverseOrder() cold.</p>
+<h2>00:04 — Recap: `Collections` utility class &amp; last session</h2>
+<h3>What is `Collections`?</h3>
+<p>Collections is a utility class in java.util that defines several static utility methods for collection objects. You do not instantiate it.</p>
+<h3>Last session recap</h3>
+<p>In the previous session (Video 151), Durga Sir covered:</p>
+<ul><li>Collections.sort(List l) — sort according to default natural sorting order</li></ul>
+<ul><li>Collections.sort(List l, Comparator c) — sort according to customized sorting order</li></ul>
+<h3>This session&#x27;s topic</h3>
+<p>Searching elements of List</p>
+<p>Use case: &quot;I have an ArrayList (or LinkedList). I want to search whether a particular target object is present in that list or not.&quot;</p>
+<p>Internally, the search utility uses the binary search algorithm — the method name itself is binarySearch.</p>
+<h2>00:49 — Binary search algorithm: the mandatory sorted-list rule</h2>
+<h3>The golden rule (copy for exam)</h3>
+<p>If you want to apply the binary search algorithm, the list must be sorted first.</p>
+<p>Workflow:</p>
+<ol><li>First → sort the list (Collections.sort(...))</li></ol>
+<ol><li>Then → apply binary search (Collections.binarySearch(...))</li></ol>
+<p>This is the standard binary-search rule from data structures, and it applies exactly here.</p>
+<h3>Why sorting matters (conceptual proof from the board)</h3>
+<p>Assume a sorted list: [A, K, M, J, a]. If you search for &#x27;j&#x27; (not present), you can logically say: &quot;&#x27;j&#x27; should be placed after the first `&#x27;A&#x27;` and before `&#x27;K&#x27;`&quot; — that position is meaningful only because the list is sorted.</p>
+<p>If the list is not sorted — e.g. original insertion order [J, A, M, K, a] — you cannot determine where &#x27;j&#x27; should go. You cannot say it belongs after &#x27;A&#x27; or before &#x27;K&#x27; without a sort order.</p>
+<p>Therefore: before calling `binarySearch()`, the list must be sorted.</p>
+<h3>What happens if you skip sorting?</h3>
+<ul><li>No compile-time error</li></ul>
+<ul><li>No runtime exception</li></ul>
+<ul><li>You get unpredictable / unexpected results</li></ul>
+<p>Durga Sir demonstrates this live: even when &#x27;J&#x27; is present in an unsorted list, binarySearch may return -5 instead of the correct index 0. Never trust output on an unsorted list.</p>
+<h2>01:51 — `Collections.binarySearch()`: method signature basics</h2>
+<h3>Access modifiers</h3>
+<pre class='code'>public static int binarySearch(List l, Object target)</pre>
+<ul><li>Public — callable from anywhere</li></ul>
+<ul><li>Static — call via class name: Collections.binarySearch(...)</li></ul>
+<ul><li>Return type: `int` — NOT `boolean`</li></ul>
+<h3>The return-type trap (star this)</h3>
+<p>Most students assume: &quot;Can you search whether this object is available or not? → return type must be `boolean` (true/false).&quot;</p>
+<p>Wrong. The return type is `int`.</p>
+<p>Board note: Successful search returns index. Unsuccessful search returns insertion point (as a negative value).</p>
+<h2>02:28 — Worked example: index vs insertion point (natural sort)</h2>
+<h3>Setup</h3>
+<p>ArrayList l = new ArrayList();
+l.add(&quot;J&quot;);
+l.add(&quot;A&quot;);
+l.add(&quot;M&quot;);
+l.add(&quot;K&quot;);
+l.add(&quot;a&quot;);
+System.out.println(l);           // [J, A, M, K, a]  — insertion order preserved
+Collections.sort(l);             // sort by natural order
+System.out.println(l);           // [A, K, M, J, a]</p>
+<h3>After sorting — index map</h3>
+<p>Insertion points (negative, for elements not in list — where you could insert):</p>
+<h3>Search 1 — successful: `&quot;J&quot;` (capital J, present)</h3>
+<p>Collections.binarySearch(l, &quot;J&quot;);   // returns 3</p>
+<p>&#x27;J&#x27; is at index 3 → successful search → returns 3.</p>
+<h3>Search 2 — unsuccessful: `&quot;j&quot;` (lowercase j, not present)</h3>
+<p>Collections.binarySearch(l, &quot;J&quot;);   // 3  — successful (capital J exists)
+Collections.binarySearch(l, &quot;j&quot;);   // -2 — unsuccessful (lowercase j absent)</p>
+<p>In sorted order [A, K, M, J, a], lowercase &#x27;j&#x27; would be placed after `&#x27;A&#x27;` and before `&#x27;K&#x27;` — that slot corresponds to insertion point −2.</p>
+<h3>Why insertion points are negative</h3>
+<p>If unsuccessful search returned a positive number like 1, students might confuse it with a successful search at index 1. Negative values eliminate that ambiguity.</p>
+<h3>What is &quot;insertion point&quot;?</h3>
+<p>Insertion point = the location in the sorted list where you can place (insert) the target element while preserving sort order.</p>
+<ul><li>It does not mean you must call add() — it tells you where the element would belong.</li></ul>
+<ul><li>For &#x27;j&#x27;: after &#x27;A&#x27;, before &#x27;K&#x27; → insertion point −2.</li></ul>
+<h2>08:24 — Two `binarySearch` overloads</h2>
+<p>The Collections class defines two binary search methods:</p>
+<h3>Method 1 — list sorted by default natural sorting order</h3>
+<pre class='code'>public static int binarySearch(List l, Object target)</pre>
+<p>Use when: the list was sorted with Collections.sort(l) (no comparator) — i.e. default natural sorting order.</p>
+<h3>Method 2 — list sorted by customized sorting order</h3>
+<pre class='code'>public static int binarySearch(List l, Object target, Comparator c)</pre>
+<p>Use when: the list was sorted with Collections.sort(l, comparator) — i.e. customized sorting order via Comparator.</p>
+<h3>Critical matching rule</h3>
+<p>At search time, you must pass the same Comparator that was used at sort time. Otherwise → unpredictable results (no exception).</p>
+<h2>12:53 — Six board conclusions (exam-critical — memorize all six)</h2>
+<p>Durga Sir writes six conclusions on the board. Copy all six:</p>
+<h3>Conclusion 1 — Algorithm used internally</h3>
+<p>The above search methods internally will use binary search algorithm.</p>
+<p>Binary search is the standard searching algorithm for sorted collections.</p>
+<h3>Conclusion 2 — Successful search</h3>
+<p>Successful search returns index (non-negative integer: 0, 1, 2, …).</p>
+<h3>Conclusion 3 — Unsuccessful search</h3>
+<p>Unsuccessful search returns insertion point (negative integer: −1, −2, −3, …).</p>
+<h3>Conclusion 4 — Definition of insertion point</h3>
+<p>Insertion point is the location where we can place the target element in the sorted list.</p>
+<h3>Conclusion 5 — List must be sorted</h3>
+<p>Before calling binarySearch() method, compulsory the list should be sorted. Otherwise we will get unpredictable results (no compile-time or runtime error).</p>
+<h3>Conclusion 6 — Comparator must match at search time</h3>
+<p>If the list is sorted according to Comparator, then at the time of search operation also we must pass the same Comparator object. Otherwise we will get unpredictable results.</p>
+<h2>18:34 — Example 1: `CollectionsSearchDemo` (default natural sorting)</h2>
+<h3>Full program</h3>
+<pre class='code'>import java.util.*;
+
+public class CollectionsSearchDemo {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        l.add(&quot;J&quot;);
+        l.add(&quot;A&quot;);
+        l.add(&quot;M&quot;);
+        l.add(&quot;K&quot;);
+        l.add(&quot;a&quot;);
+
+        System.out.println(&quot;Before sorting: &quot; + l);
+        // Output: [J, A, M, K, a]
+
+        Collections.sort(l);
+        System.out.println(&quot;After sorting:  &quot; + l);
+        // Output: [A, K, M, J, a]
+
+        System.out.println(Collections.binarySearch(l, &quot;J&quot;));
+        // Successful search → 3
+
+        System.out.println(Collections.binarySearch(l, &quot;j&quot;));
+        // Unsuccessful search → -2
+    }
+}</pre>
+<h3>Board diagram (draw beside the code)</h3>
+<p>After sort: A  K  M  J  a</p>
+<h3>Compile &amp; run output</h3>
+<p>Before sorting: [J, A, M, K, a]
+After sorting:  [A, K, M, J, a]
+3
+-2</p>
+<h3>Trap demo: search without sorting</h3>
+<p>Comment out Collections.sort(l) and call binarySearch anyway:</p>
+<pre class='code'>// Collections.sort(l);   // commented out — list stays [J, A, M, K, a]
+System.out.println(Collections.binarySearch(l, &quot;J&quot;));   // unpredictable: -5
+System.out.println(Collections.binarySearch(l, &quot;j&quot;));   // unpredictable: -1</pre>
+<p>Even though &#x27;J&#x27; exists at index 0 in the unsorted list, binary search returns −5 — completely wrong. Proves Conclusion 5.</p>
+<h2>28:37 — Example 2: `CollectionsSearchDemo1` (Comparator / descending sort)</h2>
+<h3>Comparator for descending order</h3>
+<pre class='code'>class MyComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        Integer I1 = (Integer) obj1;
+        Integer I2 = (Integer) obj2;
+        return I2.compareTo(I1);   // descending order
+    }
+}</pre>
+<p>I2.compareTo(I1) = reverse of default natural (ascending) order = descending.</p>
+<h3>Full program</h3>
+<pre class='code'>import java.util.*;
+
+class MyComparator implements Comparator {
+    public int compare(Object obj1, Object obj2) {
+        Integer I1 = (Integer) obj1;
+        Integer I2 = (Integer) obj2;
+        return I2.compareTo(I1);
+    }
+}
+
+public class CollectionsSearchDemo1 {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        l.add(15);
+        l.add(0);
+        l.add(20);
+        l.add(10);
+        l.add(5);
+
+        System.out.println(&quot;Before sorting: &quot; + l);
+        // [15, 0, 20, 10, 5]
+
+        Collections.sort(l, new MyComparator());
+        System.out.println(&quot;After sorting:  &quot; + l);
+        // [20, 15, 10, 5, 0]  — descending (customized)
+
+        System.out.println(Collections.binarySearch(l, 10, new MyComparator()));
+        // Successful → 2
+
+        System.out.println(Collections.binarySearch(l, 13, new MyComparator()));
+        // Unsuccessful → -3
+
+        System.out.println(Collections.binarySearch(l, 17));
+        // NO comparator passed → UNPREDICTABLE (e.g. -6)
+
+        // Correct call for 17:
+        // Collections.binarySearch(l, 17, new MyComparator());  → -2
+    }
+}</pre>
+<h3>Trace: before and after sort</h3>
+<h3>Index / insertion-point map (after descending sort)</h3>
+<h3>Search results explained</h3>
+<h3>Live run output (from the video)</h3>
+<p>Before sorting: [15, 0, 20, 10, 5]
+After sorting:  [20, 15, 10, 5, 0]
+2
+-3
+-6</p>
+<p>Expected for 17 with Comparator: −2. Without Comparator: −6 (wrong) — proves Conclusion 6.</p>
+<h3>Board summary for Example 2</h3>
+<p>Before sorting:  15  0  20  10  5
+After sorting:   20  15  10  5   0
+
+binarySearch(l, 10, new MyComparator())  →  2
+binarySearch(l, 13, new MyComparator())  → -3
+binarySearch(l, 17)                        → unpredictable (must pass Comparator)</p>
+<h2>41:54 — `Arrays.binarySearch()` — same rules</h2>
+<p>Even in the `Arrays` class, binary search exists (Arrays.binarySearch(...)).</p>
+<p>Durga Sir&#x27;s one-line rule for the exam:</p>
+<p>All rules of `Arrays` class `binarySearch()` method are exactly the same as `Collections` class `binarySearch()` method.</p>
+<p>He will not re-explain — if you master this session, Arrays.binarySearch is free marks.</p>
+<p>Same rules apply:</p>
+<ul><li>Array must be sorted first</li></ul>
+<ul><li>Return type is int</li></ul>
+<ul><li>Successful → index; unsuccessful → insertion point</li></ul>
+<ul><li>Two overloads: natural order vs Comparator</li></ul>
+<ul><li>Comparator at search must match Comparator at sort</li></ul>
+<h2>42:27 — Result ranges for a list of n elements (exam math)</h2>
+<p>Durga Sir derives formulas — may be asked directly in the exam.</p>
+<h3>Example: list of 3 elements</h3>
+<p>List (sorted): [A, K, J] (3 elements, indices 0–2)</p>
+<p>Note: write unsuccessful range as −4 to −1 (not −1 to −4) because −4 &lt; −1.</p>
+<p>Searching for &#x27;a&#x27; (not present) after &#x27;J&#x27; → insertion point −4 (after last element).</p>
+<h3>General formulas — list of **n** elements</h3>
+<h3>Board note (copy exactly)</h3>
+<p>For the list of n elements, in the case of binarySearch() method:</p>
+<p>1. Successful search result range: 0 to n − 1</p>
+<p>2. Unsuccessful search result range: −(n + 1) to −1</p>
+<p>3. Total result range: −(n + 1) to (n − 1)</p>
+<h3>Worked check (n = 3)</h3>
+<ul><li>Successful: 0 to 2 ✓</li></ul>
+<ul><li>Unsuccessful: −(3+1) to −1 = −4 to −1 ✓</li></ul>
+<ul><li>Total: −4 to 2 ✓</li></ul>
+<h2>49:44 — `Collections.reverse(List l)` — reversing elements of a List</h2>
+<h3>Third utility in this block</h3>
+<p>After sorting and searching, the third topic: reversing elements of a List.</p>
+<h3>Method signature</h3>
+<pre class='code'>public static void reverse(List l)</pre>
+<ul><li>Public static void</li></ul>
+<ul><li>Reverses the order of elements in the given list in-place</li></ul>
+<ul><li>Returns nothing (void) — the original list object is modified</li></ul>
+<h3>Board theory</h3>
+<p>Collections class defines the following reverse method to reverse elements of List.</p>
+<h3>Example program</h3>
+<pre class='code'>import java.util.*;
+
+public class CollectionsReverseDemo {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        l.add(15);
+        l.add(0);
+        l.add(20);
+        l.add(10);
+        l.add(5);
+
+        System.out.println(&quot;Before reverse: &quot; + l);
+        // [15, 0, 20, 10, 5]
+
+        Collections.reverse(l);
+        System.out.println(&quot;After reverse:  &quot; + l);
+        // [5, 10, 20, 0, 15]
+    }
+}</pre>
+<h3>Critical clarification (common mistake)</h3>
+<p>`reverse()` reverses the ORDER of elements — NOT the elements themselves.</p>
+<ul><li>15 stays the integer 15 — it does not become 51</li></ul>
+<ul><li>Only the position changes: first element becomes last, last becomes first</li></ul>
+<ul><li>Order reversal ≠ element reversal (digit reversal)</li></ul>
+<h2>54:23 — `reverse()` vs `reverseOrder()` — do NOT confuse</h2>
+<h3>Two different methods — most common confusion point</h3>
+<h3>`Collections.reverseOrder(Comparator c)`</h3>
+<p>Comparator c1 = Collections.reverseOrder(c);</p>
+<ul><li>Input: a Comparator c (e.g. ascending order)</li></ul>
+<ul><li>Output: a new Comparator c1 that produces the opposite order (e.g. descending)</li></ul>
+<ul><li>Return type: `Comparator`</li></ul>
+<h3>Analogy from the board</h3>
+<p>We can use reverseOrder() method to get a reversed Comparator.</p>
+<h3>When to use `reverseOrder()`</h3>
+<ul><li>You already have a Comparator for ascending order</li></ul>
+<ul><li>You need a Comparator for descending order</li></ul>
+<ul><li>Instead of writing a new Comparator class, call Collections.reverseOrder(existingComparator)</li></ul>
+<h3>Example</h3>
+<p>Comparator ascending = /* some ascending comparator */;
+Comparator descending = Collections.reverseOrder(ascending);
+// c  → ascending
+// c1 → descending</p>
+<h3>Board summary (copy for exam)</h3>
+<p>Don&#x27;t get confused — exam may ask: &quot;What is the difference between `reverse()` and `reverseOrder()`?&quot;</p>
+<h2>59:11 — Session wrap-up: three utilities covered</h2>
+<p>This lecture completes three Collections class utilities:</p>
+<h2>Quick reference tables</h2>
+<h3>`binarySearch` decision tree</h3>
+<p>Is the list sorted?
+├── NO  → unpredictable results (sort first!)
+└── YES → How was it sorted?
+          ├── Collections.sort(l)           → binarySearch(l, target)
+          └── Collections.sort(l, comp)     → binarySearch(l, target, comp)
+                                              (SAME comp required)</p>
+<h3>Return value interpretation</h3>
+<h3>Java API encoding (official — beyond board notation)</h3>
+<p>Standard Java encodes insertion point as:</p>
+<p>return -(insertionPoint) - 1</p>
+<p>Durga Sir teaches insertion points directly as −1, −2, −3, … on the board. For the OCJP/SCJP exam, follow Sir&#x27;s board conclusions and worked examples.</p>
+<h3>`reverse` vs `reverseOrder` at a glance</h3>
+<p>| | reverse(List) | reverseOrder(Comparator) |</p>
+<p>|--|----------------|---------------------------|</p>
+<p>| Argument | List | Comparator |</p>
+<p>| Return type | void | Comparator |</p>
+<p>| Effect | Reverses list element order in-place | Returns opposite-order Comparator |</p>
+<p>| Modifies original? | Yes (the List) | No (returns new Comparator) |</p>
+<h2>Exam traps checklist</h2>
+<ol><li>Return type is `int`, not boolean</li></ol>
+<ol><li>List must be sorted before search — no exception thrown if unsorted</li></ol>
+<ol><li>Same Comparator at sort and search when using customized order</li></ol>
+<ol><li>Unsuccessful search returns negative insertion point, not -1 only (range: −(n+1) to −1)</li></ol>
+<ol><li>reverse() = flip list order; `reverseOrder()` = flip Comparator logic — completely different</li></ol>
+<ol><li>Arrays.binarySearch follows identical rules to Collections.binarySearch</li></ol>
+<ol><li>Successful index range: 0 to n−1; total range: −(n+1) to n−1</li></ol>
+<h2>Programs to practice (from the video)</h2>
+<h2>What&#x27;s next</h2>
+<ul><li>Additional Collections utility methods in upcoming sessions</li></ul>
+<ul><li>Arrays.binarySearch() — same rules, no separate lecture needed if this session is clear</li></ul>
+<ul><li>reverseOrder() will be used when combining sorting with descending/custom comparators</li></ul>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Collections Part-17 \</td><td>\</td><td>searching elements of list</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=bQkR6N8OUks</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>59m 35s</td><td></td><td></td></tr>
+<tr><td>Position</td><td>Video 152 of 203 in the Durga Sir OCJP/SCJP playlist</td><td></td><td></td></tr>
+<tr><td>Prerequisite</td><td>Video 151 covered Collections.sort() — sorting elements of a List using default natural sorting order and customized sorting via Comparator. Earlier sessions covered the Comparator interface, compare() return-value contract, and the full Collections Framework hierarchy.</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Situation</th><th>Return value</th><th>Meaning</th></tr>
+<tr><td>Successful search — target found</td><td>Non-negative index (0, 1, 2, …)</td><td>The index where the element exists in the list</td></tr>
+<tr><td>Unsuccessful search — target not found</td><td>Negative insertion point (−1, −2, −3, …)</td><td>The encoded position where the target could be inserted to maintain sorted order</td></tr>
+</table>
+<table>
+<tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+<tr><td>Element</td><td>A</td><td>K</td><td>M</td><td>J</td><td>a</td></tr>
+</table>
+<table>
+<tr><th>Position</th><th>Before index 0</th><th>Before index 1</th><th>Before index 2</th><th>Before index 3</th><th>Before index 4</th><th>After index 4</th></tr>
+<tr><td>Insertion point</td><td>−1</td><td>−2</td><td>−3</td><td>−4</td><td>−5</td><td>−6</td></tr>
+</table>
+<table>
+<tr><th>How list was sorted</th><th>Which binarySearch to call</th></tr>
+<tr><td>Collections.sort(l)</td><td>Collections.binarySearch(l, target)</td></tr>
+<tr><td>Collections.sort(l, c)</td><td>Collections.binarySearch(l, target, c) — same Comparator `c`</td></tr>
+</table>
+<table>
+<tr><th>Label</th><th>Values</th></tr>
+<tr><td>Index</td><td>0, 1, 2, 3, 4</td></tr>
+<tr><td>Insertion point</td><td>−1, −2, −3, −4, −5, −6</td></tr>
+</table>
+<table>
+<tr><th>Stage</th><th>List contents</th></tr>
+<tr><td>Before sort (insertion order)</td><td>15, 0, 20, 10, 5</td></tr>
+<tr><td>After sort(l, new MyComparator()) (descending)</td><td>20, 15, 10, 5, 0</td></tr>
+</table>
+<table>
+<tr><th>Index</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th></th></tr>
+<tr><td>Element</td><td>20</td><td>15</td><td>10</td><td>5</td><td>0</td><td></td></tr>
+<tr><td>Insertion point</td><td>−1</td><td>−2</td><td>−3</td><td>−4</td><td>−5</td><td>−6</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Result</th><th>Explanation</th></tr>
+<tr><td>binarySearch(l, 10, new MyComparator())</td><td>2</td><td>10 present at index 2 — successful</td></tr>
+<tr><td>binarySearch(l, 13, new MyComparator())</td><td>−3</td><td>13 absent; in descending order, 13 goes after 15 (before 10) → insertion point −3</td></tr>
+<tr><td>binarySearch(l, 17) — no Comparator</td><td>−6 (wrong)</td><td>List sorted by Comparator but search uses natural order → unpredictable</td></tr>
+<tr><td>binarySearch(l, 17, new MyComparator())</td><td>−2</td><td>17 goes after 20 in descending order → insertion point −2 — predictable</td></tr>
+</table>
+<table>
+<tr><th>Category</th><th>Range</th></tr>
+<tr><td>Successful search result range</td><td>0 to 2 (indices 0, 1, or 2)</td></tr>
+<tr><td>Unsuccessful search result range</td><td>−4 to −1 (−4 is smallest, −1 is largest among negatives)</td></tr>
+<tr><td>Total result range (success or failure)</td><td>−4 to 2</td></tr>
+</table>
+<table>
+<tr><th>Category</th><th>Formula</th><th>Example (n = 5)</th></tr>
+<tr><td>Successful search result range</td><td>0 to (n − 1)</td><td>0 to 4</td></tr>
+<tr><td>Unsuccessful search result range</td><td>−(n + 1) to −1</td><td>−6 to −1</td></tr>
+<tr><td>Total result range</td><td>−(n + 1) to (n − 1)</td><td>−6 to 4</td></tr>
+</table>
+<table>
+<tr><th>Before</th><th>After Collections.reverse(l)</th></tr>
+<tr><td>15, 0, 20, 10, 5</td><td>5, 10, 20, 0, 15</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Purpose</th></tr>
+<tr><td>Collections.reverse(List l)</td><td>Reverse the order of elements in an existing List (in-place)</td></tr>
+<tr><td>Collections.reverseOrder(Comparator c)</td><td>Get a reversed Comparator object (returns Comparator)</td></tr>
+</table>
+<table>
+<tr><th>Comparator passed in (c)</th><th>Comparator returned (c1)</th></tr>
+<tr><td>Ascending order</td><td>Descending order</td></tr>
+<tr><td>Alphabetical order</td><td>Reverse alphabetical order</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Use</th></tr>
+<tr><td>`reverse(List l)`</td><td>Reverse order of elements of a List</td></tr>
+<tr><td>`reverseOrder(Comparator c)`</td><td>Get a reversed Comparator</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Utility</th><th>Method(s)</th></tr>
+<tr><td>1</td><td>Sorting (previous session)</td><td>Collections.sort(l), Collections.sort(l, c)</td></tr>
+<tr><td>2</td><td>Searching (this session)</td><td>Collections.binarySearch(l, target), Collections.binarySearch(l, target, c)</td></tr>
+<tr><td>3</td><td>Reversing (this session)</td><td>Collections.reverse(l), Collections.reverseOrder(c)</td></tr>
+</table>
+<table>
+<tr><th>Return value</th><th>Meaning</th><th>Example</th></tr>
+<tr><td>&gt;= 0</td><td>Successful — element found at this index</td><td>3 → element at index 3</td></tr>
+<tr><td>&lt; 0</td><td>Unsuccessful — insertion point encoded as negative</td><td>-2 → would insert before index 1</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>File purpose</th></tr>
+<tr><td>CollectionsSearchDemo</td><td>Natural sort + binary search; unsorted trap</td></tr>
+<tr><td>CollectionsSearchDemo1</td><td>Comparator (descending) sort + binary search; missing-comparator trap</td></tr>
+<tr><td>CollectionsReverseDemo</td><td>Collections.reverse() in-place order flip</td></tr>
+</table>
+</body></html>

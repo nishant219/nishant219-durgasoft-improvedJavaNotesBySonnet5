@@ -1,0 +1,1027 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>041-interfaces-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 041 — Interface methods (and related board work)</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-12|| interfaces-2</p>
+<p>Source: real YouTube auto-captions (.transcripts/041-PS8gY5CXVY0.txt). ASR noise is decoded in place — keep subing / keep supping = board heading he is writing; inace / interace = interface; H just = public and abstract; substract = abstract; interent / injp = interview / OCJP; Cent office = implementation class; duras sof = DurgaSoft; strict fop = strictfp; compar meod / comb eror = compile-time error; inex / Intex = int x; vo M1 = void m1(); written type = return type; calization = serialization; coari = covariant; Tri 7 / tri8 = 777 / 888; laterals = literals.</p>
+<p>This lecture is the Java 1.4 / OCJP-era interface story: every method is public + abstract; every variable is public static final. He does not teach Java 8 default / static interface methods here — follow the board, not a later Java version.</p>
+<h3>00:05 — Board heading: interface methods</h3>
+<p>He writes the heading interface methods (keep subing keep supping inace methods). Video 040 already started interfaces. Methods are the next postmortem.</p>
+<h3>00:28 — Every method inside an interface is always public and abstract</h3>
+<p>Board line (he repeats it until it is on the board):</p>
+<p>Every method present inside interface is always public and abstract, whether we are declaring or not.</p>
+<p>Interview / OCJP (interent) angle: they may not only ask what the modifiers are. They may ask why the method is always public, and why it is always abstract. He wants both reasons, not a one-word answer.</p>
+<pre class='code'>interface Inter {
+    void m1();
+    // compiler treats this as:
+    // public abstract void m1();
+}</pre>
+<h3>01:37 — Board example: `interface Inter { void m1(); }`</h3>
+<p>He takes:</p>
+<pre class='code'>interface Inter {
+    void m1();
+}</pre>
+<p>He asks: interface method is always public — why? (It is abstract also — that why comes next.)</p>
+<h3>02:08 — Why the method is always public</h3>
+<p>Who is responsible to implement m1()? The implementation class.</p>
+<p>That implementation class may be:</p>
+<ul><li>in the same package, or</li></ul>
+<ul><li>in an outside package</li></ul>
+<p>Both options are there.</p>
+<p>So: to make this method available to every implementation class, the interface method must be public. If it were default / private / protected, some implementation class would not see it.</p>
+<pre class='code'>package p1;
+
+public interface Inter {
+    void m1(); // must be public so every impl can see it
+}
+
+package p1;
+
+public class SamePack implements Inter {
+    public void m1() {
+        System.out.println(&quot;same package impl&quot;);
+    }
+}
+
+package p2;
+
+public class OtherPack implements p1.Inter {
+    public void m1() {
+        System.out.println(&quot;outside package impl&quot;);
+    }
+}</pre>
+<p>Board reason (copy this wording):</p>
+<p>To make this method available to every implementation class, compulsory this method should be public.</p>
+<h3>03:10 — Why the method is always abstract</h3>
+<p>Why always abstract?</p>
+<p>An interface is a requirement specification. Meaning: this is the service I want. Who provides the implementation? The implementation class. The interface itself does not contain implementation.</p>
+<pre class='code'>interface Inter {
+    void m1();
+    // no body — specification only
+    // implementation class is responsible to provide implementation
+}
+
+class Test implements Inter {
+    public void m1() {
+        System.out.println(&quot;service implemented here&quot;);
+    }
+}</pre>
+<p>Board reason:</p>
+<p>Interface is a requirement specification. Implementation class is responsible to provide implementation. That is why the method should be abstract.</p>
+<h3>04:06 — Same example again, with both reasons on the board</h3>
+<p>He rewrites interface Inter { void m1(); } and tells them to add the two reasons next to it. Pause on the board (~05:13 “completed”).</p>
+<pre class='code'>interface Inter {
+    void m1();
+    // always public:
+    //   to make this method available to every implementation class
+    // always abstract:
+    //   implementation class is responsible to provide implementation
+}</pre>
+<p>Why always public? Why always abstract? He says the reasons you people are aware.</p>
+<h3>05:40 — Are these method declarations equal inside an interface?</h3>
+<p>He asks: inside interface, are all these method declarations equal or not?</p>
+<p>He writes four forms:</p>
+<pre class='code'>interface Inter {
+    void m1();
+}
+interface Inter {
+    public void m1();
+}
+interface Inter {
+    abstract void m1();
+}
+interface Inter {
+    public abstract void m1();
+}</pre>
+<p>Answer: yes — these are perfectly equal. Compiler adds the missing public / abstract anyway.</p>
+<h3>06:37 — Board: “hence inside interface the following method declarations are equal”</h3>
+<p>He writes that heading, then the four lines again:</p>
+<pre class='code'>interface Inter {
+    void m1();                 // equal
+}
+
+interface Inter2 {
+    public void m1();          // equal
+}
+
+interface Inter3 {
+    abstract void m1();        // equal
+}
+
+interface Inter4 {
+    public abstract void m1(); // equal
+}</pre>
+<p>(Four separate types only so the file is legal — on the board they are four alternative writings of the same method, not four methods in one interface.)</p>
+<h3>07:55 — If it is always public and always abstract, which modifiers are illegal?</h3>
+<p>Very important point.</p>
+<p>If the method is always public, we cannot declare it private or protected at the same time. public + private, public + protected will not come together.</p>
+<p>If the method is always abstract, we cannot declare it with implementation-related modifiers. He lists (he says we already covered these):</p>
+<ul><li>static</li></ul>
+<ul><li>final</li></ul>
+<ul><li>synchronized</li></ul>
+<ul><li>strictfp (strict fop in ASR)</li></ul>
+<ul><li>native</li></ul>
+<p>Private is already covered by the “always public” side.</p>
+<pre class='code'>interface Inter {
+    private void m1();
+    // CE: modifier private not allowed here
+}
+
+interface Inter2 {
+    protected void m1();
+    // CE: modifier protected not allowed here
+}
+
+interface Inter3 {
+    static void m1();
+    // CE: modifier static not allowed here
+    // (this classroom: every interface method is abstract; static contradicts that)
+}
+
+interface Inter4 {
+    final void m1();
+    // CE: modifier final not allowed here
+}
+
+interface Inter5 {
+    synchronized void m1();
+    // CE: modifier synchronized not allowed here
+}
+
+interface Inter6 {
+    strictfp void m1();
+    // CE: modifier strictfp not allowed here
+}
+
+interface Inter7 {
+    native void m1();
+    // CE: modifier native not allowed here
+}</pre>
+<h3>09:15 — Board list: we cannot declare interface methods with the following modifiers</h3>
+<p>He writes:</p>
+<p>As every interface method is always public and abstract, we can’t declare interface method with the following modifiers.</p>
+<p>List on the board:</p>
+<ul><li>private</li></ul>
+<ul><li>protected</li></ul>
+<ul><li>static</li></ul>
+<ul><li>final</li></ul>
+<ul><li>synchronized</li></ul>
+<ul><li>strictfp</li></ul>
+<ul><li>native</li></ul>
+<p>By mistake if you try, compile-time error.</p>
+<pre class='code'>interface Inter {
+    public abstract void m1(); // only this family is legal
+}</pre>
+<h3>11:09 — BIT: which of the following method declarations are allowed inside interface?</h3>
+<p>He converts the whole discussion into a bit (choose valid / invalid). Heading:</p>
+<p>Which of the following method declarations are allowed inside interface?</p>
+<p>Take from the screen and decide valid vs invalid:</p>
+<pre class='code'>interface Inter {
+    public void m1() {
+    } // (1)
+}
+
+interface Inter {
+    private void m1(); // (2)
+}
+
+interface Inter {
+    protected void m1(); // (3)
+}
+
+interface Inter {
+    static void m1(); // (4)
+}
+
+interface Inter {
+    public abstract native void m1(); // (5)
+}
+
+interface Inter {
+    abstract public void m1(); // (6)
+}</pre>
+<h3>13:06 — Answers to the method BIT</h3>
+<p>He goes one by one.</p>
+<p>(1) invalid — abstract method compulsory should end with a semicolon. A body { } is not allowed.</p>
+<pre class='code'>interface Inter {
+    public void m1() {
+    }
+    // CE: abstract methods do not have a body; must end with &#x27;;&#x27;
+}</pre>
+<p>(2) invalid — private is not allowed.</p>
+<pre class='code'>interface Inter {
+    private void m1();
+    // CE: modifier private not allowed here
+}</pre>
+<p>(3) invalid — protected is not allowed.</p>
+<pre class='code'>interface Inter {
+    protected void m1();
+    // CE: modifier protected not allowed here
+}</pre>
+<p>(4) invalid — static is not allowed.</p>
+<pre class='code'>interface Inter {
+    static void m1();
+    // CE: modifier static not allowed here
+}</pre>
+<p>(5) invalid — native is not allowed (even next to public abstract).</p>
+<pre class='code'>interface Inter {
+    public abstract native void m1();
+    // CE: modifier native not allowed here
+}</pre>
+<p>(6) valid — abstract public void m1(); is fine. Order of modifiers is not important. Either public abstract or abstract public — no problem at all.</p>
+<pre class='code'>interface Inter {
+    abstract public void m1(); // valid
+}
+
+interface Inter2 {
+    public abstract void m1(); // also valid — same meaning
+}</pre>
+<p>That finishes interface methods.</p>
+<h3>13:39 — Board heading: interface variables</h3>
+<p>keep subing inace variables — he writes interface variables.</p>
+<p>An interface can contain variables. What is the need?</p>
+<h3>14:01 — Need of interface variables: college automation / DurgaSoft / Hyderabad</h3>
+<p>Requirement specification example: can you please implement College automation system?</p>
+<p>In that system:</p>
+<ul><li>wherever college name is required, spell out DurgaSoft (duras sof)</li></ul>
+<ul><li>wherever location is required, implement Hyderabad</li></ul>
+<p>So: college name = DurgaSoft, location = Hyderabad, and so on.</p>
+<p>While implementing the specification, if anywhere location / college name is required, better to use those values. How do we specify them? By declaring interface variables.</p>
+<p>Services I want: m1, m2, m3, m4. While implementing those services:</p>
+<ul><li>if anywhere college name is required, use this constant</li></ul>
+<ul><li>if anywhere location is required, use this constant</li></ul>
+<ul><li>if anywhere mobile number is required, use this constant</li></ul>
+<p>These are requirement-level constants.</p>
+<pre class='code'>interface CollegeAutomation {
+    String COLLEGE_NAME = &quot;DurgaSoft&quot;;
+    String LOCATION = &quot;Hyderabad&quot;;
+    // plus whatever other requirement-level constants (e.g. mobile)
+
+    void m1();
+    void m2();
+    void m3();
+    void m4();
+}
+
+class CollegeAutomationImpl implements CollegeAutomation {
+    public void m1() {
+        System.out.println(COLLEGE_NAME);
+        // prints DurgaSoft
+    }
+
+    public void m2() {
+        System.out.println(LOCATION);
+        // prints Hyderabad
+    }
+
+    public void m3() {
+    }
+
+    public void m4() {
+    }
+}</pre>
+<h3>15:35 — Purpose: an interface can contain variables to define requirement-level constants</h3>
+<p>He concludes: interface can contain variables.</p>
+<p>Main purpose of an interface variable: to define requirement-level constants. In this requirement, use these constants while implementing these methods.</p>
+<p>Board paragraph (he writes it slowly):</p>
+<p>An interface can contain variables. The main purpose of interface variable is to define requirement-level constants.</p>
+<pre class='code'>interface Inter {
+    // variables = requirement-level constants
+    int MAX = 10;
+
+    // methods = services I want
+    void m1();
+}</pre>
+<h3>16:58 — Every interface variable is always public static final</h3>
+<p>Whether we are declaring or not:</p>
+<p>Every interface variable is always `public` `static` `final`.</p>
+<p>Immediately ask: why public? why static? why final? Observe the reasons.</p>
+<h3>17:18 — Board: `int x = 10` and why it is always public</h3>
+<pre class='code'>interface Inter {
+    int x = 10;
+    // compiler treats this as:
+    // public static final int x = 10;
+}</pre>
+<p>Why public? Who is going to use this variable? The implementation class. That class may be in the same package or outside package. So: to make this variable available to every implementation class, it is always public.</p>
+<pre class='code'>package p1;
+
+public interface Inter {
+    int x = 10; // public so every impl can see it
+}
+
+package p2;
+
+class Test implements p1.Inter {
+    public static void main(String[] args) {
+        System.out.println(x);
+        // prints 10
+    }
+}</pre>
+<p>Board reason:</p>
+<p>To make this variable available to every implementation class, this variable is always public.</p>
+<h3>18:29 — Why the variable is always static</h3>
+<p>Is it possible to create an object for an interface? No.</p>
+<p>Without existing object, the implementation class still needs to access the variable. If you want to access a variable without an object, that variable must be static. You cannot create an object for the interface, so without existing object we access it — compulsory static.</p>
+<pre class='code'>interface Inter {
+    int x = 10;
+}
+
+class Test implements Inter {
+    public static void main(String[] args) {
+        // Inter i = new Inter();
+        // CE: Inter is abstract; cannot be instantiated
+
+        System.out.println(Inter.x); // no Inter object — static access
+        // prints 10
+        System.out.println(x);       // inherited static final
+        // prints 10
+    }
+}</pre>
+<p>Board reason:</p>
+<p>Without existing object, implementation class can access this variable. That’s why it should be static.</p>
+<h3>19:39 — Why the variable is always final (JDBC / multiple implementation classes)</h3>
+<p>Don’t write a simple why. Give the real reason.</p>
+<p>In the morning they covered JDBC API. Who defines JDBC API? Some people (Sun) define the API. Who provides implementation? The database vendor. Is there only one vendor or multiple? Multiple — he lists IBM people, MySQL people (myl people), and so on.</p>
+<p>So this interface can be accessed by multiple implementation classes.</p>
+<p>If one implementation class is allowed to change x from 10 to 20, that effect is there for the remaining classes also — because for all implementation classes it is a common (static) variable.</p>
+<p>How to restrict? Implementation class: if you want you can access, but you cannot modify. Declare the variable final.</p>
+<pre class='code'>interface Driver {
+    int x = 10; // public static final — common to every vendor impl
+}
+
+class IbmDriver implements Driver {
+    public static void main(String[] args) {
+        // x = 20;
+        // CE: cannot assign a value to final variable x
+        System.out.println(x);
+        // prints 10
+    }
+}
+
+class MySqlDriver implements Driver {
+    public static void main(String[] args) {
+        System.out.println(x);
+        // prints 10  — must stay 10; one vendor must not change it for others
+    }
+}</pre>
+<p>Board reason:</p>
+<p>If one implementation class changes value, then remaining implementation classes will be affected. To restrict this, every interface variable is always final.</p>
+<h3>22:23 — Recap: public static final whether we are declaring or not</h3>
+<p>He writes the rule again, then the int x = 10 example with all three reasons beside it.</p>
+<pre class='code'>interface Inter {
+    int x = 10;
+    // public  — to make this variable available to every implementation class
+    // static  — without existing object also, implementation class has to access this variable
+    // final   — if one implementation class changes value, remaining implementation
+    //           classes will be affected; to restrict this, always final
+}</pre>
+<p>Implementation class cannot change the value, but it can access.</p>
+<h3>25:54 — Are these variable declarations equal inside an interface?</h3>
+<p>Can I use the word: within the interface, all these variable declarations are equal or not? Cross-check.</p>
+<p>He lists (ASR index = int x):</p>
+<pre class='code'>interface Inter {
+    int x = 10;
+}
+interface Inter {
+    public int x = 10;
+}
+interface Inter {
+    static int x = 10;
+}
+interface Inter {
+    final int x = 10;
+}
+interface Inter {
+    public static int x = 10;
+}
+interface Inter {
+    public final int x = 10;
+}
+interface Inter {
+    static final int x = 10;
+}
+interface Inter {
+    public static final int x = 10;
+}</pre>
+<p>All equal. Compiler fills in the missing public / static / final.</p>
+<p>He says: you took several lines — better to spell equal either at the beginning or at the last of the list.</p>
+<h3>26:26 — Board: “hence within the interface the following variable declarations are equal”</h3>
+<p>Same eight lines under that heading. One legal way to remember them (any one of these in a given interface):</p>
+<pre class='code'>interface Inter {
+    // all of the following mean public static final int x = 10
+    int x = 10;
+}
+
+interface A {
+    public int x = 10;
+}
+
+interface B {
+    static int x = 10;
+}
+
+interface C {
+    final int x = 10;
+}
+
+interface D {
+    public static int x = 10;
+}
+
+interface E {
+    public final int x = 10;
+}
+
+interface F {
+    static final int x = 10;
+}
+
+interface G {
+    public static final int x = 10;
+}</pre>
+<h3>28:21 — Conclusions: which modifiers are not applicable for interface variables</h3>
+<p>Interface variable is always public, always static, always final.</p>
+<p>Already public → can we declare private? No. protected? No. Private / protected terminology is not applicable for interface variables.</p>
+<h3>29:06 — Why `transient` is not applicable</h3>
+<p>Is it possible to create an object for the interface? No.</p>
+<p>If the object is not there, serialization is not there. Serialization means saving the state of an object. Object itself is not there, so serialization is not there.</p>
+<p>If serialization is not there, is the transient keyword required? Not required. That’s why for interface variables transient is not at all applicable.</p>
+<pre class='code'>interface Inter {
+    transient int x = 10;
+    // CE: modifier transient not allowed here
+}</pre>
+<h3>29:43 — Why `volatile` is not applicable</h3>
+<p>Every variable inside interface is always public static final. final means: is volatile possible? No.</p>
+<p>In the morning they covered: `final` + `volatile` is an illegal combination for a variable. It is already final, so you cannot declare volatile.</p>
+<p>That’s why these modifiers are not applicable for interface variables.</p>
+<pre class='code'>interface Inter {
+    volatile int x = 10;
+    // CE: modifier volatile not allowed here
+    // (also: illegal combination with implicit final)
+}</pre>
+<h3>31:10 — Board list: we cannot declare with the following modifiers</h3>
+<p>He writes (after a “sorry sorry” when he almost wrote private in the “always …” line):</p>
+<p>As every interface variable is always public static final, we can’t declare with the following modifiers:</p>
+<ul><li>private</li></ul>
+<ul><li>protected</li></ul>
+<ul><li>transient</li></ul>
+<ul><li>volatile</li></ul>
+<pre class='code'>interface Inter {
+    private int x = 10;
+    // CE: modifier private not allowed here
+}
+
+interface Inter2 {
+    protected int x = 10;
+    // CE: modifier protected not allowed here
+}
+
+interface Inter3 {
+    transient int x = 10;
+    // CE: modifier transient not allowed here
+}
+
+interface Inter4 {
+    volatile int x = 10;
+    // CE: modifier volatile not allowed here
+}</pre>
+<p>No such terminology for interface variables.</p>
+<h3>31:54 — Final static initialization recap; interface has no static block</h3>
+<p>Very important conclusion.</p>
+<p>Last class they covered types of final variables: final instance, final static, final local. Cross-check notes.</p>
+<p>If a static variable is declared final, JVM will not provide default values. Compulsory we should perform initialization explicitly.</p>
+<p>Rule for final static variables: compulsory initialization before class-loading completion.</p>
+<p>How many options? Two:</p>
+<ol><li>at the time of declaration</li></ol>
+<ol><li>inside a static block</li></ol>
+<pre class='code'>class Demo {
+    static final int x = 10; // option 1: at declaration
+
+    static final int y;
+    static {
+        y = 20; // option 2: static block, before class-loading completion
+    }
+}</pre>
+<p>For an interface: static-block concept is not there. You cannot declare a static block inside an interface. Interface can contain methods and variables. You cannot take static block, instance block, constructor.</p>
+<pre class='code'>interface Inter {
+    int x = 10;
+
+    // static {
+    //     x = 10;
+    // }
+    // CE: interface cannot have static initializers / blocks
+}</pre>
+<p>If the static block is not there, then for this final static variable where do we initialize? Compulsory at the time of declaration only.</p>
+<h3>34:26 — Demo file `Inter.java`: `int x` without initialization</h3>
+<p>He takes Inter.java:</p>
+<pre class='code'>interface Inter {
+    int x;
+    // CE: = expected
+}</pre>
+<p>javac Inter.java — compile error. Read the error: `=` expected (equal symbol expected). After x the compiler is immediately expecting =.</p>
+<p>He then writes only the equal symbol:</p>
+<pre class='code'>interface Inter {
+    int x =;
+    // CE: illegal start of expression
+}</pre>
+<p>After = something has to be taken. Error: illegal start of expression (or not a statement).</p>
+<p>Then:</p>
+<pre class='code'>interface Inter {
+    int x = 10; // valid
+}</pre>
+<p>Make sure you people are aware clearly.</p>
+<h3>36:02 — Board rule: initialize at the time of declaration</h3>
+<p>For interface variables, compulsory we should perform initialization at the time of declaration. Otherwise we will get compile-time error.</p>
+<pre class='code'>interface Inter {
+    int x;
+    // CE: = expected
+}</pre>
+<p>He says not required to keep extra explanation beyond that error.</p>
+<h3>37:36 — BIT: which of the following variable declarations are allowed inside interface?</h3>
+<p>Heading:</p>
+<p>Inside interface, which of the following variable declarations are allowed?</p>
+<pre class='code'>interface Inter {
+    int x; // (1)
+}
+
+interface Inter {
+    private int x = 10; // (2)
+}
+
+interface Inter {
+    protected int x = 10; // (3)
+}
+
+interface Inter {
+    volatile transient int x = 10; // (4)
+}
+
+interface Inter {
+    public static int x = 10; // (5)
+}</pre>
+<h3>39:06 — Answers to the variable BIT</h3>
+<p>(1) invalid — interface variable compulsory we should perform initialization at the time of declaration.</p>
+<pre class='code'>interface Inter {
+    int x;
+    // CE: = expected
+}</pre>
+<p>(2) invalid — private not allowed.</p>
+<pre class='code'>interface Inter {
+    private int x = 10;
+    // CE: modifier private not allowed here
+}</pre>
+<p>(3) invalid — protected not allowed.</p>
+<pre class='code'>interface Inter {
+    protected int x = 10;
+    // CE: modifier protected not allowed here
+}</pre>
+<p>(4) invalid — volatile / transient not allowed.</p>
+<pre class='code'>interface Inter {
+    volatile transient int x = 10;
+    // CE: modifiers volatile and transient not allowed here
+}</pre>
+<p>(5) valid — public static int x = 10 is fine (implicitly final also). Tick mark for the last one.</p>
+<pre class='code'>interface Inter {
+    public static int x = 10; // valid — public static final int x = 10
+}
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(Inter.x);
+        // prints 10
+    }
+}</pre>
+<h3>39:39 — Last point on interface variables: access vs modify in the implementation class</h3>
+<p>He writes interface Inter with int x = 10, then two separate class Test implements Inter programs (same class name, two cases — not one file).</p>
+<h3>40:11 — Case A: assign to `x` in `main` — invalid</h3>
+<pre class='code'>interface Inter {
+    int x = 10;
+}
+
+class Test implements Inter {
+    public static void main(String[] args) {
+        x = 777;
+        System.out.println(x);
+        // CE: cannot assign a value to final variable x
+    }
+}</pre>
+<p>Invalid. Interface variables are available to the implementation class: we can access, but we cannot modify, because the variable is always final.</p>
+<p>Error he wants you to read: cannot assign a value to final variable x. x is 10; we are changing it as 777.</p>
+<h3>42:06 — Case B: declare `int x = 777` in `main` — valid, prints 777</h3>
+<pre class='code'>interface Inter {
+    int x = 10;
+}
+
+class Test implements Inter {
+    public static void main(String[] args) {
+        int x = 777;
+        System.out.println(x);
+        // prints 777
+    }
+}</pre>
+<p>Valid. This x and the interface x are nowhere related. This is a local variable of main. We are declaring once again (local), not using the interface field. Perfectly 777 is the answer for System.out.println(x).</p>
+<p>First program: using interface x (assignment) → CE.</p>
+<p>Second program: new local x → valid.</p>
+<h3>42:37 — Board rule</h3>
+<p>Inside implementation class we can access interface variables, but we can’t modify values.</p>
+<pre class='code'>interface Inter {
+    int x = 10;
+}
+
+class Test implements Inter {
+    public static void main(String[] args) {
+        System.out.println(x); // access — OK
+        // prints 10
+
+        // x = 777;
+        // CE: cannot assign a value to final variable x
+    }
+}</pre>
+<p>He spends several minutes writing the two Test classes cleanly (take clearly, loopholes related to interface variables). First one invalid, second valid because it is the local variable.</p>
+<h3>45:24 — Recap of last session, and what is still left</h3>
+<p>Last session (video 040) covered:</p>
+<ul><li>what is an interface</li></ul>
+<ul><li>how to declare</li></ul>
+<ul><li>how we can provide implementation</li></ul>
+<ul><li>extends versus implements (dangerous keywords — where to use each)</li></ul>
+<ul><li>syntactical issues</li></ul>
+<ul><li>then postmortem on interface methods and interface variables</li></ul>
+<p>In this remaining stretch of the session he wants:</p>
+<ol><li>interface naming conflicts — method-level, then variable-level</li></ol>
+<ol><li>after that (next videos, not finished here): marker interface (most valuable for the interview room), adapter classes, when we should go for interface vs abstract class vs concrete class, and differences between interface and abstract class</li></ol>
+<p>First keeping: interface naming conflicts.</p>
+<h3>46:24 — Interface naming conflicts — method naming conflicts</h3>
+<p>Heading: interface naming conflicts. First category: method naming conflicts.</p>
+<p>Before starting: one important question. A Java class can implement any number of interfaces — correct or not? Yes. Don’t change your answer. Be strict to that answer only. No problem at all. Don’t change your answer anyway.</p>
+<h3>47:28 — Case 1: same signature and same return type — one `m1()` is enough</h3>
+<p>His favourite names: Left and Right.</p>
+<p>Both interfaces contain public void m1() — same signature, same return type.</p>
+<p>He wants to implement both interfaces simultaneously:</p>
+<pre class='code'>interface Left {
+    public void m1();
+}
+
+interface Right {
+    public void m1();
+}
+
+class Test implements Left, Right {
+    public void m1() {
+        System.out.println(&quot;one implementation serves both&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        Left l = t;
+        Right r = t;
+        l.m1();
+        // prints one implementation serves both
+        r.m1();
+        // prints one implementation serves both
+    }
+}</pre>
+<p>In the implementation class, for how many methods do we provide implementation? Only one. By default itself that is enough. Same public void m1().</p>
+<p>Left person: where is my implementation? Your requirement is public void m1() — this is it.</p>
+<p>Right person: same question — same method. This same method implementation works for both interfaces. No problem, because the requirement is the same.</p>
+<p>If they don’t want the same implementation — they want different implementation — then we should go for different classes:</p>
+<pre class='code'>class LeftImpl implements Left {
+    public void m1() {
+        System.out.println(&quot;left only&quot;);
+    }
+}
+
+class RightImpl implements Right {
+    public void m1() {
+        System.out.println(&quot;right only&quot;);
+    }
+}</pre>
+<p>If both people require the same implementation, one method can implement both interfaces simultaneously. We are not seeing any conflict.</p>
+<h3>50:00 — Case 1 board statement</h3>
+<p>If two interfaces contain a method with the same signature and the same return type, then in the implementation class we have to provide implementation for only one method.</p>
+<p>One method implementation is by default enough. We are not required to provide implementation two times.</p>
+<pre class='code'>interface Left {
+    public void m1();
+}
+
+interface Right {
+    public void m1();
+}
+
+class Test implements Left, Right {
+    public void m1() {
+    } // one method — enough for both
+}</pre>
+<h3>52:20 — Same question again, then Case 2</h3>
+<p>He asks again: a Java class can implement any number of interfaces simultaneously — correct or not? Don’t keep any doubt. Don’t change your answer.</p>
+<h3>52:46 — Case 2: same name, different argument types — both methods, overloading</h3>
+<p>Small change:</p>
+<pre class='code'>interface Left {
+    public void m1();
+}
+
+interface Right {
+    public void m1(int i);
+}
+
+class Test implements Left, Right {
+    public void m1() {
+        System.out.println(&quot;no-arg&quot;);
+    }
+
+    public void m1(int i) {
+        System.out.println(i);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.m1();
+        // prints no-arg
+        t.m1(10);
+        // prints 10
+    }
+}</pre>
+<p>Two interfaces contain a method with the same name but different argument types.</p>
+<p>In the implementation class, for how many methods? Both. You cannot show no-arg m1 as the implementation of m1(int) — argument is different. Compulsory implementation for the second method also.</p>
+<p>These methods are by default considered as overloaded methods.</p>
+<h3>54:05 — Case 2 board statement</h3>
+<p>If two interfaces contain a method with the same name but different argument types, then in the implementation class we have to provide implementation for both methods, and these methods act as overloaded methods.</p>
+<pre class='code'>interface Left {
+    public void m1();
+}
+
+interface Right {
+    public void m1(int i);
+}
+
+class Test implements Left, Right {
+    public void m1() {
+    }
+
+    public void m1(int i) {
+    }
+}</pre>
+<p>Have clear clarity. This is Case 2.</p>
+<h3>56:57 — Same question again (he is setting up Case 3)</h3>
+<p>He repeats: is a Java class can implement any number of interfaces simultaneously — possible or not? (He jokes that something on the board “is going down”.) Students say yes. Are you confident? Don’t change your answer. Now we are very near to that particular discussion.</p>
+<h3>57:42 — Case 3: same signature, different return types</h3>
+<pre class='code'>interface Left {
+    public void m1();
+}
+
+interface Right {
+    public int m1();
+}
+
+class Test implements Left, Right {
+    // how many methods do we implement?
+}</pre>
+<p>Students argue one method vs two. He says: for both methods we should provide implementation, because void and int are not the same.</p>
+<h3>58:19 — Putting both methods in one class — compile error</h3>
+<pre class='code'>interface Left {
+    public void m1();
+}
+
+interface Right {
+    public int m1();
+}
+
+class Test implements Left, Right {
+    public void m1() {
+    }
+
+    public int m1() {
+        return 10;
+    }
+    // CE: m1() is already defined in Test
+}</pre>
+<p>Compiler will “left and right” (shout). Signature of this method is m1. Signature of that method is m1. Within a class, two methods with the same signature are not allowed. Compile-time error: `m1` is already defined in Test. 100% not possible.</p>
+<h3>59:24 — Take only one method, declare the class abstract, implement the rest in a child — also fails</h3>
+<p>Is there a possibility? Within this class both methods you cannot take. Take only one method and declare the class abstract. Remaining method in the child. Someone says: class SubTest extends Test.</p>
+<pre class='code'>interface Left {
+    public void m1();
+}
+
+interface Right {
+    public int m1();
+}
+
+abstract class Test implements Left, Right {
+    public void m1() {
+    }
+}
+
+class SubTest extends Test {
+    public int m1() {
+        return 10;
+    }
+    // CE: m1() in SubTest cannot override m1() in Test
+    // attempting to assign incompatible return type
+    // found: int
+    // required: void
+}</pre>
+<p>Compiler will shout again. This is the wrong approach.</p>
+<p>Parent and child: a method with the same signature — that concept is overriding. In overriding, return types must be same. Here parent is void, so child must also be void. You are trying to override m1 in SubTest — cannot override m1 in Test; attempting to assign incompatible return type.</p>
+<p>So this approach also will not work.</p>
+<h3>1:01:02 — So what is the way? Don’t say “two separate classes”</h3>
+<p>He wants to implement both interfaces simultaneously. You told very confidently a Java class can implement any number of interfaces simultaneously. Spell out the way.</p>
+<p>Don’t tell: take a separate class for Left, take a separate class for Right. He does not want that. He wants implements Left, Right on one type.</p>
+<h3>1:01:36 — Inner class faces the same problem</h3>
+<p>Inner class also faces the same problem. Normal top-level class facing the problem — same problem by default if you implement Left m1 in the outer and Right m1 in an inner class: that is again separate classes. He does not want that. He wants both interfaces simultaneously on one implements Left, Right.</p>
+<pre class='code'>interface Left {
+    public void m1();
+}
+
+interface Right {
+    public int m1();
+}
+
+class Outer implements Left {
+    public void m1() {
+    }
+
+    class Inner implements Right {
+        public int m1() {
+            return 10;
+        }
+    }
+    // this is NOT &quot;one class implements both simultaneously&quot;
+}</pre>
+<h3>1:02:02 — It is impossible (except covariant returns)</h3>
+<p>Simple answer: it is impossible to implement both interfaces simultaneously. Don’t break your head.</p>
+<p>General answer: a Java class can implement more than one interface at a time — yes, except if two interfaces contain a method with the same signature but different return types. Then it is impossible to implement both simultaneously.</p>
+<p>But: if those return types are covariant return types, then possible. Example: one is Object, second is String. Object he will keep in the parent, String in the child — Object return type, String covariant, acceptable.</p>
+<p>If there is no covariance between the return types, then it is impossible.</p>
+<pre class='code'>interface Left {
+    public Object m1();
+}
+
+interface Right {
+    public String m1();
+}
+
+class Test implements Left, Right {
+    public String m1() {
+        return &quot;durga&quot;;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Test().m1());
+        // prints durga
+    }
+}</pre>
+<p>void vs int are not covariant — that pair is impossible.</p>
+<p>This covariant-return rule is from 1.5 version onwards. Remember: if return types are not covariant.</p>
+<h3>1:03:45 — Case 3 board statement</h3>
+<p>If two interfaces contain a method with the same signature but different return types, then it is impossible to implement both interfaces simultaneously (if return types are not covariant — this rule from 1.5 onwards).</p>
+<pre class='code'>interface Left {
+    public void m1();
+}
+
+interface Right {
+    public int m1();
+}
+
+// we can&#x27;t write any Java class which implements both interfaces simultaneously
+class Test implements Left, Right {
+    public void m1() {
+    }
+
+    public int m1() {
+        return 10;
+    }
+    // CE: m1() is already defined in Test
+}</pre>
+<p>Board extra line he writes under the example:</p>
+<p>We can’t write any Java class which implements both interfaces simultaneously.</p>
+<h3>1:06:42 — Interview answer, question form</h3>
+<p>He asks the same question again. Answer should be yes, except a particular case.</p>
+<p>Better to take question form on the board:</p>
+<p>Is a Java class can implement any number of interfaces simultaneously?</p>
+<p>Answer: Yes, except a particular case.</p>
+<p>What is that case:</p>
+<p>If two interfaces contain a method with the same signature but different return types, then it is impossible to implement both interfaces simultaneously.</p>
+<p>(Add in your head / he already said: unless the return types are covariant, 1.5+.)</p>
+<pre class='code'>// legal: any number of interfaces, when methods don&#x27;t collide on signature+unequal return
+interface A {
+    void m1();
+}
+
+interface B {
+    void m2();
+}
+
+interface C {
+    int m3();
+}
+
+class Test implements A, B, C {
+    public void m1() {
+    }
+
+    public void m2() {
+    }
+
+    public int m3() {
+        return 0;
+    }
+}</pre>
+<p>Interface method naming conflicts are clear.</p>
+<h3>1:08:56 — Board heading: interface variable naming conflicts</h3>
+<p>keep subing next topic: interface variable naming conflicts. Second category.</p>
+<h3>1:09:32 — Two interfaces, same variable name `x` — 777 vs 888</h3>
+<p>If two interfaces contain a variable with the same name — possible or not? Yes. Best example:</p>
+<pre class='code'>interface Left {
+    int x = 777;
+}
+
+interface Right {
+    int x = 888;
+}
+
+class Test implements Left, Right {
+    public static void main(String[] args) {
+        System.out.println(x);
+        // CE: reference to x is ambiguous
+    }
+}</pre>
+<p>He wants to print x. From Left, x is 777; from Right, x is 888. Which x will be considered — Left, Right, or compile-time error?</p>
+<p>Compile-time error: reference to `x` is ambiguous — because it is coming from both.</p>
+<h3>1:11:25 — Solution: qualify with the interface name (variables are static)</h3>
+<p>How to solve? Not required to worry. Every interface variable is always public static final. How do we access static variables? By using class name — or here, by using interface name.</p>
+<p>Want Left interface x value:</p>
+<pre class='code'>interface Left {
+    int x = 777;
+}
+
+interface Right {
+    int x = 888;
+}
+
+class Test implements Left, Right {
+    public static void main(String[] args) {
+        // System.out.println(x);
+        // CE: reference to x is ambiguous
+
+        System.out.println(Left.x);
+        // prints 777
+        System.out.println(Right.x);
+        // prints 888
+    }
+}</pre>
+<p>Left.x → 777. Right.x → 888.</p>
+<p>Two interfaces can contain a variable with the same name — no problem at all. There may be a chance of an ambiguity problem, but we can solve it by using interface names.</p>
+<h3>1:12:30 — Board rule for variable naming conflicts</h3>
+<p>Two interfaces can contain a variable with the same name, and there may be a chance of variable naming conflicts, but we can solve this problem by using interface names.</p>
+<pre class='code'>interface Left {
+    int x = 777;
+}
+
+interface Right {
+    int x = 888;
+}
+
+class Test implements Left, Right {
+    public static void main(String[] args) {
+        System.out.println(Left.x);
+        // prints 777
+        System.out.println(Right.x);
+        // prints 888
+    }
+}</pre>
+<h3>1:13:52 — Method conflict vs variable conflict</h3>
+<p>This is interface variable naming conflict. Method naming conflict (Case 3): no solution. Variable naming conflict: solution is there — no problem at all.</p>
+<p>He writes the Left / Right / Test example on the board (long quiet stretch ~1:14:03–1:14:52).</p>
+<h3>1:14:52 — Close</h3>
+<p>Make sure you people are aware what is method naming conflicts and variable naming conflicts. Clear clarity. Not required to keep much extra explanation. Completed.</p>
+<p>Marker interface, adapter classes, interface vs abstract class vs concrete class — announced earlier as the next valuable topics; they are not taught in the remaining minute of this video.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 41 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 12</td></tr>
+<tr><td>Topic</td><td>interfaces-2 (interface methods; continue from video 040)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 15m 27s</td></tr>
+<tr><td>Video ID</td><td>PS8gY5CXVY0</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=PS8gY5CXVY0</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

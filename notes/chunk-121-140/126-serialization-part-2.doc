@@ -1,0 +1,307 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>126-serialization-part-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 126</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Serialization Part- 2||Serialazation in the case of object graphs</p>
+<h3>00:05 — Recap: single-object serialization</h3>
+<p>Durga Sir continues from the previous lecture (Serialization Part 1).</p>
+<ul><li>In the last example, only one object was serialized — a single Dog object written to a file.</li></ul>
+<ul><li>Students confirmed they understand serialization (object → file) and deserialization (file → object).</li></ul>
+<p>Question posed: Is it possible to serialize multiple objects to the same file?</p>
+<p>Answer: Yes — we can serialize any number of objects to a file; there is no restriction to one object only.</p>
+<h3>00:54 — Rule for multiple-object serialization</h3>
+<p>When serializing multiple objects, there is one important restriction/rule about order.</p>
+<h3>01:02 — Example: serializing Dog, Cat, and Rat (three objects)</h3>
+<p>Three separate objects are created and all written to the same file abc.ser:</p>
+<p>Dog d1 = new Dog();
+Cat c1 = new Cat();
+Rat r1 = new Rat();
+
+FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+ObjectOutputStream oos = new ObjectOutputStream(fos);
+
+oos.writeObject(d1);   // 1st object written
+oos.writeObject(c1);   // 2nd object written
+oos.writeObject(r1);   // 3rd object written</p>
+<p>File contents (`abc.ser`): three objects in order — Dog → Cat → Rat.</p>
+<p>Key point 1: We can serialize any number of objects to the file. Serialization is not limited to a single object.</p>
+<h3>03:18 — Deserialization must follow the same order</h3>
+<p>To read all three objects back:</p>
+<p>FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+ObjectInputStream ois = new ObjectInputStream(fis);
+
+Dog d2 = (Dog) ois.readObject();    // 1st read → Dog (matches 1st write)
+Cat c2 = (Cat) ois.readObject();    // 2nd read → Cat (matches 2nd write)
+Rat r2 = (Rat) ois.readObject();    // 3rd read → Rat (matches 3rd write)</p>
+<p>Rule: Objects are deserialized in the same order they were serialized.</p>
+<ul><li>First writeObject → first readObject returns that object.</li></ul>
+<ul><li>Second writeObject → second readObject, and so on.</li></ul>
+<p>If you call readObject() once, you always get the first serialized object (Dog in this example), regardless of what type you cast to.</p>
+<h3>05:46 — ClassCastException when order is wrong</h3>
+<p>If deserialization order is interchanged by mistake:</p>
+<pre class='code'>// WRONG: trying to read Cat first when Dog was written first
+Cat c2 = (Cat) ois.readObject();  // first readObject() still returns Dog!</pre>
+<ul><li>First readObject() still returns the Dog object (first serialized).</li></ul>
+<ul><li>Casting it to Cat → `ClassCastException`.</li></ul>
+<p>Conclusion: Order of objects is critical during deserialization. Always read in the same order as write.</p>
+<h3>06:31 — Board note (theory)</h3>
+<p>We can serialize any number of objects to the file, but in which order we serialized, in the same order only we have to perform deserialization.</p>
+<p>Order of objects is important in serialization.</p>
+<h3>08:13 — Reiteration of Dog → Cat → Rat example</h3>
+<p>Durga Sir rewrites the full example on the board for clarity:</p>
+<pre class='code'>Dog d1 = new Dog();
+Cat c1 = new Cat();
+Rat r1 = new Rat();
+
+FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+ObjectOutputStream oos = new ObjectOutputStream(fos);
+oos.writeObject(d1);
+oos.writeObject(c1);
+oos.writeObject(r1);</pre>
+<p>Deserialization (same order):</p>
+<pre class='code'>FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+ObjectInputStream ois = new ObjectInputStream(fis);
+
+Dog d2 = (Dog) ois.readObject();
+Cat c2 = (Cat) ois.readObject();
+Rat r2 = (Rat) ois.readObject();</pre>
+<h3>10:40 — Problem: unknown serialization order</h3>
+<p>Scenario: Person A serializes objects in the morning. Person B deserializes in the evening but does not know the order in which objects were written.</p>
+<p>Question: How to handle deserialization when order of objects in the file is unknown?</p>
+<h3>12:06 — Solution: parent reference + `instanceof`</h3>
+<p>When order is unknown, read each object into a parent reference (Object), then use `instanceof` to identify the actual type:</p>
+<pre class='code'>FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+ObjectInputStream ois = new ObjectInputStream(fis);
+
+Object o = (Object) ois.readObject();   // parent reference holds any type
+
+if (o instanceof Dog) {
+    Dog d2 = (Dog) o;
+    // perform dog-specific functionality
+} else if (o instanceof Cat) {
+    Cat c2 = (Cat) o;
+    // perform cat-specific functionality
+} else if (o instanceof Rat) {
+    Rat r2 = (Rat) o;
+    // perform rat-specific functionality
+}</pre>
+<p>Why `Object` reference? Parent reference can hold any child object (Dog, Cat, or Rat). But with a parent reference alone, you can only call methods declared in the parent — not child-specific methods. Hence `instanceof` + downcast.</p>
+<p>Loop variant: To avoid repeating code for every object, wrap in a loop:</p>
+<pre class='code'>Object o;
+while ((o = ois.readObject()) != null) {
+    if (o instanceof Dog) {
+        Dog d2 = (Dog) o;
+        // dog-specific work
+    } else if (o instanceof Cat) {
+        Cat c2 = (Cat) o;
+        // cat-specific work
+    } else if (o instanceof Rat) {
+        Rat r2 = (Rat) o;
+        // rat-specific work
+    }
+}</pre>
+<p>(Note: Durga Sir mentions a while-loop pattern; in practice EOF is usually caught via `EOFException` rather than null return — the teaching intent is to loop over all objects without hard-coding order.)</p>
+<p>Board note:</p>
+<p>If we don&#x27;t know order of objects in serialization: read into Object reference, use instanceof to identify type, then downcast and process.</p>
+<h3>17:30 — End of multiple-objects topic; transition</h3>
+<p>Summary of Part 1 of this video:</p>
+<ul><li>How to serialize multiple objects.</li></ul>
+<ul><li>Order matters for typed reads.</li></ul>
+<ul><li>instanceof approach when order is unknown.</li></ul>
+<h3>18:16 — New subtopic: Object Graphs in Serialization</h3>
+<p>Next subtopic after serialization introduction: Object Graphs in Serialization.</p>
+<h3>18:57 — Object graph: class structure (Dog → Cat → Rat chain)</h3>
+<p>Three classes linked by reference instance variables:</p>
+<pre class='code'>class Dog {
+    Cat c = new Cat();   // Dog has Cat reference → Cat object created with Dog
+}
+
+class Cat {
+    Rat r = new Rat();   // Cat has Rat reference → Rat object created with Cat
+}
+
+class Rat {
+    int j = 20;          // Rat has primitive int (not an object reference)
+}</pre>
+<p>Real-world analogy (ASR decoded):</p>
+<ul><li>Dog sees Cat → runs.</li></ul>
+<ul><li>Cat sees Rat → runs.</li></ul>
+<ul><li>Rat has j = 20 — chain stops at primitive.</li></ul>
+<p>Object creation chain: When new Dog() is called:</p>
+<ol><li>Dog object created.</li></ol>
+<ol><li>Automatically Cat object created (instance variable c in Dog).</li></ol>
+<ol><li>Automatically Rat object created (instance variable r in Cat).</li></ol>
+<ol><li>j = 20 assigned in Rat.</li></ol>
+<p>Explicitly created: 1 object (Dog d1 = new Dog()).</p>
+<p>Internally created: 3 objects total — Dog, Cat, Rat.</p>
+<h3>21:58 — Serializing one Dog object serializes the whole graph</h3>
+<p>Dog d1 = new Dog();
+
+FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+ObjectOutputStream oos = new ObjectOutputStream(fos);
+oos.writeObject(d1);   // only d1 is passed explicitly</p>
+<p>Question: Will only the Dog object be serialized, or the entire group?</p>
+<p>Answer: The entire group (object graph) is serialized automatically.</p>
+<p>Definition — Object Graph:</p>
+<p>Whenever we are serializing an object, the set of all objects which are reachable from this object will be serialized automatically. This group of objects is called an object graph.</p>
+<p>Reachable from `d1`: Dog → Cat → Rat → j=20 (primitive stored inside Rat).</p>
+<p>File `abc.ser` contains: Dog, Cat, Rat (and field values including j=20).</p>
+<h3>24:03 — Deserialization restores the entire graph</h3>
+<pre class='code'>FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+ObjectInputStream ois = new ObjectInputStream(fis);
+
+Dog d2 = (Dog) ois.readObject();</pre>
+<p>After deserialization:</p>
+<ul><li>d2 is the Dog object.</li></ul>
+<ul><li>d2.c → Cat object (automatically restored).</li></ul>
+<ul><li>d2.c.r → Rat object (automatically restored).</li></ul>
+<ul><li>d2.c.r.j → 20.</li></ul>
+<p>Verification print:</p>
+<p>System.out.println(d2.c.r.j);   // CE/print: 20</p>
+<h3>25:54 — Practical proof via NotSerializableException</h3>
+<p>Durga Sir demonstrates with live code (SerializeDemo2.java) that the entire graph is serialized by observing which class triggers NotSerializableException.</p>
+<p>Step 1 — No class implements Serializable:</p>
+<pre class='code'>class Dog {
+    Cat c = new Cat();
+}
+class Cat {
+    Rat r = new Rat();
+}
+class Rat {
+    int j = 20;
+}
+
+// main: oos.writeObject(d1);</pre>
+<ul><li>CE: compiles fine.</li></ul>
+<ul><li>Runtime: NotSerializableException for Dog — because Dog doesn&#x27;t implement Serializable.</li></ul>
+<p>Step 2 — Only Dog implements Serializable:</p>
+<pre class='code'>class Dog implements Serializable {
+    Cat c = new Cat();
+}</pre>
+<ul><li>Runtime: NotSerializableException for Cat — proves Cat is also being serialized internally even though only Dog was written.</li></ul>
+<p>Step 3 — Dog and Cat implement Serializable:</p>
+<pre class='code'>class Dog implements Serializable { Cat c = new Cat(); }
+class Cat implements Serializable { Rat r = new Rat(); }</pre>
+<ul><li>Runtime: NotSerializableException for Rat — proves Rat is also serialized as part of the graph.</li></ul>
+<p>Step 4 — All three implement Serializable:</p>
+<pre class='code'>class Dog implements Serializable { Cat c = new Cat(); }
+class Cat implements Serializable { Rat r = new Rat(); }
+class Rat implements Serializable { int j = 20; }</pre>
+<ul><li>Runs successfully.</li></ul>
+<ul><li>CE/print: 20</li></ul>
+<p>Practical proof conclusion: Exceptions name the non-serializable class in the graph, proving JVM serializes all reachable objects, not just the root.</p>
+<h3>29:01 — Rule: every object in the graph must be Serializable</h3>
+<p>In an object graph, every object should be Serializable.</p>
+<ul><li>If at least one reachable object is not Serializable → runtime exception: `NotSerializableException`.</li></ul>
+<ul><li>All three (Dog, Cat, Rat) must implement Serializable for the example to work.</li></ul>
+<h3>29:26 — Live demo: SerializeDemo2.java walkthrough</h3>
+<p>Full program on screen:</p>
+<pre class='code'>import java.io.*;
+
+class Dog {
+    Cat c = new Cat();
+}
+class Cat {
+    Rat r = new Rat();
+}
+class Rat {
+    int j = 20;
+}
+
+class SerializeDemo2 {
+    public static void main(String[] args) throws Exception {
+        Dog d1 = new Dog();
+
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(d1);
+
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Dog d2 = (Dog) ois.readObject();
+
+        System.out.println(d2.c.r.j);   // after all implement Serializable → 20
+    }
+}</pre>
+<p>Progressive fix: add implements Serializable to Dog, then Cat, then Rat — each step reveals the next failing class in the graph.</p>
+<h3>32:53 — Board theory notes (object graph)</h3>
+<p>Whenever we are serializing an object, the set of all objects which are reachable from that object will be serialized automatically. This group of objects is nothing but object graph.</p>
+<p>In object graph, every object should be Serializable. If at least one object is not Serializable, then we will get runtime exception saying `NotSerializableException`.</p>
+<h3>35:40 — Final complete program (all Serializable)</h3>
+<pre class='code'>import java.io.*;
+
+class Dog implements Serializable {
+    Cat c = new Cat();
+}
+
+class Cat implements Serializable {
+    Rat r = new Rat();
+}
+
+class Rat implements Serializable {
+    int j = 20;
+}
+
+class SerializeDemo2 {
+    public static void main(String[] args) throws Exception {
+        Dog d1 = new Dog();
+
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(d1);
+
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Dog d2 = (Dog) ois.readObject();
+
+        System.out.println(d2.c.r.j);   // CE/print: 20
+    }
+}</pre>
+<h3>36:31 — Brief aside: network serialization (RMI, CORBA)</h3>
+<p>Durga Sir mentions that heap data must be converted to a network-supported format for remote use. Technologies like RMI, EJB, CORBA use marshalling/unmarshalling — analogous to serialization but for network transport; middleware handles it. For file-based serialization, the java.io serialization API (ObjectOutputStream/ObjectInputStream) is used.</p>
+<h3>39:14 — Diagram to copy (object graph visualization)</h3>
+<p>Before serialization (heap):</p>
+<p>d1 (Dog) → c (Cat) → r (Rat) → j = 20</p>
+<p>File: abc.ser contains the entire graph.</p>
+<p>After deserialization (heap):</p>
+<p>d2 (Dog) → c (Cat) → r (Rat) → j = 20</p>
+<p>Same structure restored — references preserved across serialization boundary.</p>
+<h3>41:17 — Additional board notes</h3>
+<p>In the above program, whenever we are serializing dog object, automatically cat and rat objects got serialized — because these are part of object graph of dog.</p>
+<p>Among dog, cat, and rat objects — if at least one object is not Serializable, then we will get runtime exception saying `NotSerializableException`.</p>
+<h3>43:28 — Video conclusion</h3>
+<p>Topics covered in Video 126:</p>
+<ol><li>Multiple object serialization — any number of objects; order matters; wrong order → ClassCastException; unknown order → Object + instanceof.</li></ol>
+<ol><li>Object graphs — serializing one object automatically serializes all reachable objects; every object in the graph must implement Serializable; proof via progressive NotSerializableException messages.</li></ol>
+<p>Java code block count: 17</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Position</td><td>126 of 203</td></tr>
+<tr><td>Series</td><td>Serialization</td></tr>
+<tr><td>Topic</td><td>Serialization in the case of object graphs (multiple objects + object graphs)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>43m 46s</td></tr>
+<tr><td>Video ID</td><td>oEUlY-gFFcU</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=oEUlY-gFFcU</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,470 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>153-arrays-class</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 153 — Collections Part-18: `java.util.Arrays` Utility Class</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>After `Collections` (Video 151–152: sort + binary search on List), this session introduces the second major utility class in the Collections Framework: `Arrays`.</p>
+<p>Why `Arrays` exists: Collections give ready-made methods for common tasks (sort, search, etc.). With raw arrays, the programmer would normally write sorting/search logic manually. Most developers are unaware that `Arrays` fills that gap with predefined methods — the same philosophy as Collections.</p>
+<p>Three utilities covered in this video:</p>
+<ol><li>Sorting — sort elements of an array</li></ol>
+<ol><li>Searching — binary search in a sorted array</li></ol>
+<ol><li>Conversion — Arrays.asList() (array → list view)</li></ol>
+<p>Prerequisites from earlier videos:</p>
+<ul><li>Default natural sorting order vs customized sorting via Comparator (Videos 144+)</li></ul>
+<ul><li>Collections.sort() and Collections.binarySearch() rules (Videos 151–152)</li></ul>
+<p>Exam mantra: Concept volume is small; documentation/traps volume is large. Master the three method groups, the primitive-vs-object restrictions, binary-search preconditions, and the three asList() conclusions — especially `UnsupportedOperationException` and `ArrayStoreException`.</p>
+<h2>00:05 — Introduction: Arrays vs Collections</h2>
+<h3>Collections advantage recap</h3>
+<p>For collections, ready-made method support exists for almost every requirement — the programmer uses those methods, not implements them.</p>
+<p>For arrays, historically the programmer had to write code for:</p>
+<ul><li>Searching an element</li></ul>
+<ul><li>Inserting/maintaining elements in sorted order</li></ul>
+<ul><li>Other array manipulations</li></ul>
+<p>`Arrays` class = utility class that defines several utility methods for arrays (primitive + object type).</p>
+<h3>Board note (copy exactly)</h3>
+<p>`Arrays` class is a utility class to define several utility methods for arrays or array objects.</p>
+<h3>Parallel with Collections</h3>
+<p>Both live in `java.util`.</p>
+<h2>03:06 — Utility 1: Sorting Elements of Array</h2>
+<h3>Board heading</h3>
+<p>Sorting elements of array</p>
+<h3>How many `sort` methods?</h3>
+<p>Three overloaded sort methods:</p>
+<h3>Board note (copy exactly)</h3>
+<p>`Arrays` class defines the following sort methods to sort elements of primitive and object type arrays.</p>
+<p>Method prototypes (as written on board):</p>
+<pre class='code'>public static void sort(primitive[] p);           // natural order
+public static void sort(Object[] a);              // natural order
+public static void sort(Object[] a, Comparator c); // customized order</pre>
+<h3>Natural sorting examples</h3>
+<h3>Critical exam rule — primitive vs object arrays</h3>
+<p>Board note (copy exactly):</p>
+<p>We can sort primitive arrays only based on default natural sorting order.</p>
+<p>Whereas we can sort object arrays either based on default natural sorting order OR based on customized sorting order.</p>
+<p>Why no Comparator for primitives: Comparator interface defines compare(Object o1, Object o2). Customized sorting needs object arguments → applicable only to object type arrays.</p>
+<h2>09:12 — Demo 1: `ArraySortDemo` — All Three Sort Methods</h2>
+<h3>Imports</h3>
+<pre class='code'>import java.util.Arrays;
+import java.util.Comparator;</pre>
+<p>Arrays is in `java.util` (same package as Comparator, Collections, List, etc.).</p>
+<h3>Part A — Primitive array sort</h3>
+<p>int[] a = {10, 5, 20, 11, 6};
+
+// Print before sort — use enhanced for-loop (NOT System.out.println(a))
+for (int i1 : a) {
+    System.out.println(i1);
+}
+// Output (one per line): 10, 5, 20, 11, 6
+
+Arrays.sort(a);   // sort according to default natural sorting order
+
+System.out.println(&quot;After sorting:&quot;);
+for (int i1 : a) {
+    System.out.println(i1);
+}
+// Output: 5, 6, 10, 11, 20</p>
+<p>Printing arrays: You cannot use System.out.println(a) for meaningful element output (prints something like [I@hashcode). Use enhanced for-each loop to print each element.</p>
+<p>Compile &amp; run: javac ArraySortDemo.java → java ArraySortDemo</p>
+<h3>Part B — Object array sort (natural order)</h3>
+<p>String[] s = {&quot;a&quot;, &quot;j&quot;, &quot;b&quot;};
+
+System.out.println(&quot;Object array before sorting:&quot;);
+for (String x : s) System.out.println(x);
+// a, j, b
+
+Arrays.sort(s);   // default natural sorting → alphabetical for String
+
+System.out.println(&quot;Object array after sorting:&quot;);
+for (String x : s) System.out.println(x);
+// a, b, j</p>
+<h3>Part C — Object array sort (customized / reverse alphabetical)</h3>
+<pre class='code'>Arrays.sort(s, new MyComparator());
+
+// MyComparator — reverse of natural alphabetical order
+class MyComparator implements Comparator&lt;String&gt; {
+    public int compare(String s1, String s2) {
+        return s2.compareTo(s1);   // reverse: s2 vs s1 instead of s1 vs s2
+    }
+}</pre>
+<p>Interpretation: return s2.compareTo(s1) reverses the default String order → reverse alphabetical.</p>
+<h3>Sort demo summary table</h3>
+<h2>21:29 — Utility 2: Searching Elements of Array (Binary Search)</h2>
+<h3>Board heading</h3>
+<p>Searching elements of array</p>
+<h3>How many `binarySearch` methods?</h3>
+<p>Three — mirroring the three sort overloads:</p>
+<h3>Board note (copy exactly)</h3>
+<p>`Arrays` class defines the following binary search methods.</p>
+<p>Method prototypes:</p>
+<pre class='code'>public static int binarySearch(primitive[] p, primitive target);
+public static int binarySearch(Object[] a, Object target);
+public static int binarySearch(Object[] a, Object target, Comparator c);</pre>
+<h3>Which search method when?</h3>
+<p>Primitive arrays: Only one search method needed (only natural sorting exists for primitives).</p>
+<h2>26:58 — Rules: Same as `Collections.binarySearch()`</h2>
+<h3>Board note (copy exactly)</h3>
+<p>All rules of `Arrays` class binary search methods are exactly same as `Collections` class binary search methods.</p>
+<p>From Video 152 (Collections.binarySearch on List):</p>
+<h3>Index vs insertion point (classroom diagram)</h3>
+<p>For sorted array with indices 0, 1, 2, 3, 4:</p>
+<p>Return value formula (unsuccessful):</p>
+<p>return = -(insertionPoint) - 1</p>
+<p>Example: insertion point = 5 → return = -(5) - 1 = -6?</p>
+<p>Wait: if insertion point is 5, return is -6. Transcript uses insertion point 5 → return -5 for target 14 in [5,6,10,11,20]:</p>
+<ul><li>14 belongs between 11 (index 3) and 20 (index 4)</li></ul>
+<ul><li>Insertion point = 4 (would insert at index 4, pushing 20 right)</li></ul>
+<ul><li>Return = -(4) - 1 = -5 ✓</li></ul>
+<h2>28:10 — Demo 2: `ArraySearchDemo`</h2>
+<h3>Part A — Primitive `int[]` search</h3>
+<p>int[] a = {10, 5, 20, 11, 6};
+Arrays.sort(a);   // → {5, 6, 10, 11, 20}
+
+// Index map after sort:
+// index:  0  1   2   3   4
+// value:  5  6  10  11  20
+
+System.out.println(Arrays.binarySearch(a, 6));   // 1  (found at index 1)
+System.out.println(Arrays.binarySearch(a, 14));  // -5 (14 would insert at index 4)</p>
+<h3>Part B — String array (natural sort)</h3>
+<p>String[] s = {&quot;a&quot;, &quot;j&quot;, &quot;b&quot;};
+Arrays.sort(s);   // → {&quot;a&quot;, &quot;b&quot;, &quot;j&quot;}
+
+// index:  0   1   2
+// value:  a   b   j
+
+System.out.println(Arrays.binarySearch(s, &quot;j&quot;));  // 2
+System.out.println(Arrays.binarySearch(s, &quot;s&quot;));  // -3 (classroom trace: s after b, before j)</p>
+<p>Also demonstrated in class:</p>
+<p>System.out.println(Arrays.binarySearch(s, &quot;z&quot;));  // 2 — &quot;z&quot; at index 2? 
+// Sir states z available at second index in one trace — verify: after sort a,b,j → z not present, would be index 3 → -4
+// Follow classroom output: j search → 2; capital S search → -3 in natural-order section</p>
+<p>(Take the exact numeric outputs from Sir&#x27;s executed program as exam reference: `1, -5` for int; `2, -3` for String natural order.)</p>
+<h3>Part C — String array (Comparator / reverse sort)</h3>
+<p>Arrays.sort(s, new MyComparator());   // → {&quot;j&quot;, &quot;b&quot;, &quot;a&quot;}
+
+// index:  0   1   2
+// value:  j   b   a
+
+System.out.println(Arrays.binarySearch(s, &quot;j&quot;, new MyComparator()));  // 0
+System.out.println(Arrays.binarySearch(s, &quot;S&quot;, new MyComparator()));  // -2
+System.out.println(Arrays.binarySearch(s, &quot;n&quot;));  // UNPREDICTABLE — no Comparator passed!</p>
+<h3>Exam trap — Comparator mismatch</h3>
+<p>If the array is sorted according to a Comparator, at search time you must pass the same Comparator object. If you omit it, the result is unpredictable (not a clean exception — wrong/garbage index).</p>
+<h3>Static import note</h3>
+<p>In the demo code, Sir sometimes writes Arrays.binarySearch(...) and sometimes just binarySearch(...) after:</p>
+<pre class='code'>import static java.util.Arrays.*;</pre>
+<p>With static import, static members can be called without class name.</p>
+<h3>Search demo program output (executed)</h3>
+<p>1
+-5
+2
+-3
+0
+-2
+(unpredictable for last case)</p>
+<h2>44:48 — Utility 3: Conversion — Array to List (`Arrays.asList()`)</h2>
+<h3>Board heading</h3>
+<p>Conversion of array to list</p>
+<h3>Collection → array (recap — opposite direction)</h3>
+<p>Naming matters: Collection uses `toArray()` (actual conversion). Array uses `asList()` — the word &quot;as&quot; is intentional.</p>
+<h3>Method signature</h3>
+<pre class='code'>public static List asList(Object... a)
+// equivalently: public static &lt;T&gt; List&lt;T&gt; asList(T... a)</pre>
+<ul><li>public static method</li></ul>
+<ul><li>Return type: `List`</li></ul>
+<ul><li>Method name: `asList`</li></ul>
+<ul><li>Argument: object array (varargs)</li></ul>
+<h3>Why `asList` and NOT `toList`?</h3>
+<p>Board note (copy exactly):</p>
+<p>Strictly speaking, this method won&#x27;t create an independent list object. For the existing array we are getting list view.</p>
+<p>Database analogy (Durga Sir):</p>
+<ul><li>One table → many views possible</li></ul>
+<ul><li>One array → you get a List view of that same array</li></ul>
+<ul><li>NOT a separate copy / new List object</li></ul>
+<p>String[] s = {&quot;a&quot;, &quot;j&quot;, &quot;b&quot;};
+List l = Arrays.asList(s);
+
+// Underlying object = SAME array
+// l is just a List-flavoured window into s</p>
+<h2>52:07 — Three Conclusions of `Arrays.asList()` (MUST KNOW FOR EXAM)</h2>
+<h3>Conclusion 1 — List view, not independent list</h3>
+<p>`Arrays.asList()` does NOT create a new List object. It returns a list VIEW of the existing array.</p>
+<h3>Conclusion 2 — Changes reflect both ways (shared backing store)</h3>
+<p>Board notes:</p>
+<p>By using array reference, if we perform any change, automatically that change will be reflected to the list.</p>
+<p>Similarly, by using list reference, if we perform any change, automatically that change will be reflected to the array.</p>
+<p>Both references point to the same underlying array object.</p>
+<p>Example:</p>
+<p>String[] s = {&quot;a&quot;, &quot;j&quot;, &quot;b&quot;};
+List l = Arrays.asList(s);
+
+s[0] = &quot;k&quot;;                    // change via array reference
+System.out.println(l);         // [k, j, b] — list reflects change
+
+l.set(1, &quot;l&quot;);                 // change via list reference (replacement OK)
+for (String s1 : s) System.out.println(s1);  // k, l, b — array reflects change</p>
+<h3>Conclusion 3 — Size-varying operations → `UnsupportedOperationException`</h3>
+<p>Contradiction (by design):</p>
+<p>By using list reference, we can&#x27;t perform any operation which varies the size. Otherwise we get `RuntimeException: UnsupportedOperationException`.</p>
+<p>Why: Internally the object is still an array (fixed size). Array property dominates even though you hold a List reference.</p>
+<pre class='code'>// l.add(&quot;d&quot;);      // UnsupportedOperationException
+// l.remove(2);     // UnsupportedOperationException
+l.set(1, &quot;n&quot;);      // OK — replacement, no size change</pre>
+<h3>Conclusion 4 — Heterogeneous replacement → `ArrayStoreException`</h3>
+<p>Second contradiction:</p>
+<p>By using list reference, we are not allowed to replace with heterogeneous objects. Otherwise `ArrayStoreException` (runtime exception).</p>
+<p>Example — String array view:</p>
+<p>String[] s = {&quot;a&quot;, &quot;b&quot;, &quot;c&quot;};
+List l = Arrays.asList(s);
+
+// l.set(1, new Integer(10));   // ArrayStoreException
+// Internally: String[] — cannot store Integer at index 1</p>
+<p>Memory aid: Array Store → ArrayStoreException (wrong type for array component type).</p>
+<h2>65:54 — Demo 3: `ArrayAsListDemo` (Full Program)</h2>
+<pre class='code'>import java.util.*;
+
+public class ArrayAsListDemo {
+    public static void main(String[] args) {
+        String[] s = {&quot;a&quot;, &quot;b&quot;, &quot;c&quot;};
+        List l = Arrays.asList(s);
+
+        System.out.println(l);       // [a, b, c]
+
+        // --- Conclusion 2: array change reflects to list ---
+        s[0] = &quot;k&quot;;
+        System.out.println(l);       // [k, b, c]
+
+        // --- Conclusion 2: list change reflects to array ---
+        l.set(1, &quot;l&quot;);
+        for (String s1 : s)
+            System.out.println(s1);  // k, l, c
+
+        // --- Conclusion 3: size-varying ops ---
+        // l.add(&quot;d&quot;);               // UnsupportedOperationException
+        // l.remove(2);              // UnsupportedOperationException
+
+        // --- Conclusion 4: heterogeneous set ---
+        // l.set(1, new Integer(10)); // ArrayStoreException
+    }
+}</pre>
+<h3>Expected trace</h3>
+<h2>Master comparison tables</h2>
+<h3>`Arrays.sort()` overloads</h3>
+<h3>`Arrays.binarySearch()` overloads</h3>
+<h3>Binary search return values</h3>
+<h3>`Arrays.asList()` — operation validity</h3>
+<h3>`Collections` vs `Arrays` (this playlist)</h3>
+<h2>OCJP / SCJP exam traps checklist</h2>
+<ol><li>`Arrays` is in `java.util`, not java.lang.</li></ol>
+<ol><li>Primitive arrays: only sort(arr) — no Comparator overload.</li></ol>
+<ol><li>Must sort before binarySearch — same rule as Collections.</li></ol>
+<ol><li>Successful search → non-negative index; failed → negative encoded insertion point.</li></ol>
+<ol><li>Comparator used at sort MUST be passed at search — else unpredictable (favorite trick question).</li></ol>
+<ol><li>`asList` ≠ new ArrayList — it&#x27;s a fixed-size list view backed by the array.</li></ol>
+<ol><li>`add`/`remove` on asList view → `UnsupportedOperationException` (not ArrayIndexOutOfBoundsException).</li></ol>
+<ol><li>`set` with wrong element type → `ArrayStoreException` (not ClassCastException at set time for arrays).</li></ol>
+<ol><li>Changes via array ref OR list ref are visible both ways — shared mutability.</li></ol>
+<ol><li>Do not confuse: Collection.toArray() (creates array from collection) vs Arrays.asList() (view, not copy).</li></ol>
+<h2>Session closing</h2>
+<ul><li>This video completes the two utility classes of the Collections Framework block: `Collections` + `Arrays`.</li></ul>
+<ul><li>Sorting and searching on arrays mirror List operations but use `Arrays` static methods.</li></ul>
+<ul><li>The `asList()` section is the highest-value exam content — three conclusions (view, bidirectional mutation, two exception types).</li></ul>
+<ul><li>Sir&#x27;s closing: &quot;Concept is very less but documentation is more&quot; — write the method signatures, trace one sort/search example, and memorize the asList() exception matrix.</li></ul>
+<p>End of Video 153 study notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th></tr>
+<tr><td>Position</td><td>153 of 203</td><td></td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td></tr>
+<tr><td>Title</td><td>Collections Part-18 \</td><td>Arrays</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td><td></td></tr>
+<tr><td>Duration</td><td>1h 10m 35s</td><td></td></tr>
+<tr><td>Video ID</td><td>2kn8rgNJf3U</td><td></td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=2kn8rgNJf3U</td><td></td></tr>
+<tr><td>Notes source</td><td>YouTube auto-captions</td><td></td></tr>
+</table>
+<table>
+<tr><th>Utility class</th><th>Package</th><th>Defines utility methods for</th></tr>
+<tr><td>Collections</td><td>java.util</td><td>Collection objects (List, Set, Map wrappers, etc.)</td></tr>
+<tr><td>Arrays</td><td>java.util</td><td>Array objects (primitive arrays + object arrays)</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Role</th></tr>
+<tr><td>Collections</td><td>Utility methods for collection objects</td></tr>
+<tr><td>Arrays</td><td>Utility methods for array objects</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Method signature (conceptual)</th><th>Applies to</th><th>Sorting order</th></tr>
+<tr><td>1</td><td>public static void sort(primitive[] p)</td><td>Any primitive array (int[], char[], byte[], …)</td><td>Default natural sorting order only</td></tr>
+<tr><td>2</td><td>public static void sort(Object[] a)</td><td>Any object array (String[], Student[], …)</td><td>Default natural sorting order</td></tr>
+<tr><td>3</td><td>public static void sort(Object[] a, Comparator c)</td><td>Object arrays only</td><td>Customized sorting order via Comparator</td></tr>
+</table>
+<table>
+<tr><th>Array type</th><th>Default natural sorting order</th></tr>
+<tr><td>int[]</td><td>Ascending numeric order</td></tr>
+<tr><td>char[]</td><td>Alphabetical order</td></tr>
+<tr><td>String[]</td><td>Lexicographical (dictionary) order via compareTo()</td></tr>
+</table>
+<table>
+<tr><th>Array kind</th><th>sort(arr)</th><th>sort(arr, comparator)</th></tr>
+<tr><td>Primitive (int[], char[], …)</td><td>✅ Yes — natural only</td><td>❌ Not available — Comparator.compare() takes objects, not primitives</td></tr>
+<tr><td>Object (String[], custom types, …)</td><td>✅ Yes — natural</td><td>✅ Yes — customized</td></tr>
+</table>
+<table>
+<tr><th>Stage</th><th>int[] a content</th></tr>
+<tr><td>Before sorting</td><td>10, 5, 20, 11, 6</td></tr>
+<tr><td>After Arrays.sort(a)</td><td>5, 6, 10, 11, 20 (ascending)</td></tr>
+</table>
+<table>
+<tr><th>Stage</th><th>String[] s</th></tr>
+<tr><td>Before</td><td>a, j, b</td></tr>
+<tr><td>After natural sort</td><td>a, b, j</td></tr>
+</table>
+<table>
+<tr><th>Stage</th><th>String[] s</th></tr>
+<tr><td>Original</td><td>a, j, b</td></tr>
+<tr><td>After reverse Comparator sort</td><td>j, b, a</td></tr>
+</table>
+<table>
+<tr><th>Method used</th><th>Input</th><th>Output</th></tr>
+<tr><td>Arrays.sort(a)</td><td>{10,5,20,11,6}</td><td>{5,6,10,11,20}</td></tr>
+<tr><td>Arrays.sort(s)</td><td>{&quot;a&quot;,&quot;j&quot;,&quot;b&quot;}</td><td>{&quot;a&quot;,&quot;b&quot;,&quot;j&quot;}</td></tr>
+<tr><td>Arrays.sort(s, new MyComparator())</td><td>{&quot;a&quot;,&quot;j&quot;,&quot;b&quot;}</td><td>{&quot;j&quot;,&quot;b&quot;,&quot;a&quot;}</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Method signature (conceptual)</th><th>When to use</th></tr>
+<tr><td>1</td><td>public static int binarySearch(primitive[] p, primitive target)</td><td>Search in sorted primitive array</td></tr>
+<tr><td>2</td><td>public static int binarySearch(Object[] a, Object target)</td><td>Array sorted by natural order</td></tr>
+<tr><td>3</td><td>public static int binarySearch(Object[] a, Object target, Comparator c)</td><td>Array sorted by customized order (same Comparator)</td></tr>
+</table>
+<table>
+<tr><th>How array was sorted</th><th>Search method to call</th></tr>
+<tr><td>Primitive array (always natural)</td><td>binarySearch(primitive[], primitive target)</td></tr>
+<tr><td>Object array — natural sort (Arrays.sort(a))</td><td>binarySearch(Object[], Object target)</td></tr>
+<tr><td>Object array — Comparator sort (Arrays.sort(a, c))</td><td>binarySearch(Object[], Object target, Comparator c) — same Comparator object</td></tr>
+</table>
+<table>
+<tr><th>Rule</th><th>Meaning</th></tr>
+<tr><td>1. Sort first</td><td>Before calling binarySearch, the array must be sorted (using the same ordering you will search with)</td></tr>
+<tr><td>2. Successful search</td><td>Returns index (0-based) where element is found</td></tr>
+<tr><td>3. Unsuccessful search</td><td>Returns insertion point encoded as `-(insertionPoint) - 1`</td></tr>
+<tr><td>4. Comparator consistency</td><td>If sorted with Comparator, search must pass the same Comparator; otherwise → unpredictable result</td></tr>
+<tr><td>5. Algorithm</td><td>Internally uses binary search algorithm — requires sorted data</td></tr>
+</table>
+<table>
+<tr><th>Concept</th><th>Values</th></tr>
+<tr><td>Index</td><td>0, 1, 2, 3, 4</td></tr>
+<tr><td>Insertion point</td><td>0, 1, 2, 3, 4, 5 (one more slot — where element would go)</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Target</th><th>Found?</th><th>Return</th><th>Explanation</th></tr>
+<tr><td>binarySearch(a, 6)</td><td>6</td><td>Yes</td><td>1</td><td>6 is at index 1</td></tr>
+<tr><td>binarySearch(a, 14)</td><td>14</td><td>No</td><td>-5</td><td>14 fits after 11; insertion point 4 → -(4)-1 = -5</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Return</th><th>Explanation</th></tr>
+<tr><td>binarySearch(s, &quot;j&quot;)</td><td>2</td><td>&quot;j&quot; at index 2</td></tr>
+<tr><td>binarySearch(s, &quot;s&quot;)</td><td>-3</td><td>&quot;s&quot; not present; insertion point 2 per Sir&#x27;s trace</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Comparator passed?</th><th>Return</th><th>Explanation</th></tr>
+<tr><td>binarySearch(s, &quot;j&quot;, new MyComparator())</td><td>✅ Same as sort</td><td>0</td><td>&quot;j&quot; at index 0 in reverse-sorted array</td></tr>
+<tr><td>binarySearch(s, &quot;S&quot;, new MyComparator())</td><td>✅ Same</td><td>-2</td><td>&quot;S&quot; would come after &quot;J&quot; in reverse order</td></tr>
+<tr><td>binarySearch(s, &quot;n&quot;)</td><td>❌ Missing</td><td>Unpredictable</td><td>Array sorted with Comparator but search uses natural order</td></tr>
+</table>
+<table>
+<tr><th>Direction</th><th>API</th><th>Method</th></tr>
+<tr><td>Collection → Array</td><td>Collection.toArray()</td><td>Creates equivalent object array</td></tr>
+<tr><td>Array → List</td><td>Arrays.asList()</td><td>Not toList()</td></tr>
+</table>
+<table>
+<tr><th>DB concept</th><th>Array equivalent</th></tr>
+<tr><td>Table (physical storage)</td><td>Array (underlying real object)</td></tr>
+<tr><td>View (logical presentation of same data)</td><td>List reference from asList()</td></tr>
+</table>
+<table>
+<tr><th>Operation via</th><th>Code</th><th>Effect on other view</th></tr>
+<tr><td>Array ref</td><td>s[0] = &quot;k&quot;</td><td>List shows [k, j, b]</td></tr>
+<tr><td>List ref</td><td>l.set(1, &quot;l&quot;)</td><td>Array becomes k, l, b</td></tr>
+</table>
+<table>
+<tr><th>Feature</th><th>Array</th><th>Collection/List</th></tr>
+<tr><td>Size</td><td>Fixed</td><td>Growable</td></tr>
+<tr><td>Underlying object in asList()</td><td>Array dominates</td><td>List API exposed but backed by fixed array</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>Changes size?</th><th>Valid on asList() view?</th></tr>
+<tr><td>l.add(&quot;m&quot;)</td><td>✅ Yes (increase)</td><td>❌ UnsupportedOperationException</td></tr>
+<tr><td>l.remove(1)</td><td>✅ Yes (decrease)</td><td>❌ UnsupportedOperationException</td></tr>
+<tr><td>l.set(1, &quot;n&quot;)</td><td>❌ No (replacement only)</td><td>✅ Valid — size unchanged</td></tr>
+</table>
+<table>
+<tr><th>Feature</th><th>Array</th><th>List (general)</th></tr>
+<tr><td>Element types</td><td>Homogeneous (declared component type)</td><td>Heterogeneous (can hold different object types)</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>Exception</th></tr>
+<tr><td>l.set(1, new Integer(10)) on String[] view</td><td>`ArrayStoreException`</td></tr>
+<tr><td>l.add(...) / l.remove(...)</td><td>`UnsupportedOperationException`</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Code</th><th>Output / result</th></tr>
+<tr><td>Initial</td><td>Arrays.asList(s)</td><td>[a, b, c]</td></tr>
+<tr><td>Array change</td><td>s[0] = &quot;k&quot;</td><td>l → [k, b, c]</td></tr>
+<tr><td>List change</td><td>l.set(1, &quot;l&quot;)</td><td>array → k, l, c</td></tr>
+<tr><td>Add attempt</td><td>l.add(&quot;d&quot;)</td><td>UnsupportedOperationException</td></tr>
+<tr><td>Remove attempt</td><td>l.remove(2)</td><td>UnsupportedOperationException</td></tr>
+<tr><td>Heterogeneous set</td><td>l.set(1, new Integer(10))</td><td>ArrayStoreException</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Array type</th><th>Sort order</th></tr>
+<tr><td>sort(primitive[])</td><td>Primitive</td><td>Natural only</td></tr>
+<tr><td>sort(Object[])</td><td>Object</td><td>Natural (Comparable)</td></tr>
+<tr><td>sort(Object[], Comparator)</td><td>Object</td><td>Customized</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Precondition</th><th>Comparator at search?</th></tr>
+<tr><td>binarySearch(primitive[], target)</td><td>Primitive array sorted (natural)</td><td>N/A</td></tr>
+<tr><td>binarySearch(Object[], target)</td><td>Sorted by natural order</td><td>No</td></tr>
+<tr><td>binarySearch(Object[], target, Comparator)</td><td>Sorted with same Comparator</td><td>Yes — mandatory</td></tr>
+</table>
+<table>
+<tr><th>Outcome</th><th>Return type meaning</th><th>Example</th></tr>
+<tr><td>Element found</td><td>Index ≥ 0</td><td>6 in {5,6,10,11,20} → 1</td></tr>
+<tr><td>Element not found</td><td>-(insertionPoint) - 1</td><td>14 → insertion point 4 → -5</td></tr>
+<tr><td>Wrong Comparator / unsorted</td><td>Unpredictable</td><td>Search without Comparator after Comparator-sort</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>Size change?</th><th>Type check?</th><th>Result</th></tr>
+<tr><td>get / set (same type)</td><td>No</td><td>Compatible type</td><td>✅ OK</td></tr>
+<tr><td>set(index, wrongType)</td><td>No</td><td>Incompatible</td><td>❌ ArrayStoreException</td></tr>
+<tr><td>add</td><td>Yes</td><td>—</td><td>❌ UnsupportedOperationException</td></tr>
+<tr><td>remove</td><td>Yes</td><td>—</td><td>❌ UnsupportedOperationException</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Collections</th><th>Arrays</th></tr>
+<tr><td>Target</td><td>List (and other collections)</td><td>Arrays</td></tr>
+<tr><td>Sort</td><td>Collections.sort(list) / with Comparator</td><td>Arrays.sort(array) / with Comparator</td></tr>
+<tr><td>Search</td><td>Collections.binarySearch(list, key)</td><td>Arrays.binarySearch(array, key)</td></tr>
+<tr><td>To array</td><td>collection.toArray()</td><td>—</td></tr>
+<tr><td>To list</td><td>—</td><td>Arrays.asList(array) → view</td></tr>
+<tr><td>Search rules</td><td>Sort first; index vs insertion point</td><td>Identical rules</td></tr>
+</table>
+</body></html>

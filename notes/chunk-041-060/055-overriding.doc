@@ -1,0 +1,1092 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>055-overriding</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 055 — Overriding</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-5 ||overriding</p>
+<p>Source: real YouTube auto-captions (.transcripts/055-MYzaDgNGmTg.txt). ASR decoded in place: Argetting = are you getting; meta names = method names; vid / wide / quiet / wid = void; SOP = System.out.println; extens = extends; subakmi / subalakmi / subaki = Subbalakshmi; Thrica / soa / 3sha = Trisha; Chari / charmi / 4me = Charmi; Nara / naral / 9tara = Namrata; P1 = p1; JPM = JVM; chilled / chile = child; polymer page / polymer prism / polyarp / pium / pom = polymorphism; coariant = covariant; iPhone = hyphen (javac -source); M4 = 1.4; pa / paka = pakka (certain); obstruction / abstracted / non-obstract = abstract / non-abstract; nonfal = non-final; Ymon / van / vmon / y2 = m1; keep subing = keep writing; veer / veaker / vehor / vehicles = weaker; excess = access; FOP / FOB = fp (strictfp); BL C = bloody C language; legend = learn / listen.</p>
+<p>This video is OOPs Part 5. Last session was overloading. He starts overriding from the marriage / property story, then compiler vs JVM, covariant return types (live javac -source 1.4 vs 1.5), private / final / abstract, then the modifier summary table and the access-scope rule. Static is named and deferred. throws is named as a future check, not taught here.</p>
+<h3>00:07 — Last session was overloading; now overriding</h3>
+<p>Overloading, he says, is a very simple process: method names must be same, argument types must be different. That is the only check.</p>
+<p>Overriding terminology is completely different. You have to cross-check each and everything: method names, argument types, return types, modifiers, throws, access modifiers — several things.</p>
+<pre class='code'>class OverloadingIsSimple {
+    public void m1(int i) {
+        System.out.println(&quot;int&quot;);
+    }
+    public void m1(String s) {
+        System.out.println(&quot;String&quot;);
+    }
+    public static void main(String[] args) {
+        OverloadingIsSimple t = new OverloadingIsSimple();
+        t.m1(10);
+        // prints int
+        t.m1(&quot;durga&quot;);
+        // prints String
+    }
+}</pre>
+<p>Same name + different argument types = overloading. Overriding is not this.</p>
+<h3>00:54 — What is overriding (inheritance first)</h3>
+<p>Parent class methods are by default available to the child through inheritance. Parent class variables too. That property itself is inheritance.</p>
+<p>Two cases:</p>
+<ol><li>Child is satisfied with the parent implementation → use it as-is.</li></ol>
+<ol><li>Child is not satisfied with the parent implementation → child is allowed to redefine that method in the child class.</li></ol>
+<p>That redefinition is overriding. Board slogan: I don’t want the parent method implementation; I want to define my own. Parent class method, I am overriding with my own implementation. “I don’t want old concept, I want a new concept” = override existing, define new.</p>
+<pre class='code'>class P0 {
+    public void m1() {
+        System.out.println(&quot;parent implementation&quot;);
+    }
+}
+class C0 extends P0 {
+    // child is satisfied — no redefinition
+}
+class TestSatisfied {
+    public static void main(String[] args) {
+        C0 c = new C0();
+        c.m1();
+        // prints parent implementation
+    }
+}</pre>
+<p>If the child is not satisfied, the child writes its own m1() — that is the rest of this video.</p>
+<h3>02:27 — Parent-eager-to-give-property story (why `property()` exists)</h3>
+<p>He is taking class P as parent. Every parent is very much eager to provide huge property to the kid. Parents work their lifetime for that. If you became parents, you will think in the same style.</p>
+<p>How does the parent provide property? In terms of cash, land, gold. Huge property in some form.</p>
+<p>Most of the times the parent also has the right to arrange marriage for the kid. Marriage is in the parent’s hand. Very rare maybe that overriding is going to happen on marriage. Most of the times the parent’s marry() stands.</p>
+<pre class='code'>class P {
+    public void property() {
+        System.out.println(&quot;cash+land+gold&quot;);
+    }
+    public void marry() {
+        System.out.println(&quot;Subbalakshmi&quot;);
+    }
+}</pre>
+<p>Two methods on the parent: property() and marry(). Parent arranged marriage with Subbalakshmi (ASR: subakmi / subalakmi / subaki — any name is fine, need not always be Subbalakshmi).</p>
+<h3>04:55 — `class C extends P`: keep property, override `marry()`</h3>
+<pre class='code'>class C extends P. Being a child, both methods are by default available.</pre>
+<p>Being a child he is very much satisfied with `property()` implementation but not satisfied with `marry()` implementation. “I want property, but I am not satisfied with marry implementation.”</p>
+<p>If the child is not satisfied, the child is allowed to redefine that method based on its requirement.</p>
+<pre class='code'>class P {
+    public void property() {
+        System.out.println(&quot;cash+land+gold&quot;);
+    }
+    public void marry() {
+        System.out.println(&quot;Subbalakshmi&quot;);
+    }
+}
+class C extends P {
+    public void marry() {
+        System.out.println(&quot;Trisha&quot;);
+        // he also said Charmi or Namrata
+        // classic board joke: 3sha / 4me / 9tara
+    }
+}</pre>
+<p>Any name in your mind: Trisha, Charmi, Namrata — “these people are ready for marriage.” The process of redefining marry() is overriding. property() is not overridden; child is happy with cash+land+gold.</p>
+<h3>06:44 — Overridden method vs overriding method</h3>
+<p>Terminology he wants copied:</p>
+<ul><li>Parent class method which is overridden = overridden method</li></ul>
+<ul><li>Child class method which is overriding = overriding method</li></ul>
+<p>Here: P.marry() is the overridden method. C.marry() is the overriding method. property() is neither — it is just inherited.</p>
+<pre class='code'>class P {
+    public void property() {
+        System.out.println(&quot;cash+land+gold&quot;);
+    }
+    public void marry() { // overridden method
+        System.out.println(&quot;Subbalakshmi&quot;);
+    }
+}
+class C extends P {
+    public void marry() { // overriding method
+        System.out.println(&quot;Trisha&quot;);
+    }
+}</pre>
+<p>Definition he repeats: whatever methods a parent has are by default available to the child. If the child is not satisfied with the parent class implementation, the child is allowed to redefine that method based on its requirement. This process is called overriding.</p>
+<h3>07:53 — Board dictation of the definition (copy slowly)</h3>
+<p>He dictates the same paragraph several times so the class copies:</p>
+<p>Whatever methods a parent has, by default available to the child through inheritance.</p>
+<p>If a child class is not satisfied with the parent class implementation, then child is allowed to redefine that method based on its requirement. This process is called overriding.</p>
+<p>The parent class method which is overridden is called overridden method.</p>
+<p>The child class method which is overriding is called overriding method.</p>
+<h3>11:02 — Full board example with comments</h3>
+<p>He rewrites the example clearly with comments:</p>
+<pre class='code'>class P {
+    public void property() {
+        System.out.println(&quot;cash+land+gold&quot;);
+    }
+    public void marry() {
+        System.out.println(&quot;Subbalakshmi&quot;);
+        // any name you can keep; need not be Subbalakshmi always
+    }
+}
+class C extends P {
+    public void marry() {
+        System.out.println(&quot;Trisha&quot;);
+        // or Charmi or Namrata — any name
+    }
+}</pre>
+<p>If the child class is not satisfied with the parent class implementation, then child is allowed to redefine that method based on its requirement. This process is called overriding. Parent marry() = overridden method. Child marry() = overriding method.</p>
+<h3>13:16 — Continuation: `class Test` and three reference/object cases</h3>
+<p>Continuation of the same program. class Test with public static void main(String[] args).</p>
+<p>Case 1 — parent reference, parent object.</p>
+<pre class='code'>class P {
+    public void property() {
+        System.out.println(&quot;cash+land+gold&quot;);
+    }
+    public void marry() {
+        System.out.println(&quot;Subbalakshmi&quot;);
+    }
+}
+class C extends P {
+    public void marry() {
+        System.out.println(&quot;Trisha&quot;);
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        P p = new P();
+        p.marry();
+        // prints Subbalakshmi
+    }
+}</pre>
+<p>Parent class reference, parent class object. p.marry() — which method comes into the picture, parent or child? Parent method. Nowhere related to the child. Everything related to the parent, so parent method. Output: Subbalakshmi.</p>
+<h3>14:28 — Case 2: child reference, child object</h3>
+<pre class='code'>class Test2 {
+    public static void main(String[] args) {
+        C c = new C();
+        c.marry();
+        // prints Trisha
+    }
+}</pre>
+<p>Child reference, child object. Everything related to the child, so child method. Learn this well.</p>
+<h3>15:00 — Case 3 (dangerous): parent reference holding child object</h3>
+<p>Take special care. What is the compiler’s role, what is the JVM’s role.</p>
+<p>Parent reference can be used to hold child object. Yes. Last class: parent reference can hold child object, but by using that reference we can call only the methods available in the parent class. Child-specific methods we can’t call.</p>
+<pre class='code'>class P {
+    public void marry() {
+        System.out.println(&quot;Subbalakshmi&quot;);
+    }
+}
+class C extends P {
+    public void marry() {
+        System.out.println(&quot;Trisha&quot;);
+    }
+    public void childSpecific() {
+        System.out.println(&quot;only on C&quot;);
+    }
+}
+class TestChildSpecific {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.marry();
+        // prints Trisha  (overridden — see JVM rule below)
+        // p1.childSpecific();
+        // CE: cannot find symbol
+        // method childSpecific() not in P
+    }
+}</pre>
+<h3>16:00 — Compiler vs JVM on `p1.marry()`</h3>
+<p>He is calling marry() on p1. p1 is parent type.</p>
+<p>Compiler: you are calling marry() on p1. p1 is parent type. In the parent class, is marry() available? Yes. Syntactically no mistake. Compiles fine.</p>
+<p>Runtime JVM: is it a parent object or a child object?</p>
+<ul><li>If parent object → parent class contains the method → execute that.</li></ul>
+<ul><li>If parent reference, child object → immediately JVM checks in the child class: is this method overriding or not?</li></ul>
+<p>If it is not overriding: parent method is by default available to the child, so execute parent method.</p>
+<p>If it is overriding in the child class: at runtime, based on runtime object, JVM executes the child class method.</p>
+<pre class='code'>class P {
+    public void marry() {
+        System.out.println(&quot;Subbalakshmi&quot;);
+    }
+}
+class C extends P {
+    public void marry() {
+        System.out.println(&quot;Trisha&quot;);
+    }
+}
+class Test3 {
+    public static void main(String[] args) {
+        P p1 = new C();
+        p1.marry();
+        // prints Trisha
+        // compiler: marry() exists on P → OK
+        // JVM: runtime object is C, and C overrides marry() → child method
+    }
+}</pre>
+<p>Answer for case 3: child method.</p>
+<p>If the child had not overridden marry(), same parent reference + child object would still print parent’s Subbalakshmi:</p>
+<pre class='code'>class P {
+    public void marry() {
+        System.out.println(&quot;Subbalakshmi&quot;);
+    }
+}
+class CNoOverride extends P {
+    // no marry() here
+}
+class TestNoOverride {
+    public static void main(String[] args) {
+        P p1 = new CNoOverride();
+        p1.marry();
+        // prints Subbalakshmi
+        // not overriding, so parent method (inherited)
+    }
+}</pre>
+<h3>18:39 — Method resolution is always based on runtime object</h3>
+<p>That is why in overriding, method resolution is always based on runtime object.</p>
+<p>Hence overriding is also known as:</p>
+<ul><li>runtime polymorphism</li></ul>
+<ul><li>dynamic polymorphism</li></ul>
+<ul><li>late binding</li></ul>
+<p>Why runtime polymorphism? Based on runtime object only, method resolution happens.</p>
+<p>Which is the runtime object?</p>
+<ol><li>new P() → parent object → parent method</li></ol>
+<ol><li>new C() with child reference → child object → child method</li></ol>
+<ol><li>new C() with parent reference → child object → child method</li></ol>
+<p>Until runtime we don’t know which method is going to execute. Method binding happens lately at runtime. That is late binding.</p>
+<pre class='code'>class P {
+    public void marry() {
+        System.out.println(&quot;Subbalakshmi&quot;);
+    }
+}
+class C extends P {
+    public void marry() {
+        System.out.println(&quot;Trisha&quot;);
+    }
+}
+class TestAllThree {
+    public static void main(String[] args) {
+        P p = new P();
+        p.marry();
+        // prints Subbalakshmi   (runtime object P)
+        C c = new C();
+        c.marry();
+        // prints Trisha         (runtime object C)
+        P p1 = new C();
+        p1.marry();
+        // prints Trisha         (runtime object C)
+    }
+}</pre>
+<p>Board output he wants you to mark: parent method, child method, child method.</p>
+<h3>20:16 — Repeat: compiler checks syntax, JVM checks runtime object</h3>
+<p>Compiler is always going to check syntactically: you are calling marry() on p1, p1 is P type, in the parent class is marry() there or not. That is the role of compiler.</p>
+<p>JVM will check: is the runtime object parent object or child object. If child object, in the child class is it overriding that method or not. If overriding, based on runtime object JVM will execute child class method.</p>
+<h3>21:11 — Contrast with overloading (he nails both slogans)</h3>
+<p>In overriding: method resolution always taken care by JVM based on runtime object. Hence overriding = runtime polymorphism / dynamic polymorphism / late binding.</p>
+<p>In overloading: method resolution always taken care by compiler based on reference type. Hence overloading = compile-time polymorphism / static polymorphism / early binding.</p>
+<p>Keep the words: overloading → reference type. Overriding → runtime object. Star this point.</p>
+<pre class='code'>class OL {
+    public void m1(int i) {
+        System.out.println(&quot;int version&quot;);
+    }
+    public void m1(double d) {
+        System.out.println(&quot;double version&quot;);
+    }
+}
+class OverloadingResolution {
+    public static void main(String[] args) {
+        OL x = new OL();
+        x.m1(10);
+        // prints int version
+        // compiler picked m1(int) from reference type + argument
+    }
+}</pre>
+<p>Overloading is decided at compile time from the reference and the argument. Overriding is decided at runtime from the object.</p>
+<h3>22:01 — Board: “in overriding, method resolution always takes care by JVM…”</h3>
+<p>He writes slowly:</p>
+<p>In overriding, method resolution always takes care by JVM based on runtime object, and hence overriding is also considered as runtime polymorphism or dynamic polymorphism or late binding.</p>
+<p>Until runtime we don’t know which method is going to execute, that’s why method binding will happen lately at runtime — late binding.</p>
+<h3>23:57 — Overriding is not a simple process; rules start</h3>
+<p>Overloading: method names same, arguments different. Overriding is a bit complex.</p>
+<p>Best example: your parent arranged some marriage. You are not satisfied. You want to redefine based on your requirement. How much complex is it? Ladies-side people should accept. Next, that lady-side people should not have any political or police background. Number of things we have to take care, then only on our wish the marriage is going to happen. If a small thing goes wrong, automatically a big compiler or JVM is going to give left and right.</p>
+<p>Each and every point we have to take care in overriding: method names, argument types, return types, modifiers, throws keyword, access modifiers. Overloading is a simple process. Overriding is a complex process.</p>
+<p>Board heading: rules for overriding.</p>
+<p>(throws is only named here. The exception rule is not in this video.)</p>
+<h3>25:30 — Rule 1: method names and argument types must be matched (signatures same)</h3>
+<p>Assume parent class method is m1. Compulsory child class method should be m1 only.</p>
+<p>In overriding, method names must be same. Argument types must be same. That is: method signatures must be matched / must be same.</p>
+<p>In overloading, method signatures must be different because of different argument types.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent m1&quot;);
+    }
+}
+class C extends P {
+    public void m1() {
+        System.out.println(&quot;child m1&quot;);
+    }
+}</pre>
+<p>Same name, same arguments → this can be overriding (other rules still apply).</p>
+<p>Different argument type is overloading in the child, not overriding:</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent m1()&quot;);
+    }
+}
+class C extends P {
+    public void m1(int i) {
+        System.out.println(&quot;child m1(int)&quot;);
+    }
+}
+class TestNotOverride {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+        // prints parent m1()
+        // child m1(int) is overloading, not overriding
+        C c = new C();
+        c.m1(10);
+        // prints child m1(int)
+    }
+}</pre>
+<h3>27:22 — Rule 2: return types — must be same until 1.4; covariant from 1.5</h3>
+<p>If the parent class method return type is void, compulsory child class method return type should be void only. By mistake if you take any other, compile-time error.</p>
+<p>In overriding, return types must be same — but this rule is applicable until 1.4 version only.</p>
+<p>From 1.5 version onwards, co-variant return types are also allowed.</p>
+<p>Until 1.4, return types must be same. From 1.5, covariant return types also allowed. What that means, he will show.</p>
+<pre class='code'>class P {
+    public void m1() {
+    }
+}
+class C extends P {
+    // public int m1() { return 10; }
+    // CE: m1() in C cannot override m1() in P
+    // attempting to use incompatible return type
+    // found: int
+    // required: void
+}</pre>
+<p>void vs int is not covariant. That fails in every version.</p>
+<h3>28:41 — What is covariant return type: `Object` → `String`</h3>
+<p>Parent:</p>
+<pre class='code'>class P {
+    public Object m1() {
+        return null;
+    }
+}</pre>
+<p>Until 1.4: child class method return type should be same as parent method return type.</p>
+<p>From 1.5: child class method return type need not be same as parent method return type. Its child types also allowed.</p>
+<p>So child can take String:</p>
+<pre class='code'>class P {
+    public Object m1() {
+        return null;
+    }
+}
+class C extends P {
+    public String m1() {
+        return null;
+    }
+}</pre>
+<p>Valid. This is covariant return type. Child class method return type need not be same as parent method return type; its child type also allowed.</p>
+<p>Is it valid in 1.4? Invalid. Valid in 1.5? Yes.</p>
+<p>null is a valid value for Object and a valid value for String, so return null is acceptable in both methods.</p>
+<h3>30:35 — Live compile: 1.6 default, then `-source 1.4`, then `-source 1.5`</h3>
+<p>He saves this as P.java (class P + class C extends P). They are on 1.6.</p>
+<p>javac P.java</p>
+<p>Valid. In 1.6, covariant return types are allowed.</p>
+<p>Now compile according to 1.4:</p>
+<p>javac -source 1.4 P.java</p>
+<p>Observed error (his wording):</p>
+<p>`m1` in `C` cannot override `m1` in `P`; attempting to use incompatible return type; found `String`; required `Object`.</p>
+<p>In 1.4 this is invalid. In 1.5 it is valid. Compile according to 1.5:</p>
+<p>javac -source 1.5 P.java</p>
+<p>Happily the code compiles fine. Observe the difference.</p>
+<pre class='code'>class P {
+    public Object m1() {
+        return null;
+    }
+}
+class C extends P {
+    public String m1() {
+        return null;
+    }
+}
+// javac P.java              (1.6) → OK
+// javac -source 1.4 P.java  → CE: m1 in C cannot override m1 in P
+//                              attempting to use incompatible return type
+//                              found String required Object
+// javac -source 1.5 P.java  → OK</pre>
+<h3>32:28 — Board write of the return-type rule</h3>
+<p>In overriding, return types must be same. But this rule is applicable until 1.4 version only. From 1.5 version onwards we can take co-variant return types.</p>
+<p>According to this: child class method return type need not be same as parent method return type; its child type also allowed.</p>
+<h3>34:44 — Same example copied onto the board with the 1.4/1.5 comment</h3>
+<pre class='code'>class P {
+    public Object m1() {
+        return null;
+    }
+}
+class C extends P {
+    public String m1() {
+        return null;
+    }
+}
+// invalid in 1.4 version
+// from 1.5 version onwards it is valid</pre>
+<p>This is the rule related to return type in overriding. Even today most people feel return types must be same. There is a small flexibility from 1.5: covariant return types.</p>
+<h3>36:52 — Covariant table: parent `Object`</h3>
+<p>He draws two columns: parent class method return type | child class method return type.</p>
+<p>If parent return type is Object, child can take:</p>
+<ul><li>Object (same)</li></ul>
+<ul><li>or its child: String</li></ul>
+<ul><li>or StringBuffer</li></ul>
+<pre class='code'>class P {
+    public Object m1() {
+        return null;
+    }
+}
+class CObject extends P {
+    public Object m1() {
+        return null;
+    }
+}
+class P {
+    public Object m1() {
+        return null;
+    }
+}
+class CString extends P {
+    public String m1() {
+        return null;
+    }
+}
+class P {
+    public Object m1() {
+        return null;
+    }
+}
+class CStringBuffer extends P {
+    public StringBuffer m1() {
+        return null;
+    }
+}</pre>
+<p>All three are covariant-legal from 1.5 (same type, or a child type).</p>
+<h3>38:07 — Parent `Number` → `Number` / `Integer` / `Float` / `Double`</h3>
+<p>If parent class method return type is Number, allowed child return types: Number, or Integer, or Float, or Double. No problem.</p>
+<pre class='code'>class P {
+    public Number m1() {
+        return null;
+    }
+}
+class CNumber extends P {
+    public Number m1() {
+        return null;
+    }
+}
+class P {
+    public Number m1() {
+        return null;
+    }
+}
+class CInteger extends P {
+    public Integer m1() {
+        return null;
+    }
+}
+class P {
+    public Number m1() {
+        return null;
+    }
+}
+class CFloat extends P {
+    public Float m1() {
+        return null;
+    }
+}
+class P {
+    public Number m1() {
+        return null;
+    }
+}
+class CDouble extends P {
+    public Double m1() {
+        return null;
+    }
+}</pre>
+<h3>38:30 — Parent `String`, child `Object` — **not** covariant</h3>
+<p>If parent return type is String, child return type Object: invalid.</p>
+<p>Child method return type should be either same as parent or its child. It should not be a parent of the parent method return type.</p>
+<p>Parent→child is acceptable. Child→parent is not acceptable. Compiler will give left and right. String → Object is not covariant return type. Object → String is covariant.</p>
+<pre class='code'>class P {
+    public String m1() {
+        return null;
+    }
+}
+class C extends P {
+    public Object m1() {
+        return null;
+    }
+    // CE: m1() in C cannot override m1() in P
+    // attempting to use incompatible return type
+    // found: Object
+    // required: String
+}</pre>
+<p>Direction is one-way: more specific in the child, never more general.</p>
+<h3>39:13 — Primitive `double` → `int` is 100% **not** allowed</h3>
+<p>Parent method return type is primitive double. Child method return type int. Acceptable or not? No. Don’t keep any doubt.</p>
+<p>Covariant return type concept is applicable only for object types, but not for primitives. For primitive types, covariant return type concept is not applicable.</p>
+<p>If parent is double, child method return type should also be double only. If parent is int, child should be int only.</p>
+<pre class='code'>class P {
+    public double m1() {
+        return 10.5;
+    }
+}
+class C extends P {
+    public int m1() {
+        return 10;
+    }
+    // CE: m1() in C cannot override m1() in P
+    // attempting to use incompatible return type
+    // found: int
+    // required: double
+}
+class P {
+    public double m1() {
+        return 10.5;
+    }
+}
+class C extends P {
+    public double m1() {
+        return 10.5;
+    }
+}
+class P {
+    public int m1() {
+        return 10;
+    }
+}
+class C extends P {
+    public int m1() {
+        return 20;
+    }
+}</pre>
+<p>Primitives: exact same return type. No “smaller primitive” trick.</p>
+<h3>42:01 — Board: covariant only for object types, not primitives</h3>
+<p>Co-variant return type concept applicable only for object types but not for primitive types.</p>
+<p>Last point of this table is a bit important. Take special care.</p>
+<h3>43:13 — Private methods: not available to child, so no overriding</h3>
+<p>Return types covered. Next: modifiers.</p>
+<pre class='code'>class P has a private method:
+class P {
+    private void m1() {
+        System.out.println(&quot;parent private&quot;);
+    }
+}
+class C extends P {
+}</pre>
+<p>Parent class private methods — are they available to the child? No. Parent class private methods not available to the child.</p>
+<p>If it is not available to the child, where is the question of overriding? Overriding starts only if the method is available and the child is not satisfied, then the child redefines. If it is not available first, no overriding.</p>
+<p>Overriding concept not applicable for private methods.</p>
+<h3>45:33 — Same private method in child: valid, but **not** overriding</h3>
+<p>By mistake he tries to “override” the private method in the child. Valid or invalid? 100% pakka valid. No problem at all. But it is not overriding.</p>
+<p>Based on our requirement we can define exactly the same private method in the child class also. It is the parent-specific method and the child-specific method. Not the overriding concept. Valid but not overriding.</p>
+<pre class='code'>class P {
+    private void m1() {
+        System.out.println(&quot;parent private&quot;);
+    }
+    public void callM1() {
+        m1();
+    }
+}
+class C extends P {
+    private void m1() {
+        System.out.println(&quot;child private&quot;);
+    }
+    public void callChildM1() {
+        m1();
+    }
+}
+class TestPrivate {
+    public static void main(String[] args) {
+        P p = new C();
+        p.callM1();
+        // prints parent private
+        // C.m1() did not override P.m1()
+        C c = new C();
+        c.callChildM1();
+        // prints child private
+    }
+}</pre>
+<p>Two independent private methods. Parent reference cannot even see child’s private m1().</p>
+<h3>48:20 — Public → public is valid overriding; then the final-marriage story</h3>
+<p>He has a public method. Child also public. Valid overriding? Valid.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent public&quot;);
+    }
+}
+class C extends P {
+    public void m1() {
+        System.out.println(&quot;child public&quot;);
+    }
+}
+class TestPublic {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+        // prints child public
+    }
+}</pre>
+<p>Suppose your parent arranged some marriage, you are not satisfied, you want to override — but the parent is aware: my decision is final. No one is allowed to change my decision. Parent declared the method as `final`.</p>
+<p>If the parent class method is final, you can’t override that method in the child class. This implementation is final. No one is allowed to redefine. No one is allowed to override.</p>
+<p>Final methods we can’t override. Overriding concept not applicable for final methods because it is already declared the final boss. Everyone should use this implementation only.</p>
+<h3>50:14 — Exact CE if you try to override `final`</h3>
+<p>By mistake if you try to override, immediately compile-time error.</p>
+<p>Spell the error: `m1` in `C` cannot override `m1` in `P`. Reason: overridden method is final.</p>
+<p>Which one is the overridden method — parent or child? Parent method. Child class method is called overriding method. Error talks about the overridden method being final.</p>
+<pre class='code'>class P {
+    public final void m1() {
+    }
+}
+class C extends P {
+    public void m1() {
+    }
+    // CE: m1() in C cannot override m1() in P
+    // overridden method is final
+}</pre>
+<h3>51:11 — Live demo: first both public (valid), then parent `final` (CE)</h3>
+<p>He first types public m1 in parent and public m1 in child — valid, no problem.</p>
+<p>Then public final void m1 in parent. Valid or invalid? Invalid. Compile-time error by default.</p>
+<p>Observed: m1 in C cannot override m1 in P. Overridden method is final.</p>
+<pre class='code'>class P {
+    public void m1() {
+    }
+}
+class C extends P {
+    public void m1() {
+    }
+}
+// valid overriding</pre>
+<p>Then he adds final on the parent method and the same child method becomes the CE above.</p>
+<h3>52:04 — Board: we can’t override parent class final methods</h3>
+<p>We can’t override parent class final methods in child classes. If we are trying to override we will get compile-time error.</p>
+<pre class='code'>class P {
+    public final void m1() {
+    }
+}
+class C extends P {
+    public void m1() {
+    }
+    // CE: m1 in C cannot override m1 in P
+    // overridden method is final
+}</pre>
+<h3>54:11 — Abstract methods: we **should** override (to provide implementation)</h3>
+<p>Parent class method is abstract. Is it possible to override abstract method in the child class? Compulsory we should override.</p>
+<p>Where do we provide implementation for abstract methods? In child class only. Parent class abstract methods we should override in the child classes to provide implementation. If you are not going to provide implementation, meaningless to declare abstract method in the parent class.</p>
+<pre class='code'>abstract class P {
+    public abstract void m1();
+}
+class C extends P {
+    public void m1() {
+    }
+}</pre>
+<p>Valid. Abstract method we can override as non-abstract to provide implementation.</p>
+<p>Board: parent class abstract methods we should override in child class to provide implementation.</p>
+<pre class='code'>abstract class P {
+    public abstract void m1();
+}
+class C extends P {
+    public void m1() {
+        System.out.println(&quot;provided implementation&quot;);
+    }
+}
+class TestAbstract {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+        // prints provided implementation
+    }
+}</pre>
+<h3>57:17 — Reverse: non-abstract parent, abstract child (kid-crying analogy)</h3>
+<pre class='code'>class P has public void m1(). class C extends P. Take special care.</pre>
+<p>House with small kids: as long as the kid is happily playing, we can enjoy. Once the kid starts crying it is horrible to manage. The baby can’t tell what he/she wants. Most of the times kid cries in two cases: feeling hungry, or feeling sleep. He gave something to eat — she threw it. Clear indication she doesn’t want to eat. He gave a small toy — she threw it, broken into pieces. Kid wants something but doesn’t know what. I want something but I don’t know what I want = kiddish behaviour.</p>
+<p>Same here:</p>
+<ul><li>I don’t want parent method implementation — no problem, happily you can override.</li></ul>
+<ul><li>But I don’t know how to provide implementation.</li></ul>
+<p>Two words: I don’t want parent implementation, but I don’t know how to provide implementation. How do you handle? Override, and just declare it abstract: public abstract void m1(). If the class contains at least one abstract method, declare the class abstract.</p>
+<p>Last example was abstract → non-abstract. Now reverse: parent is not abstract, child is abstract. Possible? 100% pakka valid. We can override non-abstract methods as abstract. No problem at all.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent concrete&quot;);
+    }
+}
+abstract class C extends P {
+    public abstract void m1();
+}</pre>
+<h3>1:00:54 — Live compile of non-abstract → abstract</h3>
+<p>Parent: class P { public void m1() {} } (ASR: public Ymon). Child: abstract class C extends P { public abstract void m1(); }.</p>
+<p>javac P.java</p>
+<p>Perfectly valid. There is no problem at all. Parent class non-abstract method, happily we can override as abstract. Valid.</p>
+<h3>1:01:32 — Advantage: stop parent implementation for next-level children</h3>
+<p>Then you may ask: what is the advantage?</p>
+<p>If abstract is not there, this method is available here, and this method is available to the next-level children also.</p>
+<p>If you take it as abstract, who is responsible to provide implementation? Next child. He is not allowed to use parent method implementation. Compulsory he should redefine this method.</p>
+<p>Main advantage of overriding a non-abstract method as abstract: we can stop the availability of parent method implementation to the next-level child classes. Next-level child compulsory should redefine this method based on its requirement.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent implementation&quot;);
+    }
+}
+abstract class C extends P {
+    public abstract void m1();
+}
+class SubC extends C {
+    public void m1() {
+        System.out.println(&quot;SubC must write its own&quot;);
+    }
+}
+class TestStopParentImpl {
+    public static void main(String[] args) {
+        P p = new SubC();
+        p.m1();
+        // prints SubC must write its own
+        // P&#x27;s body is not used; C made it abstract
+        // C c = new C();
+        // CE: C is abstract; cannot be instantiated
+    }
+}</pre>
+<p>SubC cannot silently inherit P.m1()’s body. The abstract override in C cut that inheritance of implementation.</p>
+<h3>1:02:31 — Board of the reverse-abstract example + advantage</h3>
+<p>We can override non-abstract method as abstract.</p>
+<pre class='code'>class P {
+    public void m1() {
+    }
+}
+abstract class C extends P {
+    public abstract void m1();
+}</pre>
+<p>Main advantage of this approach: we can stop the availability of parent method implementation to the next-level child classes.</p>
+<h3>1:04:40 — Summary table: final / abstract / synchronized / native / strictfp</h3>
+<p>Assume parent method vs child method. Sometimes reverse also.</p>
+<p>Parent `final`. Can I override as non-final? As final? Not possible. We can’t override final methods at all — not to non-final, not to final.</p>
+<pre class='code'>class P {
+    public final void m1() {
+    }
+}
+class C extends P {
+    public void m1() {
+    }
+    // CE: overridden method is final
+}
+class P {
+    public final void m1() {
+    }
+}
+class C extends P {
+    public final void m1() {
+    }
+    // CE: overridden method is final
+    // still overriding, still illegal
+}</pre>
+<h3>1:05:35 — Non-final → final is allowed (locks the next generation)</h3>
+<p>Parent is non-final. Override as final. Possible? 100% pakka possible. Non-final to final is acceptable. No problem.</p>
+<p>But if we did final, in the next-level child we can’t override. Up to this level acceptable; next-level child we can’t override.</p>
+<pre class='code'>class P {
+    public void m1() {
+        System.out.println(&quot;parent&quot;);
+    }
+}
+class C extends P {
+    public final void m1() {
+        System.out.println(&quot;child final&quot;);
+    }
+}
+class SubC extends C {
+    // public void m1() { }
+    // CE: m1() in SubC cannot override m1() in C
+    // overridden method is final
+}
+class TestNonFinalToFinal {
+    public static void main(String[] args) {
+        P p = new C();
+        p.m1();
+        // prints child final
+    }
+}</pre>
+<h3>1:06:10 — Abstract ↔ non-abstract both ways yes</h3>
+<p>Parent abstract, child non-abstract: acceptable. Non-abstract to abstract: acceptable. Both are acceptable.</p>
+<pre class='code'>abstract class P {
+    public abstract void m1();
+}
+class C extends P {
+    public void m1() {
+    }
+}
+class P {
+    public void m1() {
+    }
+}
+abstract class C extends P {
+    public abstract void m1();
+}</pre>
+<h3>1:06:37 — `synchronized` does not restrict overriding</h3>
+<p>Parent synchronized, child non-synchronized: OK. Non-synchronized to synchronized: OK. `synchronized` keyword won’t keep any restriction in overriding. Parent non-synchronized / child synchronized, or parent synchronized / child not synchronized: no problem.</p>
+<pre class='code'>class P {
+    public synchronized void m1() {
+    }
+}
+class C extends P {
+    public void m1() {
+    }
+}
+class P {
+    public void m1() {
+    }
+}
+class C extends P {
+    public synchronized void m1() {
+    }
+}</pre>
+<h3>1:07:18 — `native` also no restriction; `Object.hashCode()` example</h3>
+<p>Parent native → non-native: acceptable? Yes. Native method is a method implemented in other languages like C. “I don’t want that bloody C-language implementation. I want to implement that method in Java only.”</p>
+<p>Best example: `hashCode`. Parent Object class hashCode method is native. In the child class is it possible to override? Yes. Native to non-native, non-native to native: acceptable, no problem at all.</p>
+<pre class='code'>class C {
+    public int hashCode() {
+        return 10;
+    }
+}
+class TestHashCode {
+    public static void main(String[] args) {
+        C c = new C();
+        System.out.println(c.hashCode());
+        // prints 10
+        // Object.hashCode() is native; this override is Java (non-native)
+    }
+}
+class P {
+    public native void m1();
+}
+class C extends P {
+    public void m1() {
+        System.out.println(&quot;Java body instead of native&quot;);
+    }
+}
+class P {
+    public void m1() {
+        System.out.println(&quot;Java&quot;);
+    }
+}
+class C extends P {
+    public native void m1();
+}</pre>
+<h3>1:07:55 — `strictfp` also no restriction</h3>
+<p>Parent strictfp, child non-strictfp: OK. Non-strictfp to strictfp: no problem at all. Acceptable.</p>
+<p>In overriding, `synchronized`, `native`, `strictfp` keywords won’t keep any restrictions.</p>
+<pre class='code'>class P {
+    public strictfp void m1() {
+    }
+}
+class C extends P {
+    public void m1() {
+    }
+}
+class P {
+    public void m1() {
+    }
+}
+class C extends P {
+    public strictfp void m1() {
+    }
+}</pre>
+<h3>1:08:22 — Board list: modifiers that won’t keep any restriction</h3>
+<p>In overriding, the following modifiers won’t keep any restriction:</p>
+<ol><li>synchronized</li></ol>
+<ol><li>native</li></ol>
+<ol><li>strictfp</li></ol>
+<p>He then fills the summary parent/child table on the board: final→non-final (no), non-final→final (yes), abstract↔non-abstract (yes both ways), synchronized↔non-synchronized (yes), and strictfp↔non-strictfp.</p>
+<h3>1:11:17 — Static is missing; he will do it as a separate heading</h3>
+<p>Keep writing. Next rule.</p>
+<p>One modifier is missing from this list. Which modifier? Final we covered, abstract we covered, synchronized we covered, native, strictfp. At method level one more modifier is missing: `static`.</p>
+<p>Static modifier — there is a big rule, several rules related to static. As a separate heading I will discuss anyway. Not in this video.</p>
+<h3>1:12:01 — Access modifiers: public parent, default child</h3>
+<p>Next very important conclusion.</p>
+<pre class='code'>class P {
+    public void m1() {
+    }
+}
+class C extends P {
+    void m1() {
+    }
+}</pre>
+<p>He first misspeaks m2, then corrects: m1 only, because overriding. Parent public void m1(), child default void m1(). Valid or not? 100% pakka if I’m trying to compile this code, compiler will give left and right. Compile-time error.</p>
+<p>Parent class method is public. Child class method is default. While overriding, the scope of access modifier we can’t reduce. If you want you can increase the scope.</p>
+<p>Exact compile-time error:</p>
+<p>`m1` in `C` cannot override `m1` in `P`; attempting to assign weaker access privileges; was public.</p>
+<h3>1:14:27 — Live compile of weaker access</h3>
+<pre class='code'>class P { public void m1() {} } class C extends P { void m1() {} }</pre>
+<p>Read the error: m1 in C cannot override m1 in P; attempting to assign weaker access privileges; was public.</p>
+<p>While overriding we can’t reduce scope of access modifier. If you want you can increase the scope. No problem at all. Increasing is allowed, decreasing is not allowed.</p>
+<pre class='code'>class P {
+    public void m1() {
+    }
+}
+class C extends P {
+    void m1() {
+    }
+    // CE: m1() in C cannot override m1() in P
+    // attempting to assign weaker access privileges; was public
+}</pre>
+<h3>1:15:14 — Increase-the-scope examples he ticks as valid</h3>
+<p>Parent public, child public: valid.</p>
+<pre class='code'>class P {
+    public void m1() {
+    }
+}
+class C extends P {
+    public void m1() {
+    }
+}</pre>
+<p>Parent default, child public: valid. Increase is allowed.</p>
+<pre class='code'>class P {
+    void m1() {
+    }
+}
+class C extends P {
+    public void m1() {
+    }
+}</pre>
+<p>Parent protected, child public: valid. Protected to public is increasing the scope.</p>
+<pre class='code'>class P {
+    protected void m1() {
+    }
+}
+class C extends P {
+    public void m1() {
+    }
+}</pre>
+<p>Parent default, child protected: valid or not? Default means within the package. Protected means within the package plus outside package in the child. More accessibility is protected. Increasing the scope. Yes. No problem at all.</p>
+<pre class='code'>class P {
+    void m1() {
+    }
+}
+class C extends P {
+    protected void m1() {
+    }
+}</pre>
+<p>Decreasing examples he already failed (public → default). Same idea for public → protected:</p>
+<pre class='code'>class P {
+    public void m1() {
+    }
+}
+class C extends P {
+    protected void m1() {
+    }
+    // CE: m1() in C cannot override m1() in P
+    // attempting to assign weaker access privileges; was public
+}</pre>
+<p>And protected → default:</p>
+<pre class='code'>class P {
+    protected void m1() {
+    }
+}
+class C extends P {
+    void m1() {
+    }
+    // CE: m1() in C cannot override m1() in P
+    // attempting to assign weaker access privileges; was protected
+}</pre>
+<h3>1:16:27 — Board: we can’t reduce scope, we can increase</h3>
+<p>While overriding we can’t reduce the scope of access modifier, but we can increase the scope.</p>
+<pre class='code'>class P {
+    public void m1() {
+    }
+}
+class C extends P {
+    void m1() {
+    }
+    // CE: m1 in C cannot override m1 in P
+    // attempting to assign weaker access privileges; was public
+}</pre>
+<h3>1:18:32 — Most restricted to most accessible</h3>
+<p>Which is the most restricted access modifier? `private` is the most restricted. Compared with private, default is the next accessible. Compared with default, next is protected. Most accessible is public.</p>
+<p>Lesser scope → higher scope:</p>
+<p>private &lt; default &lt; protected &lt; public</p>
+<h3>1:19:12 — Final access-modifier summary table (parent → allowed child)</h3>
+<p>If parent class method is public: compulsory child class method should be public only. No alternative at all.</p>
+<pre class='code'>class P {
+    public void m1() {
+    }
+}
+class C extends P {
+    public void m1() {
+    }
+}</pre>
+<p>If parent is protected: child should be either protected or public (same, or increase).</p>
+<pre class='code'>class P {
+    protected void m1() {
+    }
+}
+class CProtected extends P {
+    protected void m1() {
+    }
+}
+class CPublic extends P {
+    public void m1() {
+    }
+}</pre>
+<p>If parent is default: child either default or protected or public.</p>
+<pre class='code'>class P {
+    void m1() {
+    }
+}
+class CDefault extends P {
+    void m1() {
+    }
+}
+class CProtected extends P {
+    protected void m1() {
+    }
+}
+class CPublic extends P {
+    public void m1() {
+    }
+}</pre>
+<p>If parent is private: don’t use the word overriding. Overriding concept not applicable for private methods.</p>
+<pre class='code'>class P {
+    private void m1() {
+    }
+}
+class C extends P {
+    public void m1() {
+    }
+    // compiles, but this is a new method — not overriding
+}</pre>
+<p>He says take this total thing clearly: first the weaker-access CE, then this table. Parent public → only public allowed. Parent protected → protected and public allowed.</p>
+<h3>1:21:00 — Close: rules for overriding (this video’s slice)</h3>
+<p>Board: rules for overriding. Make sure. Overriding concept not applicable for private methods — that point you should be aware. Parent public → public is allowed; parent protected → those wider things are allowed.</p>
+<p>That’s how the session ends (1:22:27). Next video continues remaining overriding rules (he already flagged static as a separate heading, and `throws` as something still to check).</p>
+<p>What this video actually covered (not a generic overriding syllabus):</p>
+<ol><li>Story: keep property() (cash+land+gold), override marry() (Subbalakshmi → Trisha/Charmi/Namrata).</li></ol>
+<ol><li>Overridden method vs overriding method.</li></ol>
+<ol><li>Three calls: P p = new P(), C c = new C(), P p1 = new C() → parent, child, child.</li></ol>
+<ol><li>Compiler checks parent type; JVM binds on runtime object → runtime / dynamic polymorphism / late binding. Overloading contrast: compiler + reference type → compile-time / static / early binding.</li></ol>
+<ol><li>Signatures must be same.</li></ol>
+<ol><li>Return types same until 1.4; covariant from 1.5 (Object→String live-compiled with -source 1.4 vs 1.5). Covariant only for object types; String→Object no; double→int no.</li></ol>
+<ol><li>Private: not inherited, not overriding; identical private in child is valid but not overriding.</li></ol>
+<ol><li>Final: cannot override; CE “overridden method is final”. Non-final→final yes.</li></ol>
+<ol><li>Abstract→concrete we should; concrete→abstract we can (stop next-level from using parent body).</li></ol>
+<ol><li>synchronized / native / strictfp unrestricted. Static deferred.</li></ol>
+<ol><li>Cannot reduce access; can increase. Ladder private &lt; default &lt; protected &lt; public. Private: N/A.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 55 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 5</td></tr>
+<tr><td>Topic</td><td>overriding</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 22m 38s</td></tr>
+<tr><td>Video ID</td><td>MYzaDgNGmTg</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=MYzaDgNGmTg</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

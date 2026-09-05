@@ -1,0 +1,638 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>151-navigableset</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 151 — Collections Part-16: NavigableSet, NavigableMap &amp; Collections.sort()</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This lecture completes the Java 1.6 Collection Framework enhancements block and begins the `Collections` utility class sorting APIs. Although the video title says NavigableSet, Sir covers three major topics in one session (~70 minutes):</p>
+<ol><li>NavigableSet — why it exists, all navigation methods, full TreeSet demo</li></ol>
+<ol><li>NavigableMap — parallel hierarchy and methods on TreeMap, full demo</li></ol>
+<ol><li>`Collections` class `sort()` methods — default natural sorting + customized sorting with Comparator, two demo programs</li></ol>
+<p>Prior session recap (00:04):</p>
+<ul><li>Queue concept completed</li></ul>
+<ul><li>PriorityQueue is the only Queue implementation class required for OCJP/SCJP basic syllabus</li></ul>
+<ul><li>Advanced queue types may appear in advanced collections; not mandatory for exam</li></ul>
+<p>What this session covers:</p>
+<ol><li>Java 1.6 version enhancements in Collections Framework — NavigableSet + NavigableMap</li></ol>
+<ol><li>Motivation: gaps in SortedSet navigation (flight-timing airport example)</li></ol>
+<ol><li>NavigableSet hierarchy, theory, and all method signatures with precise return semantics</li></ol>
+<ol><li>floor / lower / ceiling / higher — mathematical floor/ceiling analogy</li></ol>
+<ol><li>pollFirst, pollLast, descendingSet</li></ol>
+<ol><li>Demo 1: NavigableSetDemo with generic TreeSet&lt;Integer&gt;</li></ol>
+<ol><li>NavigableMap — child of SortedMap, implementation = TreeMap</li></ol>
+<ol><li>NavigableMap methods (*Key, poll*Entry, descendingMap) — copy-paste of Set terminology</li></ol>
+<ol><li>Demo 2: NavigableMapDemo with TreeMap&lt;String,String&gt;</li></ol>
+<ol><li>Collections utility class purpose — fills gaps that normal collections cannot</li></ol>
+<ol><li>Two sort() overloads — natural vs customized sorting</li></ol>
+<ol><li>Rules for natural sort: homogeneous + Comparable, no null</li></ol>
+<ol><li>Demo 3: CollectionsSortDemo — natural alphabetical sort on ArrayList</li></ol>
+<ol><li>Demo 4: CollectionsSortDemo2 — reverse alphabetical via Comparator</li></ol>
+<p>What continues in next sessions:</p>
+<ul><li>More Collections utility methods (search, reverse, synchronized wrappers, etc.)</li></ul>
+<ul><li>Searching elements of List (Video 152 per playlist index)</li></ul>
+<p>Exam mantra: NavigableSet/NavigableMap methods are navigation helpers on already-sorted data. Know the strict vs inclusive boundary difference (lower vs floor, higher vs ceiling). For Collections.sort(List), adding heterogeneous elements is fine — calling sort is what throws ClassCastException.</p>
+<h2>00:04 — Recap: Queue &amp; PriorityQueue done</h2>
+<p>For SCJP/OCJP basic collections syllabus:</p>
+<ul><li>Queue concept — covered</li></ul>
+<ul><li>PriorityQueue — only implementation class needed at this level</li></ul>
+<ul><li>No other queue types required for exam at basic level</li></ul>
+<p>Sir moves to Java 1.6 version enhancements.</p>
+<h2>00:30 — Java 1.6 enhancements in Collections Framework</h2>
+<h3>Board heading (copy exactly)</h3>
+<p>As a part of 1.6 version, the following two concepts were introduced in Collection Framework:</p>
+<p>1. NavigableSet</p>
+<p>2. NavigableMap</p>
+<p>Version history reminder (board):</p>
+<p>Same pattern as earlier 1.2 → 1.6 upgrades (e.g., Vector/Stack retrofitted to implement List in 1.2).</p>
+<h2>03:02 — Why NavigableSet? The Shamshabad airport example</h2>
+<h3>Hierarchy placement</h3>
+<p>Collection (I)
+ └── Set (I)
+      └── SortedSet (I)        ← 6 methods already covered
+           └── NavigableSet (I) ← NEW in 1.6 — fills navigation gaps
+                └── TreeSet (C) ← implementation class</p>
+<h3>Real-world scenario: flight timings</h3>
+<p>Sir uses Shamshabad International Airport (Hyderabad) flight departure times stored in a sorted structure:</p>
+<p>Question: Is this a SortedSet? Yes — times are unique and naturally sorted.</p>
+<h3>What SortedSet CAN answer (6 methods — already covered)</h3>
+<p>Sir: &quot;Beautiful methods — happily we can use these directly. Where? In SortedSet.&quot;</p>
+<h3>The GAP SortedSet CANNOT fill</h3>
+<p>Critical exam questions SortedSet cannot answer:</p>
+<p>Sir walks the hierarchy upward:</p>
+<ul><li>Ask SortedSet → &quot;No method with me, boss&quot;</li></ul>
+<ul><li>Ask Set → &quot;Sorry, I can&#x27;t provide&quot;</li></ul>
+<ul><li>Ask Collection → &quot;Sorry, I can&#x27;t provide&quot;</li></ul>
+<p>Conclusion: Navigation support for before/after boundary queries on a single element was missing. To fill these gaps → NavigableSet introduced in Java 1.6.</p>
+<h3>Purpose of NavigableSet (board — must copy)</h3>
+<p>NavigableSet defines several methods for navigation purposes.</p>
+<p>&quot;Before&quot; and &quot;after&quot; = navigation. NavigableSet adds precise boundary-navigation APIs on top of SortedSet.</p>
+<h2>09:03 — NavigableSet answers the gap: floor, lower, ceiling, higher</h2>
+<h3>Mapping questions to methods</h3>
+<h3>Flight example answers</h3>
+<ul><li>Before 10:00, last flight → lower(10:00) → 09:20</li></ul>
+<ul><li>At or before 10:00, last flight → floor(10:00) → if 10:00 existed it would be 10:00; here 09:20 is highest ≤ 10:00 among {…, 09:20, 10:25, …}</li></ul>
+<ul><li>Strictly after 10:00, first flight → higher(10:00) → 10:25</li></ul>
+<ul><li>At or after 10:00, first flight → ceiling(10:00) → 10:25 (or 10:00 if present)</li></ul>
+<h3>floor vs lower — THE critical distinction</h3>
+<p>Mathematics analogy (Sir&#x27;s board):</p>
+<ul><li>Floor function and Ceiling function from mathematics</li></ul>
+<ul><li>floor(x) = greatest integer ≤ x</li></ul>
+<ul><li>ceiling(x) = smallest integer ≥ x</li></ul>
+<ul><li>Same intuition applies to NavigableSet elements in sorting order</li></ul>
+<p>Memory trick:</p>
+<ul><li>Floor = you can stand on the floor (inclusive ≤)</li></ul>
+<ul><li>Lower = strictly below the floor (exclusive &lt;)</li></ul>
+<ul><li>Ceiling = you can touch the ceiling (inclusive ≥)</li></ul>
+<ul><li>Higher = strictly above the ceiling (exclusive &gt;)</li></ul>
+<h2>11:08 — NavigableSet theory (board)</h2>
+<h3>Definition</h3>
+<p>NavigableSet is the child interface of SortedSet.</p>
+<p>It defines several methods for navigation purposes.</p>
+<h3>Complete hierarchy diagram</h3>
+<p>Collection (I)
+ └── Set (I)
+      └── SortedSet (I)
+           └── NavigableSet (I)   ← Java 1.6
+                └── TreeSet (C)</p>
+<p>Important: NavigableSet methods are available on TreeSet objects (and any NavigableSet reference). TreeSet is the implementation class.</p>
+<h2>12:46 — NavigableSet method catalog (complete)</h2>
+<p>Sir writes all methods on board. These are the methods you must know for OCJP/SCJP:</p>
+<h3>Navigation methods (4)</h3>
+<h3>Mutation + navigation methods (2)</h3>
+<h3>View method (1)</h3>
+<p>Note: NavigableSet also inherits all SortedSet methods (first, last, headSet, tailSet, subSet, comparator) plus additional overloads with inclusive flags in the full API — Sir focuses on the core navigation methods above for this lecture.</p>
+<h3>Return-value pattern summary</h3>
+<h2>21:02 — Demo 1: NavigableSetDemo (TreeSet&lt;Integer&gt;)</h2>
+<h3>Why TreeSet?</h3>
+<p>NavigableSet is an interface. Methods are applied on TreeSet object because TreeSet is the implementation class of NavigableSet.</p>
+<h3>Generic vs non-generic TreeSet</h3>
+<p>TreeSet t = new TreeSet();              // non-generic — can add any type
+TreeSet&lt;Integer&gt; t = new TreeSet&lt;&gt;();   // generic — only Integer objects</p>
+<p>Sir uses generic version in demo for type safety. Generics covered separately — here just observe the syntax.</p>
+<h3>Program</h3>
+<pre class='code'>import java.util.*;
+
+class NavigableSetDemo {
+    public static void main(String[] args) {
+        TreeSet&lt;Integer&gt; t = new TreeSet&lt;&gt;();
+        t.add(1000);
+        t.add(2000);
+        t.add(3000);
+        t.add(4000);
+        t.add(5000);
+
+        System.out.println(&quot;Set: &quot; + t);
+        // Output: [1000, 2000, 3000, 4000, 5000]
+
+        System.out.println(&quot;ceiling(2000): &quot; + t.ceiling(2000));
+        // Either 2000 or after 2000 → lowest element ≥ 2000 → 2000
+
+        System.out.println(&quot;higher(2000): &quot; + t.higher(2000));
+        // Strictly after 2000 → lowest element &gt; 2000 → 3000
+
+        System.out.println(&quot;floor(3000): &quot; + t.floor(3000));
+        // Either 3000 or before 3000 → highest element ≤ 3000 → 3000
+
+        System.out.println(&quot;lower(3000): &quot; + t.lower(3000));
+        // Strictly before 3000 → highest element &lt; 3000 → 2000
+
+        System.out.println(&quot;pollFirst(): &quot; + t.pollFirst());
+        // Remove and return first element → 1000
+
+        System.out.println(&quot;pollLast(): &quot; + t.pollLast());
+        // Remove and return last element → 5000
+
+        System.out.println(&quot;descendingSet: &quot; + t.descendingSet());
+        // Reverse order view → [4000, 3000, 2000]
+
+        System.out.println(&quot;Original set: &quot; + t);
+        // After pollFirst/pollLast → [2000, 3000, 4000]
+    }
+}</pre>
+<h3>Sorting order used</h3>
+<ul><li>Constructor: no-arg → default natural sorting order</li></ul>
+<ul><li>No Comparator passed</li></ul>
+<ul><li>For Integer: natural order = ascending numeric order</li></ul>
+<h3>Step-by-step output trace</h3>
+<h3>Compiled output (Sir&#x27;s run)</h3>
+<p>[1000, 2000, 3000, 4000, 5000]
+2000
+3000
+3000
+2000
+1000
+5000
+[4000, 3000, 2000]
+[2000, 3000, 4000]</p>
+<p>Key observation: pollFirst() and pollLast() mutate the original set. descendingSet() returns a view in reverse order but the underlying set after polling is [2000, 3000, 4000].</p>
+<h2>28:58 — NavigableMap (second half of 1.6 enhancements)</h2>
+<p>Sir: &quot;NavigableMap is very easy — same copy-paste, but instead of Set terminology use Map terminology.&quot;</p>
+<h3>Hierarchy</h3>
+<p>Map (I)
+ └── SortedMap (I)
+      └── NavigableMap (I)   ← Java 1.6
+           └── TreeMap (C)</p>
+<h3>Theory (board)</h3>
+<p>NavigableMap is the child interface of SortedMap.</p>
+<p>It defines several methods for navigation purposes.</p>
+<h2>33:21 — NavigableMap methods (parallel to NavigableSet)</h2>
+<p>Because Map stores key-value pairs, methods operate on keys (not values):</p>
+<p>Sir: &quot;Same description — copy paste. No extra explanation required.&quot;</p>
+<h3>Why pollFirstEntry not pollFirstKey?</h3>
+<p>&quot;Because only key you can&#x27;t remove — entry (key + value together) must be removed.&quot;</p>
+<h2>35:52 — Demo 2: NavigableMapDemo (TreeMap&lt;String,String&gt;)</h2>
+<h3>Program</h3>
+<pre class='code'>import java.util.*;
+
+class NavigableMapDemo {
+    public static void main(String[] args) {
+        TreeMap&lt;String, String&gt; t = new TreeMap&lt;&gt;();
+        t.put(&quot;B&quot;, &quot;banana&quot;);
+        t.put(&quot;C&quot;, &quot;cat&quot;);
+        t.put(&quot;A&quot;, &quot;apple&quot;);
+        t.put(&quot;D&quot;, &quot;dog&quot;);
+        t.put(&quot;G&quot;, &quot;gun&quot;);
+
+        System.out.println(&quot;Map: &quot; + t);
+        // Keys sorted alphabetically (default natural order for String)
+
+        System.out.println(&quot;ceilingKey(C): &quot; + t.ceilingKey(&quot;C&quot;));
+        // Lowest key ≥ C → C itself (already present)
+
+        System.out.println(&quot;higherKey(E): &quot; + t.higherKey(&quot;E&quot;));
+        // Lowest key &gt; E → G (E not present; next key after E)
+
+        System.out.println(&quot;floorKey(E): &quot; + t.floorKey(&quot;E&quot;));
+        // Highest key ≤ E → D
+
+        System.out.println(&quot;lowerKey(E): &quot; + t.lowerKey(&quot;E&quot;));
+        // Highest key &lt; E → D
+
+        System.out.println(&quot;pollFirstEntry(): &quot; + t.pollFirstEntry());
+        // Remove and return first entry → A=apple
+
+        System.out.println(&quot;pollLastEntry(): &quot; + t.pollLastEntry());
+        // Remove and return last entry → G=gun
+
+        System.out.println(&quot;descendingMap: &quot; + t.descendingMap());
+        // Reverse key order → {D=dog, C=cat, B=banana}
+
+        System.out.println(&quot;Original map: &quot; + t);
+        // Remaining → {B=banana, C=cat, D=dog}
+    }
+}</pre>
+<h3>Sorting order</h3>
+<ul><li>No Comparator → default natural sorting order of keys</li></ul>
+<ul><li>Keys are String → alphabetical order</li></ul>
+<ul><li>Insertion order of put() calls does NOT matter</li></ul>
+<h3>Map after initial puts (sorted by key)</h3>
+<pre class='code'>{A=apple, B=banana, C=cat, D=dog, G=gun}</pre>
+<h3>Method-by-method trace</h3>
+<p>Note on `higherKey(&quot;E&quot;)`: Sir emphasizes E need not exist as a key — method searches for the navigation boundary relative to the given argument.</p>
+<h2>44:40 — Collections utility class introduction</h2>
+<p>NavigableSet and NavigableMap complete the 1.6 enhancement topic. Sir now introduces utility classes.</p>
+<h3>Two utility classes in Collections Framework (roadmap)</h3>
+<ol><li>`Collections` ← today&#x27;s focus (sort methods)</li></ol>
+<ol><li>`Arrays` ← next sessions</li></ol>
+<h3>Collection vs Collections (recap — very important exam question)</h3>
+<h3>Purpose of Collections class</h3>
+<p>Collections class defines several utility methods for collection objects</p>
+<p>— such as sorting, searching, synchronization, reverse, etc.</p>
+<p>Previously covered from Collections class:</p>
+<ul><li>synchronizedList()</li></ul>
+<ul><li>synchronizedMap()</li></ul>
+<ul><li>synchronizedSet()</li></ul>
+<h3>Why Collections.sort() exists — the List gap</h3>
+<p>Problem: &quot;I want to use ArrayList only, but I want all elements in sorting order. How?&quot;</p>
+<p>Answer: Collections.sort(list) — fills the gap that List implementations cannot provide natively.</p>
+<p>Sir&#x27;s principle:</p>
+<p>Wherever normal collection interfaces have gaps, Collections class utility methods fill those gaps.</p>
+<h2>48:39 — Sorting elements of List: two sort() methods</h2>
+<h3>Board heading</h3>
+<p>Sorting elements of List</p>
+<p>Collections class defines two sort methods:</p>
+<p>Same pattern as TreeSet constructors:</p>
+<ul><li>No Comparator → natural sorting</li></ul>
+<ul><li>With Comparator → customized sorting</li></ul>
+<h2>49:31 — Method 1: sort(List l) — natural sorting</h2>
+<h3>Signature</h3>
+<pre class='code'>public static void sort(List l)</pre>
+<ul><li>Return type: void — sorts in place inside the existing list (no new list returned)</li></ul>
+<ul><li>Effect: Whatever elements present in the list will be sorted according to default natural sorting order</li></ul>
+<h3>Default natural sorting order</h3>
+<h3>MANDATORY rules (exam — copy all three)</h3>
+<p>Rule 1: List must contain homogeneous and Comparable objects.</p>
+<p>Rule 2: List must NOT contain null.</p>
+<p>Rule 3: Sorting happens in the existing list itself — mutates original list order.</p>
+<p>Sir repeats TreeSet rule: &quot;Homogeneous and Comparable — we covered this already in TreeSet.&quot;</p>
+<h3>Board note (exact wording)</h3>
+<p>In this case, list should compulsorily contain homogeneous and comparable objects;</p>
+<p>otherwise we will get runtime exception saying ClassCastException.</p>
+<p>List should not contain null;</p>
+<p>otherwise we will get NullPointerException.</p>
+<h2>51:35 — Method 2: sort(List l, Comparator c) — customized sorting</h2>
+<h3>Signature</h3>
+<pre class='code'>public static void sort(List l, Comparator c)</pre>
+<ul><li>Sorts the list according to customized sorting order defined by the Comparator object</li></ul>
+<ul><li>Comparator&#x27;s compare() method decides element order</li></ul>
+<ul><li>Same compare() return contract as compareTo(): negative = before, positive = after, zero = duplicate</li></ul>
+<h2>52:55 — Board summary: two sort methods</h2>
+<p>Collections class defines the following two sort methods:
+
+1. public static void sort(List l)
+   → to sort based on default natural sorting order
+   → list must contain homogeneous &amp; comparable objects; no null
+
+2. public static void sort(List l, Comparator c)
+   → to sort based on customized sorting order</p>
+<h2>56:37 — Demo 3: CollectionsSortDemo — natural sorting</h2>
+<h3>Program</h3>
+<pre class='code'>import java.util.*;
+
+class CollectionsSortDemo {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        l.add(&quot;J&quot;);
+        l.add(&quot;A&quot;);
+        l.add(&quot;K&quot;);
+        l.add(&quot;N&quot;);
+
+        System.out.println(&quot;Before sorting: &quot; + l);
+        // [J, A, K, N] — insertion order preserved
+
+        Collections.sort(l);
+
+        System.out.println(&quot;After sorting: &quot; + l);
+        // [A, K, N, J] — alphabetical natural order
+    }
+}</pre>
+<h3>Output</h3>
+<p>Before sorting: [J, A, K, N]
+After sorting: [A, K, N, J]</p>
+<h3>Analysis</h3>
+<ul><li>Before: insertion order J, A, K, N</li></ul>
+<ul><li>After: alphabetical A, K, N, J</li></ul>
+<ul><li>Method used: Collections.sort(l) — default natural sorting (no Comparator)</li></ul>
+<ul><li>Strings implement Comparable → valid for natural sort</li></ul>
+<h3>Heterogeneous list trap (Sir&#x27;s warning)</h3>
+<p>ArrayList l = new ArrayList();
+l.add(&quot;A&quot;);
+l.add(new Integer(10));   // adding heterogeneous — NO problem here
+
+Collections.sort(l);        // ClassCastException HERE — at sort call</p>
+<p>Critical exam point:</p>
+<ul><li>Adding heterogeneous objects to list → allowed</li></ul>
+<ul><li>Calling Collections.sort() on heterogeneous list → `ClassCastException`</li></ul>
+<p>Similarly:</p>
+<p>l.add(null);
+Collections.sort(l);   // NullPointerException</p>
+<p>Adding null may succeed; sorting triggers NPE.</p>
+<h2>1:03:23 — Demo 4: CollectionsSortDemo2 — customized (reverse) sorting</h2>
+<h3>Program</h3>
+<pre class='code'>import java.util.*;
+
+class CollectionsSortDemo2 {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        l.add(&quot;J&quot;);
+        l.add(&quot;A&quot;);
+        l.add(&quot;K&quot;);
+        l.add(&quot;L&quot;);
+
+        System.out.println(&quot;Before sorting: &quot; + l);
+        // [J, A, K, L]
+
+        Collections.sort(l, new MyComparator());
+
+        System.out.println(&quot;After sorting: &quot; + l);
+        // [J, L, K, A] — reverse alphabetical
+    }
+}
+
+class MyComparator implements Comparator {
+    public int compare(Object o1, Object o2) {
+        String s1 = (String) o1;
+        String s2 = (String) o2;
+        return s2.compareTo(s1);   // reverse of natural alphabetical order
+    }
+}</pre>
+<h3>Comparator logic</h3>
+<pre class='code'>return s2.compareTo(s1);</pre>
+<ul><li>Normal alphabetical: s1.compareTo(s2)</li></ul>
+<ul><li>Reverse: s2.compareTo(s1) — swaps operand order → reverse of alphabetical</li></ul>
+<h3>Output</h3>
+<p>Before sorting: [J, A, K, L]
+After sorting: [J, L, K, A]</p>
+<h3>Trace (reverse alphabetical)</h3>
+<p>Starting set: {J, A, K, L}</p>
+<p>Reverse alpha order: J &gt; L &gt; K &gt; A → [J, L, K, A]</p>
+<p>Sir confirms by running CollectionsSortDemo2.java live.</p>
+<h2>NavigableSet vs SortedSet — quick comparison</h2>
+<h2>NavigableMap vs SortedMap — quick comparison</h2>
+<h2>Collections.sort() — decision flowchart</h2>
+<p>Need to sort a List?
+│
+├── Want default order (Comparable)?
+│   └── Collections.sort(list)
+│       ├── Objects homogeneous? ──No──→ ClassCastException
+│       ├── Objects Comparable? ──No──→ ClassCastException
+│       └── Contains null? ──Yes──→ NullPointerException
+│
+└── Want custom order?
+    └── Collections.sort(list, comparator)
+        └── Uses Comparator.compare() — your logic decides order</p>
+<h2>OCJP/SCJP exam checklist</h2>
+<h3>Must know definitions</h3>
+<ul><li>[ ] NavigableSet is child of SortedSet; TreeSet implements it (since 1.6)</li></ul>
+<ul><li>[ ] NavigableMap is child of SortedMap; TreeMap implements it (since 1.6)</li></ul>
+<ul><li>[ ] Purpose: navigation methods on sorted data</li></ul>
+<ul><li>[ ] Collections is utility class; Collection is interface</li></ul>
+<h3>Must know method semantics</h3>
+<ul><li>[ ] floor / ceiling = inclusive boundary (≤ / ≥)</li></ul>
+<ul><li>[ ] lower / higher = exclusive boundary (&lt; / &gt;)</li></ul>
+<ul><li>[ ] floor/lower return highest among candidates</li></ul>
+<ul><li>[ ] ceiling/higher return lowest among candidates</li></ul>
+<ul><li>[ ] pollFirst/pollLast remove and return</li></ul>
+<ul><li>[ ] descendingSet() / descendingMap() = reverse-order view</li></ul>
+<h3>Must know sort rules</h3>
+<ul><li>[ ] Collections.sort(list) = natural order; needs homogeneous Comparable elements</li></ul>
+<ul><li>[ ] Collections.sort(list, c) = customized order via Comparator</li></ul>
+<ul><li>[ ] Heterogeneous add OK; heterogeneous sort → ClassCastException</li></ul>
+<ul><li>[ ] null in list + sort → NullPointerException</li></ul>
+<ul><li>[ ] sort() returns void — modifies list in place</li></ul>
+<h3>Likely trap questions</h3>
+<ol><li>Difference between lower(10) and floor(10) when 10 exists in set</li></ol>
+<ol><li>higherKey(&quot;E&quot;) when E is not a key in TreeMap</li></ol>
+<ol><li>After pollFirst() + pollLast(), what does original set contain?</li></ol>
+<ol><li>Collections.sort() on ArrayList containing Integer and String</li></ol>
+<ol><li>Collection vs Collections (interface vs utility class)</li></ol>
+<h2>Cross-references (playlist)</h2>
+<h2>Session closing summary</h2>
+<p>Sir completes three deliverables in this video:</p>
+<ol><li>NavigableSet — theory + TreeSet demo; fills SortedSet navigation gaps using floor/lower/ceiling/higher and poll/descending views</li></ol>
+<ol><li>NavigableMap — parallel API on TreeMap keys/entries; same logic with Map terminology</li></ol>
+<ol><li>Collections.sort() — two overloads for sorting List elements (natural vs customized), with ClassCastException and NullPointerException rules</li></ol>
+<p>Final board point on sorting:</p>
+<p>Demo program to sort elements of list according to default natural sorting order → Collections.sort(l)</p>
+<p>Demo program to sort elements of list according to customized sorting order → Collections.sort(l, new MyComparator())</p>
+<p>That&#x27;s all for sorting elements of List in this session.</p>
+<h2>Metadata</h2>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>151 of 203</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Collections Part-16 \</td><td>\</td><td>Navigableset</td></tr>
+<tr><td>YouTube ID</td><td>Tk-vLd0zjN0</td><td></td><td></td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=Tk-vLd0zjN0</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 09m 43s</td><td></td><td></td></tr>
+<tr><td>Source</td><td>YouTube auto-captions</td><td></td><td></td></tr>
+<tr><td>Output</td><td>151-navigableset.doc</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Concept</th><th>Introduced in</th><th>Parent interface</th><th>Implementation class</th></tr>
+<tr><td>NavigableSet</td><td>Java 1.6</td><td>SortedSet</td><td>TreeSet</td></tr>
+<tr><td>NavigableMap</td><td>Java 1.6</td><td>SortedMap</td><td>TreeMap</td></tr>
+</table>
+<table>
+<tr><th>Interface / Class</th><th>Version</th></tr>
+<tr><td>Collection</td><td>1.2</td></tr>
+<tr><td>Set</td><td>1.2</td></tr>
+<tr><td>SortedSet</td><td>1.2</td></tr>
+<tr><td>TreeSet</td><td>1.2 (modified in 1.6 to implement NavigableSet)</td></tr>
+<tr><td>Map</td><td>1.2</td></tr>
+<tr><td>SortedMap</td><td>1.2</td></tr>
+<tr><td>TreeMap</td><td>1.2 (modified in 1.6 to implement NavigableMap)</td></tr>
+<tr><td>NavigableSet</td><td>1.6</td></tr>
+<tr><td>NavigableMap</td><td>1.6</td></tr>
+</table>
+<table>
+<tr><th>Time</th><th>Notes</th></tr>
+<tr><td>00:30</td><td>First flight (late night / early morning)</td></tr>
+<tr><td>01:45</td><td></td></tr>
+<tr><td>02:30</td><td></td></tr>
+<tr><td>03:45</td><td></td></tr>
+<tr><td>04:20</td><td></td></tr>
+<tr><td>05:30</td><td></td></tr>
+<tr><td>06:45</td><td></td></tr>
+<tr><td>07:30</td><td></td></tr>
+<tr><td>09:20</td><td></td></tr>
+<tr><td>10:25</td><td></td></tr>
+<tr><td>12:30</td><td></td></tr>
+<tr><td>14:25</td><td></td></tr>
+<tr><td>15:30</td><td></td></tr>
+<tr><td>18:20</td><td></td></tr>
+<tr><td>20:20</td><td></td></tr>
+<tr><td>23:25</td><td></td></tr>
+<tr><td>23:59</td><td>Last flight</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>Method</th><th>Answer (example)</th></tr>
+<tr><td>First flight</td><td>first()</td><td>00:30</td></tr>
+<tr><td>Last flight</td><td>last()</td><td>23:59</td></tr>
+<tr><td>All flights before 10:00</td><td>headSet(10:00)</td><td>flights &lt; 10:00</td></tr>
+<tr><td>All flights after 10:00</td><td>tailSet(10:00)</td><td>flights ≥ 10:00</td></tr>
+<tr><td>Flights from 07:00 to 12:00</td><td>subSet(07:00, 12:00)</td><td>range view</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>SortedSet answer</th></tr>
+<tr><td>Before 10:00, what is the last flight? (single element, not a view)</td><td>❌ No direct method — hands up</td></tr>
+<tr><td>After 10:00, what is the first flight? (single element)</td><td>❌ No direct method</td></tr>
+<tr><td>Before or at 10:00, what is the last flight?</td><td>❌ No direct method</td></tr>
+<tr><td>At or after 10:00, what is the first flight?</td><td>❌ No direct method</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>NavigableSet method</th><th>Boundary type</th></tr>
+<tr><td>Last flight strictly before 10:00</td><td>lower(10:00)</td><td>&lt; e (exclusive)</td></tr>
+<tr><td>Last flight at or before 10:00</td><td>floor(10:00)</td><td>≤ e (inclusive)</td></tr>
+<tr><td>First flight strictly after 10:00</td><td>higher(10:00)</td><td>&gt; e (exclusive)</td></tr>
+<tr><td>First flight at or after 10:00</td><td>ceiling(10:00)</td><td>≥ e (inclusive)</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Meaning</th><th>Includes element e itself?</th><th>Returns</th></tr>
+<tr><td>floor(e)</td><td>Either e or before e — what is the last/highest?</td><td>Yes (≤ e)</td><td>Highest element ≤ e</td></tr>
+<tr><td>lower(e)</td><td>Strictly before e — what is the last/highest?</td><td>No (&lt; e)</td><td>Highest element &lt; e</td></tr>
+<tr><td>ceiling(e)</td><td>Either e or after e — what is the first/lowest?</td><td>Yes (≥ e)</td><td>Lowest element ≥ e</td></tr>
+<tr><td>higher(e)</td><td>Strictly after e — what is the first/lowest?</td><td>No (&gt; e)</td><td>Lowest element &gt; e</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Returns</th><th>Precise description</th></tr>
+<tr><td>E floor(E e)</td><td>E or null</td><td>Highest element which is ≤ e</td></tr>
+<tr><td>E lower(E e)</td><td>E or null</td><td>Highest element which is &lt; e</td></tr>
+<tr><td>E ceiling(E e)</td><td>E or null</td><td>Lowest element which is ≥ e</td></tr>
+<tr><td>E higher(E e)</td><td>E or null</td><td>Lowest element which is &gt; e</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+<tr><td>E pollFirst()</td><td>E or null</td><td>Remove and return first (lowest) element</td></tr>
+<tr><td>E pollLast()</td><td>E or null</td><td>Remove and return last (highest) element</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+<tr><td>NavigableSet&lt;E&gt; descendingSet()</td><td>NavigableSet</td><td>Returns NavigableSet in reverse order (descending view)</td></tr>
+</table>
+<table>
+<tr><th>Pair</th><th>&quot;Highest&quot; or &quot;Lowest&quot;?</th><th>Boundary</th></tr>
+<tr><td>floor / lower</td><td>Highest among candidates</td><td>≤ e vs &lt; e</td></tr>
+<tr><td>ceiling / higher</td><td>Lowest among candidates</td><td>≥ e vs &gt; e</td></tr>
+</table>
+<table>
+<tr><th>Statement</th><th>Result</th><th>Reasoning</th></tr>
+<tr><td>t after adds</td><td>[1000, 2000, 3000, 4000, 5000]</td><td>Natural ascending sort</td></tr>
+<tr><td>ceiling(2000)</td><td>2000</td><td>Lowest element ≥ 2000; 2000 exists</td></tr>
+<tr><td>higher(2000)</td><td>3000</td><td>Lowest element &gt; 2000</td></tr>
+<tr><td>floor(3000)</td><td>3000</td><td>Highest element ≤ 3000; 3000 exists</td></tr>
+<tr><td>lower(3000)</td><td>2000</td><td>Highest element &lt; 3000</td></tr>
+<tr><td>pollFirst()</td><td>1000</td><td>Removes 1000 from set</td></tr>
+<tr><td>pollLast()</td><td>5000</td><td>Removes 5000 from set</td></tr>
+<tr><td>descendingSet()</td><td>[4000, 3000, 2000]</td><td>Reverse-order view of remaining</td></tr>
+<tr><td>t (final)</td><td>[2000, 3000, 4000]</td><td>Original set minus polled ends</td></tr>
+</table>
+<table>
+<tr><th>Interface</th><th>Version</th><th>Implementation</th></tr>
+<tr><td>Map</td><td>1.2</td><td>—</td></tr>
+<tr><td>SortedMap</td><td>1.2</td><td>TreeMap</td></tr>
+<tr><td>NavigableMap</td><td>1.6</td><td>TreeMap</td></tr>
+</table>
+<table>
+<tr><th>NavigableSet method</th><th>NavigableMap equivalent</th><th>Notes</th></tr>
+<tr><td>floor(e)</td><td>floorKey(K key)</td><td>Highest key ≤ given key</td></tr>
+<tr><td>lower(e)</td><td>lowerKey(K key)</td><td>Highest key &lt; given key</td></tr>
+<tr><td>ceiling(e)</td><td>ceilingKey(K key)</td><td>Lowest key ≥ given key</td></tr>
+<tr><td>higher(e)</td><td>higherKey(K key)</td><td>Lowest key &gt; given key</td></tr>
+<tr><td>pollFirst()</td><td>pollFirstEntry()</td><td>Remove and return first entry (key-value pair)</td></tr>
+<tr><td>pollLast()</td><td>pollLastEntry()</td><td>Remove and return last entry</td></tr>
+<tr><td>descendingSet()</td><td>descendingMap()</td><td>Map in reverse key order</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Result</th><th>Explanation</th></tr>
+<tr><td>ceilingKey(&quot;C&quot;)</td><td>&quot;C&quot;</td><td>Lowest key ≥ C; C exists in map</td></tr>
+<tr><td>higherKey(&quot;E&quot;)</td><td>&quot;G&quot;</td><td>E not a key; lowest key strictly greater than E is G</td></tr>
+<tr><td>floorKey(&quot;E&quot;)</td><td>&quot;D&quot;</td><td>Highest key ≤ E (E absent, so highest below/at boundary)</td></tr>
+<tr><td>lowerKey(&quot;E&quot;)</td><td>&quot;D&quot;</td><td>Highest key strictly less than E</td></tr>
+<tr><td>pollFirstEntry()</td><td>A=apple</td><td>First entry removed</td></tr>
+<tr><td>pollLastEntry()</td><td>G=gun</td><td>Last entry removed</td></tr>
+<tr><td>descendingMap()</td><td>{D=dog, C=cat, B=banana}</td><td>Descending key view</td></tr>
+<tr><td>t (final)</td><td>{B=banana, C=cat, D=dog}</td><td>Ascending key order remaining</td></tr>
+</table>
+<table>
+<tr><th>Term</th><th>Type</th><th>Purpose</th></tr>
+<tr><td>Collection</td><td>Interface</td><td>Root interface for group of individual objects</td></tr>
+<tr><td>Collections</td><td>Utility class</td><td>Defines several utility methods for Collection objects</td></tr>
+</table>
+<table>
+<tr><th>Collection type</th><th>Built-in sorting?</th></tr>
+<tr><td>Set → TreeSet</td><td>✅ Yes — TreeSet always sorted</td></tr>
+<tr><td>Queue → PriorityQueue</td><td>✅ Yes — heap priority order</td></tr>
+<tr><td>List → ArrayList, LinkedList, Vector, Stack</td><td>❌ No — only insertion order</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Method</th><th>Sorting type</th></tr>
+<tr><td>1</td><td>sort(List l)</td><td>Default natural sorting order</td></tr>
+<tr><td>2</td><td>sort(List l, Comparator c)</td><td>Customized sorting order</td></tr>
+</table>
+<table>
+<tr><th>Element type</th><th>Natural order</th></tr>
+<tr><td>Numbers (Integer, etc.)</td><td>Ascending order</td></tr>
+<tr><td>String objects</td><td>Alphabetical order</td></tr>
+</table>
+<table>
+<tr><th>Violation</th><th>Exception</th></tr>
+<tr><td>Heterogeneous objects (String + Integer)</td><td>ClassCastException</td></tr>
+<tr><td>Non-Comparable objects (StringBuffer in TreeSet-style scenario)</td><td>ClassCastException</td></tr>
+</table>
+<table>
+<tr><th>Violation</th><th>Exception</th></tr>
+<tr><td>null present when sort compares</td><td>NullPointerException</td></tr>
+</table>
+<table>
+<tr><th>Capability</th><th>SortedSet</th><th>NavigableSet</th></tr>
+<tr><td>First / last element</td><td>first(), last()</td><td>Inherited</td></tr>
+<tr><td>Range views</td><td>headSet, tailSet, subSet</td><td>Inherited + inclusive overloads in full API</td></tr>
+<tr><td>Single-element before boundary</td><td>❌</td><td>lower(), floor()</td></tr>
+<tr><td>Single-element after boundary</td><td>❌</td><td>higher(), ceiling()</td></tr>
+<tr><td>Poll (remove + return) ends</td><td>❌</td><td>pollFirst(), pollLast()</td></tr>
+<tr><td>Reverse view</td><td>❌</td><td>descendingSet()</td></tr>
+<tr><td>Since</td><td>1.2</td><td>1.6</td></tr>
+</table>
+<table>
+<tr><th>Capability</th><th>SortedMap</th><th>NavigableMap</th></tr>
+<tr><td>Range views on keys</td><td>headMap, tailMap, subMap</td><td>Inherited</td></tr>
+<tr><td>Key navigation</td><td>❌</td><td>floorKey, lowerKey, ceilingKey, higherKey</td></tr>
+<tr><td>Poll entries</td><td>❌</td><td>pollFirstEntry, pollLastEntry</td></tr>
+<tr><td>Reverse view</td><td>❌</td><td>descendingMap()</td></tr>
+<tr><td>Since</td><td>1.2</td><td>1.6</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Video</th><th>Notes file</th></tr>
+<tr><td>SortedSet six methods (first, last, headSet, tailSet, subSet)</td><td>142</td><td>142-set-sortedset.doc</td></tr>
+<tr><td>TreeSet properties &amp; Comparable</td><td>143</td><td>143-treeset.doc</td></tr>
+<tr><td>Comparator interface deep dive</td><td>144</td><td>144-comparator.doc</td></tr>
+<tr><td>Queue &amp; PriorityQueue</td><td>150</td><td>(prior session)</td></tr>
+<tr><td>Searching elements of List</td><td>152</td><td>next session</td></tr>
+<tr><td>Arrays utility class</td><td>153</td><td>upcoming</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Video</td><td>151 of 203</td></tr>
+<tr><td>Series</td><td>Durga Sir Core Java OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>Collections Part-16 — NavigableSet, NavigableMap, Collections.sort()</td></tr>
+<tr><td>Source</td><td>YouTube auto-captions</td></tr>
+<tr><td>Output</td><td>151-navigableset.doc</td></tr>
+</table>
+</body></html>

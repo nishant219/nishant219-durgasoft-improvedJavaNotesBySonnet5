@@ -1,0 +1,204 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>046-child-vs-parent-constructor-2</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 046</h1>
+<h2>Video info</h2>
+<p>Title: Java -  Interface and Abstract class Loopholes Part-3 || Child Object Vs Parent Constructor-2</p>
+<p>Source: real YouTube auto-captions (.transcripts/046-o-naZqPsO9U.txt). ASR decoded in place: Cent object = parent object; CA classes = college / classroom classes; Class C external / extens = class C extends P; CH = child; this do hash code = this.hashCode(); public static vo mean string a = public static void main(String[] args); C.H code / T code = hashCode; Java C test. Java = javac Test.java; 100e = 100; j class subject = child class object; keep subing = board heading.</p>
+<p>Video 045 (Part-2, Child Object Vs Parent Constructor-1) has no captions and is skipped. This Part-3 is the proof: same hashCode three times means only the child object exists.</p>
+<h3>00:00 — Open</h3>
+<p>Caption starts with a stray e. Teaching starts after a short wait.</p>
+<h3>00:32 — Second point: a bit dangerous</h3>
+<p>Next one. Listen. Second point — a bit dangerous concept he wants to explain. Up to this (the new vs constructor point from Part-1) is clear. Right.</p>
+<h3>00:42 — The doubt: child object → parent object created or not?</h3>
+<p>He has one doubt: whenever we are creating child class object, automatically parent object will be created or not?</p>
+<p>He repeats it. In your regular classroom classes, or somewhere, or in your books, this type of statement is very common: whenever we are creating child class object, automatically parent object will be created. Yes or no?</p>
+<h3>01:18 — Raise hands</h3>
+<p>How many people are feeling yes? Raise your hands. Compulsory two or three members.</p>
+<p>How many people feel no?</p>
+<p>Remember that. Observe a bit very carefully.</p>
+<h3>01:35 — Assume “yes”, then check with a program</h3>
+<p>Really assume: whenever we are creating child class object, automatically parent object will be created. Assume that.</p>
+<p>But is it really going to create or not? We will check with respect to the program only.</p>
+<h3>01:53 — Board: class `P` constructor prints `this.hashCode()`</h3>
+<p>Simple example. Class P — P means one parent class. In the parent he is taking a constructor: System.out.println(this.hashCode()); (ASR: system. out print okay this do hash code).</p>
+<pre class='code'>class P {
+    P() {
+        System.out.println(this.hashCode());
+    }
+}</pre>
+<h3>02:15 — Board: class `C extends P`, same print in child constructor</h3>
+<p>Class C extends P (ASR: Class C external). Child constructor: also System.out.println(this.hashCode());.</p>
+<pre class='code'>class P {
+    P() {
+        System.out.println(this.hashCode());
+    }
+}
+
+class C extends P {
+    C() {
+        System.out.println(this.hashCode());
+    }
+}</pre>
+<p>Parent class; second one is nothing but child class.</p>
+<h3>02:42 — Board: class `Test`, create child object, print its hashCode</h3>
+<p>Class Test, public static void main(String[] args) (ASR: public static vo mean string a). Take very special care. With respect to the program he wants to explain — with respect to the proof.</p>
+<p>He is creating child class object: C c = new C(); (ASR: child C is equal to new).</p>
+<p>For every object there is one unique number associated. That unique number is nothing but one hash code.</p>
+<p>So let me print System.out.println(c.hashCode());.</p>
+<pre class='code'>class P {
+    P() {
+        System.out.println(this.hashCode());
+    }
+}
+
+class C extends P {
+    C() {
+        System.out.println(this.hashCode());
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        System.out.println(c.hashCode());
+    }
+}</pre>
+<h3>03:28 — Both constructors execute — people then assume two objects</h3>
+<p>Take very special care here. Which object did I create? Child object.</p>
+<p>Whenever we are creating child class object:</p>
+<ul><li>automatically child constructor will execute or not? Yes.</li></ul>
+<ul><li>automatically parent constructor will execute or not? Yes.</li></ul>
+<p>Child constructor, parent constructor — both will be executed.</p>
+<p>Now the wrong story people tell:</p>
+<ul><li>child constructor executed → that&#x27;s why child object created</li></ul>
+<ul><li>parent constructor executed → that&#x27;s why parent object created</li></ul>
+<p>Assume that. Whenever we are creating child class object, assume that parent object also will be created.</p>
+<h3>04:05 — If that were true, `this.hashCode()` in child vs parent would differ</h3>
+<p>If that were the case: in the child constructor, this.hashCode() — which this? Current object. Current child class object or parent object? Child object, because in that constructor this is the child object.</p>
+<p>Assume child class object hash code is 100. Assume as 100. Here c.hashCode() means what? Same 100, because that is the object I am creating; constructor will execute; this.hashCode() means current class object; so hash code should be 100.</p>
+<p>But in the parent constructor, this means current child class object or current parent class object? People who believe a parent object was created say: current parent object. Parent object created, that&#x27;s why current parent object.</p>
+<p>If it is the parent object, compulsory a different number I have to generate or not? Yes, because parent object has its own hash code.</p>
+<h3>05:09 — Prediction if parent object existed: two different hash values</h3>
+<p>So: if whenever we are creating child class object, automatically parent object will be created — if it is the case — child hash and parent hash code should be different. That&#x27;s why how many different values I have to get in this program? Two different values. Able to understand?</p>
+<p>Let me execute this code and let me show the output. Just have a look once.</p>
+<h3>05:31 — He types the same program in the editor</h3>
+<p>He takes class Test. Guide: what is the first one? Class P. Within that, parent constructor: System.out.println(this.hashCode());. End of the class.</p>
+<p>Next, class C extends P. Within that also, child constructor: System.out.println(this.hashCode());. Same code. End of this, end of the class. Extra things are not required.</p>
+<p>Same code: class P and so on. But within the main method: C c = new C(); System.out.println(c.hashCode());.</p>
+<pre class='code'>class P {
+    P() {
+        System.out.println(this.hashCode());
+    }
+}
+
+class C extends P {
+    C() {
+        System.out.println(this.hashCode());
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        System.out.println(c.hashCode());
+        // if a parent object also got created:
+        //   two different hashCode values (his prediction if the textbook line were true)
+        // what actually prints: the SAME number three times
+        // prints 100
+        // prints 100
+        // prints 100
+        // (100 is the number he labels on the board; JVM hashCode is some other int, but all three lines match)
+    }
+}</pre>
+<p>If really parent object also got created: observe — if a parent object also got created, then compulsory two different hashCode values I have to get.</p>
+<h3>06:50 — Compile and run `Test.java`</h3>
+<p>Let me compile, let me save this code. Yes, Test.java. Let me compile this code. Just have a look: `javac Test.java`. Compile is fine. There should not be a problem at all.</p>
+<p>Next: `java Test`.</p>
+<p>Do you know: so how many objects got created? People who believe the textbook say two objects, so parent hash code and the child hash should be different — that&#x27;s why two different values I have to get.</p>
+<h3>07:21 — Output: same value → only one object</h3>
+<p>Am I getting the same value or different values? Same value.</p>
+<p>Same value means how many objects got created? Only one object or multiple objects? Only one object.</p>
+<p>Observe very carefully. Whatever number I got here, same number only here also I am getting. Here 100, then here also same number I am getting.</p>
+<h3>07:47 — Parent constructor executed; parent object not created</h3>
+<p>Clear indication: parent constructor executed, but parent object not created.</p>
+<p>Parent constructor is also working for child class object only.</p>
+<p>In this example, total how many objects got created? Only one object. What is that object — child object or parent object? Child object only.</p>
+<p>Whenever we are creating child class object, parent constructor will be executed but parent object won&#x27;t be created. Practical proof. Able to understand?</p>
+<h3>08:16 — Why the misunderstanding: people think constructor creates the object</h3>
+<p>Most of the people: why this type of misunderstanding is there? They don&#x27;t know the job of constructor. That is the problem.</p>
+<p>Because most people are going to feel: constructor job is to create an object. So: whenever I am creating child class object, constructor executed → object created; parent constructor executed → parent object created. Like most people are going to feel. No.</p>
+<p>Both parent and child — both constructors will be executed for child object purpose only. Clear.</p>
+<h3>08:48 — Conclusion (spoken)</h3>
+<p>Conclusion, let me repeat once again:</p>
+<p>Whenever we are creating child class object, parent constructor will be executed but parent object won&#x27;t be created. Clear for all.</p>
+<p>There are some people who say parent object not created — [and they think there is] no such type of terminology — but parent constructor will be executed for child object purpose only. Clear. Okay at this point.</p>
+<h3>09:15 — Board dictation of the rule</h3>
+<p>He writes slowly (lots of repeats — keep writing):</p>
+<p>Whenever we are creating child class object, parent constructor will be executed, but parent object won&#x27;t be created.</p>
+<p>That&#x27;s all.</p>
+<h3>10:13 — Take this example on the notebook (hash 100 everywhere)</h3>
+<p>Take this example. Class P: parent constructor prints this.hashCode(). Class C extends P: child constructor also this.hashCode(), which value is 100. Some value — whatever the number we are getting, in all cases same number, because how many objects got created? Only one object. this.hashCode() — 100. Here also same.</p>
+<pre class='code'>class P {
+    P() {
+        System.out.println(this.hashCode()); // same number (he writes 100)
+    }
+}
+
+class C extends P {
+    C() {
+        System.out.println(this.hashCode()); // 100
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        C c = new C();
+        System.out.println(c.hashCode()); // 100
+        // prints 100
+        // prints 100
+        // prints 100
+        // only one object: the child object
+    }
+}</pre>
+<p>Completed. I hope yes, clearly. Any explanation is required? I hope terminology is clear. Completed.</p>
+<h3>11:53 — Spell it out: one object, two constructors</h3>
+<p>Can you spell out: in this example how many objects we created? Only one [child] class object.</p>
+<p>But how many constructors got executed? Child and parent — both constructors.</p>
+<p>But both constructors meant for child object purpose only.</p>
+<h3>12:12 — Board dictation: “in the above example…”</h3>
+<p>In the above example:</p>
+<p>We just created only child class object, but both parent and child constructors executed for that child class object.</p>
+<p>That&#x27;s all. Able to understand?</p>
+<h3>13:15 — Close</h3>
+<p>The conclusion is: whenever we are creating child class object, parent constructor will be executed but parent object won&#x27;t be created. Clear. That&#x27;s all.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>46 of 203</td></tr>
+<tr><td>Series</td><td>Interface and Abstract class Loopholes · Part 3</td></tr>
+<tr><td>Topic</td><td>Child Object Vs Parent Constructor-2</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>14m 08s</td></tr>
+<tr><td>Video ID</td><td>o-naZqPsO9U</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=o-naZqPsO9U</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

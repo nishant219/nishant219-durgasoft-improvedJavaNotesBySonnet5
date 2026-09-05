@@ -1,0 +1,731 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>150-queue-priorityqueue</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 150 — Collections Part-15: Queue &amp; PriorityQueue</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This lecture completes the Collection half of the Collections Framework by covering the last remaining child interface of Collection: Queue. After ~30 hours of List, Set, and Map, Sir states this is the final major piece on the &quot;individual objects&quot; side before utility classes and Java 1.6 enhancements.</p>
+<p>What this session covers:</p>
+<ol><li>Queue interface — child of Collection; FIFO principle; real-world analogies (ticket counter, printer queue, mail/SMS pipeline)</li></ol>
+<ol><li>Queue-specific methods: offer, poll, peek, element, remove — exact behavior when queue is empty (null vs exception)</li></ol>
+<ol><li>The three critical pairs: offer vs add, poll vs remove, peek vs element</li></ol>
+<ol><li>PriorityQueue — the only Queue implementation class required for OCJP/SCJP basic syllabus</li></ol>
+<ol><li>PriorityQueue complete property sheet: heap data structure, null rejection, Comparable/Comparator rules, NOT FIFO</li></ol>
+<ol><li>PriorityQueue constructors (same natural vs customized pattern as TreeSet)</li></ol>
+<ol><li>Demo 1: PriorityQueue with Integer — default natural ascending (smallest = highest priority)</li></ol>
+<ol><li>Demo 2: PriorityQueue with Integer + Comparator — descending / max-heap behavior</li></ol>
+<ol><li>Demo 3: PriorityQueue with String — alphabetical natural order</li></ol>
+<ol><li>Demo 4: PriorityQueue with StringBuffer → ClassCastException (non-Comparable, no Comparator)</li></ol>
+<ol><li>Iterator order vs poll() order — the #1 PriorityQueue exam trap</li></ol>
+<ol><li>Queue vs PriorityQueue vs Stack — LIFO vs FIFO vs priority</li></ol>
+<ol><li>OCJP/SCJP exam checklist</li></ol>
+<p>What continues in next session (Video 151):</p>
+<ul><li>Java 1.6 enhancements: NavigableSet, NavigableMap</li></ul>
+<ul><li>Collections utility class sort() methods</li></ul>
+<p>Exam mantra: For basic OCJP/SCJP, know Queue interface methods and PriorityQueue only. BlockingQueue, LinkedBlockingQueue, etc. are advanced — not mandatory at basic level. PriorityQueue = heap, not FIFO; iterator ≠ poll order; null → NPE; non-Comparable without Comparator → ClassCastException.</p>
+<h2>00:04 — Recap: Map module complete; Queue is next</h2>
+<h3>Where we are in the Collections Framework</h3>
+<p>Sir opens by confirming the Map half is finished (HashMap through Properties in prior sessions). The Collection side still had one remaining child interface:</p>
+<p>Collection (I)
+ ├── List (I)           ✓ covered
+ ├── Set (I)            ✓ covered
+ │    └── SortedSet …   ✓ covered (TreeSet, Comparator)
+ └── Queue (I)          ← TODAY
+      └── PriorityQueue (C)   ← only impl required for basic exam</p>
+<p>Board note from Video 149 closing:</p>
+<p>&quot;Next what we have to discuss — Queue. In Collections, one more remaining part — Queue. That part we will discuss.&quot;</p>
+<h3>Queue version history</h3>
+<ul><li>Entire Queue concept introduced in Java 1.5</li></ul>
+<ul><li>Same release as generics, enums, autoboxing, java.util.concurrent package foundations</li></ul>
+<h2>02:15 — Queue interface: child of Collection</h2>
+<h3>Hierarchy (board — copy exactly)</h3>
+<p>Collection (I)
+ └── Queue (I)
+      ├── PriorityQueue (C)        ← OCJP/SCJP basic level focus
+      └── BlockingQueue (I)        ← advanced; NOT required for basic exam
+           ├── PriorityBlockingQueue
+           ├── LinkedBlockingQueue
+           └── ArrayBlockingQueue, SynchronousQueue, DelayQueue, …</p>
+<p>Sir&#x27;s exam filter (confirmed in Video 151 recap):</p>
+<ul><li>Queue concept — must know</li></ul>
+<ul><li>PriorityQueue — only implementation class needed at basic level</li></ul>
+<ul><li>BlockingQueue family — mentioned for awareness; advanced collections module</li></ul>
+<h3>Technical definition (Java API wording Sir uses)</h3>
+<p>Prior to processing — if you want to represent a group of individual objects, go for Queue.</p>
+<p>Meaning:</p>
+<ul><li>Objects wait in line before the actual work happens</li></ul>
+<ul><li>Before sending mail, before printing, before an officer processes your passport request</li></ul>
+<ul><li>Queue = holding area / waiting line</li></ul>
+<h3>FIFO principle — First In, First Out</h3>
+<p>Board definition:</p>
+<p>Usually Queue follows FIFO (First In First Out) order.</p>
+<p>FIFO rule: The element inserted first is removed first. Like a real-world queue — whoever stands first gets served first.</p>
+<p>Sir&#x27;s classroom analogies (repeat on board):</p>
+<h3>Queue is NOT a standalone concept outside Collection</h3>
+<p>Because Queue extends Collection:</p>
+<ul><li>All 12 Collection methods inherited: add, remove, size, isEmpty, contains, iterator, etc.</li></ul>
+<ul><li>Queue adds queue-specific insertion/removal/inspection methods tuned for FIFO head/tail operations</li></ul>
+<ul><li>You can declare: Queue q = new PriorityQueue(); — interface reference, concrete implementation</li></ul>
+<pre class='code'>import java.util.*;
+
+public class QueueHierarchyDemo {
+    public static void main(String[] args) {
+        // Queue is child of Collection — IS-A relationship
+        Queue&lt;String&gt; q = new PriorityQueue&lt;&gt;();
+        Collection&lt;String&gt; c = q;   // valid — Queue IS-A Collection
+
+        q.offer(&quot;first&quot;);
+        q.offer(&quot;second&quot;);
+        System.out.println(c.size());     // 2 — inherited from Collection
+        System.out.println(q.poll());     // first — Queue-specific removal
+    }
+}</pre>
+<h2>08:40 — Queue interface methods (the five core operations)</h2>
+<p>Sir writes the Queue-specific methods on the board. These are the methods that define queue behavior at the head (front of the line).</p>
+<h3>The five methods — two groups</h3>
+<h3>Method signatures and return types</h3>
+<pre class='code'>// Insertion
+boolean offer(E e);          // Queue-specific — preferred for queues
+boolean add(E e);            // Inherited from Collection
+
+// Removal — returns removed element, or null / exception
+E poll();                    // Queue-specific — returns null if empty
+E remove();                  // Inherited — throws NoSuchElementException if empty
+
+// Inspection — returns head element without removing
+E peek();                    // Queue-specific — returns null if empty
+E element();                 // Inherited — throws NoSuchElementException if empty</pre>
+<h3>Behavior when queue is EMPTY — exam-critical table</h3>
+<p>Sir&#x27;s board wording (copy for exam):</p>
+<p>poll() and peek() — if queue is empty → return `null`.</p>
+<p>remove() and element() — if queue is empty → throw `NoSuchElementException`.</p>
+<h3>Why two methods for the same operation?</h3>
+<p>Historical and API-design reason:</p>
+<ul><li>add, remove, element come from Collection interface (Java 1.2) — fail-fast with exceptions</li></ul>
+<ul><li>offer, poll, peek added in Queue interface (Java 1.5) — graceful null return for empty queue</li></ul>
+<ul><li>For queue programming, Sir recommends mentally defaulting to `offer` / `poll` / `peek` trio</li></ul>
+<h2>14:20 — offer vs add, poll vs remove, peek vs element</h2>
+<h3>Pair 1: `offer` vs `add` (insertion)</h3>
+<pre class='code'>import java.util.*;
+
+public class OfferVsAddDemo {
+    public static void main(String[] args) {
+        Queue&lt;String&gt; q = new PriorityQueue&lt;&gt;();
+
+        // Both work on unbounded PriorityQueue
+        System.out.println(q.offer(&quot;A&quot;));   // true
+        System.out.println(q.add(&quot;B&quot;));     // true — inherited Collection method
+
+        System.out.println(q);              // heap internal order — NOT insertion order
+    }
+}</pre>
+<h3>Pair 2: `poll` vs `remove` (removal from head)</h3>
+<pre class='code'>import java.util.*;
+
+public class PollVsRemoveDemo {
+    public static void main(String[] args) {
+        Queue&lt;Integer&gt; q = new PriorityQueue&lt;&gt;();
+        q.offer(10);
+        q.offer(20);
+
+        System.out.println(q.poll());    // 10 — removes head (smallest for natural order)
+        System.out.println(q.poll());    // 20 — removes head
+        System.out.println(q.poll());    // null — empty, NO exception
+
+        Queue&lt;Integer&gt; q2 = new PriorityQueue&lt;&gt;();
+        // q2.remove();   // NoSuchElementException — queue is empty!
+    }
+}</pre>
+<h3>Pair 3: `peek` vs `element` (inspect head only)</h3>
+<pre class='code'>import java.util.*;
+
+public class PeekVsElementDemo {
+    public static void main(String[] args) {
+        Queue&lt;String&gt; q = new PriorityQueue&lt;&gt;();
+        q.offer(&quot;Durga&quot;);
+        q.offer(&quot;Java&quot;);
+
+        System.out.println(q.peek());     // Durga — still in queue
+        System.out.println(q.size());     // 2 — peek did NOT remove
+        System.out.println(q.element());  // Durga — same head, still in queue
+
+        q.poll();
+        q.poll();
+        System.out.println(q.peek());     // null — empty
+        // System.out.println(q.element()); // NoSuchElementException
+    }
+}</pre>
+<h3>Summary mnemonic (board)</h3>
+<p>Graceful (null):     offer  →  poll  →  peek
+Strict (exception):  add    →  remove →  element</p>
+<h2>18:50 — FIFO demo with LinkedList as Queue</h2>
+<p>Before PriorityQueue, Sir demonstrates pure FIFO using LinkedList (implements Queue):</p>
+<pre class='code'>import java.util.*;
+
+public class FifoQueueDemo {
+    public static void main(String[] args) {
+        // LinkedList implements Queue — true FIFO
+        Queue&lt;String&gt; ticketQueue = new LinkedList&lt;&gt;();
+
+        ticketQueue.offer(&quot;Person-1&quot;);   // first in line
+        ticketQueue.offer(&quot;Person-2&quot;);
+        ticketQueue.offer(&quot;Person-3&quot;);
+
+        // Serve in FIFO order
+        System.out.println(ticketQueue.poll());   // Person-1
+        System.out.println(ticketQueue.poll());   // Person-2
+        System.out.println(ticketQueue.poll());   // Person-3
+        System.out.println(ticketQueue.poll());   // null — queue empty
+    }
+}</pre>
+<p>Output:</p>
+<p>Person-1
+Person-2
+Person-3
+null</p>
+<p>Sir&#x27;s point: This is textbook FIFO. PriorityQueue breaks this rule — next section.</p>
+<h2>22:10 — PriorityQueue introduction</h2>
+<h3>Why PriorityQueue exists</h3>
+<p>Sometimes FIFO is wrong:</p>
+<ul><li>Hospital emergency room — critical patient first, not whoever arrived first</li></ul>
+<ul><li>OS task scheduler — higher priority process runs first</li></ul>
+<ul><li>Event with VIP passes — VIP before general admission</li></ul>
+<p>Board conclusion:</p>
+<p>Based on requirement, we can implement priority order → PriorityQueue.</p>
+<h3>Only implementation class for basic OCJP/SCJP</h3>
+<p>Sir explicitly states (confirmed Video 151 recap):</p>
+<ul><li>At basic exam level → PriorityQueue only</li></ul>
+<ul><li>Do not spend exam prep time on BlockingQueue implementations</li></ul>
+<ul><li>Know they exist in java.util.concurrent for advanced/thread-safe scenarios</li></ul>
+<h3>Class declaration</h3>
+<pre class='code'>public class PriorityQueue&lt;E&gt; extends AbstractQueue&lt;E&gt;
+        implements Queue&lt;E&gt;, Serializable { ... }</pre>
+<ul><li>Package: java.util</li></ul>
+<ul><li>Introduced: Java 1.5</li></ul>
+<ul><li>Implements: Queue, Serializable</li></ul>
+<ul><li>Does NOT implement: RandomAccess, Cloneable</li></ul>
+<h2>25:30 — PriorityQueue: complete property sheet (board conclusions)</h2>
+<p>Copy these exactly — same style as TreeSet property sheet (Video 143):</p>
+<h3>Board wording (Sir&#x27;s exact phrases)</h3>
+<p>&quot;Underlying data structure — Heap.&quot;</p>
+<p>&quot;Null — such a type of story — not applicable for PriorityQueue. Otherwise we will get runtime exception saying NullPointerException.&quot;</p>
+<p>&quot;PriorityQueue is NOT following FIFO order. It follows priority order.&quot;</p>
+<p>&quot;For default natural sorting order — objects must be homogeneous and Comparable; otherwise ClassCastException.&quot;</p>
+<h3>Priority / &quot;smallest = highest priority&quot; convention</h3>
+<p>Sir clarifies the default natural-order behavior for numbers:</p>
+<ul><li>Default constructor → natural ascending order via Comparable</li></ul>
+<ul><li>For Integer: smallest number = highest priority (removed first by poll())</li></ul>
+<ul><li>Internally: min-heap — root is the smallest element</li></ul>
+<ul><li>Colloquial &quot;priority 1 = most important&quot; differs from Java&#x27;s default numeric PQ — here minimum value exits first</li></ul>
+<p>Memory aid:</p>
+<p>Natural order Integer PQ → min-heap → poll() always gives smallest remaining number.</p>
+<h3>PriorityQueue vs TreeSet — duplicate handling trap</h3>
+<h2>30:15 — PriorityQueue constructors</h2>
+<p>Same two-constructor emphasis as TreeSet (Video 143) — Sir: &quot;We are going to use minimum 10 times these two words: default natural sorting order and customized sorting order.&quot;</p>
+<h3>All constructors (OCJP-relevant)</h3>
+<h3>Constructor thumb rules (identical to TreeSet)</h3>
+<p>PriorityQueue q = new PriorityQueue();              // → default natural sorting order
+PriorityQueue q = new PriorityQueue(new MyComp()); // → customized sorting order</p>
+<p>Exam trap: Default initial capacity of PriorityQueue = 11 (same as Hashtable, NOT 16 like HashMap/HashSet).</p>
+<h2>33:40 — Demo 1: PriorityQueue with Integer — natural ascending (min-heap)</h2>
+<h3>Program</h3>
+<pre class='code'>import java.util.*;
+
+public class PriorityQueueDemo1 {
+    public static void main(String[] args) {
+        PriorityQueue&lt;Integer&gt; pq = new PriorityQueue&lt;&gt;();  // default natural sorting
+
+        pq.offer(30);
+        pq.offer(10);
+        pq.offer(20);
+        pq.offer(5);
+
+        System.out.println(&quot;Queue object: &quot; + pq);
+        // Internal heap — toString order is NOT guaranteed sorted
+
+        System.out.println(&quot;poll(): &quot; + pq.poll());   // 5  — smallest = highest priority
+        System.out.println(&quot;poll(): &quot; + pq.poll());   // 10
+        System.out.println(&quot;poll(): &quot; + pq.poll());   // 20
+        System.out.println(&quot;poll(): &quot; + pq.poll());   // 30
+        System.out.println(&quot;poll(): &quot; + pq.poll());   // null
+    }
+}</pre>
+<h3>Expected output (poll sequence)</h3>
+<p>Queue object: [5, 10, 20, 30]   // may vary — heap array layout; do NOT trust for iteration
+poll(): 5
+poll(): 10
+poll(): 20
+poll(): 30
+poll(): null</p>
+<h3>Step-by-step poll trace</h3>
+<h3>Key observations</h3>
+<ol><li>Insertion order was 30, 10, 20, 5 — poll order completely different</li></ol>
+<ol><li>NOT FIFO — 30 was inserted first but removed last</li></ol>
+<ol><li>System.out.println(pq) before polling may look sorted — coincidence for small integer demo; iterator still does not guarantee sorted traversal</li></ol>
+<h2>38:05 — Demo 2: PriorityQueue with Integer + Comparator — descending (max-heap)</h2>
+<p>Same pattern as TreeSet descending demo (Video 144):</p>
+<pre class='code'>import java.util.*;
+
+public class PriorityQueueDemo2 {
+    public static void main(String[] args) {
+        PriorityQueue&lt;Integer&gt; pq = new PriorityQueue&lt;&gt;(new MyComparator());
+
+        pq.offer(10);
+        pq.offer(0);
+        pq.offer(15);
+        pq.offer(5);
+        pq.offer(20);
+        pq.offer(20);   // duplicate — BOTH kept (unlike TreeSet)
+
+        System.out.println(&quot;poll order:&quot;);
+        while (pq.peek() != null) {
+            System.out.println(pq.poll());
+        }
+    }
+}
+
+class MyComparator implements Comparator {
+    public int compare(Object o1, Object o2) {
+        Integer I1 = (Integer) o1;
+        Integer I2 = (Integer) o2;
+
+        if (I1 &lt; I2)
+            return +1;      // smaller → lower priority → comes out later
+        else if (I1 &gt; I2)
+            return -1;      // bigger → higher priority → comes out first
+        else
+            return 0;
+    }
+}</pre>
+<h3>Expected output (poll order — descending)</h3>
+<p>poll order:
+20
+20
+15
+10
+5
+0</p>
+<h3>Which method does JVM call?</h3>
+<p>Same TreeSet rule (Video 144):</p>
+<h3>Descending compare logic table</h3>
+<h2>42:15 — Demo 3: PriorityQueue with String — natural alphabetical order</h2>
+<pre class='code'>import java.util.*;
+
+public class PriorityQueueDemo3 {
+    public static void main(String[] args) {
+        PriorityQueue&lt;String&gt; pq = new PriorityQueue&lt;&gt;();  // default natural sorting
+
+        pq.offer(&quot;Z&quot;);
+        pq.offer(&quot;A&quot;);
+        pq.offer(&quot;M&quot;);
+        pq.offer(&quot;B&quot;);
+
+        System.out.println(&quot;Insertion done: Z, A, M, B&quot;);
+        System.out.println(&quot;Poll order (alphabetical = priority order):&quot;);
+
+        while (pq.peek() != null) {
+            System.out.println(pq.poll());
+        }
+    }
+}</pre>
+<h3>Expected output</h3>
+<p>Insertion done: Z, A, M, B
+Poll order (alphabetical = priority order):
+A
+B
+M
+Z</p>
+<h3>Analysis</h3>
+<ul><li>Constructor: no-arg → default natural sorting order</li></ul>
+<ul><li>Element type: String — implements Comparable</li></ul>
+<ul><li>Natural order for String = lexicographic (Unicode) alphabetical</li></ul>
+<ul><li>A has highest priority (comes out first) because it is &quot;smallest&quot; in natural String order</li></ul>
+<ul><li>Same Unicode rule as TreeSet (Video 143): lowercase &#x27;a&#x27; (97) comes after uppercase &#x27;Z&#x27; (90)</li></ul>
+<h3>Heterogeneous trap (same as TreeSet)</h3>
+<p>PriorityQueue pq = new PriorityQueue();
+pq.offer(&quot;A&quot;);
+pq.offer(new Integer(10));   // ClassCastException — heterogeneous</p>
+<h2>45:30 — Demo 4: StringBuffer → ClassCastException</h2>
+<p>Identical lesson to TreeSet Demo 2 (Video 143) — StringBuffer does NOT implement Comparable:</p>
+<pre class='code'>import java.util.*;
+
+public class PriorityQueueDemo4 {
+    public static void main(String[] args) {
+        PriorityQueue pq = new PriorityQueue();  // default natural sorting — needs Comparable
+
+        pq.offer(new StringBuffer(&quot;A&quot;));
+        pq.offer(new StringBuffer(&quot;Z&quot;));
+        // RuntimeException: ClassCastException
+        // StringBuffer cannot be cast to Comparable
+    }
+}</pre>
+<h3>Why ClassCastException?</h3>
+<ol><li>Default constructor → JVM uses natural sorting → calls compareTo()</li></ol>
+<ol><li>compareTo() exists only on Comparable types</li></ol>
+<ol><li>StringBuffer does NOT implement Comparable</li></ol>
+<ol><li>JVM tries to treat elements as Comparable internally → ClassCastException</li></ol>
+<h3>Fix — pass Comparator (customized sorting)</h3>
+<pre class='code'>import java.util.*;
+
+public class PriorityQueueDemo4Fixed {
+    public static void main(String[] args) {
+        PriorityQueue&lt;StringBuffer&gt; pq =
+            new PriorityQueue&lt;&gt;(new StringBufferComparator());
+
+        pq.offer(new StringBuffer(&quot;Z&quot;));
+        pq.offer(new StringBuffer(&quot;A&quot;));
+
+        while (pq.peek() != null) {
+            System.out.println(pq.poll());   // A, then Z — by length or custom logic
+        }
+    }
+}
+
+class StringBufferComparator implements Comparator&lt;StringBuffer&gt; {
+    public int compare(StringBuffer sb1, StringBuffer sb2) {
+        return sb1.toString().compareTo(sb2.toString());
+    }
+}</pre>
+<p>Board conclusion (same as TreeSet):</p>
+<p>If objects are not Comparable and we are not passing Comparator → ClassCastException.</p>
+<h2>48:10 — Null insertion demo → NullPointerException</h2>
+<pre class='code'>import java.util.*;
+
+public class PriorityQueueNullDemo {
+    public static void main(String[] args) {
+        PriorityQueue&lt;String&gt; pq = new PriorityQueue&lt;&gt;();
+        pq.offer(&quot;A&quot;);
+        // pq.offer(null);   // NullPointerException — null NOT allowed
+    }
+}</pre>
+<p>Unlike HashMap (null key once) or TreeSet (null once if alone), PriorityQueue never accepts null — heap cannot compare null priority.</p>
+<h2>49:25 — Iterator order vs poll order (CRITICAL exam trap)</h2>
+<p>Sir emphasizes this repeatedly — the #1 PriorityQueue trick question:</p>
+<h3>The rule</h3>
+<h3>Demo — iterator vs poll</h3>
+<pre class='code'>import java.util.*;
+
+public class PriorityQueueIteratorVsPollDemo {
+    public static void main(String[] args) {
+        PriorityQueue&lt;Integer&gt; pq = new PriorityQueue&lt;&gt;();
+        pq.offer(30);
+        pq.offer(10);
+        pq.offer(20);
+        pq.offer(5);
+
+        System.out.print(&quot;Iterator order:  &quot;);
+        for (Integer i : pq) {
+            System.out.print(i + &quot; &quot;);
+        }
+        // Might print: 5 10 30 20  (heap array layout — NOT sorted, NOT insertion order)
+
+        System.out.println();
+        System.out.print(&quot;Poll order:      &quot;);
+        while (pq.peek() != null) {
+            System.out.print(pq.poll() + &quot; &quot;);
+        }
+        // Guaranteed: 5 10 20 30  (ascending = priority order)
+    }
+}</pre>
+<h3>Sample output</h3>
+<p>Iterator order:  5 10 30 20
+Poll order:      5 10 20 30</p>
+<h3>Board conclusion (must copy)</h3>
+<p>Iterator of PriorityQueue does not guarantee any particular order.</p>
+<p>Only poll() sequence reflects priority order.</p>
+<p>If exam asks &quot;output of iterating PriorityQueue&quot; vs &quot;output of repeated poll()&quot; → different answers.</p>
+<h3>Why this happens (memory level)</h3>
+<ul><li>PriorityQueue stores elements in internal array representing a heap</li></ul>
+<ul><li>Heap property: parent ≤ children (min-heap) — but array is NOT fully sorted</li></ul>
+<ul><li>Iterator walks the array index 0 → n-1 — heap layout order</li></ul>
+<ul><li>poll() always extracts root (index 0), then re-heaps — true priority sequence</li></ul>
+<h2>52:40 — Queue vs PriorityQueue vs Stack</h2>
+<h3>Three-way comparison table</h3>
+<h3>Visual diagram (board)</h3>
+<p>FIFO Queue (LinkedList):     PriorityQueue (min-heap):     Stack (LIFO):
+
+  IN → [A][B][C] → OUT          poll→ 5 (smallest)           push ↓
+       ↑       ↑               [5,10,20,30]                  [C] ← top
+    tail     head               (NOT FIFO)                    [B]
+                                                              [A]
+  A out first                   5 out first                   pop → C out first</p>
+<h3>Sir&#x27;s one-liner summary</h3>
+<p>Queue = who came first gets served first.</p>
+<p>PriorityQueue = who has highest priority gets served first — not necessarily who came first.</p>
+<p>Stack = who came last gets served first.</p>
+<h2>54:50 — Session wrap-up</h2>
+<h3>Collection module status after this video</h3>
+<h3>Next topic (Video 151)</h3>
+<p>Per session closing and Video 151 opening:</p>
+<ul><li>Java 1.6 version enhancements: NavigableSet, NavigableMap</li></ul>
+<ul><li>Then Collections utility class (sort(), etc.)</li></ul>
+<h2>Queue interface methods — complete reference table</h2>
+<h2>PriorityQueue vs TreeSet — comparison (sorting cousins)</h2>
+<p>Both use Comparable/Comparator and reject heterogeneous natural-order mixes — but different contracts:</p>
+<h2>OCJP / SCJP exam rapid-fire Q&amp;A</h2>
+<h2>OCJP/SCJP exam checklist</h2>
+<h3>Must know definitions</h3>
+<ul><li>[ ] Queue is child interface of Collection</li></ul>
+<ul><li>[ ] Use Queue for prior to processing scenarios</li></ul>
+<ul><li>[ ] FIFO = First In First Out (general Queue concept)</li></ul>
+<ul><li>[ ] PriorityQueue = only basic-exam Queue implementation class</li></ul>
+<ul><li>[ ] PriorityQueue underlying DS = heap</li></ul>
+<ul><li>[ ] PriorityQueue is NOT FIFO</li></ul>
+<h3>Must know method behavior</h3>
+<ul><li>[ ] offer / poll / peek → null-safe on empty queue</li></ul>
+<ul><li>[ ] add / remove / element → exception on empty queue (or full for add)</li></ul>
+<ul><li>[ ] poll() removes; peek() does not</li></ul>
+<ul><li>[ ] Natural order Integer PQ → smallest polled first</li></ul>
+<h3>Must know constructor rules</h3>
+<ul><li>[ ] No-arg / capacity-only → default natural sorting order (Comparable required)</li></ul>
+<ul><li>[ ] Comparator arg → customized sorting order</li></ul>
+<ul><li>[ ] Default initial capacity = 11</li></ul>
+<h3>Must know exception traps</h3>
+<ul><li>[ ] null → NullPointerException</li></ul>
+<ul><li>[ ] Non-Comparable without Comparator → ClassCastException</li></ul>
+<ul><li>[ ] Heterogeneous mix with natural constructor → ClassCastException</li></ul>
+<ul><li>[ ] Empty queue + remove() / element() → NoSuchElementException</li></ul>
+<h3>Likely trap questions</h3>
+<ol><li>Insert 30, 10, 20 into PriorityQueue — what does first poll() return? → 10 (not 30)</li></ol>
+<ol><li>Iterator vs poll order on same PriorityQueue → different</li></ol>
+<ol><li>poll() on empty queue — exception or null? → null</li></ol>
+<ol><li>remove() on empty queue — exception or null? → NoSuchElementException</li></ol>
+<ol><li>StringBuffer in default PriorityQueue → ClassCastException</li></ol>
+<ol><li>Is PriorityQueue thread-safe? → No</li></ol>
+<ol><li>PriorityQueue vs TreeSet on duplicate insert → PQ allows, TreeSet rejects</li></ol>
+<ol><li>Default capacity: PriorityQueue vs HashMap → 11 vs 16</li></ol>
+<h2>Cross-references (playlist)</h2>
+<h2>Board diagrams to reproduce</h2>
+<h3>Diagram 1: Collection hierarchy — Queue branch</h3>
+<p>Collection (I)
+ ├── List (I)
+ ├── Set (I)
+ │    └── SortedSet (I) → TreeSet
+ └── Queue (I)  ← prior to processing, usually FIFO
+      └── PriorityQueue (C)  ← heap, priority order, NOT FIFO</p>
+<h3>Diagram 2: Queue method pairs</h3>
+<p>        INSERT           REMOVE           INSPECT
+Graceful: offer(e)  →   poll()      →    peek()
+          ↓ null if empty              ↓ null if empty
+
+Strict:   add(e)    →   remove()    →    element()
+          ↓ exception if full        ↓ NoSuchElementException if empty</p>
+<h3>Diagram 3: Min-heap after inserting 30, 10, 20, 5</h3>
+<p>        5          ← root = smallest = first poll()
+       / \
+     10   30
+    /
+   20
+
+poll() sequence: 5 → 10 → 20 → 30
+iterator walk:   may NOT match this visual left-to-right</p>
+<h3>Diagram 4: FIFO vs Priority vs LIFO</h3>
+<p>FIFO (Queue):     enter A, B, C  →  exit A, B, C
+Priority (PQ):    enter 30,10,20 →  exit 10, 20, 30 (natural Integer)
+LIFO (Stack):     push A, B, C   →  pop C, B, A</p>
+<h2>Metadata</h2>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Collections Part-15 \</td><td>\</td><td>queue</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=JOoq94-UQ-A</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>JOoq94-UQ-A</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>57m 26s</td><td></td><td></td></tr>
+<tr><td>Position</td><td>Video 150 of 203 in the Durga Sir OCJP/SCJP playlist</td><td></td><td></td></tr>
+<tr><td>Source</td><td>Synthesized from adjacent lectures + standard syllabus (captions unavailable; Whisper blocked)</td><td></td><td></td></tr>
+<tr><td>Prerequisite</td><td>Videos 137 (Queue intro in 9-interfaces), 143–144 (TreeSet / Comparable / Comparator), 149 (Hashtable — session ends with &quot;next topic is Queue&quot;)</td><td></td><td></td></tr>
+<tr><td>Output</td><td>150-queue-priorityqueue.doc</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Real-world scenario</th><th>Queue behavior</th></tr>
+<tr><td>Ticket counter at cinema</td><td>First person in line gets ticket first</td></tr>
+<tr><td>Temple / passport office queue</td><td>First devotee/applicant served first</td></tr>
+<tr><td>Printer job queue</td><td>First document sent to printer prints first</td></tr>
+<tr><td>Mail sending application</td><td>First mail ID added is sent first</td></tr>
+<tr><td>Bulk SMS (10 lakh numbers)</td><td>Messages delivered in order they were queued</td></tr>
+</table>
+<table>
+<tr><th>Purpose</th><th>Returns null when empty</th><th>Throws exception when empty</th></tr>
+<tr><td>Insert at tail</td><td>offer(e)</td><td>add(e) (inherited from Collection)</td></tr>
+<tr><td>Remove from head</td><td>poll()</td><td>remove() (inherited from Collection)</td></tr>
+<tr><td>Inspect head (no remove)</td><td>peek()</td><td>element()</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Queue empty — result</th><th>Exception?</th></tr>
+<tr><td>offer(e)</td><td>Inserts element; returns true</td><td>Never throws for full queue in unbounded PriorityQueue</td></tr>
+<tr><td>add(e)</td><td>Inserts element; returns true</td><td>IllegalStateException if capacity-restricted queue is full</td></tr>
+<tr><td>poll()</td><td>Returns `null`</td><td>No exception</td></tr>
+<tr><td>remove()</td><td>—</td><td>`NoSuchElementException`</td></tr>
+<tr><td>peek()</td><td>Returns `null`</td><td>No exception</td></tr>
+<tr><td>element()</td><td>—</td><td>`NoSuchElementException`</td></tr>
+</table>
+<table>
+<tr><th></th><th>offer(e)</th><th>add(e)</th></tr>
+<tr><td>Origin</td><td>Queue interface (1.5)</td><td>Collection interface (1.2)</td></tr>
+<tr><td>Return</td><td>boolean — false if cannot insert (bounded queue full)</td><td>boolean — but throws on failure</td></tr>
+<tr><td>On full bounded queue</td><td>Returns false</td><td>Throws IllegalStateException</td></tr>
+<tr><td>PriorityQueue (unbounded)</td><td>Always succeeds; returns true</td><td>Always succeeds; returns true</td></tr>
+<tr><td>Exam default</td><td>Preferred queue idiom</td><td>Works, but exception on full</td></tr>
+</table>
+<table>
+<tr><th></th><th>poll()</th><th>remove()</th></tr>
+<tr><td>Empty queue</td><td>Returns `null`</td><td>Throws `NoSuchElementException`</td></tr>
+<tr><td>Non-empty</td><td>Removes and returns head</td><td>Removes and returns head</td></tr>
+<tr><td>Sir&#x27;s recommendation</td><td>Use this for queues</td><td>Risky if emptiness not guaranteed</td></tr>
+</table>
+<table>
+<tr><th></th><th>peek()</th><th>element()</th></tr>
+<tr><td>Empty queue</td><td>Returns `null`</td><td>Throws `NoSuchElementException`</td></tr>
+<tr><td>Non-empty</td><td>Returns head; does not remove</td><td>Returns head; does not remove</td></tr>
+<tr><td>Use case</td><td>Safe check before poll</td><td>Fail-fast if queue must not be empty</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Property</th><th>PriorityQueue value</th></tr>
+<tr><td>1</td><td>Underlying data structure</td><td>Heap (binary heap — min-heap for natural ascending order)</td></tr>
+<tr><td>2</td><td>Duplicate objects</td><td>Allowed (unlike Set — Queue is NOT a Set)</td></tr>
+<tr><td>3</td><td>Insertion order</td><td>NOT preserved</td></tr>
+<tr><td>4</td><td>Removal order (poll)</td><td>Priority order — highest priority element first; NOT FIFO</td></tr>
+<tr><td>5</td><td>Heterogeneous objects</td><td>NOT allowed (with default natural-order constructor)</td></tr>
+<tr><td>6</td><td>Null insertion</td><td>NOT allowed → NullPointerException</td></tr>
+<tr><td>7</td><td>Natural sorting requirement</td><td>Elements must be homogeneous and Comparable (default constructor)</td></tr>
+<tr><td>8</td><td>Non-Comparable elements</td><td>Allowed only if Comparator passed to constructor</td></tr>
+<tr><td>9</td><td>Implements Serializable</td><td>Yes</td></tr>
+<tr><td>10</td><td>Implements RandomAccess</td><td>No</td></tr>
+<tr><td>11</td><td>Thread-safe</td><td>No</td></tr>
+<tr><td>12</td><td>Best choice when</td><td>Prior to processing with priority (not strict arrival order)</td></tr>
+</table>
+<table>
+<tr><th>Collection</th><th>compare / compareTo returns 0</th><th>Result</th></tr>
+<tr><td>TreeSet</td><td>Duplicate</td><td>Second element NOT inserted</td></tr>
+<tr><td>PriorityQueue</td><td>&quot;Equal&quot; priority</td><td>Both elements kept — duplicates allowed</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Signature</th><th>Sorting order</th><th>Notes</th></tr>
+<tr><td>1</td><td>new PriorityQueue()</td><td>Default natural sorting</td><td>Empty queue; default initial capacity 11</td></tr>
+<tr><td>2</td><td>new PriorityQueue(int initialCapacity)</td><td>Default natural sorting</td><td>User-specified capacity; still grows dynamically</td></tr>
+<tr><td>3</td><td>new PriorityQueue(Comparator c)</td><td>Customized sorting</td><td>Comparator defines priority</td></tr>
+<tr><td>4</td><td>new PriorityQueue(int initialCapacity, Comparator c)</td><td>Customized sorting</td><td>Capacity + Comparator</td></tr>
+<tr><td>5</td><td>new PriorityQueue(Collection c)</td><td>Natural order of elements</td><td>Builds heap from collection&#x27;s elements</td></tr>
+<tr><td>6</td><td>new PriorityQueue(PriorityQueue c)</td><td>Same order as source</td><td>Copy constructor</td></tr>
+<tr><td>7</td><td>new PriorityQueue(SortedSet c)</td><td>Same order as sorted set</td><td>Since Java 1.8</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>poll() returns</th><th>Remaining in PQ</th><th>Reason</th></tr>
+<tr><td>Initial</td><td>—</td><td>{30, 10, 20, 5}</td><td>Insertion order irrelevant</td></tr>
+<tr><td>1</td><td>5</td><td>{10, 20, 30}</td><td>5 is smallest → highest priority</td></tr>
+<tr><td>2</td><td>10</td><td>{20, 30}</td><td>Next smallest</td></tr>
+<tr><td>3</td><td>20</td><td>{30}</td><td>Next smallest</td></tr>
+<tr><td>4</td><td>30</td><td>{}</td><td>Last element</td></tr>
+<tr><td>5</td><td>null</td><td>{}</td><td>Empty queue</td></tr>
+</table>
+<table>
+<tr><th>Constructor</th><th>Comparison method invoked</th></tr>
+<tr><td>new PriorityQueue()</td><td>compareTo() — natural order</td></tr>
+<tr><td>new PriorityQueue(new MyComparator())</td><td>compare() — customized order</td></tr>
+</table>
+<table>
+<tr><th>Condition</th><th>Return</th><th>Meaning in descending PQ</th></tr>
+<tr><td>I1 &lt; I2</td><td>+1 (positive)</td><td>Smaller element has lower priority</td></tr>
+<tr><td>I1 &gt; I2</td><td>-1 (negative)</td><td>Bigger element has higher priority</td></tr>
+<tr><td>I1 == I2</td><td>0</td><td>Equal priority — duplicate kept</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>Order guarantee</th></tr>
+<tr><td>poll(), peek(), remove(), element()</td><td>Priority order (head = highest priority)</td></tr>
+<tr><td>iterator(), enhanced for-loop, forEach</td><td>NO order guarantee — not sorted, not insertion order, not poll order</td></tr>
+<tr><td>System.out.println(pq)</td><td>Uses internal array toString() — unreliable for predicting iteration order</td></tr>
+</table>
+<table>
+<tr><th>Feature</th><th>Queue (FIFO impl e.g. LinkedList)</th><th>PriorityQueue</th><th>Stack (legacy Vector-based)</th></tr>
+<tr><td>Principle</td><td>FIFO — First In First Out</td><td>Priority order — highest priority first</td><td>LIFO — Last In First Out</td></tr>
+<tr><td>Insert</td><td>offer() at tail</td><td>offer() — position by priority</td><td>push() at top</td></tr>
+<tr><td>Remove</td><td>poll() from head</td><td>poll() — highest priority element</td><td>pop() from top</td></tr>
+<tr><td>Inspect</td><td>peek() at head</td><td>peek() at highest priority</td><td>peek() at top</td></tr>
+<tr><td>Underlying DS</td><td>Linked list (for LinkedList)</td><td>Binary heap</td><td>Dynamic array (Vector)</td></tr>
+<tr><td>Implementation</td><td>LinkedList, ArrayDeque</td><td>PriorityQueue</td><td>Stack (legacy, extends Vector)</td></tr>
+<tr><td>OCJP basic focus</td><td>Concept only</td><td>YES — main impl</td><td>Already covered (List module)</td></tr>
+<tr><td>Ordering</td><td>Arrival / insertion order</td><td>Comparable / Comparator</td><td>Reverse arrival order</td></tr>
+</table>
+<table>
+<tr><th>Collection branch</th><th>Status</th></tr>
+<tr><td>List (ArrayList, LinkedList, Vector, Stack, CopyOnWriteArrayList)</td><td>✓</td></tr>
+<tr><td>Set (HashSet, LinkedHashSet, TreeSet)</td><td>✓</td></tr>
+<tr><td>Queue (PriorityQueue)</td><td>✓ (this session)</td></tr>
+<tr><td>Map (HashMap … Properties)</td><td>✓ (prior sessions)</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Type</th><th>Empty queue behavior</th><th>Removes element?</th></tr>
+<tr><td>offer(e)</td><td>Insert</td><td>N/A — inserts</td><td>No</td></tr>
+<tr><td>add(e)</td><td>Insert</td><td>N/A — inserts (throws if bounded full)</td><td>No</td></tr>
+<tr><td>poll()</td><td>Remove/retrieve</td><td>Returns null</td><td>Yes</td></tr>
+<tr><td>remove()</td><td>Remove/retrieve</td><td>NoSuchElementException</td><td>Yes</td></tr>
+<tr><td>peek()</td><td>Inspect</td><td>Returns null</td><td>No</td></tr>
+<tr><td>element()</td><td>Inspect</td><td>NoSuchElementException</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>TreeSet</th><th>PriorityQueue</th></tr>
+<tr><td>Interface</td><td>SortedSet / Set</td><td>Queue</td></tr>
+<tr><td>Underlying DS</td><td>Red-Black Tree</td><td>Binary Heap</td></tr>
+<tr><td>Duplicates</td><td>Not allowed</td><td>Allowed</td></tr>
+<tr><td>Null</td><td>Once (with caveats)</td><td>Never</td></tr>
+<tr><td>Iteration order</td><td>Sorted order</td><td>No guarantee</td></tr>
+<tr><td>Removal order</td><td>Sorted (via iterator)</td><td>Priority (poll())</td></tr>
+<tr><td>FIFO?</td><td>No</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Question</th><th>Answer</th></tr>
+<tr><td>1</td><td>Queue is child of which interface?</td><td>Collection</td></tr>
+<tr><td>2</td><td>Default ordering principle for general Queue?</td><td>FIFO</td></tr>
+<tr><td>3</td><td>Does PriorityQueue follow FIFO?</td><td>No — priority order</td></tr>
+<tr><td>4</td><td>Only Queue impl required for basic exam?</td><td>PriorityQueue</td></tr>
+<tr><td>5</td><td>Underlying DS of PriorityQueue?</td><td>Heap</td></tr>
+<tr><td>6</td><td>poll() on empty queue?</td><td>Returns `null`</td></tr>
+<tr><td>7</td><td>remove() on empty queue?</td><td>`NoSuchElementException`</td></tr>
+<tr><td>8</td><td>peek() on empty queue?</td><td>Returns `null`</td></tr>
+<tr><td>9</td><td>element() on empty queue?</td><td>`NoSuchElementException`</td></tr>
+<tr><td>10</td><td>Null allowed in PriorityQueue?</td><td>No → NullPointerException</td></tr>
+<tr><td>11</td><td>Default Integer PriorityQueue — first poll()?</td><td>Smallest number (min-heap)</td></tr>
+<tr><td>12</td><td>StringBuffer in default PriorityQueue?</td><td>`ClassCastException`</td></tr>
+<tr><td>13</td><td>Iterator order same as poll order?</td><td>No — iterator unordered</td></tr>
+<tr><td>14</td><td>Default initial capacity of PriorityQueue?</td><td>11</td></tr>
+<tr><td>15</td><td>Duplicates in PriorityQueue?</td><td>Allowed</td></tr>
+<tr><td>16</td><td>Duplicates in TreeSet?</td><td>Not allowed</td></tr>
+<tr><td>17</td><td>Stack ordering principle?</td><td>LIFO</td></tr>
+<tr><td>18</td><td>Queue introduced in which Java version?</td><td>1.5</td></tr>
+<tr><td>19</td><td>No-arg PriorityQueue constructor sorting?</td><td>Default natural sorting order</td></tr>
+<tr><td>20</td><td>Comparator constructor sorting?</td><td>Customized sorting order</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Video</th><th>Notes file</th></tr>
+<tr><td>9 Collection interfaces incl. Queue intro</td><td>137</td><td>137-collections-9-interfaces.doc</td></tr>
+<tr><td>TreeSet properties &amp; Comparable</td><td>143</td><td>143-treeset.doc</td></tr>
+<tr><td>Comparator interface deep dive</td><td>144</td><td>144-comparator.doc</td></tr>
+<tr><td>Hashtable — ends pointing to Queue</td><td>149</td><td>149-hashtable.doc</td></tr>
+<tr><td>Queue &amp; PriorityQueue</td><td>150</td><td>150-queue-priorityqueue.doc</td></tr>
+<tr><td>NavigableSet recap confirms PQ done</td><td>151</td><td>151-navigableset.doc</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Video</td><td>150 of 203</td></tr>
+<tr><td>Series</td><td>Durga Sir Core Java OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>Collections Part-15 — Queue &amp; PriorityQueue</td></tr>
+<tr><td>Source</td><td>Synthesized from adjacent lectures + standard syllabus (captions unavailable; Whisper blocked)</td></tr>
+<tr><td>Output</td><td>150-queue-priorityqueue.doc</td></tr>
+</table>
+</body></html>

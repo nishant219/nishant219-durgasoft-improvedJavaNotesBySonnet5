@@ -1,0 +1,502 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>107-equals</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 107</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: java.lang.package Part-3 || equals() || overridden methods of equals</p>
+<p>Series: java.lang.package (Object class methods — continues from Part-2)</p>
+<p>Instructor: Durga Sir</p>
+<p>Duration: 1h 28m 24s</p>
+<p>Video ID: izDt7L4009k</p>
+<p>Watch: https://www.youtube.com/watch?v=izDt7L4009k</p>
+<p>Transcript source: Local Whisper STT (.transcripts/107-izDt7L4009k.txt)</p>
+<h3>00:08 — Session opener: `equals()` method (continued from Part-2)</h3>
+<p>This lecture is Part-3 of the java.lang Object-class series. The previous session started equals(); this video completes the concept, shows how to override it properly, and ends with a high-value String vs StringBuffer exam question.</p>
+<h2>Part A — Purpose of `equals()` and default `Object` behavior</h2>
+<h3>00:27 — What is the purpose of `equals()`?</h3>
+<p>We can use the `equals()` method to check equality of two objects.</p>
+<p>If two references obj1 and obj2 exist, calling:</p>
+<p>obj1.equals(obj2);</p>
+<p>answers: Are these two objects equal or not?</p>
+<p>Board line:</p>
+<p>We can use equals() method to check equality of two objects.</p>
+<h3>01:07 — Which `equals()` runs if our class does NOT override?</h3>
+<p>If our class does not contain an equals() method, then `Object` class `equals()` method will be executed (inherited default).</p>
+<p>Every class ultimately inherits from Object, so this default is always available unless overridden.</p>
+<h3>01:27 — Setup: `Student` class (no `equals()` override yet)</h3>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+}</pre>
+<h3>04:08 — Main program: four references, three comparisons</h3>
+<pre class='code'>public static void main(String[] args) {
+    Student s1 = new Student(&quot;Durga&quot;, 101);
+    Student s2 = new Student(&quot;Ravi&quot;, 102);
+    Student s3 = new Student(&quot;Durga&quot;, 101);   // same name + roll as s1, different object
+    Student s4 = s1;                           // alias — same reference as s1
+
+    System.out.println(s1.equals(s2));
+    System.out.println(s1.equals(s3));
+    System.out.println(s1.equals(s4));
+}</pre>
+<p>Memory diagram (board):</p>
+<p>s1 ──► [ Student: name=Durga, rollNumber=101 ]
+s3 ──► [ Student: name=Durga, rollNumber=101 ]   ← different heap object
+s2 ──► [ Student: name=Ravi,  rollNumber=102 ]
+s4 ──► (points to same object as s1)</p>
+<h3>06:53 — Predict outputs BEFORE running (with default `Object.equals()`)</h3>
+<p>Output: false, false, true</p>
+<h3>07:03 — Critical distinction: `==` vs `.equals()` (recap from earlier classes)</h3>
+<p>Durga Sir&#x27;s memory hook from prior lectures:</p>
+<ul><li>== → reference comparison</li></ul>
+<ul><li>.equals() → intended for content comparison (but default Object version is still reference)</li></ul>
+<h3>08:14 — Real-world vs Java answer for `s1.equals(s3)`</h3>
+<p>Real world: Two students with same name &quot;Durga&quot; and same roll number 101 → logically equal.</p>
+<p>Java (without override): Returns false — because Object.equals() only checks whether both references point to the same object, not whether name/rollNumber match.</p>
+<h3>09:07 — How `Object.equals()` is implemented (conceptually)</h3>
+<pre class='code'>// Conceptual behavior of Object.equals(Object obj)
+public boolean equals(Object obj) {
+    // Reference / address comparison only
+    // Returns true ONLY if both references point to the same object
+    // Returns false if objects are different — even if content is identical
+}</pre>
+<p>Board summary:</p>
+<p>Object class equals() method is meant for reference comparison (address comparison), but not for content comparison.</p>
+<p>Rules:</p>
+<ol><li>If two references point to the same object → returns true</li></ol>
+<ol><li>If objects are different (different addresses) → returns false, regardless of content</li></ol>
+<h3>10:14 — Why override `equals()`?</h3>
+<p>Default Object.equals() → reference comparison.</p>
+<p>We usually want content comparison — e.g., two Student objects with same name and roll number should be considered equal.</p>
+<p>If we are not satisfied with reference comparison, we can override `equals()` in our class for content comparison.</p>
+<p>Reference comparison is already handled by `==`. Most of the time we need content comparison, not reference comparison, from equals().</p>
+<h2>Part B — Overriding `equals()` for content comparison</h2>
+<h3>22:53 — Step 1: Decide the meaning of &quot;equality&quot; for YOUR class</h3>
+<p>Before writing code, decide what makes two objects equal in your requirement.</p>
+<p>For Student in this lecture:</p>
+<ul><li>Equality rule: same name and same rollNumber → equal.</li></ul>
+<p>Other requirements might need more fields:</p>
+<ul><li>Same name + roll + father + mother + address → equal</li></ul>
+<ul><li>Or only roll number → equal</li></ul>
+<p>Requirement to requirement, the meaning of equality changes. You must decide first.</p>
+<h3>24:11 — Step 2: Basic override signature</h3>
+<pre class='code'>public boolean equals(Object obj) {
+    // obj is the &quot;other&quot; object passed as argument
+    // &quot;this&quot; is the object on which equals() was called
+}</pre>
+<p>Call flow for `s1.equals(s2)`:</p>
+<p>Two objects are involved; argument arrives as `Object` type (parent reference).</p>
+<h3>25:31 — Step 3: Extract current object&#x27;s fields (`this`)</h3>
+<pre class='code'>String name1 = this.name;
+int rollNumber1 = this.rollNumber;</pre>
+<h3>26:02 — Step 4: Downcast argument to `Student`</h3>
+<p>Argument is Object; to access name and rollNumber we must typecast:</p>
+<pre class='code'>Student s = (Student) obj;
+String name2 = s.name;
+int rollNumber2 = s.rollNumber;</pre>
+<p>Object reference cannot tell &quot;what is your name?&quot; — only Student reference can.</p>
+<h3>27:14 — Step 5: Compare fields and return</h3>
+<pre class='code'>if (name1.equals(name2) &amp;&amp; rollNumber1 == rollNumber2) {
+    return true;
+} else {
+    return false;
+}</pre>
+<p>Why `name1.equals(name2)` but `rollNumber1 == rollNumber2`?</p>
+<h3>28:53 — Full Version 1: basic content-comparison override</h3>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+
+    public boolean equals(Object obj) {
+        String name1 = this.name;
+        int rollNumber1 = this.rollNumber;
+
+        Student s = (Student) obj;
+        String name2 = s.name;
+        int rollNumber2 = s.rollNumber;
+
+        if (name1.equals(name2) &amp;&amp; rollNumber1 == rollNumber2) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static void main(String[] args) {
+        Student s1 = new Student(&quot;Durga&quot;, 101);
+        Student s2 = new Student(&quot;Ravi&quot;, 102);
+        Student s3 = new Student(&quot;Durga&quot;, 101);
+        Student s4 = s1;
+
+        System.out.println(s1.equals(s2));  // false — different name and roll
+        System.out.println(s1.equals(s3));  // true  — same name and roll (CONTENT match)
+        System.out.println(s1.equals(s4));  // true  — same reference AND same content
+    }
+}</pre>
+<p>Output with override: false, true, true</p>
+<p>Compare to default Object.equals() output: false, false, true</p>
+<h3>32:18 — Demo: comment out override → back to `Object` behavior</h3>
+<p>If you comment out the overridden equals():</p>
+<ul><li>Which method runs? → `Object` class `equals()`</li></ul>
+<ul><li>Output: `false`, `false`, `true` (reference comparison)</li></ul>
+<p>Uncomment override:</p>
+<ul><li>Which method runs? → Our `equals()`</li></ul>
+<ul><li>Output: `false`, `true`, `true` (content comparison)</li></ul>
+<h2>Part C — Edge cases: heterogeneous types and `null`</h2>
+<h3>33:34 — Trap: comparing `Student` with `String`</h3>
+<pre class='code'>System.out.println(s1.equals(&quot;Durga&quot;));</pre>
+<p>These are heterogeneous (different, unrelated types for this comparison).</p>
+<p>With our Version 1 override:</p>
+<p>Student s = (Student) obj;   // obj is actually a String — INVALID cast</p>
+<p>Result: ClassCastException at runtime.</p>
+<p>Compile: fine. Run: `Exception in thread &quot;main&quot; java.lang.ClassCastException`</p>
+<h3>35:35 — How `Object.equals()` handles heterogeneous types</h3>
+<p>If we comment out our override and use default Object.equals():</p>
+<p>System.out.println(s1.equals(&quot;Durga&quot;));  // false — no exception</p>
+<p>Gap: Our override throws ClassCastException; Object.equals() returns false.</p>
+<p>Fix: Handle ClassCastException → return false:</p>
+<pre class='code'>public boolean equals(Object obj) {
+    try {
+        String name1 = this.name;
+        int rollNumber1 = this.rollNumber;
+
+        Student s = (Student) obj;
+        String name2 = s.name;
+        int rollNumber2 = s.rollNumber;
+
+        if (name1.equals(name2) &amp;&amp; rollNumber1 == rollNumber2) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (ClassCastException e) {
+        return false;
+    }
+}</pre>
+<p>If we pass a different type of object, our equals() should not raise ClassCastException — it should return false, same as Object.equals().</p>
+<h3>38:22 — Trap: comparing with `null`</h3>
+<pre class='code'>System.out.println(s1.equals(null));</pre>
+<p>With Version 1 + try/catch for ClassCastException only:</p>
+<p>Student s = (Student) obj;   // obj is null
+String name2 = s.name;       // NPE — cannot ask null for name/rollNumber</p>
+<p>Result: NullPointerException</p>
+<p>Default Object.equals(null) → returns false (no exception).</p>
+<p>Fix: Add second catch block:</p>
+<pre class='code'>} catch (ClassCastException e) {
+    return false;
+} catch (NullPointerException e) {
+    return false;
+}</pre>
+<p>Do NOT use catch (Exception e) { return false; } — that is too broad and not the proper way.</p>
+<p>After both catch blocks:</p>
+<p>System.out.println(s1.equals(null));  // false</p>
+<h2>Part D — Three mandatory concerns when overriding `equals()`</h2>
+<h3>41:29 — Board summary: proper way of overriding `equals()`</h3>
+<p>While overriding equals() for content comparison, take care of the following three things:</p>
+<p>Board heading:</p>
+<p>The following is the proper way of overriding `equals()` method for Student class content comparison.</p>
+<h3>47:02 — Full Version 2: proper override with try/catch (board code)</h3>
+<pre class='code'>public boolean equals(Object obj) {
+    try {
+        String name1 = this.name;
+        int rollNumber1 = this.rollNumber;
+
+        Student s = (Student) obj;
+        String name2 = s.name;
+        int rollNumber2 = s.rollNumber;
+
+        if (name1.equals(name2) &amp;&amp; rollNumber1 == rollNumber2) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (ClassCastException e) {
+        return false;
+    } catch (NullPointerException e) {
+        return false;
+    }
+}</pre>
+<p>Comments Durga Sir adds on board:</p>
+<ul><li>// obj → second object (s2 in s1.equals(s2))</li></ul>
+<ul><li>// this → first object (s1)</li></ul>
+<ul><li>Cast line → runtime exception risk without handling</li></ul>
+<ul><li>NPE line → runtime exception when obj is null</li></ul>
+<p>Test matrix with Version 2:</p>
+<h2>Part E — Simplified versions of `equals()`</h2>
+<h3>53:42 — Version 3: use implicit `this` inside instance method</h3>
+<p>Inside an instance method, accessing name directly is same as this.name:</p>
+<pre class='code'>// In instance method m1():
+SOP(x);        // same as this.x — current object&#x27;s x</pre>
+<p>So in equals() we can drop name1, rollNumber1 and write:</p>
+<pre class='code'>public boolean equals(Object obj) {
+    try {
+        Student s = (Student) obj;
+
+        if (name.equals(s.name) &amp;&amp; rollNumber == s.rollNumber) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (ClassCastException e) {
+        return false;
+    } catch (NullPointerException e) {
+        return false;
+    }
+}</pre>
+<p>Four lines removed — same output: false, true, true, false, false.</p>
+<h3>1:00:57 — Version 4: replace try/catch with `instanceof`</h3>
+<p>Key rules about `instanceof` and `null`:</p>
+<p>null instanceof Student   // false — always
+obj instanceof Student    // false if obj is null OR not a Student</p>
+<p>So one if handles both wrong-type and null:</p>
+<pre class='code'>public boolean equals(Object obj) {
+    if (obj instanceof Student) {
+        Student s = (Student) obj;
+        if (name.equals(s.name) &amp;&amp; rollNumber == s.rollNumber) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;   // not Student type OR null
+    }
+}</pre>
+<p>Flow walkthrough:</p>
+<p>No try/catch needed when using instanceof guard.</p>
+<p>Output: `false`, `true`, `true`, `false`, `false` — same as Version 2.</p>
+<h3>1:10:03 — Version 5 (more simplified structure)</h3>
+<pre class='code'>public boolean equals(Object obj) {
+    if (obj instanceof Student) {
+        Student s = (Student) obj;
+        return name.equals(s.name) &amp;&amp; rollNumber == s.rollNumber;
+    }
+    return false;
+}</pre>
+<h2>Part F — Performance optimization: reference check first</h2>
+<h3>1:10:19 — Problem: wasteful comparison when references are identical</h3>
+<p>Consider s1.equals(s4) where s4 = s1 (same object).</p>
+<p>Even with content-based equals(), the code still:</p>
+<ol><li>Checks instanceof</li></ol>
+<ol><li>Casts</li></ol>
+<ol><li>Compares name and rollNumber</li></ol>
+<p>But if both references point to the same object, name and roll are guaranteed equal — no need to compare field by field.</p>
+<p>Worst case: Suppose 1000 fields (or comparing two large collections with 1000 elements each). You might compare all 1000 properties for an hour, only to discover at the end they were the same object all along.</p>
+<h3>1:13:24 — Fix: add reference check at the **beginning** of `equals()`</h3>
+<pre class='code'>if (obj == this) {
+    return true;
+}</pre>
+<p>Board note:</p>
+<p>To make equals() methods more efficient, at the beginning inside equals() method, write:</p>
+<pre class='code'>if (obj == this) return true;</pre>
+<p>Meaning:</p>
+<p>If both references point to the same object, then without performing any comparison, return true.</p>
+<h3>1:15:11 — Version 6 (final recommended form)</h3>
+<pre class='code'>public boolean equals(Object obj) {
+    if (obj == this) {
+        return true;
+    }
+    if (obj instanceof Student) {
+        Student s = (Student) obj;
+        return name.equals(s.name) &amp;&amp; rollNumber == s.rollNumber;
+    }
+    return false;
+}</pre>
+<p>Order matters:</p>
+<ol><li>`obj == this` → fast path for same reference</li></ol>
+<ol><li>`instanceof Student` → safe type check (handles null + wrong type)</li></ol>
+<ol><li>Field comparison → content equality</li></ol>
+<p>This is the standard recommended approach used by JDK classes.</p>
+<h2>Part G — `String.equals()` source: JDK follows the same pattern</h2>
+<h3>1:16:48 — Open `String.java` and inspect `equals()`</h3>
+<p>Durga Sir opens the `String` class source (public final class String).</p>
+<pre class='code'>public boolean equals(Object anObject) {
+    if (this == anObject) {
+        return true;
+    }
+    if (anObject instanceof String) {
+        // ... content comparison logic for char sequences ...
+        return true/false;
+    }
+    return false;
+}</pre>
+<p>Same style as our final version:</p>
+<ol><li>== this check first</li></ol>
+<ol><li>instanceof type check</li></ol>
+<ol><li>Content comparison inside</li></ol>
+<ol><li>Otherwise false</li></ol>
+<p>Some people (including JDK authors) follow our style — this is the standard approach to override equals().</p>
+<h2>Part H — EXAM QUESTION: `String` vs `StringBuffer` with `==` and `equals()`</h2>
+<h3>1:19:12 — Side-by-side demo (VERY IMPORTANT for OCJP / interviews)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        // --- String case ---
+        String s1 = new String(&quot;Durga&quot;);
+        String s2 = new String(&quot;Durga&quot;);
+
+        System.out.println(s1 == s2);         // false — different heap objects
+        System.out.println(s1.equals(s2));    // true  — String.equals() = content comparison
+
+        // --- StringBuffer case ---
+        StringBuffer sb1 = new StringBuffer(&quot;Durga&quot;);
+        StringBuffer sb2 = new StringBuffer(&quot;Durga&quot;);
+
+        System.out.println(sb1 == sb2);       // false — different objects
+        System.out.println(sb1.equals(sb2));  // false — Object.equals() = reference comparison
+    }
+}</pre>
+<p>Output:</p>
+<p>false
+true
+false
+false</p>
+<h3>1:22:10 — Universal exam rule</h3>
+<p>If s1.equals(s2) is true (content equal), then s1 == s2 is automatically false when they are different objects with same content.</p>
+<p>Conversely:</p>
+<ul><li>== true → always same reference</li></ul>
+<ul><li>equals true with == false → different objects, same content (only possible when equals() is overridden for content)</li></ul>
+<h3>1:22:46 — Theory board (both columns)</h3>
+<p>String class:</p>
+<p>In String class, equals() method is overridden for content comparison.</p>
+<p>Hence, even though objects are different, if content is the same, then equals() returns true.</p>
+<p>StringBuffer class:</p>
+<p>In StringBuffer class, equals() method is NOT overridden for content comparison.</p>
+<p>Hence, if objects are different, equals() returns false, even though content is the same.</p>
+<p>Why StringBuffer doesn&#x27;t override `equals()`: Mutable objects are generally not used as keys in hash-based collections the same way; identity/reference semantics are often sufficient for mutable buffers. For exam purposes: memorize the behavior, not the design philosophy.</p>
+<h2>Part I — Version progression summary</h2>
+<h2>Part J — Quick revision checklist (OCJP)</h2>
+<ul><li>[ ] Purpose of equals(): check equality of two objects</li></ul>
+<ul><li>[ ] Default Object.equals(): reference comparison only</li></ul>
+<ul><li>[ ] == also does reference comparison — use equals() override when you need content</li></ul>
+<ul><li>[ ] Decide meaning of equality before coding</li></ul>
+<ul><li>[ ] Override signature: public boolean equals(Object obj)</li></ul>
+<ul><li>[ ] Argument is Object; use cast or instanceof before accessing subclass fields</li></ul>
+<ul><li>[ ] Compare String fields with .equals(), primitives with ==</li></ul>
+<ul><li>[ ] Wrong type → return false (not ClassCastException)</li></ul>
+<ul><li>[ ] null argument → return false (not NullPointerException)</li></ul>
+<ul><li>[ ] instanceof returns false for null</li></ul>
+<ul><li>[ ] Add if (obj == this) return true; at start for efficiency</li></ul>
+<ul><li>[ ] JDK String.equals() follows same pattern</li></ul>
+<ul><li>[ ] `String.equals()` → content; `StringBuffer.equals()` → reference (not overridden)</li></ul>
+<h2>ASR decode notes (this video)</h2>
+<p>Whisper STT artifacts decoded in these notes:</p>
+<p>Java code block count: 15+</p>
+<h2>Metadata</h2>
+<table>
+<tr><th>Expression</th><th>Answer</th><th>Why</th></tr>
+<tr><td>s1.equals(s2)</td><td>false</td><td>Different objects, different content</td></tr>
+<tr><td>s1.equals(s3)</td><td>false</td><td>Same content but different objects</td></tr>
+<tr><td>s1.equals(s4)</td><td>true</td><td>Both references point to the same object</td></tr>
+</table>
+<table>
+<tr><th>Operator / method</th><th>Comparison type</th></tr>
+<tr><td>`==` (double equal)</td><td>Reference comparison (address comparison)</td></tr>
+<tr><td>`.equals()` (default in Object)</td><td>Also reference comparison in Object class</td></tr>
+<tr><td>`.equals()` (when overridden)</td><td>Content comparison (based on your rule)</td></tr>
+</table>
+<table>
+<tr><th>Role</th><th>Reference</th></tr>
+<tr><td>Object on which method is called (this)</td><td>s1</td></tr>
+<tr><td>Argument passed (obj)</td><td>s2</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Type</th><th>Comparison</th></tr>
+<tr><td>name</td><td>String (object)</td><td>name1.equals(name2) — String.equals() is already overridden for content comparison</td></tr>
+<tr><td>rollNumber</td><td>int (primitive)</td><td>rollNumber1 == rollNumber2 — primitives have no methods; use ==</td></tr>
+</table>
+<table>
+<tr><th>Reference</th><th>Type</th></tr>
+<tr><td>s1</td><td>Student</td></tr>
+<tr><td>&quot;Durga&quot;</td><td>String</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Concern</th><th>Rule</th></tr>
+<tr><td>1</td><td>Meaning of equality</td><td>Decide which fields define equality (name only? roll only? both? all fields?)</td></tr>
+<tr><td>2</td><td>Different type of object</td><td>Our equals() must not raise ClassCastException → handle it → return false</td></tr>
+<tr><td>3</td><td>`null` argument</td><td>Our equals() must not raise NullPointerException → handle it → return false</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Result</th></tr>
+<tr><td>s1.equals(s2)</td><td>false</td></tr>
+<tr><td>s1.equals(s3)</td><td>true</td></tr>
+<tr><td>s1.equals(s4)</td><td>true</td></tr>
+<tr><td>s1.equals(&quot;Durga&quot;)</td><td>false</td></tr>
+<tr><td>s1.equals(null)</td><td>false</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>obj instanceof Student</th><th>Result</th></tr>
+<tr><td>s1.equals(s2)</td><td>true (Student, different content)</td><td>false</td></tr>
+<tr><td>s1.equals(s3)</td><td>true (Student, same content)</td><td>true</td></tr>
+<tr><td>s1.equals(s4)</td><td>true (Student, same ref + content)</td><td>true</td></tr>
+<tr><td>s1.equals(&quot;Durga&quot;)</td><td>false (String, not Student)</td><td>false</td></tr>
+<tr><td>s1.equals(null)</td><td>false (null instanceof Student is false)</td><td>false</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>equals() overridden?</th><th>Different objects, same text</th><th>sb1.equals(sb2)</th></tr>
+<tr><td>String</td><td>Yes — content</td><td>&quot;Durga&quot; vs &quot;Durga&quot;</td><td>true</td></tr>
+<tr><td>StringBuffer</td><td>No — uses Object.equals()</td><td>&quot;Durga&quot; vs &quot;Durga&quot;</td><td>false</td></tr>
+</table>
+<table>
+<tr><th>Version</th><th>Technique</th><th>try/catch</th><th>instanceof</th><th>obj == this</th></tr>
+<tr><td>V1</td><td>Basic cast + compare</td><td>No</td><td>No</td><td>No</td></tr>
+<tr><td>V2</td><td>+ CCE/NPE handling</td><td>Yes</td><td>No</td><td>No</td></tr>
+<tr><td>V3</td><td>Implicit this fields</td><td>Yes</td><td>No</td><td>No</td></tr>
+<tr><td>V4</td><td>instanceof guard</td><td>No</td><td>Yes</td><td>No</td></tr>
+<tr><td>V5</td><td>Compact return</td><td>No</td><td>Yes</td><td>No</td></tr>
+<tr><td>V6 (final)</td><td>Full recommended</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+</table>
+<table>
+<tr><th>Heard (caption)</th><th>Intended</th></tr>
+<tr><td>equal sum of that / equal cement / equal smithere</td><td>equals() method</td></tr>
+<tr><td>O be J / boBJ / goBJ</td><td>Object obj</td></tr>
+<tr><td>reference comparison / address comparison</td><td>same concept</td></tr>
+<tr><td>class cash / clashed</td><td>ClassCastException</td></tr>
+<tr><td>null point or / null pointer</td><td>NullPointerException</td></tr>
+<tr><td>in instance of / inistence of</td><td>instanceof</td></tr>
+<tr><td>Singh Buffal / string of buffer</td><td>StringBuffer</td></tr>
+<tr><td>eqals (title typo)</td><td>equals()</td></tr>
+<tr><td>Durga / Ravi / Raja</td><td>example student names</td></tr>
+<tr><td>keep sabading / legend</td><td>listen carefully</td></tr>
+<tr><td>content comparison / condense comparison</td><td>content comparison</td></tr>
+<tr><td>ebc and the way</td><td>efficient way</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP (java.lang package series)</td></tr>
+<tr><td>Position</td><td>107 of 203</td></tr>
+<tr><td>Series</td><td>java.lang.package Part-3</td></tr>
+<tr><td>Topic</td><td>Object.equals() — default behavior, overriding for content comparison, edge cases, simplifications, String vs StringBuffer</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 28m 24s</td></tr>
+<tr><td>Video ID</td><td>izDt7L4009k</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=izDt7L4009k</td></tr>
+<tr><td>Transcript</td><td>.transcripts/107-izDt7L4009k.txt (Local Whisper STT)</td></tr>
+<tr><td>Related videos</td><td>Part-2 (106): Object methods intro; Part-12 (117): == vs equals() relation + hashCode contract</td></tr>
+</table>
+</body></html>

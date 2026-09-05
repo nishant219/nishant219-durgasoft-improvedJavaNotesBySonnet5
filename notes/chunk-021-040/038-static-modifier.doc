@@ -1,0 +1,525 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>038-static-modifier</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 038 — static modifier</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-9||  static modifier</p>
+<p>ASR decode notes (Whisper): in-stand / inistence / in eastern / any stunts → instance; 3ble 8 / thribylate / 3 blade → 888; 3ble 9 / thribyl9 → 999; t2.exe → t2.x; Wired/quiet → void; action/axa/ox → args; mnestid / encased glasses → nested classes; Chaviyam → JVM; cheyle → child; method of hiding → method hiding; volume → void; Intel XC → int x; compal(t)ary matter → compile-time error; synchronize it / synchronizer → synchronized; threats → threads; estimate → street; Biryani inconsistent → data inconsistency; Viryani Pradesh → Biryani plate; nathima → nothing but; Anistance Mathura → instance method; Kampal Saritish → compulsory this; subtract synchronicizer → abstract synchronized.</p>
+<h2>What this lecture covers</h2>
+<ol><li>Where static applies: variables and methods; not top-level classes; inner classes may be static nested classes.</li></ol>
+<ol><li>Instance vs static variables: separate copy per object vs one class-level copy shared by all objects (classic 888 / 20 exam output).</li></ol>
+<ol><li>Access rules: instance members not accessible directly from static area; static members accessible from both areas.</li></ol>
+<ol><li>Same-class declaration combinations (four declarations MCQ) plus “same name” traps for variables and methods.</li></ol>
+<ol><li>Three cases for static methods: overloading (including main), inheritance (including main), method hiding (not overriding).</li></ol>
+<ol><li>Thumb rule: when to declare instance vs static method (Student example).</li></ol>
+<ol><li>abstract + static is illegal for methods.</li></ol>
+<ol><li>Brief intro to synchronized (methods/blocks only): race condition, advantage, disadvantage; abstract + synchronized illegal. Full programs later in Multi Threading.</li></ol>
+<h2>Detailed notes</h2>
+<h3>00:03 — Agenda: next modifier is `static`</h3>
+<p>Final variables are done. Next modifier: static.</p>
+<p>Purpose / need of static, important loopholes, and where we can apply it — all in this class.</p>
+<h3>00:39 — Where can we apply `static`?</h3>
+<ul><li>We can declare a variable as static.</li></ul>
+<ul><li>We can declare a method as static.</li></ul>
+<ul><li>Can we declare a class as static? By default no (top-level class cannot be static).</li></ul>
+<ul><li>Special case: an inner class can be declared static. Such inner classes are called static nested classes (full discussion in Inner Classes later).</li></ul>
+<p>Board conclusion:</p>
+<p>static is a modifier applicable for methods and variables, but not for (top-level) classes. We can&#x27;t declare a top-level class with static, but we can declare an inner class as static — such inner classes are called static nested classes.</p>
+<pre class='code'>// CE: modifier static not allowed here (top-level class)
+static class Test {
+}
+class Outer {
+    // valid: static nested class (inner-class topic later)
+    static class Nested {
+    }
+}</pre>
+<h3>03:15 — When should we go for static? (preview)</h3>
+<p>Apply static on methods and variables when appropriate. Top-level class: never static. Inner class: may be static → static nested class.</p>
+<h3>03:45 — Recap: instance variable vs static variable</h3>
+<p>Already covered recently:</p>
+<p>This difference drives classic exam questions.</p>
+<h3>05:33 — Exam example: static `x`, instance `y`, change via `t1`, print via `t2`</h3>
+<pre class='code'>class Test {
+    static int x = 10;
+    int y = 20;
+
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        t1.x = 888;
+        t1.y = 999;
+
+        Test t2 = new Test();
+        System.out.println(t2.x + &quot;---&quot; + t2.y);
+        // prints 888---20
+    }
+}</pre>
+<p>Possible MCQ answers he lists: 10---20, 888---999, 888---20, 10---999, or compile-time error.</p>
+<p>Correct output: `888---20`.</p>
+<p>Step-by-step (as on board):</p>
+<ol><li>Static x = 10 is created first (at class loading — one copy).</li></ol>
+<ol><li>Test t1 = new Test() → instance y = 20 created for t1.</li></ol>
+<ol><li>t1.x = 888 — accessing static via object reference is allowed; changes the only static copy → x is now 888.</li></ol>
+<ol><li>t1.y = 999 — changes only t1&#x27;s instance copy.</li></ol>
+<ol><li>Test t2 = new Test() → new instance copy y = 20 for t2. Static x is still the shared 888.</li></ol>
+<ol><li>t2.x → 888; t2.y → 20.</li></ol>
+<p>Rules to remember:</p>
+<ul><li>One copy of static variable → change via any reference is visible to all objects.</li></ul>
+<ul><li>Separate copy of instance variable → change via one reference does not affect other objects.</li></ul>
+<h3>12:14 — Instance area vs static area: what can we access?</h3>
+<p>Board sketch:</p>
+<pre class='code'>class Test {
+    int x = 10;              // instance variable
+    static int y = 20;       // static variable
+
+    public void m1() {       // instance method → instance area
+        System.out.println(x); // valid — instance from instance
+        System.out.println(y); // valid — static from instance
+    }
+
+    public static void m2() { // static method → static area
+        // System.out.println(x); // CE: non-static variable x cannot be referenced from a static context
+        System.out.println(y);    // valid — static from static
+    }
+}</pre>
+<ul><li>Instance variable / instance member is always related to an object.</li></ul>
+<ul><li>Static area is not related to any particular object.</li></ul>
+<ul><li>Therefore: from static area we cannot access instance members directly (variable or method).</li></ul>
+<ul><li>Static variable exists from class loading → can be accessed from anywhere (instance area or static area) directly.</li></ul>
+<p>Conclusions on the board:</p>
+<ol><li>We can&#x27;t access instance members directly from static area, but we can access them from instance area directly.</li></ol>
+<ol><li>We can access static members from both instance and static areas directly.</li></ol>
+<h3>15:49 — Exam MCQ: four declarations — which pairs can coexist?</h3>
+<p>Four declarations (numbered as on board):</p>
+<pre class='code'>// (1)
+int x = 10;
+
+// (2)
+static int x = 10;
+
+// (3)
+public void m1() {
+    System.out.println(x);
+}
+
+// (4)
+public static void m1() {
+    System.out.println(x);
+}</pre>
+<p>Options (within the same class, which two declarations simultaneously?):</p>
+<pre class='code'>// Option A — valid (1 + 3)
+class Test {
+    int x = 10;
+
+    public void m1() {
+        System.out.println(x);
+    }
+}
+// Option B — invalid (1 + 4)
+class Test {
+    int x = 10;
+
+    public static void m1() {
+        System.out.println(x);
+        // CE: non-static variable x cannot be referenced from a static context
+    }
+}
+// Option C — valid (2 + 3)
+class Test {
+    static int x = 10;
+
+    public void m1() {
+        System.out.println(x);
+    }
+}
+// Option D — valid (2 + 4)
+class Test {
+    static int x = 10;
+
+    public static void m1() {
+        System.out.println(x);
+    }
+}</pre>
+<p>Exact CE wording he stresses for option B:</p>
+<p>non-static variable x cannot be referenced from a static context</p>
+<h3>21:36 — Extra trap: can we take (1) and (2) together?</h3>
+<p>Same name for instance variable and static variable in one class — not allowed.</p>
+<pre class='code'>class Test {
+    int x = 10;
+    static int x = 10;
+    // CE: variable x is already defined in Test
+}</pre>
+<p>People often think “one instance, one static, different kinds → OK.” Wrong. Same simple name x twice in the class → CE: variable x is already defined in Test.</p>
+<p>Another spelling of the same idea:</p>
+<pre class='code'>class Test {
+    static int x = 10;
+    int x = 20;
+    // CE: variable x is already defined in Test
+}</pre>
+<p>(Contrast: local variable with the same name as a static/instance field is a different story — shadowing — allowed; here both are class members.)</p>
+<h3>23:16 — Extra trap: can we take (3) and (4) together?</h3>
+<p>Instance method m1() and static method m1() with the same signature — not allowed.</p>
+<pre class='code'>class Test {
+    public void m1() {
+        System.out.println(&quot;instance&quot;);
+    }
+
+    public static void m1() {
+        System.out.println(&quot;static&quot;);
+        // CE: m1() is already defined in Test
+    }
+}</pre>
+<p>Why? Method signature = name + argument types. Return type and modifiers (static, public, …) are not part of the signature. Both are m1 with no arguments → duplicate.</p>
+<p>People feel “one instance, one static → valid.” Wrong. CE: m1() is already defined in Test.</p>
+<h3>25:43 — Three important cases related to static methods</h3>
+<p>Overloading, inheritance, and “overriding-looking” behavior for static methods (including main).</p>
+<h3>25:54 — Case 1: Overloading is applicable for static methods (including `main`)</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;String[]&quot;);
+    }
+
+    public static void main(int[] args) {
+        System.out.println(&quot;int[]&quot;);
+    }
+}</pre>
+<ul><li>Same name, different argument types → overloading.</li></ul>
+<ul><li>Overloading concept is applicable for static methods, including main.</li></ul>
+<ul><li>JVM always calls only public static void main(String[] args).</li></ul>
+<ul><li>The int[] version becomes a normal overloaded method; call it yourself if you want it to run.</li></ul>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;String array&quot;);
+        main(new int[] {10, 20, 30}); // normal method call
+    }
+
+    public static void main(int[] args) {
+        System.out.println(&quot;int array&quot;);
+    }
+}
+// prints:
+// String array
+// int array</pre>
+<p>Default run (java Test) without calling the other overload:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;String array&quot;);
+    }
+
+    public static void main(int[] args) {
+        System.out.println(&quot;int array&quot;);
+    }
+}
+// prints String array</pre>
+<p>Board Case 1:</p>
+<p>Overloading concept applicable for static methods including main method. But JVM can always call the String[]-argument main method only. Other overloaded methods we have to call just like a normal method call.</p>
+<h3>31:07 — Case 2: Inheritance is applicable for static methods (including `main`)</h3>
+<pre class='code'>// file: P.java
+class P {
+    public static void main(String[] args) {
+        System.out.println(&quot;Parent main&quot;);
+    }
+}
+
+class C extends P {
+    // no main method in child
+}</pre>
+<p>Compile:</p>
+<p>javac P.java</p>
+<p>Two .class files: P.class, C.class (one .class per class).</p>
+<p>java P</p>
+<p>→ prints Parent main (parent has main).</p>
+<p>java C</p>
+<p>→ also prints Parent main (child has no main; parent&#x27;s static main is available via inheritance).</p>
+<p>Not NoSuchMethodError: main.</p>
+<p>Board Case 2:</p>
+<p>Inheritance concept applicable for static methods including main method. Hence while executing child class, if child doesn&#x27;t contain main method, then parent class main method will be executed.</p>
+<pre class='code'>class P {
+    public static void main(String[] args) {
+        System.out.println(&quot;Parent main&quot;);
+    }
+}
+
+class C extends P {
+}
+
+// java P  → prints Parent main
+// java C  → prints Parent main</pre>
+<h3>37:02 — Case 3: Both parent and child have `main` — method hiding, not overriding</h3>
+<pre class='code'>class P {
+    public static void main(String[] args) {
+        System.out.println(&quot;Parent main&quot;);
+    }
+}
+
+class C extends P {
+    public static void main(String[] args) {
+        System.out.println(&quot;Child main&quot;);
+    }
+}</pre>
+<p>java P</p>
+<p>→ prints Parent main</p>
+<p>java C</p>
+<p>→ prints Child main</p>
+<p>Same name + same argument types looks like overriding, but for static methods it is method hiding, not overriding.</p>
+<pre class='code'>class P {
+    public static void main(String[] args) {
+        System.out.println(&quot;Parent main&quot;);
+    }
+}
+
+class C extends P {
+    public static void main(String[] args) {
+        System.out.println(&quot;Child main&quot;);
+    }
+}
+// java P → prints Parent main
+// java C → prints Child main
+// It seems overriding, but it is method hiding — not overriding.</pre>
+<p>Board Case 3 note:</p>
+<p>It seems overriding concept applicable for static methods, but it is not overriding — it is method hiding.</p>
+<p>Difference between method hiding and overriding: “all rules are same with a small difference” — explained fully in OOPS later. At this point, remember the terminology.</p>
+<h3>42:17 — Summary note for static methods</h3>
+<p>For static methods:</p>
+<ul><li>Overloading — applicable</li></ul>
+<ul><li>Inheritance — applicable</li></ul>
+<ul><li>Overriding — not applicable</li></ul>
+<ul><li>Instead of overriding → method hiding is applicable</li></ul>
+<h3>44:02 — When instance variable vs static variable?</h3>
+<ul><li>Need a separate copy for every object → instance variable.</li></ul>
+<ul><li>Need one common copy at class level for all objects → static variable.</li></ul>
+<h3>44:20 — When instance method vs static method? (thumb rule)</h3>
+<p>Inside method implementation:</p>
+<ol><li>If you use at least one instance variable → the method talks about a particular object → declare it as an instance method.</li></ol>
+<ol><li>If you use no instance variable (whether or not you use static variables) → the method is nowhere related to a particular object → declare it as a static method.</li></ol>
+<p>Criterion is simply: are you using any instance variable or not?</p>
+<h3>50:21 — Student example: classify each method</h3>
+<pre class='code'>class Student {
+    String name;              // instance
+    int rollNumber;           // instance
+    int marks;                // instance
+    static String collegeName; // static — same college for all students
+
+    // uses instance data → instance method
+    public String getStudentInfo() {
+        return name + &quot;---&quot; + marks;
+    }
+
+    // uses only static data → static method
+    public static String getCollegeInfo() {
+        return collegeName;
+    }
+
+    // utility: only parameters, no instance vars → static method
+    public static int getAverage(int x, int y) {
+        return (x + y) / 2;
+    }
+
+    // uses instance vars (+ may also use static) → instance method
+    public String getCompleteInfo() {
+        return name + &quot;---&quot; + rollNumber + &quot;---&quot; + marks + &quot;---&quot; + collegeName;
+    }
+}</pre>
+<p>Classification he walks through:</p>
+<p>Even if getCompleteInfo also prints collegeName (static), at least one instance variable is enough → must be instance method.</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+    int marks;
+    static String collegeName = &quot;DurgaSoft&quot;;
+
+    public String getStudentInfo() {
+        return name + &quot;---&quot; + marks;
+        // instance method
+    }
+
+    public static String getCollegeInfo() {
+        return collegeName;
+        // static method
+    }
+
+    public static int getAverage(int x, int y) {
+        return (x + y) / 2;
+        // static utility method
+    }
+
+    public String getCompleteInfo() {
+        return name + &quot;---&quot; + rollNumber + &quot;---&quot; + marks + &quot;---&quot; + collegeName;
+        // instance method (uses instance members)
+    }
+
+    public static void main(String[] args) {
+        Student s = new Student();
+        s.name = &quot;Ravi&quot;;
+        s.rollNumber = 101;
+        s.marks = 90;
+        System.out.println(s.getStudentInfo());
+        // prints Ravi---90
+        System.out.println(Student.getCollegeInfo());
+        // prints DurgaSoft
+        System.out.println(Student.getAverage(80, 90));
+        // prints 85
+        System.out.println(s.getCompleteInfo());
+        // prints Ravi---101---90---DurgaSoft
+    }
+}</pre>
+<h3>58:31 — Static methods must have implementation; `abstract` + `static` illegal</h3>
+<ul><li>Static method → must have implementation (body).</li></ul>
+<ul><li>Abstract method → must not have implementation.</li></ul>
+<ul><li>Contradiction → `abstract static` is an illegal combination for methods.</li></ul>
+<pre class='code'>abstract class Test {
+    public abstract static void m1();
+    // CE: illegal combination of modifiers: abstract and static
+}
+abstract class Test {
+    // static needs a body
+    public static void m1() {
+        System.out.println(&quot;ok&quot;);
+    }
+
+    // abstract must not have a body
+    public abstract void m2();
+}</pre>
+<p>Board:</p>
+<p>For static methods implementation should be available, whereas for abstract methods implementation should not be available. Hence abstract static combination is illegal for methods.</p>
+<h3>1:00:31 — Next modifier teaser: `synchronized`</h3>
+<p>Full treatment in Multi Threading. Here: basic idea only.</p>
+<h3>1:01:08 — Where does `synchronized` apply?</h3>
+<pre class='code'>// CE: modifier synchronized not allowed here
+synchronized class Test {
+}
+class Test {
+    // CE: modifier synchronized not allowed here
+    // synchronized int x;
+
+    public synchronized void m1() {
+        // valid: synchronized method
+    }
+
+    public void m2() {
+        synchronized (this) {
+            // valid: synchronized block
+        }
+    }
+}</pre>
+<p>Board:</p>
+<p>synchronized is a modifier applicable only for methods and blocks, but not for classes and variables.</p>
+<h3>1:02:30 — Biryani-plate story → race condition (analogy)</h3>
+<p>Classroom story (technical mapping at the end):</p>
+<ul><li>Throw a biryani plate on the roadside.</li></ul>
+<ul><li>First dog finds it and is happy.</li></ul>
+<ul><li>Second dog arrives → fight; third dog → more fighting.</li></ul>
+<ul><li>Fourth “intelligent” dog starts eating from another side; others pull the plate → plate tears, biryani wasted.</li></ul>
+<p>Proverb-style punchline he writes:</p>
+<p>If multiple dogs are operating simultaneously on the same biryani plate, then we will get biryani inconsistency problem.</p>
+<p>Convert to Java terms:</p>
+<p>Technical statement:</p>
+<p>If multiple threads try to operate simultaneously on the same Java object, there may be a chance of data inconsistency problems. This is called a race condition.</p>
+<p>To overcome → use the `synchronized` keyword.</p>
+<h3>1:09:08 — Advantage of `synchronized`</h3>
+<p>Declare eat (the operation) as synchronized → at a time only one dog/thread can perform that operation on the given object; others wait until the first finishes. One-by-one → no inconsistency.</p>
+<pre class='code'>class BiryaniPlate {
+    public synchronized void eat() {
+        // at a time only one thread executes this on the given object
+        System.out.println(Thread.currentThread().getName() + &quot; eating&quot;);
+    }
+}</pre>
+<p>Board advantage:</p>
+<p>If a method or block is declared as synchronized, then at a time only one thread is allowed to execute that method or block on the given object, so that data inconsistency problem will be resolved.</p>
+<h3>1:10:38 — Disadvantage of `synchronized`</h3>
+<p>Waiting: until first thread finishes, second waits; until first two finish, third waits; … increases waiting time of threads → performance problems.</p>
+<p>Board:</p>
+<p>Main disadvantage of synchronized keyword: it increases waiting time of threads. Hence if there is no specific requirement, it is not recommended to use synchronized keyword.</p>
+<h3>1:12:09 — Synchronized summary points (as written)</h3>
+<ol><li>Multiple threads operating simultaneously on the same Java object → chance of data inconsistency → race condition.</li></ol>
+<ol><li>Overcome by using `synchronized`.</li></ol>
+<ol><li>Synchronized method/block → at a time only one thread executes that method/block on the given object → inconsistency resolved.</li></ol>
+<ol><li>Disadvantage: increases waiting time of threads.</li></ol>
+<ol><li>No specific requirement → not recommended to use synchronized.</li></ol>
+<h3>1:16:03 — `abstract` + `synchronized` is also illegal</h3>
+<p>Synchronized talks about implementation (only one thread may execute that implementation at a time). Abstract has no implementation. Contradiction.</p>
+<pre class='code'>abstract class Test {
+    public abstract synchronized void m1();
+    // CE: illegal combination of modifiers: abstract and synchronized
+}
+class Test {
+    // synchronized method must have a body
+    public synchronized void m1() {
+        System.out.println(&quot;one thread at a time&quot;);
+    }
+}</pre>
+<p>Board:</p>
+<p>Synchronized method should compulsorily contain implementation, whereas abstract method doesn&#x27;t contain any implementation. Hence abstract synchronized is illegal combination of modifiers for methods.</p>
+<h3>1:18:18 — Close</h3>
+<p>That is the basic idea of the synchronized modifier; detailed programs in Multi Threading. Static modifier portion of Declarations and Access Modifiers Part-9 is complete; synchronized introduced for awareness.</p>
+<h2>Quick revision checklist (OCJP-oriented)</h2>
+<ol><li>static on variables and methods; not on top-level classes; static nested classes OK.</li></ol>
+<ol><li>Static = one class-level copy; instance = per-object copy → classic 888---20 output.</li></ol>
+<ol><li>No direct access to instance members from static context (non-static ... cannot be referenced from a static context).</li></ol>
+<ol><li>Same member name twice (instance + static field, or instance + static method same signature) → already defined.</li></ol>
+<ol><li>Static methods: overloading ✓, inheritance ✓, overriding ✗ (method hiding instead).</li></ol>
+<ol><li>Method uses instance var? → instance method; else → static method.</li></ol>
+<ol><li>abstract + static illegal; abstract + synchronized illegal.</li></ol>
+<ol><li>synchronized: methods and blocks only; solves race condition; costs waiting time / performance.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 38 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 9</td></tr>
+<tr><td>Topic</td><td>static modifier</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 18m 34s</td></tr>
+<tr><td>Video ID</td><td>ErbJRUtjlB0</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=ErbJRUtjlB0</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>Kind</th><th>Copies</th></tr>
+<tr><td>Instance variable</td><td>For every object a separate copy is created</td></tr>
+<tr><td>Static variable</td><td>For the total class only one copy is created at class level and shared by every object of that class</td></tr>
+</table>
+<table>
+<tr><th>Option</th><th>Pair</th><th>Verdict</th></tr>
+<tr><td>A</td><td>1 and 3</td><td>Valid — instance variable + instance method using x</td></tr>
+<tr><td>B</td><td>1 and 4</td><td>Invalid — instance x from static m1</td></tr>
+<tr><td>C</td><td>2 and 3</td><td>Valid — static x from instance method</td></tr>
+<tr><td>D</td><td>2 and 4</td><td>Valid — static x from static method</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Uses instance var?</th><th>Declare as</th></tr>
+<tr><td>getStudentInfo</td><td>yes (name, marks)</td><td>instance</td></tr>
+<tr><td>getCollegeInfo</td><td>no (only collegeName static)</td><td>static</td></tr>
+<tr><td>getAverage</td><td>no (only parameters — utility)</td><td>static</td></tr>
+<tr><td>getCompleteInfo</td><td>yes (name, rollNumber, marks)</td><td>instance</td></tr>
+</table>
+<table>
+<tr><th>Target</th><th>synchronized allowed?</th></tr>
+<tr><td>Classes</td><td>No</td></tr>
+<tr><td>Methods</td><td>Yes</td></tr>
+<tr><td>Variables</td><td>No</td></tr>
+<tr><td>Blocks</td><td>Yes (synchronized block)</td></tr>
+</table>
+<table>
+<tr><th>Analogy</th><th>Java</th></tr>
+<tr><td>Biryani plate</td><td>Java object</td></tr>
+<tr><td>Each dog</td><td>A thread</td></tr>
+<tr><td>Fighting / messed plate</td><td>Data inconsistency</td></tr>
+</table>
+</body></html>

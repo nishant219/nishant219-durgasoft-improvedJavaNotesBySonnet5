@@ -1,0 +1,298 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>124-printwriter-examples</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 124</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: File I/O Part- 5||Printwriter-Examples</p>
+<h3>00:04 — Recap of File I/O classes covered so far</h3>
+<p>Durga Sir opens by recapping prior sessions: File, FileWriter, FileReader, BufferedWriter, BufferedReader, and related small applications — how to perform I/O line by line or file by file.</p>
+<p>Two more real-world programs remain in this File I/O block before the topic closes.</p>
+<h3>00:48 — Real business problem: bulk SMS before new batches</h3>
+<p>Context (Durga Soft training institute): Before every new SCJP/Java batch, SMS alerts were sent to inquiry database numbers — historically 10 lakh to 20 lakh mobile numbers per campaign.</p>
+<p>Economics of bulk SMS (ASR decoded):</p>
+<ul><li>Earlier: 1 lakh SMS ≈ ₹1,750</li></ul>
+<ul><li>After government intervention: 1 lakh SMS ≈ ₹50,000</li></ul>
+<p>Why prices spiked: A rumor spread via bulk SMS (North–South tension in Bangalore/Manipal/Assam context). Government response:</p>
+<ol><li>15-day bulk SMS ban</li></ol>
+<ol><li>Daily cap on personal SMS (100–150 messages/day)</li></ol>
+<ol><li>Instead of permanent ban, massive price hike so misuse becomes costly</li></ol>
+<p>Impact on businesses: ICICI Bank-style transactional SMS, Google SMS Channel (9848098480-style subscription service) — all paused because cost became prohibitive.</p>
+<h3>05:28 — Wrong-number calls after SMS blast</h3>
+<p>After sending batch-start SMS, reception got mixed calls:</p>
+<p>Reception staff faced abusive/vulgar calls; one employee resigned because threatening calls kept coming even after promising &quot;we won&#x27;t send again.&quot;</p>
+<h3>09:14 — Solution: `delete.txt` opt-out list</h3>
+<p>Process agreed with admin/reception:</p>
+<ol><li>On complaint call → note mobile number in `delete.txt`</li></ol>
+<ol><li>Send delete.txt to the person managing SMS</li></ol>
+<ol><li>Before next blast → remove those numbers from master list</li></ol>
+<ol><li>SMS only to remaining numbers</li></ol>
+<p>Requirement stated on board:</p>
+<p>Write a Java program to perform file extraction operation.</p>
+<p>Formula (board):</p>
+<p>output = input − delete</p>
+<p>Remove every number present in delete.txt from input.txt; write survivors to output.txt.</p>
+<h3>10:18 — Sample files on board</h3>
+<p>`input.txt` (master list — example numbers):</p>
+<p>tri2
+tri3
+tri4
+tri5
+tri6
+tri7
+tri8
+tri9</p>
+<p>(ASR garbles as &quot;Tri2 Tri3…6789&quot; — board intent is one mobile number per line.)</p>
+<p>After first round of complaints, `delete.txt`:</p>
+<p>tri5
+tri8
+tri2</p>
+<p>Expected `output.txt`:</p>
+<p>tri3
+tri4
+tri6
+tri7
+tri9</p>
+<p>Logic (line-by-line trace):</p>
+<ul><li>Read one line from input.txt</li></ul>
+<ul><li>Compare against every line in delete.txt</li></ul>
+<ul><li>If match found → do not write (skip SMS)</li></ul>
+<ul><li>If no match after scanning entire delete file → PrintWriter.println(line) to output.txt</li></ul>
+<ul><li>Repeat for all input lines</li></ul>
+<h3>13:29 — Student pause: &quot;write your program&quot;</h3>
+<p>Sir repeats the assignment several times so students attempt it before the solution:</p>
+<p>Write a program to perform file extraction operation.</p>
+<h3>16:01 — Algorithm before coding</h3>
+<p>Outer loop: read each line from input.txt via BufferedReader (br1).</p>
+<p>Inner loop: for that line, scan delete.txt via second BufferedReader (br2 / br1 in transcript).</p>
+<p>Boolean flag:</p>
+<pre class='code'>boolean available = false;</pre>
+<ul><li>If line.equals(target) → available = true; break;</li></ul>
+<ul><li>Else read next delete line: target = br2.readLine();</li></ul>
+<p>After inner loop:</p>
+<ul><li>If available == false → number not in delete list → write to output</li></ul>
+<ul><li>If available == true → skip</li></ul>
+<p>I/O class choice (Durga Sir convention):</p>
+<ul><li>Reading → BufferedReader (wraps FileReader)</li></ul>
+<ul><li>Writing → PrintWriter</li></ul>
+<h3>17:20 — Board code: `FileExtractor`</h3>
+<pre class='code'>// Board skeleton — class FileExtractor
+PrintWriter pw = new PrintWriter(&quot;output.txt&quot;);
+BufferedReader br1 = new BufferedReader(new FileReader(&quot;input.txt&quot;));
+String line = br1.readLine();
+while (line != null) {
+    boolean available = false;
+    BufferedReader br2 = new BufferedReader(new FileReader(&quot;delete.txt&quot;));
+    String target = br2.readLine();
+    while (target != null) {
+        if (line.equals(target)) {
+            available = true;
+            break;
+        }
+        target = br2.readLine();
+    }
+    if (available == false) {
+        pw.println(line);
+    }
+    line = br1.readLine();
+}
+pw.flush();</pre>
+<p>CE: Needs import java.io.*;, public class FileExtractor, and main — Sir writes executable version on screen.</p>
+<h3>25:31 — Live execution demo</h3>
+<p>Compile &amp; run:</p>
+<pre class='code'>// Terminal commands (not Java — shown on screen)
+// javac FileExtractor.java
+// java FileExtractor</pre>
+<p>Demo files:</p>
+<ul><li>input.txt: tri2, tri3, tri4, tri5, tri6, tri7, tri8, tri9</li></ul>
+<ul><li>delete.txt: tri5, tri8, tri2</li></ul>
+<ul><li>`output.txt` result: tri3, tri4, tri6, tri7, tri9 ✓</li></ul>
+<p>Dynamic update demo: Add tri7 to delete.txt, re-run → tri7 disappears from output; only four numbers remain for SMS.</p>
+<h3>28:41 — Production use at Durga Soft</h3>
+<p>Sir gave this program to admin staff workflow:</p>
+<ol><li>Put all target numbers in `input.txt`</li></ol>
+<ol><li>Put opt-out numbers in `delete.txt`</li></ol>
+<ol><li>Run Java program</li></ol>
+<ol><li>Use `output.txt` numbers for actual SMS send</li></ol>
+<p>This eliminated wrong-number harassment at scale.</p>
+<h3>29:18 — Full board program copied (FileExtractor complete)</h3>
+<pre class='code'>import java.io.*;
+
+class FileExtractor {
+    public static void main(String[] args) throws Exception {
+        PrintWriter pw = new PrintWriter(&quot;output.txt&quot;);
+        BufferedReader br1 = new BufferedReader(new FileReader(&quot;input.txt&quot;));
+        String line = br1.readLine();
+        while (line != null) {
+            boolean available = false;
+            BufferedReader br2 = new BufferedReader(new FileReader(&quot;delete.txt&quot;));
+            String target = br2.readLine();
+            while (target != null) {
+                if (line.equals(target)) {
+                    available = true;
+                    break;
+                }
+                target = br2.readLine();
+            }
+            if (available == false) {
+                pw.println(line);
+            }
+            line = br1.readLine();
+        }
+        pw.flush();
+    }
+}</pre>
+<p>Print/CE notes:</p>
+<ul><li>throws Exception — Sir avoids try/catch in classroom demos</li></ul>
+<ul><li>pw.flush() — ensures buffered output reaches disk before program ends</li></ul>
+<ul><li>Inner BufferedReader on delete.txt reopened per input line (simple but O(n×m); acceptable for teaching)</li></ul>
+<h3>32:44 — Second real problem: duplicate numbers in database</h3>
+<p>Story: Same student number stored multiple times:</p>
+<ul><li>Inquiry → demo → registration for Core Java = 3 entries</li></ul>
+<ul><li>Repeat for Advanced Java and Struts = 9 entries for one person</li></ul>
+<p>Meeting-room embarrassment: Ex-employee in serious company meeting (40 people) receives 9 identical &quot;Durga Soft new SCJP batch&quot; SMS within minutes — ringtone in hot meeting → account manager humiliation → employee calls to remove number.</p>
+<p>Two problems identified:</p>
+<ol><li>Reputation / goodwill damage</li></ol>
+<ol><li>Financial waste — 9 SMS charges for one person; that cost could reach 9 others</li></ol>
+<p>Requirement:</p>
+<p>Write a Java program to remove duplicates from the given input file.</p>
+<p>Output: `output.txt` with unique numbers only (first occurrence kept).</p>
+<h3>40:18 — Sample duplicate input</h3>
+<p>`input.txt` (board example):</p>
+<p>tri2
+tri3
+tri2
+tri4
+tri2
+tri4
+tri3
+tri5
+tri2
+tri4
+tri5
+tri6</p>
+<p>Expected unique `output.txt`:</p>
+<p>tri2
+tri3
+tri4
+tri5
+tri6</p>
+<p>Logic: Same structure as FileExtractor, but compare current line against `output.txt` so far (not a separate delete file):</p>
+<ul><li>If already written to output → ignore (duplicate)</li></ul>
+<ul><li>If not found in output → write + flush immediately so next comparison sees it</li></ul>
+<h3>42:18 — Board code: `DuplicateEliminator`</h3>
+<pre class='code'>PrintWriter pw = new PrintWriter(&quot;output.txt&quot;);
+BufferedReader br1 = new BufferedReader(new FileReader(&quot;input.txt&quot;));
+String line = br1.readLine();
+while (line != null) {
+    boolean available = false;
+    BufferedReader br2 = new BufferedReader(new FileReader(&quot;output.txt&quot;));
+    String target = br2.readLine();
+    while (target != null) {
+        if (line.equals(target)) {
+            available = true;
+            break;
+        }
+        target = br2.readLine();
+    }
+    if (available == false) {
+        pw.println(line);
+        pw.flush();   // critical — next read must see newly written line
+    }
+    line = br1.readLine();
+}</pre>
+<h3>47:41 — &quot;Empty output file&quot; doubt resolved</h3>
+<p>Student doubt: At start output.txt is empty — how does comparison work?</p>
+<p>Trace for first line `tri2`:</p>
+<ul><li>Open output.txt → readLine() returns `null`</li></ul>
+<ul><li>Inner while (target != null) never runs</li></ul>
+<ul><li>available stays `false`</li></ul>
+<ul><li>Write tri2 → program works from first line onward</li></ul>
+<p>Sir: &quot;100% it is going to work — valid program.&quot;</p>
+<h3>48:49 — Large-scale demo: 3,186 → 6 unique numbers</h3>
+<p>Sir copy-pastes repeated numbers into input.txt:</p>
+<ul><li>3,186 / 3,187 numbers in input (ASR varies)</li></ul>
+<ul><li>After run, `output.txt`: tri2, tri3, tri4, tri5, tri6, tri7 — only 6 unique lines</li></ul>
+<p>Compile &amp; run:</p>
+<pre class='code'>// javac DuplicateEliminator.java
+// java DuplicateEliminator</pre>
+<h3>49:44 — Complete DuplicateEliminator program</h3>
+<pre class='code'>import java.io.*;
+
+class DuplicateEliminator {
+    public static void main(String[] args) throws Exception {
+        PrintWriter pw = new PrintWriter(&quot;output.txt&quot;);
+        BufferedReader br1 = new BufferedReader(new FileReader(&quot;input.txt&quot;));
+        String line = br1.readLine();
+        while (line != null) {
+            boolean available = false;
+            BufferedReader br2 = new BufferedReader(new FileReader(&quot;output.txt&quot;));
+            String target = br2.readLine();
+            while (target != null) {
+                if (line.equals(target)) {
+                    available = true;
+                    break;
+                }
+                target = br2.readLine();
+            }
+            if (available == false) {
+                pw.println(line);
+                pw.flush();
+            }
+            line = br1.readLine();
+        }
+    }
+}</pre>
+<p>Key difference from FileExtractor:</p>
+<h3>56:20 — File I/O topic closure &amp; SCJP exam note</h3>
+<ul><li>File I/O concept ends here for this playlist block</li></ul>
+<ul><li>For SCJP/OCJP: expect 2–3 questions on File I/O — not the most heavily weighted topic, but not ignorable</li></ul>
+<ul><li>Both programs reinforce `PrintWriter` + `BufferedReader` pattern from prior PrintWriter sessions</li></ul>
+<h2>Summary table</h2>
+<p>Java code block count: 7</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Position</td><td>124 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>File I/O — Part 5 (PrintWriter Examples / File Extraction &amp; Duplicate Removal)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>56m 51s</td></tr>
+<tr><td>Video ID</td><td>l8ONfuJo7wg</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=l8ONfuJo7wg</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Caller type</th><th>Example reaction</th></tr>
+<tr><td>Valid inquiry</td><td>&quot;When is SCJP batch? Who is faculty? Fee? Demo date?&quot;</td></tr>
+<tr><td>Wrong number</td><td>Auto driver: &quot;What is SCJP? Why SMS me?&quot; (number reused from former student)</td></tr>
+<tr><td>Professional</td><td>Orthopedic surgeon at IM Hospital: &quot;What is Java?&quot;</td></tr>
+<tr><td>Threat</td><td>SI from Nagar police station: &quot;Tell your address — I will shoot each person&quot;</td></tr>
+</table>
+<table>
+<tr><th>Program</th><th>Compare against</th><th>flush?</th></tr>
+<tr><td>FileExtractor</td><td>delete.txt</td><td>end only</td></tr>
+<tr><td>DuplicateEliminator</td><td>output.txt (self)</td><td>after each write</td></tr>
+</table>
+<table>
+<tr><th>Program</th><th>Input</th><th>Second file</th><th>Output formula</th><th>Use case</th></tr>
+<tr><td>FileExtractor</td><td>input.txt</td><td>delete.txt</td><td>input − delete</td><td>SMS opt-out / blacklist</td></tr>
+<tr><td>DuplicateEliminator</td><td>input.txt</td><td>(reads own output.txt)</td><td>unique lines</td><td>SMS deduplication</td></tr>
+</table>
+</body></html>

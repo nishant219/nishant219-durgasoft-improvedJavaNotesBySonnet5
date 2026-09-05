@@ -1,0 +1,554 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>143-treeset</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 143 — Collections Part-8: TreeSet</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>This lecture is the first major session on TreeSet — the concrete implementation class for SortedSet. Durga Sir states he will spend roughly 3–4 hours across multiple videos on TreeSet alone, so clarity here is critical for OCJP/SCJP exams and interviews.</p>
+<p>What was already covered (prior sessions):</p>
+<ul><li>Set interface</li></ul>
+<ul><li>SortedSet interface (no demo program possible — it is an interface, not a class)</li></ul>
+<ul><li>NavigableSet — deferred to a separate Java 1.6 enhancements heading (covered later)</li></ul>
+<p>What this session covers:</p>
+<ol><li>TreeSet introduction and all core properties/conclusions</li></ol>
+<ol><li>Four TreeSet constructors (with emphasis on first two)</li></ol>
+<ol><li>Demo 1 — default natural sorting with String objects</li></ol>
+<ol><li>Heterogeneous objects → ClassCastException</li></ol>
+<ol><li>Null acceptance — complete rules + Java 1.6 vs 1.7 version difference</li></ol>
+<ol><li>Demo 2 — StringBuffer objects → ClassCastException (non-Comparable)</li></ol>
+<ol><li>Default natural sorting order requirements: homogeneous + Comparable</li></ol>
+<ol><li>`Comparable` interface — package, method, compareTo() semantics</li></ol>
+<ol><li>Demo 3 — compareTo() behavior with live output</li></ol>
+<ol><li>Internal TreeSet insertion mechanism — how JVM calls compareTo() while building the balanced tree</li></ol>
+<ol><li>Comparable vs Comparator — the most important thumb rule for the collection framework</li></ol>
+<p>What continues in next session:</p>
+<ul><li>Comparator interface (explicit customized sorting)</li></ul>
+<ul><li>More TreeSet demo programs</li></ul>
+<h2>00:06 — Recap: SortedSet → TreeSet</h2>
+<h3>Why no SortedSet demo?</h3>
+<p>SortedSet is an interface. You cannot write:</p>
+<p>SortedSet s = new SortedSet(); // CE — interface cannot be instantiated</p>
+<p>Interfaces define contracts; concrete classes provide implementation. Therefore there is no standalone &quot;SortedSet demo program&quot; — you always work through an implementation class.</p>
+<h3>Hierarchy reminder</h3>
+<p>Set (I)
+ └── SortedSet (I)          ← covered previously, no demo
+      └── NavigableSet (I)  ← Java 1.6, covered later
+           └── TreeSet (C)  ← TODAY&#x27;S FOCUS</p>
+<p>Implementation class for SortedSet = TreeSet</p>
+<p>Durga Sir explicitly defers NavigableSet to a separate Java 1.6 version enhancements section. Today&#x27;s focus is entirely on TreeSet.</p>
+<h2>01:19 — TreeSet: Core Properties &amp; Conclusions</h2>
+<p>Take special care — these points are exam staples and form the foundation for TreeMap (same terminology applies).</p>
+<h3>Property 1: Underlying data structure</h3>
+<p>Balanced Tree (Red-Black Tree internally in Java&#x27;s TreeSet implementation).</p>
+<p>Unlike HashSet (hash table) or ArrayList (dynamic array/resizable array), TreeSet maintains elements in a tree structure that stays balanced for efficient insertion, deletion, and lookup — O(log n) operations.</p>
+<h3>Property 2: Duplicate objects</h3>
+<p>NOT allowed.</p>
+<p>TreeSet is a Set implementation. Duplicate insertion is rejected. When compareTo() returns 0 (objects are equal by sorting order), the duplicate is silently not inserted.</p>
+<h3>Property 3: Insertion order</h3>
+<p>NOT preserved.</p>
+<p>Elements are inserted according to sorting order, not the order in which you call add(). If you add &quot;Z&quot;, then &quot;A&quot;, then &quot;L&quot;, the internal/storage order follows alphabetical sorting — not Z-A-L.</p>
+<h3>Property 4: Heterogeneous objects</h3>
+<p>NOT allowed.</p>
+<p>This is a critical exception in the Collections Framework:</p>
+<p>Reason: Comparison is compulsory in TreeSet. To compare two objects, they must be of the same type. If you mix String and Integer, the JVM cannot perform a meaningful comparison → `ClassCastException`.</p>
+<p>TreeSet t = new TreeSet();
+t.add(&quot;A&quot;);
+t.add(&quot;B&quot;);
+t.add(new Integer(10)); // RuntimeException: ClassCastException</p>
+<h3>Property 5: Null insertion</h3>
+<p>Possible — but only once (with major caveats; see Null Acceptance section below).</p>
+<p>Default board answer: &quot;Null insertion is possible (only once).&quot;</p>
+<p>But Durga Sir immediately warns: &quot;There is a big story about null.&quot; Full rules are covered separately because null behavior differs by TreeSet state (empty vs non-empty) and by Java version.</p>
+<h3>Property 6: Marker interfaces</h3>
+<p>TreeSet implements:</p>
+<ul><li>`Serializable` — yes</li></ul>
+<ul><li>`Cloneable` — yes</li></ul>
+<ul><li>`RandomAccess` — NO</li></ul>
+<p>Same pattern as other collection classes (except RandomAccess, which is only for List implementations like ArrayList).</p>
+<h3>Property 7: Sorting order</h3>
+<p>All objects are inserted based on some sorting order.</p>
+<p>Two options exist:</p>
+<h2>06:52 — TreeSet Constructors (All Four)</h2>
+<p>Very important — same constructor terminology repeats for TreeMap and SortedMap. Master these here.</p>
+<h3>Constructor 1: No-argument (DEFAULT NATURAL SORTING)</h3>
+<pre class='code'>TreeSet t = new TreeSet();</pre>
+<ul><li>Creates an empty TreeSet</li></ul>
+<ul><li>Elements inserted according to default natural sorting order</li></ul>
+<ul><li>Natural order comes from the element class implementing Comparable interface</li></ul>
+<p>Thumb rule: No-arg constructor = default natural sorting order.</p>
+<h3>Constructor 2: Comparator argument (CUSTOMIZED SORTING)</h3>
+<pre class='code'>TreeSet t = new TreeSet(Comparator c);</pre>
+<ul><li>Creates an empty TreeSet</li></ul>
+<ul><li>Elements inserted according to customized sorting order</li></ul>
+<ul><li>Customized order is specified by the `Comparator` object passed as argument</li></ul>
+<p>Thumb rule: Comparator-argument constructor = customized sorting order.</p>
+<p>Durga Sir: &quot;We are going to use minimum 10 times these two words.&quot;</p>
+<h3>Constructor 3: Collection argument (INTER-CONVERSION)</h3>
+<pre class='code'>TreeSet t = new TreeSet(Collection c);</pre>
+<ul><li>Used for inter-conversion between collection objects</li></ul>
+<ul><li>If you pass a normal ArrayList (or any Collection), TreeSet applies default natural sorting order to those elements</li></ul>
+<ul><li>The source collection has no inherent sorting — TreeSet imposes natural order</li></ul>
+<h3>Constructor 4: SortedSet argument (EQUIVALENT TREESET)</h3>
+<pre class='code'>TreeSet t = new TreeSet(SortedSet s);</pre>
+<ul><li>Creates an equivalent TreeSet from any existing SortedSet</li></ul>
+<ul><li>Same sorting order as the source SortedSet is preserved</li></ul>
+<ul><li>Contrast with Constructor 3: here the source already has a defined sort order</li></ul>
+<h3>Constructor summary table</h3>
+<p>Constructors 3 and 4 are &quot;normal&quot; inter-conversion constructors — less exam emphasis than 1 and 2.</p>
+<h2>14:04 — Demo 1: TreeSetDemo (String Natural Sorting)</h2>
+<h3>Program</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetDemo {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet();  // no-arg → default natural sorting
+        t.add(&quot;A&quot;);
+        t.add(&quot;A&quot;);   // duplicate — ignored
+        t.add(&quot;B&quot;);
+        t.add(&quot;Z&quot;);
+        t.add(&quot;L&quot;);
+        // t.add(new Integer(10));  // ClassCastException — heterogeneous
+        // t.add(null);             // see Null Acceptance section
+        System.out.println(t);
+    }
+}</pre>
+<h3>Which constructor? Which sorting?</h3>
+<ul><li>Constructor used: No-argument → default natural sorting order</li></ul>
+<ul><li>Object type: `String` — implements Comparable → valid</li></ul>
+<h3>Predicting the output</h3>
+<p>Insertion sequence: A, A, B, Z, L — but insertion order is NOT preserved. Output follows sorting order.</p>
+<p>For String, default natural sorting is lexicographic (Unicode-based) order.</p>
+<p>Critical Unicode fact (exam favorite):</p>
+<p>Small `&#x27;a&#x27;` is &quot;bigger&quot; than capital `&#x27;A&#x27;` because 97 &gt; 65.</p>
+<p>Given input: &quot;A&quot;, &quot;A&quot; (dup), &quot;B&quot;, &quot;Z&quot;, &quot;L&quot; — all capitals except none here, but if small &#x27;a&#x27; were added:</p>
+<p>Capital letters (65–90) come before lowercase letters (97–122)</p>
+<p>Output: [A, B, L, Z]</p>
+<p>(Duplicate &quot;A&quot; is not inserted twice. If &quot;a&quot; (lowercase) were also added, it would appear after &quot;Z&quot;.)</p>
+<h3>Heterogeneous objects in Demo 1</h3>
+<p>t.add(new Integer(10));  // after String objects already present</p>
+<p>Result: Exception in thread &quot;main&quot; java.lang.ClassCastException</p>
+<ul><li>String and Integer are heterogeneous types</li></ul>
+<ul><li>TreeSet cannot compare them → ClassCastException</li></ul>
+<ul><li>This line is kept as a commented line in the board example</li></ul>
+<h2>13:13 — Null Acceptance in TreeSet (Complete Rules)</h2>
+<p>&quot;There is a big story about null.&quot; — one of the most tested TreeSet topics.</p>
+<h3>Why null is problematic in TreeSet</h3>
+<p>While adding objects to TreeSet, comparison is compulsory (except for the very first element in an empty set).</p>
+<p>When inserting null, the JVM must decide: &quot;Should null go before or after existing element X?&quot; → it must compare null with existing elements.</p>
+<p>Comparing any object with `null` → `NullPointerException`.</p>
+<h3>Rule 1: Non-empty TreeSet + null insertion</h3>
+<p>If TreeSet already contains elements (non-empty),
+and you try to insert null → NullPointerException</p>
+<p>Example:</p>
+<p>TreeSet t = new TreeSet();
+t.add(&quot;A&quot;);
+t.add(&quot;B&quot;);
+t.add(&quot;C&quot;);
+t.add(null);  // NPE at runtime — compiles fine!</p>
+<ul><li>Code compiles fine (generics erasure; null is allowed at compile time)</li></ul>
+<ul><li>At runtime: NullPointerException</li></ul>
+<ul><li>Reason: null must be compared with existing &quot;A&quot;, &quot;B&quot;, &quot;C&quot; to find its position in the tree</li></ul>
+<h3>Rule 2: Empty TreeSet — first element null</h3>
+<p>If TreeSet is empty,
+inserting null as the FIRST element → ACCEPTABLE (Java 1.6 only — see version note)</p>
+<p>Example (Java 1.6):</p>
+<p>TreeSet t = new TreeSet();
+t.add(null);  // OK in Java 1.6 — no comparison needed for first element
+System.out.println(t);  // prints [null]</p>
+<p>No comparison required for the first element — tree is empty, null goes in directly.</p>
+<h3>Rule 3: After null is inserted, adding any other element</h3>
+<p>If TreeSet contains null as first element,
+and you try to insert ANY other element → NullPointerException</p>
+<p>Example:</p>
+<p>TreeSet t = new TreeSet();
+t.add(null);     // OK (Java 1.6)
+t.add(&quot;A&quot;);      // NPE — must compare &quot;A&quot; with null</p>
+<p>When adding &quot;A&quot;, JVM calls &quot;A&quot;.compareTo(null) or compares null with existing element → NullPointerException.</p>
+<h3>Null acceptance summary (board notes)</h3>
+<h3>★ Version difference: Java 1.6 vs 1.7+ (STAR NOTE — exam critical)</h3>
+<p>Durga Sir demonstrates the same program on two JDK versions:</p>
+<p>Java 1.6:</p>
+<p>TreeSet t = new TreeSet();
+t.add(null);
+// Output: [null]  ← WORKS</p>
+<p>Java 1.7 onwards:</p>
+<p>TreeSet t = new TreeSet();
+t.add(null);
+// NullPointerException  ← FAILS even as first element</p>
+<p>Board note with star (★):</p>
+<p>Until Java 1.6: Null is allowed at the first element to an empty TreeSet.</p>
+<p>From Java 1.7 onwards: Null is NOT allowed even as the first element.</p>
+<p>&quot;Null such type of story not applicable for TreeSet from 1.7 version onwards.&quot;</p>
+<p>For modern OCJP/SCJP exams (Java 8+), the answer is: null is NOT allowed in TreeSet at all.</p>
+<h2>31:08 — Demo 2: TreeSetDemo1 (StringBuffer — Non-Comparable)</h2>
+<h3>Program</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetDemo1 {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet();  // default natural sorting
+        t.add(new StringBuffer(&quot;A&quot;));
+        t.add(new StringBuffer(&quot;Z&quot;));
+        t.add(new StringBuffer(&quot;L&quot;));
+        t.add(new StringBuffer(&quot;B&quot;));
+        System.out.println(t);
+    }
+}</pre>
+<h3>Student trap question</h3>
+<p>Durga Sir asks: &quot;What output — `[A, Z, L, B]`, `[A, B, L, Z]`, or `[Z, L, B, A]`?&quot;</p>
+<p>Many students guess `[A, B, L, Z]` (alphabetical) because they assume StringBuffer behaves like String.</p>
+<p>Wrong. The program throws `ClassCastException` at runtime.</p>
+<h3>Why ClassCastException?</h3>
+<ul><li>Objects are homogeneous (all StringBuffer) — no heterogeneous problem</li></ul>
+<ul><li>Constructor is no-arg → default natural sorting order</li></ul>
+<ul><li>For default natural sorting: objects must be homogeneous AND Comparable</li></ul>
+<p>`StringBuffer` does NOT implement `Comparable`.</p>
+<h3>Proof via `javap`</h3>
+<p>String class:</p>
+<pre class='code'>public final class java.lang.String
+    extends java.lang.Object
+    implements java.io.Serializable, Comparable&lt;String&gt;, ...</pre>
+<p>→ String implements Comparable ✓</p>
+<p>StringBuffer class:</p>
+<pre class='code'>public final class java.lang.StringBuffer
+    extends AbstractStringBuilder
+    implements java.io.Serializable, CharSequence</pre>
+<p>→ No Comparable ✗</p>
+<h3>Exception message</h3>
+<p>Exception in thread &quot;main&quot; java.lang.ClassCastException:
+    java.lang.StringBuffer cannot be cast to java.lang.Comparable</p>
+<p>The JVM internally tries to cast StringBuffer to Comparable to call compareTo() — fails.</p>
+<h3>Default natural sorting order — mandatory conditions</h3>
+<p>If we are depending on default natural sorting order, compulsory the objects should be:</p>
+<p>1. Homogeneous (same type)</p>
+<p>2. Comparable (class implements Comparable interface)</p>
+<p>If either condition fails → ClassCastException.</p>
+<h3>When is an object &quot;Comparable&quot;?</h3>
+<p>An object is said to be Comparable if and only if the corresponding class implements `Comparable` interface.</p>
+<p>Classes that already implement Comparable:</p>
+<ul><li>String class</li></ul>
+<ul><li>All wrapper classes (Byte, Short, Integer, Long, Float, Double, Character, Boolean)</li></ul>
+<p>Classes that do NOT implement Comparable (example):</p>
+<ul><li>StringBuffer class</li></ul>
+<h2>45:35 — Comparable Interface (Theory)</h2>
+<h3>Package and structure</h3>
+<h3>compareTo() method — complete syntax</h3>
+<pre class='code'>public int compareTo(Object obj);   // legacy/raw
+// modern:
+public int compareTo(T obj);</pre>
+<h3>Why return type is `int`, NOT `boolean`</h3>
+<p>When comparing two objects (obj1 vs obj2), three outcomes are possible:</p>
+<p>Boolean can only represent two states. Three states require `int`:</p>
+<ul><li>Negative → one category (before)</li></ul>
+<ul><li>Positive → another category (after)</li></ul>
+<ul><li>Zero → third category (equal/duplicate)</li></ul>
+<h3>compareTo() return value semantics</h3>
+<p>obj1.compareTo(obj2)</p>
+<p>Important: The magnitude of the negative/positive value does NOT matter — only the sign matters. -25 and -1 both mean &quot;before&quot;.</p>
+<h3>compareTo() with null</h3>
+<p>&quot;A&quot;.compareTo(null);  // NullPointerException</p>
+<p>Comparing any element with null always throws NullPointerException. This connects directly to TreeSet null acceptance rules.</p>
+<h2>53:12 — Demo 3: Tester.java (compareTo Behavior)</h2>
+<h3>Program</h3>
+<pre class='code'>class Tester {
+    public static void main(String[] args) {
+        System.out.println(&quot;A&quot;.compareTo(&quot;Z&quot;));      // negative
+        System.out.println(&quot;Z&quot;.compareTo(&quot;K&quot;));      // positive
+        System.out.println(&quot;A&quot;.compareTo(&quot;A&quot;));      // zero
+        System.out.println(&quot;A&quot;.compareTo(null));     // NullPointerException
+    }
+}</pre>
+<h3>Expected output</h3>
+<p>-25          ← negative (A comes before Z)
+1            ← positive (Z comes after K)
+0            ← zero (A equals A)
+Exception in thread &quot;main&quot; java.lang.NullPointerException</p>
+<h3>Reasoning for each line</h3>
+<p>Note: Don&#x27;t focus on -25 vs -1 — focus on minus sign = before.</p>
+<h2>58:55 — Internal TreeSet Insertion Mechanism (compareTo in Action)</h2>
+<p>&quot;What is the relation between compareTo method and TreeSet?&quot; — the most valuable internal concept.</p>
+<h3>Demo program</h3>
+<pre class='code'>import java.util.*;
+
+class TreeSetInternalDemo {
+    public static void main(String[] args) {
+        TreeSet t = new TreeSet();  // default natural sorting
+        t.add(&quot;K&quot;);   // first element — no comparison
+        t.add(&quot;Z&quot;);
+        t.add(&quot;A&quot;);
+        t.add(&quot;A&quot;);   // duplicate
+        System.out.println(t);  // [A, K, Z]
+    }
+}</pre>
+<h3>Step-by-step internal insertion</h3>
+<h4>Step 1: `t.add(&quot;K&quot;)` — first element</h4>
+<ul><li>TreeSet is empty</li></ul>
+<ul><li>No comparison required for first element</li></ul>
+<ul><li>&quot;K&quot; becomes the root of the balanced tree</li></ul>
+<p>Tree:  K (root)</p>
+<h4>Step 2: `t.add(&quot;Z&quot;)` — second element</h4>
+<ul><li>Comparison required</li></ul>
+<ul><li>JVM internally calls: `&quot;Z&quot;.compareTo(&quot;K&quot;)`</li></ul>
+<p>obj1 vs obj2 identification (CRITICAL — exam favorite):</p>
+<ul><li>&quot;Z&quot;.compareTo(&quot;K&quot;) → Z comes after K → returns positive</li></ul>
+<ul><li>JVM decides: Z goes to the right of K (right = greater)</li></ul>
+<p>Tree:  K
+         \
+          Z</p>
+<h4>Step 3: `t.add(&quot;A&quot;)` — third element</h4>
+<ul><li>JVM calls: `&quot;A&quot;.compareTo(&quot;K&quot;)` (compare with root first)</li></ul>
+<ul><li>A comes before K → returns negative</li></ul>
+<ul><li>JVM places A to the left of K</li></ul>
+<p>Tree:    K
+       /   \
+      A     Z</p>
+<h4>Step 4: `t.add(&quot;A&quot;)` — duplicate attempt</h4>
+<ul><li>JVM calls: `&quot;A&quot;.compareTo(&quot;K&quot;)` → negative → go left</li></ul>
+<ul><li>At left, &quot;A&quot; already exists</li></ul>
+<ul><li>JVM calls: `&quot;A&quot;.compareTo(&quot;A&quot;)` → returns zero</li></ul>
+<ul><li>Zero = duplicate → do NOT insert</li></ul>
+<p>Final tree: A ← K → Z</p>
+<p>Output: [A, K, Z]</p>
+<h3>Internal mechanism — board conclusion</h3>
+<p>If we are depending on default natural sorting order, then while adding objects into the TreeSet, JVM will call `compareTo()` method internally.</p>
+<p>Therefore:</p>
+<ul><li>Objects must be Comparable (otherwise JVM cannot call compareTo())</li></ul>
+<ul><li>Objects must be homogeneous (otherwise comparison is meaningless)</li></ul>
+<h3>obj1 vs obj2 — memorize this</h3>
+<p>obj1.compareTo(obj2)
+
+obj1 = the object which is TO BE INSERTED (new element being added)
+obj2 = the object which is ALREADY INSERTED (existing element in tree)</p>
+<p>Durga Sir emphasizes: &quot;The most valuable terminology you people should be aware clearly.&quot;</p>
+<h3>Tree navigation logic</h3>
+<p>When going left/right and another node exists, compare again with that node (may require multiple comparisons per insertion).</p>
+<h2>1:11:13 — Comparable vs Comparator (Thumb Rule)</h2>
+<h3>When default natural sorting is not enough</h3>
+<p>Two scenarios require Comparator (covered in next session):</p>
+<ol><li>Default natural sorting order not already available</li></ol>
+<ul><li>Example: StringBuffer — no Comparable implementation</li></ul>
+<ul><li>You must supply external sorting logic via Comparator</li></ul>
+<ol><li>Not satisfied with default natural sorting order</li></ol>
+<ul><li>Example: Strings sort alphabetically A→Z, but you want reverse alphabetical Z→A</li></ul>
+<ul><li>Default order exists but you want customized order</li></ul>
+<h3>The one-line interview answer (HIGHLIGHT THIS)</h3>
+<p>Board note:</p>
+<p>If default natural sorting order is not available, OR if we are not satisfied with default natural sorting order, then we can go for customized sorting by using `Comparator`.</p>
+<h3>How they relate to TreeSet constructors</h3>
+<ul><li>Comparable — everything happens internally (class implements it, JVM calls compareTo())</li></ul>
+<ul><li>Comparator — what we have to do explicitly (pass object, define compare() method) — next session</li></ul>
+<h2>Complete TreeSet Properties — Quick Reference Card</h2>
+<h2>Exception Quick Reference</h2>
+<h2>Classes Implementing Comparable (Exam List)</h2>
+<h2>Interview / OCJP Must-Know Questions</h2>
+<ol><li>What is the underlying data structure of TreeSet?</li></ol>
+<p>→ Balanced Tree (Red-Black Tree)</p>
+<ol><li>What is the implementation class for SortedSet?</li></ol>
+<p>→ TreeSet</p>
+<ol><li>Are heterogeneous objects allowed in TreeSet?</li></ol>
+<p>→ No — ClassCastException (TreeSet and TreeMap are the only exceptions in Collections Framework)</p>
+<ol><li>What are the two mandatory conditions for default natural sorting in TreeSet?</li></ol>
+<p>→ Objects must be homogeneous AND Comparable</p>
+<ol><li>When is an object said to be Comparable?</li></ol>
+<p>→ If its class implements Comparable interface</p>
+<ol><li>What is the return type of compareTo()? Why not boolean?</li></ol>
+<p>→ int — because three outcomes (before, after, equal) need three states</p>
+<ol><li>compareTo() returns negative / positive / zero — what does each mean?</li></ol>
+<p>→ Negative = obj1 before obj2; Positive = obj1 after obj2; Zero = equal (duplicate)</p>
+<ol><li>In obj1.compareTo(obj2) during TreeSet insertion, which is obj1?</li></ol>
+<p>→ The object being inserted (new element)</p>
+<ol><li>Null in TreeSet — Java 1.6 vs 1.7?</li></ol>
+<p>→ 1.6: null allowed as first element only; 1.7+: null never allowed</p>
+<ol><li>Difference between Comparable and Comparator?</li></ol>
+<p>→ Comparable = default natural sorting; Comparator = customized sorting</p>
+<ol><li>Which TreeSet constructor for natural sorting? For custom sorting?</li></ol>
+<p>→ No-arg = natural; TreeSet(Comparator) = customized</p>
+<ol><li>Why StringBuffer fails in TreeSet with no-arg constructor?</li></ol>
+<p>→ StringBuffer doesn&#x27;t implement Comparable; JVM cannot call compareTo()</p>
+<h2>Programs Covered in This Session</h2>
+<h2>Connection to Upcoming Topics</h2>
+<h2>Durga Sir&#x27;s Emphasis Points (Write in Notebook)</h2>
+<ol><li>&quot;Take a bit special care&quot; — TreeSet conclusions are foundation for TreeMap</li></ol>
+<ol><li>&quot;Minimum 10 times these two words&quot; — Comparable vs Comparator</li></ol>
+<ol><li>&quot;Most valuable terminology&quot; — obj1 = to be inserted, obj2 = already inserted</li></ol>
+<ol><li>&quot;Star note&quot; — Java 1.6 vs 1.7 null behavior in TreeSet</li></ol>
+<ol><li>&quot;3 to 4 hours only on TreeSet&quot; — this is a deep topic; don&#x27;t rush</li></ol>
+<ol><li>Constructor 1 = natural, Constructor 2 = customized — memorize permanently</li></ol>
+<ol><li>StringBuffer looks like String but is NOT Comparable — classic exam trap</li></ol>
+<ol><li>compareTo sign matters, not magnitude (-25 same as -1 for ordering purposes)</li></ol>
+<ol><li>Duplicates silently rejected when compareTo returns 0</li></ol>
+<ol><li>Comparable = internal/automatic; Comparator = external/explicit (next class)</li></ol>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>143 of 203</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Collections Part-8 \</td><td>\</td><td>TreeSet</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=sLW7GufoSXM</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 16m 30s</td><td></td><td></td></tr>
+<tr><td>Source</td><td>YouTube auto-captions (yt-dlp)</td><td></td><td></td></tr>
+<tr><td>Series</td><td>Collections Framework (Part-8)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Collection</th><th>Heterogeneous objects allowed?</th></tr>
+<tr><td>ArrayList</td><td>Yes</td></tr>
+<tr><td>LinkedList</td><td>Yes</td></tr>
+<tr><td>HashSet</td><td>Yes</td></tr>
+<tr><td>LinkedHashSet</td><td>Yes</td></tr>
+<tr><td>TreeSet</td><td>No</td></tr>
+<tr><td>TreeMap</td><td>No (keys must be comparable)</td></tr>
+<tr><td>All others</td><td>Yes</td></tr>
+</table>
+<table>
+<tr><th>Sorting type</th><th>Mechanism</th><th>Constructor</th></tr>
+<tr><td>Default natural sorting order</td><td>Objects must implement Comparable; JVM calls compareTo() internally</td><td>No-arg constructor</td></tr>
+<tr><td>Customized sorting order</td><td>You supply a Comparator object</td><td>TreeSet(Comparator c) constructor</td></tr>
+</table>
+<table>
+<tr><th>Concept</th><th>Purpose</th></tr>
+<tr><td>`Comparable`</td><td>Default natural sorting order (built into the class)</td></tr>
+<tr><td>`Comparator`</td><td>Customized / our own sorting order (external, passed at construction)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Syntax</th><th>Sorting order applied</th></tr>
+<tr><td>1</td><td>new TreeSet()</td><td>Default natural sorting</td></tr>
+<tr><td>2</td><td>new TreeSet(Comparator c)</td><td>Customized sorting (via Comparator)</td></tr>
+<tr><td>3</td><td>new TreeSet(Collection c)</td><td>Default natural sorting</td></tr>
+<tr><td>4</td><td>new TreeSet(SortedSet s)</td><td>Same as source SortedSet</td></tr>
+</table>
+<table>
+<tr><th>Character</th><th>Unicode value</th></tr>
+<tr><td>&#x27;A&#x27; (capital A)</td><td>65</td></tr>
+<tr><td>&#x27;a&#x27; (small a)</td><td>97</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Result</th></tr>
+<tr><td>Non-empty TreeSet + add(null)</td><td>NullPointerException</td></tr>
+<tr><td>Empty TreeSet + add(null) as first element</td><td>Allowed (Java ≤ 1.6)</td></tr>
+<tr><td>TreeSet containing null + add(anything else)</td><td>NullPointerException</td></tr>
+<tr><td>Second add(null) attempt</td><td>Duplicate null — only one null possible anyway</td></tr>
+</table>
+<table>
+<tr><th>Failure type</th><th>Example</th><th>Exception</th></tr>
+<tr><td>Heterogeneous</td><td>String + Integer</td><td>ClassCastException</td></tr>
+<tr><td>Non-Comparable</td><td>StringBuffer only</td><td>ClassCastException</td></tr>
+</table>
+<table>
+<tr><th>Detail</th><th>Value</th></tr>
+<tr><td>Interface</td><td>Comparable</td></tr>
+<tr><td>Package</td><td>java.lang</td></tr>
+<tr><td>Methods</td><td>Only one method: compareTo()</td></tr>
+<tr><td>Type</td><td>Generic since Java 5: Comparable&lt;T&gt;</td></tr>
+</table>
+<table>
+<tr><th>Outcome</th><th>Meaning</th></tr>
+<tr><td>obj1 comes before obj2</td><td>Negative return</td></tr>
+<tr><td>obj1 comes after obj2</td><td>Positive return</td></tr>
+<tr><td>obj1 and obj2 are equal</td><td>Zero return</td></tr>
+</table>
+<table>
+<tr><th>Return value</th><th>Meaning</th><th>TreeSet action</th></tr>
+<tr><td>Negative (e.g., -1, -25, -1000)</td><td>obj1 has to come before obj2</td><td>Place obj1 to the left (smaller)</td></tr>
+<tr><td>Positive (e.g., +1, +25, +1000)</td><td>obj1 has to come after obj2</td><td>Place obj1 to the right (greater)</td></tr>
+<tr><td>Zero (0)</td><td>obj1 and obj2 are equal</td><td>Duplicate — do NOT insert</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>Alphabetical reasoning</th><th>Return</th></tr>
+<tr><td>&quot;A&quot;.compareTo(&quot;Z&quot;)</td><td>A comes before Z</td><td>Negative (-25)</td></tr>
+<tr><td>&quot;Z&quot;.compareTo(&quot;K&quot;)</td><td>Z comes after K</td><td>Positive (+1)</td></tr>
+<tr><td>&quot;A&quot;.compareTo(&quot;A&quot;)</td><td>Both equal</td><td>Zero (0)</td></tr>
+<tr><td>&quot;A&quot;.compareTo(null)</td><td>Cannot compare with null</td><td>NullPointerException</td></tr>
+</table>
+<table>
+<tr><th>Variable</th><th>Meaning</th></tr>
+<tr><td>obj1</td><td>The object being inserted (new element) = &quot;Z&quot;</td></tr>
+<tr><td>obj2</td><td>The object already in the tree (existing element) = &quot;K&quot;</td></tr>
+</table>
+<table>
+<tr><th>compareTo result</th><th>Tree direction</th><th>Meaning</th></tr>
+<tr><td>Negative</td><td>Go left</td><td>New element is smaller</td></tr>
+<tr><td>Positive</td><td>Go right</td><td>New element is greater</td></tr>
+<tr><td>Zero</td><td>Stop — duplicate</td><td>Do not insert</td></tr>
+</table>
+<table>
+<tr><th>Interface</th><th>Purpose</th></tr>
+<tr><td>`Comparable`</td><td>Meant for default natural sorting order</td></tr>
+<tr><td>`Comparator`</td><td>Meant for customized sorting order</td></tr>
+</table>
+<table>
+<tr><th>Goal</th><th>Constructor</th><th>Interface involved</th></tr>
+<tr><td>Natural order</td><td>new TreeSet()</td><td>Comparable (internal, automatic)</td></tr>
+<tr><td>Custom order</td><td>new TreeSet(Comparator c)</td><td>Comparator (external, explicit)</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>TreeSet</th></tr>
+<tr><td>Underlying DS</td><td>Balanced Tree</td></tr>
+<tr><td>Duplicates</td><td>Not allowed</td></tr>
+<tr><td>Insertion order</td><td>Not preserved</td></tr>
+<tr><td>Heterogeneous objects</td><td>Not allowed (ClassCastException)</td></tr>
+<tr><td>Null insertion</td><td>Not allowed (Java 7+); complex rules in Java 6</td></tr>
+<tr><td>Serializable</td><td>Yes</td></tr>
+<tr><td>Cloneable</td><td>Yes</td></tr>
+<tr><td>RandomAccess</td><td>No</td></tr>
+<tr><td>Sorting</td><td>Default natural OR customized (Comparator)</td></tr>
+<tr><td>Interface implemented</td><td>NavigableSet → SortedSet → Set</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Exception</th></tr>
+<tr><td>Heterogeneous objects (e.g., String + Integer)</td><td>ClassCastException</td></tr>
+<tr><td>Non-Comparable objects with no-arg constructor (e.g., StringBuffer)</td><td>ClassCastException (cannot cast to Comparable)</td></tr>
+<tr><td>Null in non-empty TreeSet</td><td>NullPointerException</td></tr>
+<tr><td>Any element after null is in TreeSet (Java 6)</td><td>NullPointerException</td></tr>
+<tr><td>Null as first element (Java 7+)</td><td>NullPointerException</td></tr>
+<tr><td>&quot;A&quot;.compareTo(null)</td><td>NullPointerException</td></tr>
+<tr><td>Duplicate insert (compareTo returns 0)</td><td>Silently ignored (no exception)</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Implements Comparable?</th></tr>
+<tr><td>java.lang.String</td><td>Yes</td></tr>
+<tr><td>java.lang.Byte</td><td>Yes</td></tr>
+<tr><td>java.lang.Short</td><td>Yes</td></tr>
+<tr><td>java.lang.Integer</td><td>Yes</td></tr>
+<tr><td>java.lang.Long</td><td>Yes</td></tr>
+<tr><td>java.lang.Float</td><td>Yes</td></tr>
+<tr><td>java.lang.Double</td><td>Yes</td></tr>
+<tr><td>java.lang.Character</td><td>Yes</td></tr>
+<tr><td>java.lang.Boolean</td><td>Yes</td></tr>
+<tr><td>java.lang.StringBuffer</td><td>No</td></tr>
+<tr><td>java.lang.StringBuilder</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Class name</th><th>Purpose</th><th>Key output/exception</th></tr>
+<tr><td>1</td><td>TreeSetDemo</td><td>String natural sorting, heterogeneous demo, null demo</td><td>[A, B, L, Z]</td></tr>
+<tr><td>2</td><td>TreeSetDemo1</td><td>StringBuffer non-Comparable</td><td>ClassCastException</td></tr>
+<tr><td>3</td><td>Tester</td><td>compareTo() return values</td><td>-25, 1, 0, NPE</td></tr>
+<tr><td>4</td><td>TreeSet internal demo</td><td>K, Z, A, A insertion</td><td>[A, K, Z]</td></tr>
+</table>
+<table>
+<tr><th>Topic</th><th>Status</th></tr>
+<tr><td>TreeSet properties &amp; constructors</td><td>✅ This session</td></tr>
+<tr><td>Null acceptance rules</td><td>✅ This session</td></tr>
+<tr><td>Comparable &amp; compareTo()</td><td>✅ This session</td></tr>
+<tr><td>Internal insertion mechanism</td><td>✅ This session</td></tr>
+<tr><td>Comparable vs Comparator thumb rule</td><td>✅ Introduced</td></tr>
+<tr><td>Comparator interface &amp; compare()</td><td>⏳ Next session</td></tr>
+<tr><td>NavigableSet (Java 1.6)</td><td>⏳ Later session</td></tr>
+<tr><td>TreeMap</td><td>⏳ Future (same constructor terminology)</td></tr>
+<tr><td>More TreeSet demo programs (5–6 total planned)</td><td>⏳ Continuing</td></tr>
+</table>
+</body></html>

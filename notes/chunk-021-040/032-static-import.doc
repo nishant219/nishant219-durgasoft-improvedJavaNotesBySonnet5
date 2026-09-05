@@ -1,0 +1,716 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>032-static-import</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 032 — static import</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-3 || static import</p>
+<h2>What this lecture covers</h2>
+<p>Last video (031) finished the nine import cases, C #include vs Java import, the 1.5 feature list, Sun vs worldwide experts on static import, and the first Math demo (sqrt / max / random). This part is the rest of static import — the loopholes, the live compiles, and the exam bits.</p>
+<ol><li>Recap: we normally access static members by class name; static import lets us skip the class name.</li></ol>
+<ol><li>Two types: explicit static import vs implicit static import (import static java.lang.Math.sqrt; vs import static java.lang.Math.*;).</li></ol>
+<ol><li>java.lang already gives us the Math class, not unqualified sqrt(). That is the whole point of static import.</li></ol>
+<ol><li>Full anatomy of System.out.println — System is a class, out is a static PrintStream, println is an instance method.</li></ol>
+<ol><li>System.out.println via static import of `out`: out.println(&quot;hello&quot;);</li></ol>
+<ol><li>You cannot static-import println. You cannot normal-import out.</li></ol>
+<ol><li>Ambiguity: two static imports of the same name (Integer.MAX_VALUE and Byte.MAX_VALUE).</li></ol>
+<ol><li>Precedence while resolving static members: current class → explicit static import → implicit static import.</li></ol>
+<ol><li>Exam list: which import statements are valid.</li></ol>
+<ol><li>Normal import vs static import (what each one brings into scope).</li></ol>
+<ol><li>Sun’s line vs experts’ line: if there is no specific requirement, never recommended.</li></ol>
+<p>While writing we write import static. While pronouncing we say static import. Don’t get confusion.</p>
+<h2>Detailed notes</h2>
+<h3>[00:04] Last class recap — why static import exists</h3>
+<p>Board heading: static import (continued).</p>
+<p>Usually we access static members (method or variable) by using class name. Last session he already compiled this:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(Math.sqrt(4));
+        System.out.println(Math.max(10, 20));
+        System.out.println(Math.random());
+    }
+}
+// prints 2.0
+// prints 20
+// prints a double in [0.0, 1.0)  (changes every run)</pre>
+<p>sqrt, max, random are static methods of java.lang.Math. If you want square root 20 times, you type Math 20 times. Length of the code goes up. Sun’s thought: remove the class name, length down, readability up — that thought introduced static import in 1.5.</p>
+<p>According to Sun: usage of static import reduces length of the code and improves readability.</p>
+<p>According to worldwide programming experts (like us): usage of static import creates confusion and reduces readability. Hence if there is no specific requirement, it is not recommended to use static import. While releasing 1.6 they repeated the same line. For SCJP still one or two bits — know advantage, disadvantage, syntax, ambiguity, and why it is a flop.</p>
+<h3>[04:30] Need of static import — class name every time</h3>
+<p>Without static import, even a small Math program repeats the class name:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(Math.sqrt(4));
+        System.out.println(Math.sqrt(9));
+        System.out.println(Math.sqrt(16));
+        System.out.println(Math.sqrt(25));
+    }
+}
+// prints 2.0
+// prints 3.0
+// prints 4.0
+// prints 5.0</pre>
+<p>Need of static import: usually we access static members by class name; if we want to access them directly without class name, static import is required.</p>
+<h3>[08:10] Two types of static import</h3>
+<p>Board heading: types of static import.</p>
+<p>Exactly parallel to last video’s two types of class import:</p>
+<ol><li>Explicit static import — import one particular static member.</li></ol>
+<ol><li>Implicit static import — import all static members of that class.</li></ol>
+<pre class='code'>import static java.lang.Math.sqrt; // explicit static import — only sqrt
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+    }
+}
+// prints 2.0
+import static java.lang.Math.*; // implicit static import — all static members of Math
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+        System.out.println(max(10, 20));
+        System.out.println(random());
+    }
+}
+// prints 2.0
+// prints 20
+// prints a double in [0.0, 1.0)  (changes every run)</pre>
+<p>Syntax on the board (take special care of the word order):</p>
+<pre class='code'>import static java.lang.Math.sqrt; // import static  &lt;fully-qualified-class&gt;  .  &lt;member&gt;
+import static java.lang.Math.*;    // import static  &lt;fully-qualified-class&gt;  .  *</pre>
+<p>Wrong order is a favourite exam trap:</p>
+<pre class='code'>static import java.lang.Math.sqrt; // CE: class, interface, or enum expected
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;this line is never reached&quot;);
+    }
+}</pre>
+<p>Parentheses are not allowed in the import line. We are importing the method name, not calling it:</p>
+<pre class='code'>import static java.lang.Math.sqrt(); // CE: &#x27;(&#x27; expected to be absent / illegal import
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;this line is never reached&quot;);
+    }
+}</pre>
+<p>Which type is recommended? Same story as last class: explicit is more readable (Hi-tech City). Math.* dumps every static name into your file — sin, cos, tan, abs, floor, ceil, pow, PI, E, … — and the reader cannot see which members you actually use. Ameerpet typing factories love *. We don’t.</p>
+<h3>[12:45] Live compile — explicit `sqrt` is not enough for `max` and `random`</h3>
+<p>He types the program without any static import first, using short names. Three cannot-find-symbol errors. Then he adds only sqrt. Then he switches to Math.*.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+        System.out.println(max(10, 20));
+        System.out.println(random());
+    }
+}
+// CE: cannot find symbol method sqrt(int)
+// CE: cannot find symbol method max(int,int)
+// CE: cannot find symbol method random()
+import static java.lang.Math.sqrt;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+        System.out.println(max(10, 20));
+        System.out.println(random());
+    }
+}
+// sqrt is OK
+// CE: cannot find symbol method max(int,int)
+// CE: cannot find symbol method random()</pre>
+<p>If you already have import static java.lang.Math.*;, the extra line import static java.lang.Math.sqrt; is redundant — sqrt is already included. He deletes the explicit line and keeps only the star.</p>
+<p>sqrt return type is double, so sqrt(4) prints 2.0, not 2. Students who expect 2 lose an exam mark. max(10, 20) is overloaded; int version returns 20 with no decimal.</p>
+<h3>[20:00] More static members of Math — `abs`, `min`, `pow`, `PI`, `E`</h3>
+<p>Once Math.* is there, any public static member of Math can be used as a short name. He writes a few more so the class sees it is not only three methods:</p>
+<pre class='code'>import static java.lang.Math.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(abs(-10));
+        System.out.println(min(10, 20));
+        System.out.println(pow(2, 3));
+        System.out.println(PI);
+        System.out.println(E);
+    }
+}
+// prints 10
+// prints 10
+// prints 8.0
+// prints 3.141592653589793
+// prints 2.718281828459045</pre>
+<p>Explicit form for a variable (constant) is the same syntax as for a method — no parentheses:</p>
+<pre class='code'>import static java.lang.Math.PI;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(PI);
+        System.out.println(Math.E);
+    }
+}
+// prints 3.141592653589793
+// prints 2.718281828459045</pre>
+<p>PI came through static import. E still needs Math. because we did not import E.</p>
+<h3>[24:30] `java.lang` is already imported — then why static import Math?</h3>
+<p>Biggest student confusion of this video. Last class: two packages are default-available — java.lang and the default package. So Math is already there. Watch:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(Math.sqrt(4));
+    }
+}
+// prints 2.0</pre>
+<p>No import statement. Compiles. Math is a class in java.lang.</p>
+<p>Now remove the class name:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+    }
+}
+// CE: cannot find symbol method sqrt(int)</pre>
+<p>Default import of `java.lang` makes the class available. It does not make the static members available as unqualified names. For short name sqrt you still need static import.</p>
+<p>Normal import of Math is legal but useless for this problem — Math is already in java.lang:</p>
+<pre class='code'>import java.lang.Math; // valid normal import, but redundant (java.lang is default)
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(Math.sqrt(4));
+        // System.out.println(sqrt(4));
+        // CE if uncommented: cannot find symbol method sqrt(int)
+    }
+}
+// prints 2.0</pre>
+<p>Board: importing a class and importing static members of a class are two different things.</p>
+<h3>[28:40] Explain `System.out.println` — the statement we typed from day one</h3>
+<p>Board heading: explain about System.out.println statement.</p>
+<p>Until today we typed it like a slogan. Today we break it. Three pieces:</p>
+<p>Type of out is PrintStream. So System.out is a PrintStream object (already created for us, pointing at the console). On that object we call println.</p>
+<p>He proves the type live:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(System.out.getClass().getName());
+    }
+}
+// prints java.io.PrintStream</pre>
+<p>err and in are the siblings. Same idea:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(System.err.getClass().getName());
+        System.out.println(System.in.getClass().getName());
+    }
+}
+// prints java.io.PrintStream
+// prints java.io.BufferedInputStream</pre>
+<p>So the one-liner we always write is just: take the static field out, call instance method println on it.</p>
+<p>Equivalent code without hiding anything:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        java.io.PrintStream out = System.out;
+        out.println(&quot;hello&quot;);
+        out.println(&quot;hi&quot;);
+    }
+}
+// prints hello
+// prints hi</pre>
+<p>To show the shape of System (not the real JDK source — a teaching model), he draws:</p>
+<pre class='code'>class PrintStreamDemo {
+    public void println(String s) {
+        System.out.println(s);
+    }
+}
+
+class SystemDemo {
+    static PrintStreamDemo out = new PrintStreamDemo();
+
+    public static void main(String[] args) {
+        SystemDemo.out.println(&quot;hello&quot;);
+    }
+}
+// prints hello</pre>
+<p>SystemDemo.out.println(&quot;hello&quot;) is the same English as System.out.println(&quot;hello&quot;): class → static field → instance method.</p>
+<p>Normal println usage we already know:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;hello&quot;);
+        System.out.println(&quot;hi&quot;);
+    }
+}
+// prints hello
+// prints hi</pre>
+<h3>[43:50] `System.out.println` via static import of `out`</h3>
+<p>If out is a static member of System, we can static-import that member. Then we do not write System..</p>
+<pre class='code'>import static java.lang.System.out;
+
+class Test {
+    public static void main(String[] args) {
+        out.println(&quot;hello&quot;);
+        out.println(&quot;hi&quot;);
+    }
+}
+// prints hello
+// prints hi</pre>
+<p>This is Example 3 on his PDF / board. He compiles it live: hello then hi. Students clap because the slogan lost the word System.</p>
+<p>Implicit form also works — all static members of System (out, err, in, gc, exit, …):</p>
+<pre class='code'>import static java.lang.System.*;
+
+class Test {
+    public static void main(String[] args) {
+        out.println(&quot;hello&quot;);
+        err.println(&quot;this goes to error stream&quot;);
+    }
+}
+// prints hello
+// prints this goes to error stream  (on stderr)</pre>
+<p>You can still write the long form even after static import. Static import is only a compile-time shortcut, same philosophy as last video’s import:</p>
+<pre class='code'>import static java.lang.System.out;
+
+class Test {
+    public static void main(String[] args) {
+        out.println(&quot;short&quot;);
+        System.out.println(&quot;long form still valid&quot;);
+    }
+}
+// prints short
+// prints long form still valid</pre>
+<h3>[48:20] What we cannot import — `println` is not a static member of System</h3>
+<p>Favourite wrong attempt: “sir, I want only println(); on its own.”</p>
+<pre class='code'>import static java.lang.System.out.println; // CE: cannot find symbol  (println is not a static member of System)
+
+class Test {
+    public static void main(String[] args) {
+        println(&quot;hello&quot;);
+    }
+}</pre>
+<p>println lives in PrintStream. It is an instance method. Static import can import only static members of a type. There is no System.println.</p>
+<p>Same failure if you static-import everything from System and then call println() as if it were a static method of System:</p>
+<pre class='code'>import static java.lang.System.*;
+
+class Test {
+    public static void main(String[] args) {
+        println(&quot;hello&quot;); // CE: cannot find symbol method println(String)
+        out.println(&quot;hello&quot;);
+    }
+}</pre>
+<p>If the second line is kept and the first is commented, it compiles and prints hello. The star imported out, not println.</p>
+<p>Normal import cannot import a field either:</p>
+<pre class='code'>import java.lang.System.out; // CE: cannot find symbol class out  (normal import is only for types)
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;never reached&quot;);
+    }
+}
+import java.lang.Math.sqrt; // CE: cannot find symbol class sqrt  (sqrt is a method, not a type)
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(Math.sqrt(4));
+    }
+}
+import static java.lang.Math; // CE: cannot find symbol  (must be Math.member or Math.*)
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(Math.sqrt(4));
+    }
+}</pre>
+<p>And you cannot static-import a class as if it were a static member:</p>
+<pre class='code'>import static java.util.ArrayList; // CE: cannot find symbol  (ArrayList is a type, not a static member)
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;never reached&quot;);
+    }
+}</pre>
+<p>Normal import is the tool for classes:</p>
+<pre class='code'>import java.util.ArrayList;
+
+class Test {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        System.out.println(l.size());
+    }
+}
+// prints 0</pre>
+<h3>[52:40] Combining `Math.*` and `System.out`</h3>
+<p>Now the “short program” Sun advertised: no Math., no System..</p>
+<pre class='code'>import static java.lang.Math.*;
+import static java.lang.System.out;
+
+class Test {
+    public static void main(String[] args) {
+        out.println(sqrt(4));
+        out.println(max(10, 20));
+        out.println(PI);
+    }
+}
+// prints 2.0
+// prints 20
+// prints 3.141592653589793</pre>
+<p>Looks cute. Next topic is why worldwide experts still say don’t.</p>
+<h3>[56:10] Ambiguity — two static imports of the same name</h3>
+<p>Board heading: ambiguity problem in static import.</p>
+<p>MAX_VALUE is a public static final variable in Integer and also in Byte (and Short, Long, …). Two classes, same member name. Very common.</p>
+<p>Without static import there is no fight — class name is the identity:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(Integer.MAX_VALUE);
+        System.out.println(Byte.MAX_VALUE);
+        System.out.println(Integer.MIN_VALUE);
+        System.out.println(Byte.MIN_VALUE);
+    }
+}
+// prints 2147483647
+// prints 127
+// prints -2147483648
+// prints -128</pre>
+<p>Now hide the class names with two implicit static imports:</p>
+<pre class='code'>import static java.lang.Integer.*;
+import static java.lang.Byte.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(MAX_VALUE);
+    }
+}
+// CE: reference to MAX_VALUE is ambiguous</pre>
+<p>Live javac message he reads out: reference to MAX_VALUE is ambiguous, both variable MAX_VALUE in java.lang.Integer and variable MAX_VALUE in java.lang.Byte match.</p>
+<p>Same story with two explicit static imports of the same name. Explicit vs explicit is still a tie. Compiler will not pick for you:</p>
+<pre class='code'>import static java.lang.Integer.MAX_VALUE;
+import static java.lang.Byte.MAX_VALUE;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(MAX_VALUE);
+    }
+}
+// CE: reference to MAX_VALUE is ambiguous</pre>
+<p>MIN_VALUE has the same fight:</p>
+<pre class='code'>import static java.lang.Integer.*;
+import static java.lang.Byte.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(MIN_VALUE);
+    }
+}
+// CE: reference to MIN_VALUE is ambiguous</pre>
+<p>If you never use the name, there is no ambiguity. Imports are checked when the simple name appears. Parallel to last video’s Date case (util + sql): problem comes when you write Date d, not when you merely import both packages.</p>
+<pre class='code'>import static java.lang.Integer.*;
+import static java.lang.Byte.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;no MAX_VALUE used&quot;);
+    }
+}
+// prints no MAX_VALUE used</pre>
+<p>Names that do not clash are fine even with both stars. Integer has parseInt; Byte does not have that method name in the same form we care about here. Thread has MAX_PRIORITY, not MAX_VALUE:</p>
+<pre class='code'>import static java.lang.Integer.*;
+import static java.lang.Thread.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(MAX_VALUE);
+        System.out.println(MAX_PRIORITY);
+    }
+}
+// prints 2147483647
+// prints 10</pre>
+<p>No ambiguity: two different simple names.</p>
+<h3>[1:00:10] Why ambiguity is rare in normal import, common in static import</h3>
+<p>Board note (write this; exam paragraph):</p>
+<p>Two packages containing a class or interface with the same name is very rare (Date in util and sql, List in util and awt). Hence ambiguity in normal import is rare.</p>
+<p>Two classes containing a method or variable with the same name is very common (MAX_VALUE, MIN_VALUE, MAX_PRIORITY vs somebody’s own max, …). Hence ambiguity in static import is also very common.</p>
+<p>That is one more reason it is a flop feature.</p>
+<p>Resolve it the honest way — put the class name back. Then static import was a waste:</p>
+<pre class='code'>import static java.lang.Integer.*;
+import static java.lang.Byte.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(Integer.MAX_VALUE);
+        System.out.println(Byte.MAX_VALUE);
+    }
+}
+// prints 2147483647
+// prints 127</pre>
+<h3>[1:04:20] Precedence while resolving static members</h3>
+<p>Board heading: while resolving static members.</p>
+<p>Compiler gives precedence in this order (highest first):</p>
+<ol><li>Current class static members</li></ol>
+<ol><li>Explicit static import</li></ol>
+<ol><li>Implicit static import</li></ol>
+<p>Compare with last video’s class-name order: explicit class import → current working directory → implicit class import. Same explicit beats implicit idea, plus “our own class wins everything.”</p>
+<p>He writes three lines and comments them one by one. Line 1 = current class field. Line 2 = explicit Integer. Line 3 = implicit Byte.</p>
+<p>All three present — current class wins:</p>
+<pre class='code'>import static java.lang.Integer.MAX_VALUE;
+import static java.lang.Byte.*;
+
+class Test {
+    static int MAX_VALUE = 999;
+
+    public static void main(String[] args) {
+        System.out.println(MAX_VALUE);
+    }
+}
+// prints 999</pre>
+<p>Comment line 1 (no field in current class). Explicit Integer beats implicit Byte:</p>
+<pre class='code'>import static java.lang.Integer.MAX_VALUE;
+import static java.lang.Byte.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(MAX_VALUE);
+    }
+}
+// prints 2147483647</pre>
+<p>Comment lines 1 and 2. Only implicit Byte remains:</p>
+<pre class='code'>import static java.lang.Byte.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(MAX_VALUE);
+    }
+}
+// prints 127</pre>
+<p>Only explicit Byte (no Integer, no current class):</p>
+<pre class='code'>import static java.lang.Byte.MAX_VALUE;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(MAX_VALUE);
+    }
+}
+// prints 127</pre>
+<p>Implicit Integer vs implicit Byte — both same level — ambiguous (already seen). Explicit Integer vs explicit Byte — both same level — also ambiguous.</p>
+<p>Current class method with the same name also wins over static-imported methods:</p>
+<pre class='code'>import static java.lang.Math.max;
+
+class Test {
+    static int max(int a, int b) {
+        return a + b; // our own method, not Math.max
+    }
+
+    public static void main(String[] args) {
+        System.out.println(max(10, 20));
+    }
+}
+// prints 30</pre>
+<p>Reader sees max(10, 20) and thinks Math. Output is 30. This is the confusion. Experts’ point, live on the board.</p>
+<h3>[1:08:40] Which of the following import statements are valid?</h3>
+<p>Board heading: which of the following import statements are valid?</p>
+<p>Exam style. He ticks / crosses each line. We show each as its own tiny program so the CE reason is attached to real Java.</p>
+<p>(1) Normal explicit class import — valid (redundant for java.lang, but valid):</p>
+<pre class='code'>import java.lang.Math;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(Math.sqrt(4));
+    }
+}
+// prints 2.0</pre>
+<p>(2) `.*` after a class name as a normal import — not meaningful (same case as import java.util.ArrayList.*; last video). Math has no nested type we use. After a class, semicolon is required for a single-type import, not .* for “methods inside”.</p>
+<pre class='code'>import java.lang.Math.*; // not meaningful as a way to get sqrt — * after a class is nested types, not static methods
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(Math.sqrt(4));
+        // System.out.println(sqrt(4));
+        // CE if uncommented: cannot find symbol method sqrt(int)
+    }
+}
+// prints 2.0</pre>
+<p>(3) Normal import of a method — invalid:</p>
+<pre class='code'>import java.lang.Math.sqrt; // CE: cannot find symbol class sqrt
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;never reached&quot;);
+    }
+}</pre>
+<p>(4) Static import of the class itself — invalid:</p>
+<pre class='code'>import static java.lang.Math; // CE: cannot find symbol  (need Math.sqrt or Math.*)
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;never reached&quot;);
+    }
+}</pre>
+<p>(5) Implicit static import — valid:</p>
+<pre class='code'>import static java.lang.Math.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+    }
+}
+// prints 2.0</pre>
+<p>(6) Explicit static import — valid:</p>
+<pre class='code'>import static java.lang.Math.sqrt;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+    }
+}
+// prints 2.0</pre>
+<p>(7) Static import of `out` — valid:</p>
+<pre class='code'>import static java.lang.System.out;
+
+class Test {
+    public static void main(String[] args) {
+        out.println(&quot;ok&quot;);
+    }
+}
+// prints ok</pre>
+<p>(8) Static import of `Integer.MAX_VALUE` — valid:</p>
+<pre class='code'>import static java.lang.Integer.MAX_VALUE;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(MAX_VALUE);
+    }
+}
+// prints 2147483647</pre>
+<p>(9) `import static java.lang.Integer.*_VALUE` — invalid (no wildcard in the middle of a name; SCJP-style distractor):</p>
+<pre class='code'>import static java.lang.Integer.*_VALUE; // CE: illegal static import / malformed name
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;never reached&quot;);
+    }
+}</pre>
+<p>Quick scoreboard he wants in memory:</p>
+<h3>[1:11:20] Difference between general import and static import</h3>
+<p>Board heading: what is the difference between general import and static import?</p>
+<p>General / normal import</p>
+<ul><li>Purpose: import classes and interfaces of a package.</li></ul>
+<ul><li>After writing it we can use short names of those types. Fully qualified name is not required.</li></ul>
+<ul><li>Example: import java.util.ArrayList; then ArrayList l = new ArrayList();</li></ul>
+<p>Static import</p>
+<ul><li>Purpose: import static members (methods and variables) of a particular class.</li></ul>
+<ul><li>After writing it we can access those members without the class name.</li></ul>
+<ul><li>Example: import static java.lang.Math.sqrt; then sqrt(4) instead of Math.sqrt(4).</li></ul>
+<p>Side by side:</p>
+<pre class='code'>import java.util.ArrayList; // general import — type ArrayList
+
+class Test {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        System.out.println(l.getClass().getName());
+    }
+}
+// prints java.util.ArrayList
+import static java.lang.Math.sqrt; // static import — member sqrt
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(16));
+    }
+}
+// prints 4.0</pre>
+<p>We can use both in the same source file. They solve different problems. One is not a replacement for the other:</p>
+<pre class='code'>import java.util.ArrayList;
+import static java.lang.Math.sqrt;
+import static java.lang.System.out;
+
+class Test {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+        l.add(&quot;durga&quot;);
+        out.println(sqrt(4));
+        out.println(l.size());
+    }
+}
+// prints 2.0
+// prints 1</pre>
+<p>General import cannot pull in sqrt. Static import cannot pull in ArrayList.</p>
+<p>Integer.parseInt is another static method people static-import in exam code:</p>
+<pre class='code'>import static java.lang.Integer.parseInt;
+import static java.lang.System.out;
+
+class Test {
+    public static void main(String[] args) {
+        int x = parseInt(&quot;10&quot;);
+        out.println(x);
+    }
+}
+// prints 10</pre>
+<p>Without that static import:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = Integer.parseInt(&quot;10&quot;);
+        System.out.println(x);
+    }
+}
+// prints 10</pre>
+<h3>[1:12:40] Why never recommended — and close the topic</h3>
+<p>He returns to MAX_VALUE without a class name. Open a 2000-line file, see MAX_VALUE. Whose? Integer? Byte? Short? Our own class? You cannot say until you scroll to the import section and then still maybe the current class field. Readability down. Confusion up.</p>
+<p>Sun said the opposite. Experts (and later Sun’s own 1.6 advice): if there is no specific requirement, never recommended to use static import.</p>
+<p>Specific requirement they have in mind: you are hammering constants from one class (for example lots of Math.PI / Math.sin in a scientific class) and you are not mixing two classes that share names. Even then, explicit static import of the two or three names you need is less dirty than *.</p>
+<p>Static import is a compile-time shortcut, like normal import. More static imports can mean more compile work; no change in execution time. At runtime the bytecode still refers to Math.sqrt / System.out. Don’t tell interviewers that static import makes the program faster.</p>
+<p>Board recap he wants you to photocopy:</p>
+<ul><li>Came in 1.5. Flop feature.</li></ul>
+<ul><li>Writing: import static. Speaking: static import.</li></ul>
+<ul><li>Two types: explicit (Class.member) and implicit (Class.*).</li></ul>
+<ul><li>java.lang.Math is already available; sqrt() still needs static import.</li></ul>
+<ul><li>System = class, out = static PrintStream, println = instance method. Static-import out, then out.println(...).</li></ul>
+<ul><li>Cannot static-import println. Cannot normal-import out.</li></ul>
+<ul><li>Two static imports of the same simple name → reference to X is ambiguous.</li></ul>
+<ul><li>Precedence: current class static members → explicit static import → implicit static import.</li></ul>
+<ul><li>Normal import → types. Static import → static members.</li></ul>
+<ul><li>If no specific requirement, not recommended.</li></ul>
+<p>That’s all for static import. Next session: package statement (grouping related classes, javac -d, fully qualified run).</p>
+<p>Next video: 033-package-statement.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 32 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 3</td></tr>
+<tr><td>Topic</td><td>static import</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 13m 21s</td></tr>
+<tr><td>Video ID</td><td>oYLGLVjckj8</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=oYLGLVjckj8</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Captions</td><td>None on YouTube. Notes reconstructed from this lecture topic as Durga Sir teaches it, with full Java board examples.</td></tr>
+</table>
+<table>
+<tr><th>Piece</th><th>What it is</th></tr>
+<tr><td>System</td><td>a class in java.lang</td></tr>
+<tr><td>out</td><td>a static variable in class System</td></tr>
+<tr><td>println</td><td>an instance method in class PrintStream (java.io)</td></tr>
+</table>
+<table>
+<tr><th>Statement</th><th>Valid?</th></tr>
+<tr><td>import java.lang.Math;</td><td>yes (normal class import)</td></tr>
+<tr><td>import java.lang.Math.sqrt;</td><td>no</td></tr>
+<tr><td>import static java.lang.Math;</td><td>no</td></tr>
+<tr><td>import static java.lang.Math.*;</td><td>yes</td></tr>
+<tr><td>import static java.lang.Math.sqrt;</td><td>yes</td></tr>
+<tr><td>import static java.lang.Math.sqrt();</td><td>no</td></tr>
+<tr><td>static import java.lang.Math.sqrt;</td><td>no</td></tr>
+<tr><td>import java.lang.System.out;</td><td>no</td></tr>
+<tr><td>import static java.lang.System.out;</td><td>yes</td></tr>
+<tr><td>import static java.lang.System.out.println;</td><td>no</td></tr>
+<tr><td>import static java.lang.Integer.MAX_VALUE;</td><td>yes</td></tr>
+<tr><td>import java.lang.Integer.MAX_VALUE;</td><td>no</td></tr>
+</table>
+</body></html>

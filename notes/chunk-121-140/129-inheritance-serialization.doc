@@ -1,0 +1,488 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>129-inheritance-serialization</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 129</h1>
+<h2>Video info</h2>
+<h3>Topic placement in serialization syllabus</h3>
+<p>This video is Part 5 of serialization. Prior videos covered introduction, object graphs, customized serialization, etc. This lecture covers serialization with respect to inheritance — two cases with four important rules (&quot;loopholes&quot;) that frequently appear on SCJP/OCJP exams.</p>
+<h2>00:05 — Introduction: Serialization with respect to inheritance</h2>
+<p>Durga Sir opens by asking students what the next topic is:</p>
+<p>Serialization with respect to inheritance</p>
+<p>There are two cases under this topic:</p>
+<p>Sir writes both cases on the board and works through each with live demos (SerializeDemo5, SerializeDemo6).</p>
+<h1>CASE 1 — Parent is Serializable, Child is NOT Serializable</h1>
+<h2>01:00 — Class hierarchy setup (Case 1)</h2>
+<pre class='code'>class Animal implements Serializable {
+    int i = 10;
+}
+
+class Dog extends Animal {   // does NOT implement Serializable
+    int j = 20;
+}</pre>
+<p>Inheritance diagram (board):</p>
+<p>        Animal  (implements Serializable)
+           |
+           i = 10
+           |
+        Dog   (does NOT implement Serializable)
+           |
+           j = 20</p>
+<p>Key observation from Sir:</p>
+<ul><li>Parent class Animal → implements Serializable ✓</li></ul>
+<ul><li>Child class Dog → does NOT implement Serializable ✗</li></ul>
+<h2>02:04 — Creating and serializing a Dog object</h2>
+<p>Dog d1 = new Dog();
+// d1.i = 10  (inherited from Animal)
+// d1.j = 20  (defined in Dog)</p>
+<p>Object state in heap (before serialization):</p>
+<p>Serialization code:</p>
+<pre class='code'>FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+ObjectOutputStream oos = new ObjectOutputStream(fos);
+oos.writeObject(d1);</pre>
+<p>Deserialization code:</p>
+<pre class='code'>FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+ObjectInputStream ois = new ObjectInputStream(fis);
+Dog d2 = (Dog) ois.readObject();
+
+System.out.println(d2.i + &quot;..&quot; + d2.j);</pre>
+<h2>03:52 — Quiz: Is this code valid?</h2>
+<p>Sir asks the class: Is the above program valid or invalid?</p>
+<p>Many students feel it is invalid because:</p>
+<ul><li>They are trying to serialize a Dog object</li></ul>
+<ul><li>Dog class does not implement Serializable</li></ul>
+<ul><li>So how can serialization work?</li></ul>
+<p>Sir&#x27;s answer: 100% VALID — no problem at all.</p>
+<h2>05:28 — Core rule for Case 1 (board conclusion)</h2>
+<p>If the parent implements `Serializable`, then automatically every child by default implements `Serializable`.</p>
+<p>Serializable nature is inheriting from parent to child.</p>
+<p>Formal board notes (Case 1):</p>
+<p>If a parent is Serializable,
+    then by default every child is Serializable.
+
+Serializable nature is inheriting from parent to child.</p>
+<p>Even though child class does not implement Serializable, we can serialize child class object — because the parent (Animal) already implements Serializable.</p>
+<h2>06:01 — Live demo: `SerializeDemo5.java`</h2>
+<pre class='code'>import java.io.*;
+
+class Animal implements Serializable {
+    int i = 10;
+}
+
+class Dog extends Animal {
+    int j = 20;
+}
+
+class SerializeDemo5 {
+    public static void main(String[] args) throws Exception {
+        Dog d1 = new Dog();
+        System.out.println(d1.i + &quot;..&quot; + d1.j);   // 10..20
+
+        // Serialization
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(d1);
+
+        // Deserialization
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Dog d2 = (Dog) ois.readObject();
+        System.out.println(d2.i + &quot;..&quot; + d2.j);   // 10..20
+    }
+}</pre>
+<p>Compile: ✓ fine</p>
+<p>Run output:</p>
+<p>10..20
+10..20</p>
+<p>Conclusion: Even though Dog does not implement Serializable, serialization and deserialization work perfectly because `Animal` (parent) implements `Serializable`.</p>
+<h2>14:12 — Case 1 summary (board point)</h2>
+<p>In the above example, even though Dog class does not implement Serializable, we can serialize Dog object because it is parent — `Animal` class implements `Serializable`.</p>
+<h2>15:28 — Important doubt: Does `Object` implement Serializable?</h2>
+<p>Sir raises a critical exam/interview question:</p>
+<p>Object class implements Serializable or not?</p>
+<p>If `Object` implemented `Serializable`:</p>
+<ul><li>Every class in Java extends Object</li></ul>
+<ul><li>Therefore every Java class would automatically be serializable</li></ul>
+<ul><li>Then why would we need to explicitly write implements Serializable?</li></ul>
+<p>Answer (take a note):</p>
+<p>Object class does NOT implement Serializable interface.</p>
+<p>Implication: Serializable is not inherited from Object. Only when a class (or its ancestor) explicitly implements Serializable does the serializable nature propagate down the hierarchy.</p>
+<h2>16:45 — Case 1 recap (student spell-out)</h2>
+<p>Sir asks students to repeat Case 1:</p>
+<ol><li>If parent class is Serializable → by default every child class is Serializable</li></ol>
+<ol><li>Serializable nature inherits from parent to child</li></ol>
+<ol><li>Child need not declare implements Serializable explicitly</li></ol>
+<h1>CASE 2 — Parent is NOT Serializable, Child IS Serializable</h1>
+<h2>17:09 — Class hierarchy setup (Case 2)</h2>
+<pre class='code'>class Animal {                    // does NOT implement Serializable
+    int i = 10;
+}
+
+class Dog extends Animal implements Serializable {
+    int j = 20;
+}</pre>
+<p>Inheritance diagram (board):</p>
+<p>        Animal  (NOT Serializable)
+           |
+           i = 10
+           |
+        Dog   (implements Serializable)
+           |
+           j = 20</p>
+<p>Key observation:</p>
+<ul><li>Parent Animal → NOT Serializable</li></ul>
+<ul><li>Child Dog → implements Serializable</li></ul>
+<h2>18:32 — Quiz: Can we serialize Dog object now?</h2>
+<p>Sir asks: Is it possible to serialize child class object?</p>
+<p>Some students think: &quot;To serialize child class object, parent class should be Serializable — is that a rule?&quot;</p>
+<p>Sir&#x27;s answer: NO such rule exists.</p>
+<p>Reasoning:</p>
+<ul><li>For all Java classes, the ultimate parent is Object</li></ul>
+<ul><li>Object does not implement Serializable</li></ul>
+<ul><li>If the rule were &quot;parent must be Serializable to serialize child,&quot; we could never serialize any Java object</li></ul>
+<ul><li>Therefore: parent need NOT be Serializable to serialize a child that implements Serializable</li></ul>
+<h2>19:49 — Rule 1 (Case 2, Point 1)</h2>
+<p>Even though parent class doesn&#x27;t implement Serializable, we can serialize child class object if child class implements Serializable interface.</p>
+<p>Formal board notes:</p>
+<p>To serialize child class object,
+    parent class need NOT be Serializable.</p>
+<p>There is NO rule that says: &quot;To serialize child class object, compulsory parent class should be Serializable.&quot;</p>
+<p>If child class implements Serializable → child object can be serialized regardless of parent&#x27;s serializable status.</p>
+<h2>21:28 — Setting up the tricky example (Case 2 demo)</h2>
+<p>Sir creates a Dog object and changes field values before serialization:</p>
+<p>Dog d1 = new Dog();
+// Initially: i = 10, j = 20
+
+d1.i = 39;   // change inherited field
+d1.j = 39;   // change child field
+// Now: i = 39, j = 39</p>
+<p>Serialization:</p>
+<pre class='code'>FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+ObjectOutputStream oos = new ObjectOutputStream(fos);
+oos.writeObject(d1);</pre>
+<p>Deserialization:</p>
+<pre class='code'>System.out.println(&quot;Deserialization started&quot;);
+
+FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+ObjectInputStream ois = new ObjectInputStream(fis);
+Dog d2 = (Dog) ois.readObject();
+
+System.out.println(d2.i + &quot;..&quot; + d2.j);</pre>
+<h2>24:53 — Expected output quiz (the trap)</h2>
+<p>Students naively expect:</p>
+<p>39..39</p>
+<p>Sir says: &quot;I am sure we are NOT going to get 39..39.&quot;</p>
+<p>There are loopholes (special JVM rules) at serialization and deserialization time.</p>
+<h2>25:36 — Rule 2 (Case 2, Point 2): At serialization time</h2>
+<p>At the time of serialization, JVM will check: is any variable inheriting from non-serializable parent?</p>
+<p>If any variable is inheriting from non-serializable parent, then JVM ignores original value and saves default value to the file.</p>
+<p>Which variable comes from non-serializable parent?</p>
+<p>→ `i` (declared in Animal, which is NOT Serializable)</p>
+<p>What happens to `i` at serialization?</p>
+<p>Formal board notes:</p>
+<p>At the time of serialization:
+
+If any variable inheriting from non-serializable parent,
+    then JVM ignores original value
+    and saves default value to the file.</p>
+<p>Naive expectation after Rule 2 alone: output would be 0..39</p>
+<p>Sir again warns: &quot;We are NOT going to get 0..39 either.&quot; There is another twist at deserialization.</p>
+<h2>29:55 — Rule 3 (Case 2, Point 3): At deserialization time (the twist)</h2>
+<p>At the time of deserialization, JVM will check: is any parent class non-serializable?</p>
+<p>If any parent class is non-serializable, then JVM will execute instance control flow in every non-serializable parent and share its instance variables to the current object.</p>
+<h3>What is Instance Control Flow (ICF)?</h3>
+<p>Sir defines instance control flow as three steps:</p>
+<ol><li>Identification of instance members</li></ol>
+<ol><li>Execution of instance variable assignments and instance blocks</li></ol>
+<ol><li>Execution of constructor</li></ol>
+<p>At deserialization, for each non-serializable parent (`Animal`):</p>
+<ul><li>JVM runs instance control flow in Animal</li></ul>
+<ul><li>This effectively re-initializes parent&#x27;s instance variables</li></ul>
+<ul><li>Parent&#x27;s instance variables are shared/assigned to the current deserialized object</li></ul>
+<p>For `Animal`:</p>
+<ul><li>Instance variable i gets its default initialization value = 10 (from int i = 10;)</li></ul>
+<ul><li>NOT 0 (that was only what went to the file)</li></ul>
+<ul><li>NOT 39 (that was never saved)</li></ul>
+<p>For `Dog`:</p>
+<ul><li>j = 39 comes from the file (child is serializable)</li></ul>
+<p>Final output:</p>
+<p>10..39</p>
+<p>Formal board notes:</p>
+<p>At the time of deserialization:
+
+If any parent class is non-serializable,
+    then JVM will execute instance control flow
+    in every non-serializable parent
+    and share its instance variables to the current object.</p>
+<h2>33:52 — Rule 4 (Case 2, Point 4): No-arg constructor requirement</h2>
+<p>Question: Who is responsible for executing instance control flow in non-serializable parent?</p>
+<p>→ JVM</p>
+<p>As part of instance control flow, JVM will always call no-argument constructor.</p>
+<p>Therefore:</p>
+<p>Every non-serializable class should compulsory contain no-argument constructor.</p>
+<p>The no-arg constructor may be:</p>
+<ul><li>Default constructor generated by compiler (if programmer writes no constructor), OR</li></ul>
+<ul><li>Explicitly provided by the programmer</li></ul>
+<p>If non-serializable parent does NOT contain no-arg constructor:</p>
+<p>→ Runtime exception: `InvalidClassException`</p>
+<p>Formal board notes:</p>
+<p>While executing instance control flow of non-serializable parent,
+    JVM will always call no-argument constructor.
+
+Hence every non-serializable class should compulsory contain
+    no-argument constructor.
+
+    (default constructor generated by compiler
+     OR explicitly provided by programmer)
+
+Otherwise → RuntimeException: InvalidClassException</p>
+<h2>38:50 — Four rules recap (harmonic conclusions)</h2>
+<p>Sir asks students to read back all four points:</p>
+<h2>40:15 — Enhanced demo with constructor SOPs: `SerializeDemo6.java`</h2>
+<p>Sir adds constructor print statements to prove instance control flow runs at deserialization:</p>
+<pre class='code'>import java.io.*;
+
+class Animal {
+    int i = 10;
+
+    Animal() {
+        System.out.println(&quot;Animal constructor called&quot;);
+    }
+}
+
+class Dog extends Animal implements Serializable {
+    int j = 20;
+
+    Dog() {
+        System.out.println(&quot;Dog constructor called&quot;);
+    }
+}
+
+class SerializeDemo6 {
+    public static void main(String[] args) throws Exception {
+        Dog d1 = new Dog();
+        d1.i = 39;
+        d1.j = 39;
+
+        // Serialization
+        FileOutputStream fos = new FileOutputStream(&quot;abc.ser&quot;);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(d1);
+
+        System.out.println(&quot;Deserialization started&quot;);
+
+        // Deserialization
+        FileInputStream fis = new FileInputStream(&quot;abc.ser&quot;);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Dog d2 = (Dog) ois.readObject();
+
+        System.out.println(d2.i + &quot;..&quot; + d2.j);
+    }
+}</pre>
+<h2>42:00 — Output walkthrough (SerializeDemo6)</h2>
+<h3>Phase 1: Object creation (`new Dog()`)</h3>
+<p>When child object is created, both parent and child constructors execute (normal inheritance rule):</p>
+<p>Animal constructor called
+Dog constructor called</p>
+<h3>Phase 2: Serialization</h3>
+<p>Object with i=39, j=39 is serialized silently (no extra output).</p>
+<p>At serialization:</p>
+<ul><li>i (from non-serializable Animal) → 0 saved to file</li></ul>
+<ul><li>j (from serializable Dog) → 39 saved to file</li></ul>
+<h3>Phase 3: Deserialization</h3>
+<p>Deserialization started
+Animal constructor called        ← EXTRA line! (instance control flow)
+10..39</p>
+<p>Why &quot;Animal constructor called&quot; appears again at deserialization?</p>
+<ul><li>At deserialization, JVM detects Animal is non-serializable</li></ul>
+<ul><li>JVM executes instance control flow in Animal</li></ul>
+<ul><li>Part of ICF → calls Animal() no-arg constructor → prints &quot;Animal constructor called&quot;</li></ul>
+<ul><li>Animal.i re-initialized to 10 and shared to d2</li></ul>
+<ul><li>Dog.j restored from file as 39</li></ul>
+<p>Note: Dog constructor called does NOT run again at deserialization (only the non-serializable parent&#x27;s ICF runs).</p>
+<h2>51:21 — Final output diagram (board)</h2>
+<p>Animal constructor called     ← object creation
+Dog constructor called        ← object creation
+Deserialization started
+Animal constructor called     ← ICF at deserialization (non-serializable parent)
+10..39</p>
+<p>Field values in d2 after deserialization:</p>
+<h2>53:05 — InvalidClassException demo: parameterized constructor in parent</h2>
+<p>Sir demonstrates what happens when non-serializable parent lacks a no-arg constructor:</p>
+<pre class='code'>class Animal {
+    int i = 10;
+
+    Animal(int x) {    // ONLY parameterized constructor — NO no-arg constructor
+        this.i = x;
+        System.out.println(&quot;Animal constructor called&quot;);
+    }
+}
+
+class Dog extends Animal implements Serializable {
+    int j = 20;
+
+    Dog() {
+        super(10);     // must call super — otherwise compile error
+        System.out.println(&quot;Dog constructor called&quot;);
+    }
+}</pre>
+<p>Compile: ✓ fine (because Dog() calls super(10))</p>
+<p>Run — up to serialization: works fine</p>
+<p>At deserialization:</p>
+<p>Deserialization started
+Exception in thread &quot;main&quot; java.io.InvalidClassException: ...
+    no valid constructor</p>
+<p>Why?</p>
+<ul><li>At deserialization, JVM needs to run ICF in non-serializable Animal</li></ul>
+<ul><li>ICF requires calling no-argument constructor of Animal</li></ul>
+<ul><li>Animal has only Animal(int x) — no no-arg constructor exists</li></ul>
+<ul><li>→ `InvalidClassException` at runtime</li></ul>
+<p>Key point: Code compiles and serialization succeeds; failure happens only at deserialization when JVM tries to invoke the missing no-arg constructor.</p>
+<h2>55:34 — End-of-lecture summary: Case 1 vs Case 2</h2>
+<p>Sir closes: &quot;Serialization with respect to inheritance — Case 1 and Case 2 — that&#x27;s all.&quot;</p>
+<h2>Quick reference — All board conclusions</h2>
+<h3>Case 1</h3>
+<p>If parent implements Serializable,
+    automatically every child implements Serializable.
+Serializable nature is inheriting from parent to child.
+
+Object class does NOT implement Serializable.</p>
+<h3>Case 2 — Four rules</h3>
+<p>1. To serialize child class object,
+       parent class need NOT be Serializable.
+
+2. At serialization time:
+       If any variable inheriting from non-serializable parent,
+           JVM ignores original value
+           and saves default value to the file.
+
+3. At deserialization time:
+       If any parent class is non-serializable,
+           JVM executes instance control flow
+           in every non-serializable parent
+           and shares its instance variables to the current object.
+
+4. While executing ICF of non-serializable parent,
+       JVM always calls no-argument constructor.
+   Hence every non-serializable class must contain no-arg constructor.
+   Otherwise → InvalidClassException (runtime).</p>
+<h2>Exam traps &amp; interview one-liners</h2>
+<ol><li>&quot;Dog doesn&#x27;t implement Serializable — can we serialize it?&quot;</li></ol>
+<ul><li>Case 1: Yes, if parent implements Serializable.</li></ul>
+<ul><li>Case 2: Yes, if child implements Serializable (parent need not).</li></ul>
+<ol><li>&quot;What value of `i` after deserialization in Case 2?&quot;</li></ol>
+<ul><li>NOT the value before serialization (39)</li></ul>
+<ul><li>NOT the default int value written to file (0)</li></ul>
+<ul><li>YES → value from parent&#x27;s instance control flow (10)</li></ul>
+<ol><li>&quot;Does Object implement Serializable?&quot; → No.</li></ol>
+<ol><li>&quot;When does InvalidClassException occur?&quot;</li></ol>
+<ul><li>Non-serializable parent missing no-arg constructor</li></ul>
+<ul><li>Thrown at deserialization, not compile time</li></ul>
+<ol><li>&quot;Which constructor runs at deserialization for non-serializable parent?&quot;</li></ol>
+<ul><li>Only no-argument constructor (part of instance control flow)</li></ul>
+<ol><li>&quot;Does child constructor run at deserialization in Case 2?&quot;</li></ol>
+<ul><li>No — only non-serializable parent&#x27;s ICF runs</li></ul>
+<ul><li>Child fields restored directly from file</li></ul>
+<h2>Programs covered in this video</h2>
+<h2>Connection to prior serialization videos</h2>
+<h2>Diagrams to copy for revision</h2>
+<h3>Case 1 — Serializable inheritance flow</h3>
+<p>Animal implements Serializable
+    int i = 10
+         ↓ extends (Serializable nature inherited)
+Dog (no implements clause needed)
+    int j = 20
+
+Serialize Dog d1 → file stores i=10, j=20
+Deserialize → Dog d2 → i=10, j=20  ✓</p>
+<h3>Case 2 — Serialization + deserialization field lifecycle</h3>
+<p>BEFORE SERIALIZATION (heap):
+    d1.i = 39, d1.j = 39
+
+AT SERIALIZATION (what goes to file):
+    i → 0  (default; original 39 ignored — from non-serializable Animal)
+    j → 39 (from serializable Dog)
+
+AT DESERIALIZATION:
+    1. JVM detects Animal is non-serializable
+    2. Runs ICF in Animal → Animal() called → i = 10
+    3. Restores j = 39 from file
+    RESULT: d2.i = 10, d2.j = 39</p>
+<p>End of Video 129 notes — Serialization Part 5: Inheritance serialization (Case 1 &amp; Case 2)</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Serialization Part- 5 \</td><td>\</td><td>Inheritance serialization</td></tr>
+<tr><td>Position</td><td>129 of 203</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>56m 02s</td><td></td><td></td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=Y5KXGLbCzbc</td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT</td><td></td><td></td></tr>
+<tr><td>Playlist block</td><td>Serialization unit — inheritance rules (Case 1 &amp; Case 2)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Case</th><th>Parent</th><th>Child</th><th>Focus of this video</th></tr>
+<tr><td>Case 1</td><td>Implements Serializable</td><td>Does not implement Serializable</td><td>Serializable nature inherits parent → child</td></tr>
+<tr><td>Case 2</td><td>Does not implement Serializable</td><td>Implements Serializable</td><td>Four rules about parent fields, deserialization, and no-arg constructor</td></tr>
+</table>
+<table>
+<tr><th>Variable</th><th>Value</th><th>Declared in</th></tr>
+<tr><td>i</td><td>10</td><td>Animal (parent)</td></tr>
+<tr><td>j</td><td>20</td><td>Dog (child)</td></tr>
+</table>
+<table>
+<tr><th>Variable</th><th>Source</th><th>Serializable?</th><th>Saved to file</th></tr>
+<tr><td>i = 39</td><td>Animal (non-serializable parent)</td><td>Parent not serializable</td><td>Default value `0` (original 39 ignored)</td></tr>
+<tr><td>j = 39</td><td>Dog (serializable child)</td><td>Child is serializable</td><td>39 (original value saved)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>When</th><th>Rule</th></tr>
+<tr><td>1</td><td>General</td><td>Even though parent doesn&#x27;t implement Serializable, we can serialize child object if child implements Serializable. Parent need NOT be Serializable.</td></tr>
+<tr><td>2</td><td>Serialization time</td><td>If any variable inheriting from non-serializable parent → JVM ignores original value, saves default value to file.</td></tr>
+<tr><td>3</td><td>Deserialization time</td><td>If any parent is non-serializable → JVM executes instance control flow in every non-serializable parent and shares instance variables to current object.</td></tr>
+<tr><td>4</td><td>Deserialization time</td><td>Non-serializable parent must have no-arg constructor; otherwise → InvalidClassException.</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Value</th><th>Why</th></tr>
+<tr><td>d2.i</td><td>10</td><td>From ICF in non-serializable parent Animal (not 39, not 0)</td></tr>
+<tr><td>d2.j</td><td>39</td><td>Restored from serialized file (child field)</td></tr>
+</table>
+<table>
+<tr><th></th><th>Case 1</th><th>Case 2</th></tr>
+<tr><td>Parent</td><td>Serializable</td><td>NOT Serializable</td></tr>
+<tr><td>Child</td><td>NOT Serializable</td><td>Serializable</td></tr>
+<tr><td>Can serialize child?</td><td>✓ Yes (serializable nature inherited)</td><td>✓ Yes (child implements Serializable)</td></tr>
+<tr><td>Parent field at serialization</td><td>Saved normally</td><td>Default value saved (original ignored)</td></tr>
+<tr><td>Parent field at deserialization</td><td>Restored from file</td><td>ICF runs in parent; parent vars re-initialized</td></tr>
+<tr><td>No-arg constructor in parent</td><td>Not required for this rule</td><td>Compulsory (else InvalidClassException)</td></tr>
+</table>
+<table>
+<tr><th>Program</th><th>Purpose</th><th>Key output</th></tr>
+<tr><td>SerializeDemo5</td><td>Case 1: parent Serializable, child not</td><td>10..20 before and after</td></tr>
+<tr><td>SerializeDemo6</td><td>Case 2: parent not Serializable, child Serializable</td><td>Animal constructor called ×2, then 10..39</td></tr>
+<tr><td>SerializeDemo6 (variant)</td><td>Parent with only parameterized constructor</td><td>InvalidClassException: no valid constructor at deserialization</td></tr>
+</table>
+<table>
+<tr><th>Video topic</th><th>Relevance to this lecture</th></tr>
+<tr><td>Serialization intro (125)</td><td>Serializable marker interface, writeObject/readObject</td></tr>
+<tr><td>Object graphs (126)</td><td>Inheritance is part of object graph structure</td></tr>
+<tr><td>Customized serialization (127–128)</td><td>transient keyword — related but different rules</td></tr>
+<tr><td>This video (129)</td><td>Inheritance-specific serialization rules</td></tr>
+<tr><td>Externalization (130)</td><td>Alternative to serialization — next topic</td></tr>
+<tr><td>serialVersionUID (131)</td><td>Version control for serialized classes</td></tr>
+</table>
+</body></html>

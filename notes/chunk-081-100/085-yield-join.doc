@@ -1,0 +1,619 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>085-yield-join</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 085 — yield() and join()</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-5 || yield() || join()</p>
+<h2>Overview</h2>
+<p>This session is Multi Threading Part 5. Durga Sir continues the theme of temporarily preventing / pausing thread execution (not stopping permanently). Three Thread methods achieve this:</p>
+<p>Exam relevance: Comparisons among yield(), join(), and sleep() are repeatedly flagged as very important for interviews and OCJP/SCJP-style questions.</p>
+<h3>00:09 — How can we prevent thread execution?</h3>
+<p>Question posed: In how many ways can we prevent (pause / temporarily stop) a thread that is currently executing?</p>
+<ul><li>Not permanent termination — temporary prevention.</li></ul>
+<ul><li>Analogous to: &quot;Can you please pause?&quot; or &quot;Can you please wait?&quot;</li></ul>
+<p>Answer — three methods:</p>
+<pre class='code'>// Three ways to temporarily prevent thread execution:
+// 1. Thread.yield()
+// 2. thread.join()   (called on another Thread reference)
+// 3. Thread.sleep()</pre>
+<p>Among these, `sleep()` is the easiest because students already know it from earlier lectures. This video focuses on `yield()` and `join()`.</p>
+<h3>02:14 — What is the purpose of `yield()`?</h3>
+<p>Before syntax, Sir insists on conceptual clarity:</p>
+<ul><li>When should we use yield()?</li></ul>
+<ul><li>How does it differ from join() and sleep()?</li></ul>
+<ul><li>Method-difference questions (yield vs join, yield vs sleep) are high-frequency interview topics.</li></ul>
+<h3>03:18 — Analogy: Public telephone booth (1998–2000 era)</h3>
+<p>Setting: Before mobile phones were common (1998–2000). Villages had BSNL landlines only; often one public telephone booth for several kilometers.</p>
+<p>Story beats (decoded from ASR):</p>
+<ol><li>A neighbor asks Durga Sir to call the neighbor&#x27;s brother (working at a hospital) — urgent medical situation (&quot;6666&quot; / dangerous condition — ASR garble for illness severity).</li></ol>
+<ol><li>Sir travels 4–5 km to the only public booth, run by Sheshadri (booth operator).</li></ol>
+<ol><li>Sheshadri says: &quot;Someone is already using the phone — please wait.&quot; Gives a chair and newspaper.</li></ol>
+<ol><li>Sir waits 1 hour → 2 hours → 3 hours. The person inside keeps talking.</li></ol>
+<ol><li>Sir peeks in: the caller is doing &quot;long batting&quot; — repeating only &quot;Avuna, Inka, Cheppu, Cheppali&quot; (Telugu: &quot;Really? More? Tell. Should I tell?&quot;) — a pointless endless conversation.</li></ol>
+<ol><li>After ~4 hours total wait, Sir gets 5–10 seconds on the phone — message is already stale (&quot;information from 5 hours ago&quot;).</li></ol>
+<ol><li>Sir feels complete irritation — exactly how a waiting thread feels.</li></ol>
+<p>Mapping to threads:</p>
+<pre class='code'>// Processor = single telephone booth (one CPU core executing one thread at a time)
+// Long-batting caller = thread holding CPU for hours in run()
+// Waiting person (Durga Sir) = thread T2 waiting for CPU
+// T2 needs 1 nanosecond of CPU; T1 holds it for &quot;10 hours&quot; → NOT recommended</pre>
+<p>Processor rule: First-come-first-served (FCFS). JVM gives the first thread (T1) the processor. T2 arrives one second later but must wait until T1 finishes — even if T2 needs only a nanosecond.</p>
+<p>Solution Sir proposes to Sheshadri: For known long-batting customers, every 10–15 minutes ask them to pause, let waiting people use the phone briefly, then continue if nobody is waiting (or all waiting people have no higher priority).</p>
+<p>That algorithm = `Thread.yield()`</p>
+<h3>17:41 — `yield()` defined (formal)</h3>
+<pre class='code'>// yield() causes the CURRENT executing thread to PAUSE temporarily
+// and give a chance to REMAINING WAITING threads of SAME PRIORITY.
+
+// If NO waiting thread exists → same thread continues.
+// If ALL waiting threads have LOWER priority → same thread continues.</pre>
+<p>Key phrase (memorize for exams):</p>
+<p>`yield()` causes the current executing thread to pass its execution to give the chance for remaining waiting threads of same priority.</p>
+<p>Who needs `yield()`? Threads that require long processing time in run() — &quot;long batsmen&quot; — should call yield() periodically in the middle of execution.</p>
+<h3>22:09 — Four conclusions about `yield()`</h3>
+<h4>Conclusion 1 — Core purpose</h4>
+<pre class='code'>// yield() → pass current executing thread&#x27;s turn
+//           → give chance to waiting threads of SAME priority
+// If no waiting thread OR all waiting threads have lower priority
+//   → same thread continues</pre>
+<h4>Conclusion 2 — Multiple waiting threads (same priority)</h4>
+<p>If T1, T2, T3, T4 are all waiting with same priority, and the running thread calls yield():</p>
+<pre class='code'>// Which waiting thread gets the CPU next?
+// Answer: WE CAN&#x27;T EXPECT — depends on Thread Scheduler (JVM/OS).
+// No guarantee which waiting thread is chosen.</pre>
+<h4>Conclusion 3 — When does the yielded thread run again?</h4>
+<p>Scenario: TX is executing (priority 7). T1, T2, T3, T4 wait (priority 7). TX calls Thread.yield().</p>
+<pre class='code'>class YieldScenario {
+    public static void main(String[] args) {
+        // TX executing, priority = 7
+        // T1, T2, T3, T4 waiting, priority = 7
+        // TX calls Thread.yield()
+        //   → TX leaves processor (pauses) for same-priority waiters
+        //   → One of T1..T4 gets chance (scheduler decides)
+        //   → TX also goes to waiting/ready — NOT guaranteed to resume first
+        // When TX runs again: depends on thread scheduler — NO GUARANTEE
+    }
+}</pre>
+<h4>Conclusion 4 — Summary on board</h4>
+<pre class='code'>// 1. yield() pauses current thread for same-priority waiters
+// 2. No waiters or all lower priority → same thread continues
+// 3. Multiple same-priority waiters → which gets CPU? Unpredictable (scheduler)
+// 4. Yielded thread re-entry timing → unpredictable (scheduler&#x27;s mercy)</pre>
+<h3>31:15 — Complete prototype of `yield()`</h3>
+<pre class='code'>public static native void yield();</pre>
+<p>Compare mentally with sleep() — also native, but yield() takes no time argument.</p>
+<h3>32:28 — `yield()` impact on thread lifecycle</h3>
+<p>Recap from previous class (thread life cycle):</p>
+<pre class='code'>// new MyThread()     → NEW / BORN state
+// t.start()          → READY / RUNNABLE state
+// scheduler picks CPU → RUNNING state (run() executing)
+// run() completes    → TERMINATED / DEAD state</pre>
+<p>New transition added by `yield()`:</p>
+<pre class='code'>// RUNNING thread calls Thread.yield()
+//   → goes back to READY / RUNNABLE state (NOT waiting/blocked)
+//   → NOT terminated
+// Purpose: pass CPU to same-priority waiting threads</pre>
+<p>Important distinction:</p>
+<p>Only a running thread can call Thread.yield().</p>
+<h3>37:42 — Demo: `ThreadYieldDemo`</h3>
+<h4>`MyThread` class</h4>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;child thread&quot;);
+            Thread.yield();  // line 1 — child always yields
+        }
+    }
+}</pre>
+<h4>`ThreadYieldDemo` main</h4>
+<pre class='code'>class ThreadYieldDemo {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        t.start();
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;main thread&quot;);
+        }
+    }
+}</pre>
+<p>After `t.start()` — how many threads? Two: main thread + child thread.</p>
+<p>Analysis WITH `Thread.yield()` in child (line 1 active):</p>
+<pre class='code'>// Child always calls Thread.yield() inside loop
+// → child passes CPU to waiting threads of SAME priority
+// → main thread (same default priority 5) gets MORE chances
+// → main thread likely completes FIRST
+// → high chance main finishes before child</pre>
+<p>Analysis WITHOUT `Thread.yield()` (comment out line 1):</p>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;child thread&quot;);
+            // Thread.yield();  // commented out
+        }
+    }
+}
+// Both threads execute &quot;simultaneously&quot; (interleaved)
+// Which completes first? WE CAN&#x27;T EXPECT — depends on thread scheduler
+// No guarantee child or main finishes first</pre>
+<p>Priority scenarios:</p>
+<pre class='code'>// Same priority (default 5 for both):
+//   yield() in child → main gets more chances
+
+// Main has HIGHER priority than child:
+//   Even without yield(), main gets preference
+//   Child still calling yield() but no same-priority waiter
+//   → child can continue (no equal-priority thread waiting)
+
+// Child has lower priority than main:
+//   yield() does NOT pass to lower-priority main in the yield sense
+//   → main gets CPU anyway due to priority</pre>
+<p>Board conclusions for yield demo:</p>
+<pre class='code'>// Case A: Comment line 1 (no yield)
+//   → both threads interleave unpredictably
+
+// Case B: Don&#x27;t comment line 1 (child always yields)
+//   → main thread gets chance MORE number of times
+//   → chance of main completing first is HIGH</pre>
+<h3>47:27 — Live execution of `ThreadYieldDemo`</h3>
+<p>Sir compiles and runs ThreadYieldDemo.java. Observed pattern: when child yields, main thread output appears more frequently. Possible output pattern (not guaranteed):</p>
+<pre class='code'>// With yield in child — typical pattern:
+// main thread
+// child thread
+// main thread
+// main thread
+// child thread
+// main thread
+// ... main may finish first</pre>
+<p>Child can still get chances, but whenever child yields, main can run.</p>
+<h3>49:33 — Platform support limitation for `yield()`</h3>
+<p>Critical exam note:</p>
+<pre class='code'>// Some platforms / operating systems do NOT provide proper support for yield()
+//
+// Reason: yield() hints at PREEMPTIVE scheduling —
+//   temporarily take processor from current thread, give to another.
+//
+// Some OS/processors support only NON-PREEMPTIVE scheduling:
+//   once CPU allocated to a thread, it runs until run() completes
+//   (or until sleep/join/etc.)
+//
+// yield() is NATIVE → needs underlying OS/processor support.
+// Even if you call yield(), there is NO GUARANTEE it will work
+// on every platform.
+// Non-preemptive: T1 gets CPU → runs until done → then T2
+// Preemptive:      T1 can be interrupted mid-run → T2 gets CPU
+
+// yield() requires preemptive-style cooperation
+// → not all platforms honor it</pre>
+<p>Takeaway: yield() behavior is advisory/hint — not as reliable as sleep(millis).</p>
+<h3>51:42 — Single most important line about `yield()`</h3>
+<p>`yield()` causes the current executing thread to pass its execution to give the chance for remaining waiting threads of same priority.</p>
+<p>Memorize this exact concept for interviews.</p>
+<h3>52:06 — Introduction to `join()`</h3>
+<p>Sir says join() is very simple but most students get confused. Must clearly explain:</p>
+<ul><li>Purpose of join()</li></ul>
+<ul><li>Difference between yield() and join()</li></ul>
+<h3>52:48 — Analogy: Two roommates in Miyapur (Hyderabad)</h3>
+<p>Setting: Two friends, roommates, came to Miyapur for classes.</p>
+<ul><li>Friend A → Advanced Java class (Saturday, ends ~9 PM but runs long).</li></ul>
+<ul><li>Friend B → SCJP class (Durga Sir&#x27;s class, ends on time at 9 PM).</li></ul>
+<p>After B&#x27;s class (9 PM), B calls A: &quot;My class is done — what about yours?&quot;</p>
+<p>A replies: &quot;Still in full swing — don&#x27;t know when it will stop.&quot;</p>
+<p>Option given: &quot;If you want to wait, wait; if you want to go to the room, go.&quot;</p>
+<p>Best friend response: &quot;I will wait until your class completes — even until 2 AM, 4 PM, or 9 PM night — no problem.&quot;</p>
+<p>Mapping:</p>
+<pre class='code'>// Friend B (finished class) = thread T1
+// Friend A (still in class)  = thread T2
+// B waits until A completes  = T1 waits until T2 completes
+// Mechanism: T1 calls T2.join()</pre>
+<h3>55:37 — Formal definition of `join()`</h3>
+<pre class='code'>// If a thread wants to WAIT until some OTHER thread completes,
+// then we should use join() method.
+
+// T1 wants to wait until T2 completes
+//   → T1 must call  T2.join()
+//   → NOT T2.join() on T1
+//   → The WAITING thread calls join() on the TARGET thread object</pre>
+<p>Critical confusion point (emphasized many times):</p>
+<p>Thread t1 = new MyThread();  // T1&#x27;s object — but think of t1 as &quot;the thread that waits&quot;
+Thread t2 = new AnotherThread();
+
+t1.start();
+t2.start();
+
+// T1 (main or any thread) wants to wait for T2:
+t2.join();   // called BY the waiting thread ON the target Thread object t2
+
+// After t2.join() executes:
+//   → calling thread enters WAITING state
+//   → T2 is UNAWARE — continues happily
+//   → when T2 completes → waiting thread can continue</p>
+<pre class='code'>// WRONG mental model:
+//   T2 calls join on T1  ✗
+
+// CORRECT:
+//   T1 wants to wait → T1 executes t2.join()
+//   &quot;I want to wait until t2 finishes&quot;</pre>
+<h3>56:36 — Step-by-step: `T1` waits for `T2`</h3>
+<pre class='code'>// T1 and T2 both executing
+// T1 needs T2&#x27;s output / result before continuing
+
+// T1 executes:
+t2.join();
+
+// Immediately:
+//   T1 → WAITING state (blocked for joining)
+//   T2 → continues execution (doesn&#x27;t know T1 called join)
+// When T2 completes (run() finishes):
+//   T1 → back to READY/RUNNABLE → eventually RUNNING again</pre>
+<h3>58:55 — Board rule (written multiple times)</h3>
+<pre class='code'>// Rule:
+// If a thread wants to wait until completing some other thread,
+// then we should go for join() method.
+
+// Example:
+// T1 wants to wait until T2 completes
+//   → T1 has to call  T2.join()</pre>
+<h3>62:48 — Analogy: Marriage activity automation</h3>
+<p>Three sequential wedding tasks:</p>
+<pre class='code'>// T2 (card printing) must wait until T1 (venue fixing) completes:
+//   T2 calls  t1.join()
+
+// T3 (distribution) must wait until T2 (printing) completes:
+//   T3 calls  t2.join()
+class VenueFixingThread extends Thread {
+    public void run() { /* fix venue */ }
+}
+
+class CardPrintingThread extends Thread {
+    Thread venueThread;
+    CardPrintingThread(Thread venueThread) { this.venueThread = venueThread; }
+    public void run() {
+        try {
+            venueThread.join();  // T2 waits for T1
+            // print wedding cards
+        } catch (InterruptedException e) { }
+    }
+}
+
+class CardDistributionThread extends Thread {
+    Thread printingThread;
+    CardDistributionThread(Thread printingThread) { this.printingThread = printingThread; }
+    public void run() {
+        try {
+            printingThread.join();  // T3 waits for T2
+            // distribute wedding cards
+        } catch (InterruptedException e) { }
+    }
+}</pre>
+<p>Board diagram (conceptual order):</p>
+<pre class='code'>// Venue fixing (T1)
+//   ↓ T2 waits via t1.join()
+// Wedding cards printing (T2)
+//   ↓ T3 waits via t2.join()
+// Wedding cards distribution (T3)</pre>
+<h3>70:45 — Complete prototypes of `join()` — three overloaded methods</h3>
+<p>All are `public final` — cannot override in child classes.</p>
+<p>All are instance methods (NOT static) — called on Thread object (t2.join()).</p>
+<p>All `throws InterruptedException` (checked).</p>
+<h4>Overload 1 — wait forever</h4>
+<pre class='code'>public final void join() throws InterruptedException</pre>
+<p>Like the best friend: &quot;I will wait until your class completes — no time limit.&quot;</p>
+<h4>Overload 2 — wait up to milliseconds</h4>
+<pre class='code'>public final void join(long millis) throws InterruptedException</pre>
+<p>Like: &quot;I will wait exactly 1 hour; if your class isn&#x27;t done, I&#x27;ll leave.&quot;</p>
+<h4>Overload 3 — wait up to milliseconds + nanoseconds</h4>
+<pre class='code'>public final void join(long millis, int nanos) throws InterruptedException</pre>
+<p>Like: &quot;I will wait 1 hour, 23 minutes, 43 seconds — very strict deadline.&quot;</p>
+<pre class='code'>// Three join() overloads — same name, different parameters:
+//   join()
+//   join(long millis)
+//   join(long millis, int nanos)</pre>
+<p>Why is `nanos` parameter `int` but `millis` is `long`?</p>
+<pre class='code'>// nanos range: 0 to 999,999 (less than 1 millisecond fraction)
+//   → int is ENOUGH
+
+// millis can be very large (hours/days of waiting)
+//   → long is REQUIRED
+
+// If nanos exceeds 999,999 → milliseconds auto-increment by 1
+// (like odometer / bank counter: 999 + 1 → next digit rolls)
+
+t.join(0, 999_999);  // max nanos fraction before millis bumps</pre>
+<p>Bank analogy: writing 2500 on cheque vs 2499 (crossed out, write 2500) — when sub-unit overflows, higher unit increments.</p>
+<h3>77:04 — `InterruptedException` with `join()`</h3>
+<p>Analogy continuation: Ravi waits for his friend&#x27;s class. Katrina Kaif arrives and invites Ravi for tea. Ravi abandons waiting — interrupts the wait.</p>
+<pre class='code'>// While thread is waiting in join():
+//   another thread may interrupt it
+//   → InterruptedException may be raised
+
+// EVERY join() overload throws InterruptedException (checked exception)
+// Must handle OR declare — otherwise COMPILE ERROR</pre>
+<p>Handling options:</p>
+<pre class='code'>// Option 1: try-catch
+try {
+    t.join();
+} catch (InterruptedException e) {
+    // handle
+}
+// Option 2: throws in method signature
+public static void main(String[] args) throws InterruptedException {
+    t.join();
+}
+// Without either → compile error:
+// &quot;unreported exception InterruptedException;
+//  must be caught or declared to be thrown&quot;</pre>
+<p>Full signatures on board:</p>
+<pre class='code'>public final void join() throws InterruptedException { }
+
+public final void join(long millis) throws InterruptedException { }
+
+public final void join(long millis, int nanos) throws InterruptedException { }</pre>
+<h3>83:53 — `join()` impact on thread lifecycle</h3>
+<p>Normal lifecycle (recap):</p>
+<pre class='code'>// new → start() → READY → (scheduler) → RUNNING → run() done → TERMINATED</pre>
+<p>When running thread calls `t2.join()`:</p>
+<pre class='code'>// RUNNING → WAITING  (blocked for joining)
+
+// Three ways OUT of waiting:
+//   1. T2 completes (target thread finishes)
+//   2. Time expires (if timed join overload used)
+//   3. Waiting thread gets interrupted → InterruptedException
+
+// After leaving WAITING → READY/RUNNABLE (NOT directly back to RUNNING)
+// Must wait for scheduler to allocate processor again</pre>
+<p>Waiting state alias: &quot;Blocked for joining&quot;</p>
+<pre class='code'>// join() calls that cause WAITING state:
+t2.join();
+t2.join(1000);           // wait max 1000 ms
+t2.join(1000, 500000);   // 1000 ms + 500000 nanos</pre>
+<p>Important lifecycle rule (repeated from prior classes):</p>
+<pre class='code'>// Thread leaving RUNNING never goes DIRECTLY back to RUNNING.
+// Always: RUNNING → WAITING (join) → READY → (scheduler) → RUNNING</pre>
+<p>Exit conditions from join-waiting:</p>
+<pre class='code'>// Option 1: target thread T2 completes
+// Option 2: time expires (timed join)
+// Option 3: waiting thread interrupted
+//   → thread moves to READY/RUNNABLE
+//   → then scheduler allocates CPU → RUNNING</pre>
+<h3>91:38 — Demo: `ThreadJoinDemo` — Case 1</h3>
+<h4>Case 1 heading</h4>
+<p>Case 1: Waiting of main thread until completing child thread</p>
+<h4>`MyThread` (child = &quot;Sita thread&quot;)</h4>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Sita thread&quot;);
+            try {
+                Thread.sleep(2000);  // 2 seconds after each print
+            } catch (InterruptedException e) { }
+        }
+    }
+}</pre>
+<ul><li>Loop runs 10 times</li></ul>
+<ul><li>Each iteration: print + sleep 2000 ms</li></ul>
+<ul><li>Minimum sleep: 10 × 2 = 20 seconds</li></ul>
+<h4>`ThreadJoinDemo` (main = &quot;Rama thread&quot;)</h4>
+<pre class='code'>class ThreadJoinDemo {
+    public static void main(String[] args) throws InterruptedException {
+        MyThread t = new MyThread();
+        t.start();          // 2 threads: main + child
+        t.join();           // LINE 1 — main waits for child completion
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Rama thread&quot;);
+        }
+    }
+}</pre>
+<p>Line 1 analysis (`t.join()`):</p>
+<pre class='code'>// Executed by: main thread
+// Effect: main enters WAITING until child (Sita) completes
+// Child runs: print &quot;Sita thread&quot; + sleep 2 sec × 10
+// Main blocked entire ~20+ seconds
+// After child done → main prints &quot;Rama thread&quot; × 10</pre>
+<p>Expected output (Case 1, line 1 active):</p>
+<pre class='code'>// prints:
+// Sita thread   (×10, with ~2 sec gaps)
+// Rama thread   (×10, after Sita fully done)</pre>
+<h3>97:02 — Timed `join()` variant (&quot;modern Rama&quot;)</h3>
+<p>Old Rama: waits forever (t.join()).</p>
+<p>Modern Rama: sets a deadline — won&#x27;t wait past 10 seconds.</p>
+<pre class='code'>class ThreadJoinDemoTimed {
+    public static void main(String[] args) throws InterruptedException {
+        MyThread t = new MyThread();
+        t.start();
+        t.join(10000);  // wait MAX 10 seconds (not 20+ needed by child)
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Rama thread&quot;);
+        }
+    }
+}
+// Child needs ~20 seconds minimum (10 × sleep 2000)
+// Main waits only 10 seconds via join(10000)
+// After 10 sec timeout → main continues even if child still running
+// Output: some Sita threads, then Rama threads interleave/continue</pre>
+<p>Without time period vs with time period:</p>
+<h3>104:57 — Case 1 summary: comment line 1 vs keep line 1</h3>
+<h4>If we **comment line 1** (`t.join()`)</h4>
+<pre class='code'>class ThreadJoinDemoNoJoin {
+    public static void main(String[] args) throws InterruptedException {
+        MyThread t = new MyThread();
+        t.start();
+        // t.join();  // LINE 1 commented
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Rama thread&quot;);
+        }
+    }
+}
+// Main and child execute SIMULTANEOUSLY (interleaved)
+// Output order: UNPREDICTABLE — we can&#x27;t expect fixed order
+// Both may print in mixed sequence</pre>
+<h4>If we **do NOT comment line 1**</h4>
+<pre class='code'>// Main calls t.join() on child object
+// Main WAITS until child completes entirely
+// Output: Sita thread × 10  THEN  Rama thread × 10  (guaranteed order)</pre>
+<p>Predictable output with join:</p>
+<pre class='code'>// prints:
+// Sita thread
+// Sita thread
+// ... (10 times total, ~2 sec apart)
+// Rama thread
+// Rama thread
+// ... (10 times total)</pre>
+<h3>106:01 — `join()` vs `yield()` — side-by-side comparison</h3>
+<pre class='code'>// YIELD                          JOIN
+// ─────────────────────────────────────────────────────
+// Thread.yield()                  targetThread.join()
+// static method                   instance method
+// Current thread pauses           Current thread WAITS for TARGET to die
+// For SAME priority waiters       Waits for SPECIFIC other thread
+// Goes to READY/RUNNABLE          Goes to WAITING (blocked for joining)
+// No checked exception            throws InterruptedException
+// Native, platform-dependent      Implemented in Java (final)
+// Hint to scheduler               Hard block until target completes/time/interrupt
+// SLEEP (for completeness — prior class)
+// Thread.sleep(ms) → WAITING/TIMED_WAITING for fixed time
+// Does NOT wait for another thread to finish</pre>
+<h3>107:52 — Live run observations</h3>
+<p>Sir runs ThreadJoinDemo:</p>
+<ol><li>`throws InterruptedException` required on main — otherwise compile error.</li></ol>
+<ol><li>Output shows Sita thread printed repeatedly with pauses, then Rama thread after child completes.</li></ol>
+<ol><li>Demonstrates main literally waiting — &quot;Rama waiting until Sita completion.&quot;</li></ol>
+<p>With `t.join(10000)` demo: after ~10 seconds, Rama continues before Sita finishes all 10 iterations.</p>
+<h3>108:48 — Final board output (Case 1, with join)</h3>
+<pre class='code'>// Case 1 output (line 1 = t.join() active):
+//
+// Sita thread
+// Sita thread
+// Sita thread
+// Sita thread
+// Sita thread
+// Sita thread
+// Sita thread
+// Sita thread
+// Sita thread
+// Sita thread
+// Rama thread
+// Rama thread
+// Rama thread
+// Rama thread
+// Rama thread
+// Rama thread
+// Rama thread
+// Rama thread
+// Rama thread
+// Rama thread</pre>
+<h3>109:06 — Case 2 (teaser — next session)</h3>
+<p>Video ends with: &quot;Case 2 — come later.&quot; Case 2 (likely child waiting for main or reverse join scenario) is not covered in this video.</p>
+<h2>Quick reference cards</h2>
+<h3>`yield()` cheat sheet</h3>
+<p>Thread.yield();
+// public static native void yield();
+// Running → Ready/Runnable
+// Passes turn to same-priority waiting threads
+// No effect if no equal/lower waiters worth yielding to
+// Re-entry timing: scheduler-dependent
+// Platform may ignore it (non-preemptive OS)</p>
+<h3>`join()` cheat sheet</h3>
+<p>t2.join();                    // wait forever for t2
+t2.join(5000);                // wait max 5 seconds
+t2.join(5000, 500000);        // 5 sec + 500000 nanos max
+
+// Waiting thread calls join ON target thread object
+// Waiting thread → WAITING until:
+//   target completes OR timeout OR interrupt
+// throws InterruptedException — must handle</p>
+<h2>Exam / interview checklist</h2>
+<ul><li>[ ] Name 3 methods to temporarily prevent thread execution: yield, join, sleep</li></ul>
+<ul><li>[ ] `yield()` purpose — pass execution to same-priority waiting threads</li></ul>
+<ul><li>[ ] `yield()` return type / modifiers — public static native void</li></ul>
+<ul><li>[ ] `yield()` lifecycle — RUNNING → READY/RUNNABLE</li></ul>
+<ul><li>[ ] `yield()` unpredictability — which waiter runs next; when yielded thread resumes</li></ul>
+<ul><li>[ ] `yield()` platform note — some OS don&#x27;t support properly (native/preemptive)</li></ul>
+<ul><li>[ ] `join()` purpose — wait until another thread completes</li></ul>
+<ul><li>[ ] Who calls whom — waiting thread T1 calls t2.join() on target</li></ul>
+<ul><li>[ ] Three `join()` overloads — no-arg, (long millis), (long millis, int nanos)</li></ul>
+<ul><li>[ ] Why `int nanos` but `long millis`</li></ul>
+<ul><li>[ ] `join()` throws `InterruptedException` — checked, must handle</li></ul>
+<ul><li>[ ] `join()` lifecycle — RUNNING → WAITING (blocked for joining) → READY → RUNNING</li></ul>
+<ul><li>[ ] Exit from join waiting — target completes / time expires / interrupted</li></ul>
+<ul><li>[ ] `yield` vs `join` vs `sleep` comparison</li></ul>
+<h2>ASR decoding reference (this video)</h2>
+<p>```java block count: 59`</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 85 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 5</td></tr>
+<tr><td>Topic</td><td>yield(), join()</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 49m 27s</td></tr>
+<tr><td>Video ID</td><td>AZuwWOURi2Y</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=AZuwWOURi2Y</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Notes source</td><td>Local Whisper STT (YouTube had no usable auto-captions)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Method</th><th>Covered in this video?</th></tr>
+<tr><td>1</td><td>yield()</td><td>Yes — main focus (first ~52 min)</td></tr>
+<tr><td>2</td><td>join()</td><td>Yes — main focus (remaining ~57 min)</td></tr>
+<tr><td>3</td><td>sleep()</td><td>Mentioned only — already familiar from earlier classes</td></tr>
+</table>
+<table>
+<tr><th>Modifier</th><th>Meaning</th></tr>
+<tr><td>public</td><td>Accessible everywhere</td></tr>
+<tr><td>static</td><td>Called as Thread.yield() — no object needed</td></tr>
+<tr><td>native</td><td>Not implemented in Java — implemented in non-Java (JVM/OS native code)</td></tr>
+<tr><td>void</td><td>Returns nothing</td></tr>
+<tr><td>No arguments</td><td>No parameters</td></tr>
+<tr><td>No checked exceptions</td><td>Unlike sleep() and join()</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>From RUNNING goes to</th></tr>
+<tr><td>yield()</td><td>READY / RUNNABLE</td></tr>
+<tr><td>sleep()</td><td>WAITING / TIMED_WAITING</td></tr>
+<tr><td>join()</td><td>WAITING (blocked for joining)</td></tr>
+</table>
+<table>
+<tr><th>Thread</th><th>Activity</th></tr>
+<tr><td>T1</td><td>Venue fixing (must happen first)</td></tr>
+<tr><td>T2</td><td>Wedding card printing (needs venue finalized)</td></tr>
+<tr><td>T3</td><td>Wedding card distribution (needs cards printed)</td></tr>
+</table>
+<table>
+<tr><th>Call</th><th>Behavior</th></tr>
+<tr><td>t.join()</td><td>Wait until child dies — no deadline</td></tr>
+<tr><td>t.join(10000)</td><td>Wait at most 10 seconds, then continue</td></tr>
+</table>
+<table>
+<tr><th>ASR (Whisper)</th><th>Decoded</th></tr>
+<tr><td>illimeth / illimather / ili metad</td><td>yield()</td></tr>
+<tr><td>joy in / jain / Jain Meda</td><td>join()</td></tr>
+<tr><td>ethyred / threat / trend</td><td>thread</td></tr>
+<tr><td>weight in thread</td><td>waiting thread</td></tr>
+<tr><td>chailithread / chailet</td><td>child thread</td></tr>
+<tr><td>Vichitrada / Vuchitrad</td><td>which thread (concept)</td></tr>
+<tr><td>ill-eumedad</td><td>yield method</td></tr>
+<tr><td>primptu / non-primptu</td><td>preemptive / non-preemptive</td></tr>
+<tr><td>My31 / Miyapur</td><td>Miyapur (Hyderabad area)</td></tr>
+<tr><td>Satara / Saitatrad / Sita</td><td>Sita (demo thread name)</td></tr>
+<tr><td>Rama / Ramathrad</td><td>Rama (demo main thread name)</td></tr>
+<tr><td>Avuna, Inka, Cheppu, Cheppali</td><td>Telugu phone-call filler words</td></tr>
+<tr><td>intra-yorom / entire realm</td><td>interview</td></tr>
+<tr><td>RNR / Radhi Ranabhul</td><td>READY / RUNNABLE</td></tr>
+<tr><td>checker exception</td><td>checked exception</td></tr>
+</table>
+</body></html>

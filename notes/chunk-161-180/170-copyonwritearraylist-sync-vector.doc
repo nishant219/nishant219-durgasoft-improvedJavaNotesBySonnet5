@@ -1,0 +1,333 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>170-copyonwritearraylist-sync-vector</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 170 — Concurrent Collections Part-17: CopyOnWriteArrayList, synchronizedList(), Vector</h1>
+<h2>Video info</h2>
+<p>ASR decode notes: copy/write list / copy n te list / copy not write list / copy not make list = CopyOnWriteArrayList; current modification exception / cant modification exception / concat modification exception = ConcurrentModificationException; single list = synchronizedList; no redo operation = no remove operation (via iterator); copy on make = CopyOnWriteArrayList.</p>
+<h2>Session overview</h2>
+<p>This is the summary comparison lecture for three thread-safe List implementations. Sir answers the interview question: &quot;CopyOnWriteArrayList, synchronizedList, and Vector are all thread-safe — where is the difference?&quot;</p>
+<p>Prerequisites (full CopyOnWriteArrayList module):</p>
+<p>What this session covers:</p>
+<ol><li>All three are thread-safe — but different mechanisms</li></ol>
+<ol><li>How each achieves thread safety (clone-copy vs whole-object lock)</li></ol>
+<ol><li>Concurrent access model — multiple threads vs one-at-a-time</li></ol>
+<ol><li>Iterate + modify behavior — CME vs no CME</li></ol>
+<ol><li>Iterator capabilities — read-only vs read+remove</li></ol>
+<ol><li>Fail-safe vs fail-fast iterators</li></ol>
+<ol><li>Master comparison table (documentation-ready diagram)</li></ol>
+<p>What this session does NOT cover:</p>
+<ul><li>ConcurrentHashMap comparisons (Videos 157–160)</li></ul>
+<ul><li>Performance benchmarks or micro-profiling</li></ul>
+<ul><li>CopyOnWriteArraySet (same copy-on-write semantics)</li></ul>
+<h2>00:18 — Opening: Three thread-safe lists, three different models</h2>
+<h3>The interview question</h3>
+<p>&quot;CopyOnWriteArrayList is thread-safe. synchronizedList is thread-safe. Vector is also thread-safe. All three are thread-safe — but where is the difference?&quot;</p>
+<h3>High-level answer preview</h3>
+<p>All three are thread-safe. The mechanism and behavior differ completely.</p>
+<h2>00:58 — Point 1: How thread safety is achieved</h2>
+<h3>CopyOnWriteArrayList — copy-on-write mechanism</h3>
+<p>Thread-1 calls add(&quot;X&quot;)  →  clone current array  →  add X to clone  →  replace reference
+Thread-2 calls add(&quot;Y&quot;)  →  clone (possibly updated) array  →  add Y  →  replace reference
+Thread-3 iterating       →  reads from its snapshot  →  unaffected by Thread-1/2 writes</p>
+<ul><li>No lock on whole list for reads</li></ul>
+<ul><li>Writes are expensive (array copy) but reads are fast and lock-free</li></ul>
+<ul><li>Existing iterators and readers continue on old snapshot</li></ul>
+<h3>synchronizedList and Vector — mutual exclusion (lock)</h3>
+<p>Thread-1 acquires lock  →  performs operation  →  releases lock
+Thread-2 waits...
+Thread-3 waits...
+Thread-1 done           →  Thread-2 acquires lock  →  ...</p>
+<p>Vector:</p>
+<pre class='code'>public class Vector&lt;E&gt; extends AbstractList&lt;E&gt; {
+    public synchronized boolean add(E e) { ... }
+    public synchronized E get(int index) { ... }
+    // every public method synchronized
+}</pre>
+<p>synchronizedList (via Collections.synchronizedList):</p>
+<p>List&lt;String&gt; syncList = Collections.synchronizedList(new ArrayList&lt;&gt;());
+// wrapper delegates to backing list with synchronized block on each method</p>
+<ul><li>At a time, only ONE thread allowed to operate</li></ul>
+<ul><li>All threads operate one by one — automatic serialization</li></ul>
+<ul><li>Total collection object locked during each operation</li></ul>
+<h3>Thread safety mechanism comparison</h3>
+<h2>02:00 — Point 2: Concurrent access — how many threads at a time?</h2>
+<h3>CopyOnWriteArrayList</h3>
+<p>&quot;At a time, multiple threads are allowed to operate on CopyOnWriteArrayList.&quot;</p>
+<ul><li>Multiple threads can read simultaneously (each on snapshot)</li></ul>
+<ul><li>Multiple threads can write (each creates own clone — with coordination internally)</li></ul>
+<ul><li>Multiple threads can read while others write — no blocking for readers</li></ul>
+<h3>synchronizedList and Vector</h3>
+<p>&quot;At a time, only one thread is allowed to operate.&quot;</p>
+<ul><li>Thread-2 must wait until Thread-1 completes</li></ul>
+<ul><li>Even two read-only threads cannot run concurrently — whole object locked</li></ul>
+<ul><li>Performance bottleneck under high concurrency (Sir&#x27;s Video 154 Reason 2)</li></ul>
+<h3>Concurrency model table</h3>
+<h2>02:34 — Point 3: Iterate + modify — ConcurrentModificationException</h2>
+<h3>CopyOnWriteArrayList</h3>
+<p>&quot;While one thread is iterating the list, the other thread is also allowed to modify — no problem.&quot;</p>
+<ul><li>Modification happens on separate cloned copy</li></ul>
+<ul><li>No `ConcurrentModificationException`</li></ul>
+<ul><li>Iterator is fail-safe</li></ul>
+<pre class='code'>// Video 166 pattern — works with CopyOnWriteArrayList
+Iterator itr = cowList.iterator();     // main thread
+// child thread: cowList.add(&quot;D&quot;);     // NO CME
+while (itr.hasNext()) { itr.next(); }</pre>
+<h3>synchronizedList and Vector</h3>
+<p>&quot;While one thread is iterating synchronizedList/Vector, if another thread tries to modify → immediately `ConcurrentModificationException`.&quot;</p>
+<ul><li>Even though list methods are synchronized, iterator is NOT fail-safe</li></ul>
+<ul><li>Iterator created without holding lock throughout iteration</li></ul>
+<ul><li>Another thread modifies between hasNext() and next() → CME</li></ul>
+<p>List syncList = Collections.synchronizedList(new ArrayList&lt;&gt;());
+// Thread-1: Iterator it = syncList.iterator(); while(it.hasNext()) ...
+// Thread-2: syncList.add(&quot;X&quot;);  → ConcurrentModificationException</p>
+<p>Manual fix for synchronizedList (verbose — why concurrent collections preferred):</p>
+<pre class='code'>synchronized (syncList) {
+    for (String s : syncList) {
+        System.out.println(s);
+    }
+}</pre>
+<h3>Iterate + modify comparison</h3>
+<h2>03:46 — Point 4: Iterator operations — read vs remove</h2>
+<h3>CopyOnWriteArrayList iterator</h3>
+<p>&quot;Iterator can perform only read operation — NOT remove operation.&quot;</p>
+<ul><li>By mistake if you call itr.remove() → `UnsupportedOperationException`</li></ul>
+<ul><li>Remove would require modifying snapshot copy — would break consistency model</li></ul>
+<ul><li>Covered programmatically in Video 167</li></ul>
+<pre class='code'>CopyOnWriteArrayList&lt;String&gt; cow = new CopyOnWriteArrayList&lt;&gt;(Arrays.asList(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;));
+Iterator&lt;String&gt; itr = cow.iterator();
+while (itr.hasNext()) {
+    String s = itr.next();
+    if (s.equals(&quot;B&quot;)) {
+        itr.remove();   // UnsupportedOperationException
+    }
+}</pre>
+<h3>synchronizedList and Vector iterators</h3>
+<p>&quot;Iterator can perform both read and remove operation — no problem.&quot;</p>
+<ul><li>itr.remove() is supported — removes current element via iterator</li></ul>
+<ul><li>Standard fail-fast iterator with structural remove coordination</li></ul>
+<ul><li>Same as ArrayList iterator behavior (but list itself is synchronized)</li></ul>
+<pre class='code'>Vector&lt;String&gt; v = new Vector&lt;&gt;(Arrays.asList(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;));
+Iterator&lt;String&gt; itr = v.iterator();
+while (itr.hasNext()) {
+    Integer i = Integer.valueOf(itr.next());  // if Integer elements
+    if (i % 2 == 0) {
+        itr.remove();   // OK on Vector — no UnsupportedOperationException
+    }
+}</pre>
+<h3>Iterator capability table</h3>
+<h2>04:02 — Point 5: Legacy vs modern thread-safe list</h2>
+<h3>Vector — legacy (Java 1.0)</h3>
+<ul><li>Predates Collections Framework (Java 1.2)</li></ul>
+<ul><li>All methods synchronized — coarse-grained locking</li></ul>
+<ul><li>Still thread-safe but not recommended for new code</li></ul>
+<ul><li>Superseded by ArrayList + Collections.synchronizedList or CopyOnWriteArrayList</li></ul>
+<h3>synchronizedList — wrapper pattern (Java 1.2)</h3>
+<p>List&lt;String&gt; list1 = Collections.synchronizedList(new ArrayList&lt;&gt;());
+List&lt;String&gt; list2 = Collections.synchronizedList(new LinkedList&lt;&gt;());
+// Works with ANY List implementation</p>
+<ul><li>Thread-safe wrapper around any List</li></ul>
+<ul><li>Same one-thread-at-a-time limitation as Vector</li></ul>
+<ul><li>Same CME risk during unsynchronized iteration</li></ul>
+<h3>CopyOnWriteArrayList — concurrent collection (Java 1.5)</h3>
+<pre class='code'>CopyOnWriteArrayList&lt;String&gt; cow = new CopyOnWriteArrayList&lt;&gt;();</pre>
+<ul><li>Designed for concurrent access from ground up</li></ul>
+<ul><li>Best when: many reads, few writes</li></ul>
+<ul><li>Worst when: many writes (copy cost per write)</li></ul>
+<h2>04:24 — Master comparison table (Sir&#x27;s documentation diagram)</h2>
+<h3>Complete five-point comparison</h3>
+<h3>When to use which (decision guide)</h3>
+<h2>Code examples: Same scenario, three implementations</h2>
+<h3>Scenario: Main iterates, child thread adds &quot;D&quot;</h3>
+<p>CopyOnWriteArrayList — succeeds:</p>
+<pre class='code'>import java.util.*;
+import java.util.concurrent.*;
+
+class Demo {
+    static CopyOnWriteArrayList&lt;String&gt; list = new CopyOnWriteArrayList&lt;&gt;();
+
+    static class AddThread extends Thread {
+        public void run() { list.add(&quot;D&quot;); }
+    }
+
+    public static void main(String[] args) throws Exception {
+        list.addAll(Arrays.asList(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;));
+        new AddThread().start();
+        for (String s : list) {
+            System.out.println(s);
+        }
+    }
+}
+// Output: A, B, C (possibly D) — NO exception</pre>
+<p>Vector — ConcurrentModificationException:</p>
+<pre class='code'>import java.util.*;
+
+class Demo {
+    static Vector&lt;String&gt; list = new Vector&lt;&gt;();
+
+    static class AddThread extends Thread {
+        public void run() { list.add(&quot;D&quot;); }
+    }
+
+    public static void main(String[] args) throws Exception {
+        list.addAll(Arrays.asList(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;));
+        new AddThread().start();
+        Iterator&lt;String&gt; itr = list.iterator();
+        while (itr.hasNext()) {
+            System.out.println(itr.next());  // CME when child adds D
+        }
+    }
+}</pre>
+<p>synchronizedList — ConcurrentModificationException:</p>
+<pre class='code'>import java.util.*;
+
+class Demo {
+    static List&lt;String&gt; list = Collections.synchronizedList(new ArrayList&lt;&gt;());
+
+    static class AddThread extends Thread {
+        public void run() { list.add(&quot;D&quot;); }
+    }
+
+    public static void main(String[] args) throws Exception {
+        list.addAll(Arrays.asList(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;));
+        new AddThread().start();
+        Iterator&lt;String&gt; itr = list.iterator();
+        while (itr.hasNext()) {
+            System.out.println(itr.next());  // CME
+        }
+    }
+}</pre>
+<h2>Fail-fast vs fail-safe summary</h2>
+<h2>OCJP / SCJP exam checklist</h2>
+<ul><li>[ ] All three (CopyOnWriteArrayList, synchronizedList, Vector) are thread-safe</li></ul>
+<ul><li>[ ] Know different mechanisms: clone-copy vs synchronized/lock</li></ul>
+<ul><li>[ ] CopyOnWriteArrayList: multiple threads can operate; others: one at a time</li></ul>
+<ul><li>[ ] CopyOnWriteArrayList: iterate + modify → no CME; others → CME</li></ul>
+<ul><li>[ ] CopyOnWriteArrayList iterator: read only, remove → UnsupportedOperationException</li></ul>
+<ul><li>[ ] Vector/synchronizedList iterator: read + remove supported</li></ul>
+<ul><li>[ ] CopyOnWriteArrayList: fail-safe; Vector/synchronizedList: fail-fast</li></ul>
+<ul><li>[ ] Know Collections.synchronizedList(new ArrayList&lt;&gt;()) factory method</li></ul>
+<ul><li>[ ] Vector is legacy — prefer concurrent collections for new code</li></ul>
+<ul><li>[ ] CopyOnWriteArrayList best for read-heavy, write-light workloads</li></ul>
+<h2>Interview Q&amp;A (rapid fire)</h2>
+<h2>Connection to Video 154 three reasons</h2>
+<p>Conclusion: CopyOnWriteArrayList addresses all three reasons from Video 154. Vector and synchronizedList only address Reason 1 (thread safety) but retain Reasons 2 and 3 problems.</p>
+<h2>Related videos</h2>
+<h2>Summary (one paragraph)</h2>
+<p>Video 170 is Durga Sir&#x27;s capstone comparison of three thread-safe List options: CopyOnWriteArrayList, Collections.synchronizedList(), and Vector. All three provide thread safety, but through fundamentally different mechanisms. CopyOnWriteArrayList achieves safety by performing every update on a separate cloned copy, allowing multiple threads to operate concurrently with fail-safe iterators that never throw ConcurrentModificationException — but iterator remove is unsupported. Vector and synchronizedList achieve safety by allowing only one thread at a time on the entire list object via synchronization, which creates performance bottlenecks and fail-fast iterators that throw ConcurrentModificationException if one thread iterates while another modifies. Sir presents a five-row comparison table covering mechanism, concurrent access, iterate+modify behavior, iterator type, and remove support — the documentation-ready answer for OCJP interviews and certification exams asking &quot;all are thread-safe, where is the difference?&quot;</p>
+<p>End of Video 170 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th></tr>
+<tr><td>Position</td><td>170 of 203</td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Concurrent Collections Part-17 \</td><td>CopyOnWriteArrayList, synchronizedList(), Vector</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td></tr>
+<tr><td>Duration</td><td>8m 13s</td><td></td></tr>
+<tr><td>Video ID</td><td>6FXfRR6gzEU</td><td></td></tr>
+<tr><td>Watch URL</td><td>https://www.youtube.com/watch?v=6FXfRR6gzEU</td><td></td></tr>
+<tr><td>Duration</td><td>8m 13s</td><td></td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td></tr>
+<tr><td>Notes source</td><td>YouTube auto-captions (yt-dlp + node PO token)</td><td></td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th></tr>
+<tr><td>154</td><td>Need for concurrent collections — CME, performance, thread safety</td></tr>
+<tr><td>163–168</td><td>CopyOnWriteArrayList theory and four programs</td></tr>
+<tr><td>169</td><td>(Intermediate program/topic in series)</td></tr>
+</table>
+<table>
+<tr><th>Implementation</th><th>Thread safety via</th></tr>
+<tr><td>CopyOnWriteArrayList</td><td>Every update on separate cloned copy</td></tr>
+<tr><td>synchronizedList</td><td>List accessed by only one thread at a time (lock)</td></tr>
+<tr><td>Vector</td><td>Same as synchronizedList — one thread at a time (synchronized methods)</td></tr>
+</table>
+<table>
+<tr><th></th><th>CopyOnWriteArrayList</th><th>synchronizedList</th><th>Vector</th></tr>
+<tr><td>Mechanism</td><td>Clone-on-write</td><td>Synchronized wrapper</td><td>Synchronized methods</td></tr>
+<tr><td>Lock scope</td><td>Per write (copy array)</td><td>Entire list per operation</td><td>Entire vector per operation</td></tr>
+<tr><td>Read during write</td><td>Yes (different snapshots)</td><td>No (blocked)</td><td>No (blocked)</td></tr>
+<tr><td>Package</td><td>java.util.concurrent</td><td>java.util (wrapper)</td><td>java.util (legacy)</td></tr>
+<tr><td>Since</td><td>Java 1.5</td><td>Java 1.2</td><td>Java 1.0</td></tr>
+</table>
+<table>
+<tr><th></th><th>CopyOnWriteArrayList</th><th>synchronizedList</th><th>Vector</th></tr>
+<tr><td>Threads operating simultaneously</td><td>Multiple</td><td>One only</td><td>One only</td></tr>
+<tr><td>Read + read concurrent</td><td>Yes</td><td>No</td><td>No</td></tr>
+<tr><td>Read + write concurrent</td><td>Yes (snapshot isolation)</td><td>No</td><td>No</td></tr>
+<tr><td>Write + write concurrent</td><td>Serialized internally</td><td>One at a time</td><td>One at a time</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>CopyOnWriteArrayList</th><th>synchronizedList</th><th>Vector</th></tr>
+<tr><td>Thread-1 iterates, Thread-2 adds</td><td>No CME</td><td>CME</td><td>CME</td></tr>
+<tr><td>Iterator type</td><td>Fail-safe</td><td>Fail-fast</td><td>Fail-fast</td></tr>
+<tr><td>Safe iteration pattern</td><td>No special sync needed</td><td>Must sync on list during iteration</td><td>Must sync on vector during iteration</td></tr>
+</table>
+<table>
+<tr><th>Iterator operation</th><th>CopyOnWriteArrayList</th><th>synchronizedList</th><th>Vector</th></tr>
+<tr><td>next() (read)</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>remove()</td><td>UnsupportedOperationException</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Fail-safe / fail-fast</td><td>Fail-safe</td><td>Fail-fast</td><td>Fail-fast</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Feature</th><th>CopyOnWriteArrayList</th><th>synchronizedList</th><th>Vector</th></tr>
+<tr><td>1</td><td>How thread safety achieved</td><td>Every update on separate cloned copy</td><td>List locked — one thread at a time</td><td>All methods synchronized — one thread at a time</td></tr>
+<tr><td>2</td><td>Threads operating at a time</td><td>Multiple threads allowed</td><td>Only one thread</td><td>Only one thread</td></tr>
+<tr><td>3</td><td>Iterate + modify (another thread)</td><td>Other thread CAN modify — no CME</td><td>Other thread modifies → CME</td><td>Other thread modifies → CME</td></tr>
+<tr><td>4</td><td>Iterator type</td><td>Fail-safe</td><td>Fail-fast</td><td>Fail-fast</td></tr>
+<tr><td>5</td><td>Iterator remove()</td><td>Not allowed → UnsupportedOperationException</td><td>Allowed</td><td>Allowed</td></tr>
+</table>
+<table>
+<tr><th>Use case</th><th>Recommended</th></tr>
+<tr><td>Read-heavy, write-rare, many concurrent readers</td><td>CopyOnWriteArrayList</td></tr>
+<tr><td>Legacy code already using Vector</td><td>Migrate to CopyOnWriteArrayList or synchronizedList</td></tr>
+<tr><td>Need iterator remove during iteration</td><td>Vector or synchronizedList (NOT CopyOnWriteArrayList)</td></tr>
+<tr><td>Frequent writes, many threads</td><td>NOT CopyOnWriteArrayList — copy cost too high; consider other structures</td></tr>
+<tr><td>Simple thread-safe list, low concurrency</td><td>Collections.synchronizedList</td></tr>
+<tr><td>Certification exam default for concurrent read + write</td><td>CopyOnWriteArrayList</td></tr>
+</table>
+<table>
+<tr><th>Term</th><th>Behavior</th><th>Implementations</th></tr>
+<tr><td>Fail-fast</td><td>Iterator detects concurrent modification → throws CME immediately</td><td>ArrayList, HashMap, HashSet, Vector, synchronizedList iterators</td></tr>
+<tr><td>Fail-safe</td><td>Iterator works on snapshot/copy → no CME, may not see latest data</td><td>CopyOnWriteArrayList, ConcurrentHashMap, ConcurrentLinkedQueue</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>COW vs Vector — both thread-safe, difference?</td><td>COW: clone on write, multiple concurrent readers; Vector: synchronized, one thread at a time</td></tr>
+<tr><td>Why is Vector slow under load?</td><td>Every operation locks entire vector — even reads block each other</td></tr>
+<tr><td>synchronizedList vs Vector?</td><td>Same locking model; synchronizedList wraps any List, Vector is concrete resizable array</td></tr>
+<tr><td>Which allows iterate + concurrent modify without CME?</td><td>CopyOnWriteArrayList only</td></tr>
+<tr><td>Which iterator supports remove()?</td><td>Vector and synchronizedList — NOT CopyOnWriteArrayList</td></tr>
+<tr><td>What exception on COW iterator.remove()?</td><td>UnsupportedOperationException</td></tr>
+<tr><td>When to choose CopyOnWriteArrayList?</td><td>Many reads, few writes, need concurrent iteration safety</td></tr>
+<tr><td>Fail-safe implementations in this lecture?</td><td>CopyOnWriteArrayList</td></tr>
+<tr><td>Fail-fast in this lecture?</td><td>Vector, synchronizedList (iterators)</td></tr>
+</table>
+<table>
+<tr><th>Video 154 reason</th><th>CopyOnWriteArrayList</th><th>synchronizedList / Vector</th></tr>
+<tr><td>Reason 1: Not thread-safe</td><td>Solves — thread-safe</td><td>Solves — thread-safe</td></tr>
+<tr><td>Reason 2: Poor performance (whole lock)</td><td>Solves — no read lock</td><td>Same problem — whole object lock</td></tr>
+<tr><td>Reason 3: CME on iterate+modify</td><td>Solves — fail-safe</td><td>Same problem — fail-fast iterator</td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th></tr>
+<tr><td>154</td><td>Three reasons for concurrent collections</td></tr>
+<tr><td>163–168</td><td>CopyOnWriteArrayList deep dive</td></tr>
+<tr><td>170</td><td>Three-way comparison table (this video)</td></tr>
+<tr><td>160</td><td>HashMap vs ConcurrentHashMap (parallel map comparison)</td></tr>
+</table>
+</body></html>

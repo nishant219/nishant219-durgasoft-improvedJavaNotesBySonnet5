@@ -1,0 +1,496 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>142-set-sortedset</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 142 — Collections Part-7: Set Interface, HashSet, LinkedHashSet &amp; SortedSet</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Collections Part-7 || Setinterface||ShortedSet</p>
+<p>URL: https://www.youtube.com/watch?v=AooYaSeVuZo</p>
+<p>Duration: 1h 20m 55s</p>
+<p>Position: Video 142 of 203 in the Durga Sir OCJP/SCJP playlist</p>
+<p>Prerequisite: Previous sessions covered the Collections Framework overview, Collection interface methods, the full List module (ArrayList, LinkedList, Vector, Stack), and cursors (Enumeration, Iterator, ListIterator). This lecture begins the second major module of Collections — Set.</p>
+<h2>Session overview</h2>
+<p>This is Collections Part-7 — the first deep session on the Set side of the framework. Durga Sir positions Set as the second module after List.</p>
+<p>What this lecture covers:</p>
+<ol><li>Brief recap of List module and cursors</li></ol>
+<ol><li>Set hierarchy diagram — HashSet, LinkedHashSet, SortedSet, NavigableSet, TreeSet (with Java version numbers)</li></ol>
+<ol><li>When to use Set interface</li></ol>
+<ol><li>Critical exam point: Set interface defines no new methods — only inherited Collection methods</li></ol>
+<ol><li>HashSet — properties, duplicate behavior, four constructors, fill ratio / load factor, live demo</li></ol>
+<ol><li>LinkedHashSet — difference from HashSet, comparison table, cache-based application use case</li></ol>
+<ol><li>SortedSet interface — when to use, six specific methods (first, last, headSet, tailSet, subSet, comparator), default natural sorting order, worked numeric example</li></ol>
+<p>What continues in the next session:</p>
+<ul><li>NavigableSet interface and TreeSet implementation class (mentioned in hierarchy but not fully covered here)</li></ul>
+<ul><li>Comparator / customized sorting (Sir mentions ~3 hours of content planned for that topic)</li></ul>
+<p>Exam mantra: Know exactly when to pick Set vs List vs SortedSet. Know HashSet properties cold. Know the four HashSet constructors and fill ratio. Know HashSet vs LinkedHashSet in one table. Know all six SortedSet-specific methods and their boundary conditions (especially &lt; vs &lt;=).</p>
+<h2>00:05 — Recap: List module completed</h2>
+<p>Before starting Set, Durga Sir quickly revisits what was already covered in the List module:</p>
+<p>Transition statement: List module is done. The next terminology / second module in Collections is Set.</p>
+<h2>01:03 — Set module: hierarchy diagram</h2>
+<p>Durga Sir draws the Set branch under Collection:</p>
+<p>Collection
+    └── Set
+            ├── HashSet
+            ├── LinkedHashSet
+            ├── SortedSet          (interface)
+            │       └── NavigableSet   (interface)
+            └── TreeSet            (implementation class of NavigableSet)</p>
+<h3>Java version introduction (board note — no deep explanation required)</h3>
+<p>Sir&#x27;s instruction: Just remember the version numbers on the board — no lengthy explanation needed for the exam.</p>
+<h2>03:30 — When should we go for `Set`?</h2>
+<h3>Rule (board conclusion)</h3>
+<p>If you want to represent a group of individual objects as a single entity where:</p>
+<ul><li>Duplicates are NOT allowed</li></ul>
+<ul><li>Insertion order is NOT preserved</li></ul>
+<p>…then we should go for Set.</p>
+<h3>Mental model</h3>
+<p>Classroom phrasing: &quot;Sir, I don&#x27;t want order. I am not interested in order. But duplicates are not allowed — then we should go for Set.&quot;</p>
+<h3>Interface relationship</h3>
+<ul><li>Set is a child interface of `Collection`</li></ul>
+<ul><li>All Collection interface methods can be applied on Set implemented objects</li></ul>
+<h2>06:00 — `Set` interface: NO new methods (critical exam trap)</h2>
+<p>Durga Sir deliberately teases the class:</p>
+<p>&quot;Set itself contains how many methods? Almost around 58 methods… are you ready for 58 methods?&quot;</p>
+<p>Then immediately clarifies the real answer:</p>
+<h3>Board note (star this)</h3>
+<p>`Set` interface doesn&#x27;t contain any new method.</p>
+<p>We have to use only `Collection` interface methods on Set objects.</p>
+<p>Why the &quot;58 methods&quot; joke? Sir was testing whether students were paying attention. The correct exam answer: Set adds zero methods beyond Collection.</p>
+<p>Implication: No separate section is needed to &quot;discuss Set interface methods&quot; — jump directly to implementation classes starting with HashSet.</p>
+<h2>08:17 — `HashSet`: introduction and properties</h2>
+<p>HashSet is the first implementation class of Set.</p>
+<h3>Property 1 — Underlying data structure</h3>
+<p>Hash table (hashing-based data structure).</p>
+<p>Every object has a hash code (from Object class in java.lang — covered in earlier lectures). Objects are inserted based on hash code, not insertion sequence.</p>
+<h3>Property 2 — Duplicates not allowed</h3>
+<p>Because it is a Set, duplicate objects are not allowed.</p>
+<h3>Property 3 — Insertion order not preserved</h3>
+<p>Objects are inserted based on hash code of the objects. Therefore you cannot predict output order unless you know the hash codes.</p>
+<h3>Property 4 — Null insertion</h3>
+<ul><li>Null insertion is possible — no problem</li></ul>
+<ul><li>But only once (because duplicates are not allowed; two nulls would be duplicates)</li></ul>
+<h3>Property 5 — Heterogeneous objects allowed</h3>
+<p>Yes. Heterogeneous objects are allowed in HashSet.</p>
+<p>Cross-reference (from prior session): Except TreeSet and TreeMap, everywhere else heterogeneous objects are allowed. TreeSet/TreeMap require comparison/sorting → same type needed.</p>
+<h3>Property 6 — Implemented interfaces</h3>
+<p>HashSet implements:</p>
+<ul><li>Serializable</li></ul>
+<ul><li>Cloneable</li></ul>
+<p>But NOT RandomAccess — there is no index-based random access.</p>
+<h3>Property 7 — Best choice for search operations</h3>
+<p>Wherever hashing is involved, hashing-related data structures are the best suitable choice for search operations.</p>
+<p>&quot;Search algorithm number one up to today is nothing but hashing only.&quot;</p>
+<p>Rule: If your frequent operation is search, better to go for HashSet.</p>
+<h3>Complete HashSet property summary (copy for exam)</h3>
+<h2>15:14 — Duplicate insertion behavior in HashSet (exam favorite)</h2>
+<h3>Example (board)</h3>
+<pre class='code'>import java.util.*;
+
+public class HashSetDuplicateDemo {
+    public static void main(String[] args) {
+        HashSet h = new HashSet();
+        System.out.println(h.add(&quot;A&quot;));   // true  — first insertion, not duplicate
+        System.out.println(h.add(&quot;A&quot;));   // false — duplicate, NOT inserted
+    }
+}</pre>
+<h3>Rules</h3>
+<ol><li>add() method return type is `boolean`</li></ol>
+<ol><li>If you try to insert a duplicate object:</li></ol>
+<ul><li>No compile-time error</li></ul>
+<ul><li>No runtime exception</li></ul>
+<ul><li>add() simply returns `false`</li></ul>
+<ol><li>By default HashSet won&#x27;t allow duplicates</li></ol>
+<h3>Board note (star this)</h3>
+<p>In HashSet, duplicates are not allowed. If we are trying to insert duplicates, we won&#x27;t get any compile-time or runtime errors — `add()` method simply returns `false`.</p>
+<h2>19:42 — HashSet constructors (four constructors)</h2>
+<p>Durga Sir emphasizes: Several hashing-related data structures share the same constructor pattern:</p>
+<ul><li>HashSet</li></ul>
+<ul><li>LinkedHashSet</li></ul>
+<ul><li>HashMap</li></ul>
+<ul><li>LinkedHashMap</li></ul>
+<ul><li>WeakHashMap</li></ul>
+<ul><li>IdentityHashMap</li></ul>
+<p>Learn HashSet constructors carefully — the same constructors apply to all hashing-based collection classes. Sir will not repeat full explanations for each later class.</p>
+<h3>Constructor 1 — Default (no-arg)</h3>
+<pre class='code'>HashSet h = new HashSet();</pre>
+<ul><li>Creates an empty HashSet object</li></ul>
+<ul><li>Default initial capacity: 16</li></ul>
+<ul><li>Default fill ratio (load factor): 0.75</li></ul>
+<h3>Constructor 2 — Specified initial capacity</h3>
+<pre class='code'>HashSet h = new HashSet(int initialCapacity);
+// Example: capacity 1000
+HashSet h = new HashSet(1000);</pre>
+<ul><li>Creates an empty HashSet with specified initial capacity</li></ul>
+<ul><li>Default fill ratio still `0.75`</li></ul>
+<h3>Constructor 3 — Initial capacity + fill ratio</h3>
+<pre class='code'>HashSet h = new HashSet(int initialCapacity, float fillRatio);
+// Example: resize after 90% full instead of default 75%
+HashSet h = new HashSet(100, 0.9f);</pre>
+<ul><li>Customizes both initial capacity and fill ratio</li></ul>
+<ul><li>Default behavior resizes at 75%; with 0.9f, a new (bigger) HashSet internal table is created after 90% is filled</li></ul>
+<h3>Constructor 4 — Collection inter-conversion</h3>
+<pre class='code'>HashSet h = new HashSet(Collection c);
+// Example: create HashSet from a Vector
+Vector v = new Vector();
+HashSet h = new HashSet(v);</pre>
+<ul><li>Creates an equivalent HashSet for the given collection</li></ul>
+<ul><li>Meant for inter-conversion between collection objects</li></ul>
+<ul><li>This constructor pattern exists in every collection class</li></ul>
+<h3>Constructor summary table</h3>
+<h2>22:41 — Fill ratio / Load factor (interview favorite)</h2>
+<h3>What is fill ratio?</h3>
+<p>Also called load factor.</p>
+<p>Definition (board): After filling how much ratio, a new HashSet object (internal rehash / resize) will be created — that ratio is called fill ratio or load factor.</p>
+<p>Alternative wording: After loading how much factor, a new HashSet object is going to be created.</p>
+<h3>Comparison with ArrayList</h3>
+<p>Why 75% and not 100%? Hash table performance degrades as buckets fill up. Resizing early (at 75%) keeps search/insert performance good. Sir&#x27;s analogy: &quot;I don&#x27;t want to wait until completing 100%. After filling 75% ratio only, please create a bigger HashSet object.&quot;</p>
+<h3>Example</h3>
+<ul><li>Fill ratio = 0.75 means: after filling 75% of capacity, automatically a new (larger) HashSet internal structure will be created</li></ul>
+<ul><li>Fill ratio = 0.9 means: resize happens after 90% full</li></ul>
+<h3>Board note</h3>
+<p>Fill ratio (or load factor): After filling how much ratio, a new HashSet object will be created.</p>
+<p>Example: Fill ratio 0.75 means after filling 75% ratio, a new HashSet object will be created automatically.</p>
+<p>Interview question: &quot;What is the default fill ratio of HashSet?&quot; → 0.75</p>
+<h2>36:50 — HashSet live demo program</h2>
+<h3>Program (board — `HashSetDemo`)</h3>
+<pre class='code'>import java.util.*;
+
+public class HashSetDemo {
+    public static void main(String[] args) {
+        HashSet h = new HashSet();
+        h.add(&quot;B&quot;);
+        h.add(&quot;C&quot;);
+        h.add(&quot;D&quot;);
+        h.add(&quot;J&quot;);
+        h.add(null);
+        h.add(10);          // Integer — heterogeneous allowed
+
+        System.out.println(h.add(&quot;J&quot;));   // false — J already present
+        System.out.println(h);            // unpredictable order
+    }
+}</pre>
+<h3>Expected output (from live run)</h3>
+<p>false
+[null, D, B, C, 10, J]</p>
+<p>(Actual order may vary by JVM/hash codes — Sir got this order in class.)</p>
+<h3>Observations from the demo</h3>
+<p>Important exam point: In HashSet output questions, if hash codes are unknown, say &quot;insertion order not preserved — exact order depends on hash codes.&quot; Do NOT assume insertion order.</p>
+<h2>42:38 — `LinkedHashSet`</h2>
+<h3>Name breakdown</h3>
+<p>Linked + HashSet = LinkedHashSet</p>
+<p>Common interview question: &quot;What is the difference between HashSet and LinkedHashSet?&quot;</p>
+<p>Do NOT answer: &quot;The difference is linked.&quot;</p>
+<p>DO answer: Explain the purpose of &quot;linked&quot; — insertion order preservation.</p>
+<h3>When to use LinkedHashSet</h3>
+<p>Requirement mix:</p>
+<ul><li>Set property: Duplicates NOT allowed ✓</li></ul>
+<ul><li>List property: Insertion order MUST be preserved ✓</li></ul>
+<p>&quot;List and Set mixed properties — duplicates not allowed but insertion order must be preserved.&quot;</p>
+<p>Then use LinkedHashSet.</p>
+<h3>How it works internally</h3>
+<p>The linked list maintains insertion order; the hash table provides fast lookup.</p>
+<h3>Class relationship</h3>
+<ul><li>LinkedHashSet is a child class of HashSet</li></ul>
+<ul><li>It is exactly the same as HashSet (same methods, same constructors) except the differences listed below</li></ul>
+<h3>HashSet vs LinkedHashSet comparison table</h3>
+<h3>Demo: same program, replace HashSet with LinkedHashSet</h3>
+<pre class='code'>import java.util.*;
+
+public class LinkedHashSetDemo {
+    public static void main(String[] args) {
+        LinkedHashSet h = new LinkedHashSet();
+        h.add(&quot;B&quot;);
+        h.add(&quot;C&quot;);
+        h.add(&quot;D&quot;);
+        h.add(&quot;J&quot;);
+        h.add(null);
+        h.add(10);
+
+        System.out.println(h.add(&quot;J&quot;));   // false
+        System.out.println(h);            // insertion order preserved
+    }
+}</pre>
+<p>Output:</p>
+<p>false
+[B, C, D, J, null, 10]</p>
+<p>Key difference from HashSet demo: Output follows insertion order — B, C, D, J, null, 10.</p>
+<h3>Board note</h3>
+<p>In the above HashSet program, if we replace HashSet with LinkedHashSet, the output is:</p>
+<p>false then [B, C, D, J, null, 10] — insertion order preserved.</p>
+<p>Spelling note: LinkedHashSet is one class name — do not put a space in the middle.</p>
+<h2>52:59 — LinkedHashSet and cache-based applications</h2>
+<p>Durga Sir connects LinkedHashSet to cache memory concepts (useful for system-design-style interview answers).</p>
+<h3>Primary vs secondary memory (quick recap)</h3>
+<p>Problem: If every operation hits secondary memory, overall system performance drops because secondary memory is slow.</p>
+<h3>Cache memory solution</h3>
+<p>Place cache memory in the middle:</p>
+<ul><li>Frequently/repeatedly required data or code is stored in cache</li></ul>
+<ul><li>Before hitting secondary memory, check cache first</li></ul>
+<ul><li>Cache is faster than disk → overall performance improves</li></ul>
+<ul><li>Cache is costly memory</li></ul>
+<h3>Cache properties that match LinkedHashSet</h3>
+<p>Conclusion: LinkedHashSet is commonly used to develop cache-based applications.</p>
+<h3>Board note</h3>
+<p>In general, we can use LinkedHashSet to develop cache-based applications where duplicates are not allowed and insertion order is preserved.</p>
+<p>(How to build cache applications in detail is out of scope for this course — just remember the use case.)</p>
+<h2>59:07 — `SortedSet` interface</h2>
+<h3>Interface relationship</h3>
+<ul><li>SortedSet is a child interface of `Set`</li></ul>
+<ul><li>Set is child of Collection</li></ul>
+<p>Collection → Set → SortedSet → NavigableSet → TreeSet (impl)</p>
+<h3>When should we go for SortedSet?</h3>
+<p>If you want to represent a group of individual objects:</p>
+<ul><li>According to some sorting order</li></ul>
+<ul><li>Without duplicates</li></ul>
+<p>…then we should go for SortedSet.</p>
+<h3>Real-world examples (board)</h3>
+<p>The name itself indicates: objects are inserted in sorted order.</p>
+<h3>Mathematics analogy: normal Set vs SortedSet</h3>
+<p>Consider three sets from discrete mathematics:</p>
+<pre class='code'>{1, 2, 3}    {3, 2, 1}    {2, 1, 3}</pre>
+<p>In normal Set theory, all three are equal — order of elements does not matter.</p>
+<p>But in SortedSet, elements are always in sorted order, e.g. {1, 2, 3}.</p>
+<p>This is why SortedSet defines specific methods that are NOT applicable to normal Set / HashSet / LinkedHashSet.</p>
+<h2>1:04:54 — SortedSet: six specific methods</h2>
+<p>SortedSet interface defines six specific methods. These apply only to SortedSet-related objects — NOT on HashSet or LinkedHashSet.</p>
+<h3>Worked example set (used throughout explanation)</h3>
+<p>Assume this SortedSet of integers:</p>
+<pre class='code'>{100, 101, 104, 106, 110, 115, 120}</pre>
+<h3>Method 1 — `first()`</h3>
+<p>Object first()</p>
+<ul><li>Returns the first element of the sorted set</li></ul>
+<ul><li>Example: first() → 100</li></ul>
+<h3>Method 2 — `last()`</h3>
+<p>Object last()</p>
+<ul><li>Returns the last element of the sorted set</li></ul>
+<ul><li>Example: last() → 120</li></ul>
+<h3>Method 3 — `headSet(Object toElement)`</h3>
+<p>SortedSet headSet(Object toElement)</p>
+<ul><li>Returns a SortedSet whose elements are less than toElement (strictly less than — NO equal)</li></ul>
+<ul><li>Example: headSet(106) → {100, 101, 104}</li></ul>
+<ul><li>NOT {100, 101, 104, 106} — 106 itself is excluded</li></ul>
+<h3>Method 4 — `tailSet(Object fromElement)`</h3>
+<p>SortedSet tailSet(Object fromElement)</p>
+<ul><li>Returns a SortedSet whose elements are greater than OR equal to fromElement (inclusive)</li></ul>
+<ul><li>Example: tailSet(106) → {106, 110, 115, 120}</li></ul>
+<h3>Method 5 — `subSet(Object fromElement, Object toElement)`</h3>
+<p>SortedSet subSet(Object fromElement, Object toElement)</p>
+<ul><li>Returns a SortedSet whose elements are:</li></ul>
+<ul><li>≥ fromElement (inclusive start)</li></ul>
+<ul><li>&lt; toElement (exclusive end)</li></ul>
+<ul><li>Example: subSet(101, 115) → {101, 104, 106, 110}</li></ul>
+<ul><li>Includes 101 (≥ 101)</li></ul>
+<ul><li>Excludes 115 (&lt; 115, not ≤)</li></ul>
+<p>Boundary rule (star this):</p>
+<h3>Method 6 — `comparator()`</h3>
+<p>Comparator comparator()</p>
+<ul><li>Returns the Comparator object that describes the underlying sorting technique</li></ul>
+<ul><li>Tells you: ascending? descending? custom sort?</li></ul>
+<ul><li>If using default natural sorting order → returns `null`</li></ul>
+<ul><li>No special/custom comparator was supplied</li></ul>
+<p>Comparator is a big topic (~3 hours planned in future sessions). For now: know the method signature and that null means default natural order.</p>
+<h3>Complete SortedSet method table</h3>
+<h3>Method count summary (exam)</h3>
+<p>You CANNOT call `first()`, `last()`, `headSet()`, etc. on a HashSet or LinkedHashSet.</p>
+<h2>1:16:51 — Default natural sorting order</h2>
+<p>When no custom Comparator is provided, SortedSet uses default natural sorting order.</p>
+<h3>Board note (star this — Sir says he&#x27;ll use this 100+ times)</h3>
+<p>Default natural sorting order:</p>
+<p>- For numbers → ascending order</p>
+<p>- For string objects → alphabetical order</p>
+<p>When comparator() returns null, it means default natural sorting is in effect.</p>
+<p>Customized sorting order (Comparator, Comparable) — covered in upcoming sessions.</p>
+<h2>1:18:37 — SortedSet methods worked example (quick reference)</h2>
+<p>Using sorted set: {100, 101, 104, 106, 110, 115, 120}</p>
+<pre class='code'>// Assume SortedSet&lt;Integer&gt; s contains the above elements
+
+s.first();              // 100
+s.last();               // 120
+s.headSet(106);         // {100, 101, 104}
+s.tailSet(106);         // {106, 110, 115, 120}
+s.subSet(101, 115);     // {101, 104, 106, 110}
+s.comparator();         // null (default natural ascending order for integers)</pre>
+<h2>Quick revision — entire Set branch at a glance</h2>
+<h3>When to use which?</h3>
+<h3>Hierarchy with method counts</h3>
+<p>Collection (12 methods)
+    └── Set (0 new methods)
+            ├── HashSet
+            ├── LinkedHashSet (child of HashSet)
+            ├── SortedSet (6 new methods)
+            │       └── NavigableSet (more methods — next session)
+            └── TreeSet (implementation)</p>
+<h3>HashSet vs LinkedHashSet vs SortedSet</h3>
+<h2>Important board notes to copy verbatim</h2>
+<ol><li>Set interface doesn&#x27;t contain any new method — use only Collection methods.</li></ol>
+<ol><li>In HashSet, duplicates are not allowed. Trying to insert duplicates → no error → add() returns false.</li></ol>
+<ol><li>HashSet default initial capacity = 16, default fill ratio = 0.75.</li></ol>
+<ol><li>Fill ratio: after filling that ratio, a new HashSet internal structure is created (default: 75%).</li></ol>
+<ol><li>HashSet underlying DS = hash table. LinkedHashSet = linked list + hash table.</li></ol>
+<ol><li>LinkedHashSet preserves insertion order; HashSet does not.</li></ol>
+<ol><li>LinkedHashSet → cache-based applications (no duplicates + insertion order).</li></ol>
+<ol><li>SortedSet → sorting order without duplicates.</li></ol>
+<ol><li>SortedSet methods: `first`, `last`, `headSet` (&lt;), `tailSet` (≥), `subSet` (≥ and &lt;), `comparator`.</li></ol>
+<ol><li>Default natural sorting: numbers = ascending, strings = alphabetical.</li></ol>
+<ol><li>`comparator()` returns `null` when default natural sorting is used.</li></ol>
+<h2>Metadata</h2>
+<table>
+<tr><th>Topic</th><th>What was covered</th></tr>
+<tr><td>List interface</td><td>Child interface of Collection; index-based access</td></tr>
+<tr><td>Implementation classes</td><td>ArrayList, LinkedList, Vector, Stack</td></tr>
+<tr><td>Cursors</td><td>Enumeration, Iterator, ListIterator — when to use each, comparison between them</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>Introduced in</th></tr>
+<tr><td>Collection, Set, HashSet</td><td>Java 1.2</td></tr>
+<tr><td>SortedSet</td><td>Java 1.2</td></tr>
+<tr><td>LinkedHashSet</td><td>Java 1.4</td></tr>
+<tr><td>NavigableSet</td><td>Java 1.6</td></tr>
+<tr><td>TreeSet</td><td>Java 1.2 (as SortedSet impl; NavigableSet features added later)</td></tr>
+</table>
+<table>
+<tr><th>Requirement</th><th>List behavior</th><th>Set behavior</th></tr>
+<tr><td>Duplicates</td><td>Allowed</td><td>Not allowed</td></tr>
+<tr><td>Insertion order</td><td>Preserved</td><td>Not preserved</td></tr>
+<tr><td>Index-based access</td><td>Yes</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>Interface</th><th>New methods defined?</th><th>Total usable methods (conceptually)</th></tr>
+<tr><td>Collection</td><td>12 generalized methods (covered in earlier session)</td><td>12</td></tr>
+<tr><td>Set</td><td>0 new methods</td><td>Same 12 from Collection</td></tr>
+<tr><td>SortedSet</td><td>6 specific methods (covered later in this video)</td><td>12 + 6 = 18</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Property</th><th>Value</th></tr>
+<tr><td>1</td><td>Underlying data structure</td><td>Hash table</td></tr>
+<tr><td>2</td><td>Duplicates</td><td>Not allowed</td></tr>
+<tr><td>3</td><td>Insertion order</td><td>Not preserved (based on hash code)</td></tr>
+<tr><td>4</td><td>Null insertion</td><td>Possible, but only once</td></tr>
+<tr><td>5</td><td>Heterogeneous objects</td><td>Allowed</td></tr>
+<tr><td>6</td><td>Implements</td><td>Serializable, Cloneable</td></tr>
+<tr><td>7</td><td>RandomAccess</td><td>No</td></tr>
+<tr><td>8</td><td>Best for</td><td>Frequent search operations</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Signature</th><th>Creates</th><th>Default capacity</th><th>Default fill ratio</th></tr>
+<tr><td>1</td><td>new HashSet()</td><td>Empty HashSet</td><td>16</td><td>0.75</td></tr>
+<tr><td>2</td><td>new HashSet(int initialCapacity)</td><td>Empty HashSet</td><td>user-specified</td><td>0.75</td></tr>
+<tr><td>3</td><td>new HashSet(int initialCapacity, float fillRatio)</td><td>Empty HashSet</td><td>user-specified</td><td>user-specified</td></tr>
+<tr><td>4</td><td>new HashSet(Collection c)</td><td>Equivalent HashSet from c</td><td>depends on c</td><td>0.75</td></tr>
+</table>
+<table>
+<tr><th>Structure</th><th>Default initial capacity</th><th>When does it grow?</th></tr>
+<tr><td>ArrayList</td><td>10</td><td>After 100% full — when inserting 11th element into capacity-10 list</td></tr>
+<tr><td>HashSet</td><td>16</td><td>After 75% full (default fill ratio 0.75) — do NOT wait until 100%</td></tr>
+</table>
+<table>
+<tr><th>Observation</th><th>Explanation</th></tr>
+<tr><td>h.add(&quot;J&quot;) prints false</td><td>Duplicate insertion — returns false, no exception</td></tr>
+<tr><td>Output is NOT insertion order</td><td>Insertion was B, C, D, J, null, 10 — output is null, D, B, C, 10, J</td></tr>
+<tr><td>Heterogeneous objects present</td><td>String objects + Integer(10) + null — all allowed</td></tr>
+<tr><td>Null is present</td><td>Null insertion allowed (once)</td></tr>
+<tr><td>Cannot predict order without hash codes</td><td>HashSet inserts based on hash code; unless you compute hash codes, you cannot guarantee print order</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Underlying data structure</th></tr>
+<tr><td>HashSet</td><td>Hash table only</td></tr>
+<tr><td>LinkedHashSet</td><td>Linked list + Hash table (hybrid)</td></tr>
+</table>
+<table>
+<tr><th>Point</th><th>HashSet</th><th>LinkedHashSet</th></tr>
+<tr><td>Underlying data structure</td><td>Hash table</td><td>Linked list + Hash table (combination)</td></tr>
+<tr><td>Insertion order</td><td>Not preserved</td><td>Preserved</td></tr>
+<tr><td>Duplicates</td><td>Not allowed</td><td>Not allowed</td></tr>
+<tr><td>Null insertion</td><td>Once</td><td>Once</td></tr>
+<tr><td>Heterogeneous objects</td><td>Allowed</td><td>Allowed</td></tr>
+<tr><td>Introduced in</td><td>Java 1.2</td><td>Java 1.4</td></tr>
+</table>
+<table>
+<tr><th>Memory</th><th>Example</th><th>Speed</th><th>Storage</th></tr>
+<tr><td>Primary</td><td>RAM</td><td>High speed</td><td>Temporary</td></tr>
+<tr><td>Secondary</td><td>Hard disk</td><td>Slower</td><td>Permanent</td></tr>
+</table>
+<table>
+<tr><th>Cache requirement</th><th>LinkedHashSet satisfies?</th></tr>
+<tr><td>Duplicates not allowed</td><td>✓ Yes</td></tr>
+<tr><td>Insertion order preserved</td><td>✓ Yes — &quot;in which order we saved, in the same order only&quot;</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Sorting requirement</th></tr>
+<tr><td>Student objects</td><td>By roll number, or alphabetical order of names</td></tr>
+<tr><td>Employee objects</td><td>Ascending order of employee IDs</td></tr>
+<tr><td>Integer objects</td><td>Ascending order</td></tr>
+<tr><td>String objects</td><td>Alphabetical order</td></tr>
+</table>
+<table>
+<tr><th>Concept</th><th>Normal Set</th><th>SortedSet</th></tr>
+<tr><td>{1,2,3} vs {3,2,1}</td><td>Equal</td><td>Different representation</td></tr>
+<tr><td>Can ask &quot;first element&quot;?</td><td>No — meaningless</td><td>Yes — first() returns 1</td></tr>
+<tr><td>Can ask &quot;last element&quot;?</td><td>No</td><td>Yes — last() returns 3</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Lower bound</th><th>Upper bound</th></tr>
+<tr><td>headSet(x)</td><td>(none)</td><td>&lt; x (exclusive)</td></tr>
+<tr><td>tailSet(x)</td><td>≥ x (inclusive)</td><td>(none)</td></tr>
+<tr><td>subSet(a, b)</td><td>≥ a (inclusive)</td><td>&lt; b (exclusive)</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Return type</th><th>Description</th></tr>
+<tr><td>first()</td><td>Object</td><td>First element of sorted set</td></tr>
+<tr><td>last()</td><td>Object</td><td>Last element of sorted set</td></tr>
+<tr><td>headSet(Object obj)</td><td>SortedSet</td><td>Elements less than obj</td></tr>
+<tr><td>tailSet(Object obj)</td><td>SortedSet</td><td>Elements ≥ obj (inclusive)</td></tr>
+<tr><td>subSet(Object obj1, Object obj2)</td><td>SortedSet</td><td>Elements ≥ obj1 and &lt; obj2</td></tr>
+<tr><td>comparator()</td><td>Comparator</td><td>Underlying sort; null if default natural order</td></tr>
+</table>
+<table>
+<tr><th>Interface</th><th>New methods</th><th>Applicable on</th></tr>
+<tr><td>Collection</td><td>12 generalized</td><td>All collections</td></tr>
+<tr><td>Set</td><td>0</td><td>HashSet, LinkedHashSet, TreeSet, etc.</td></tr>
+<tr><td>SortedSet</td><td>6 specific</td><td>SortedSet / TreeSet objects only</td></tr>
+</table>
+<table>
+<tr><th>Element type</th><th>Default natural sorting order</th></tr>
+<tr><td>Numbers (Integer, etc.)</td><td>Ascending order</td></tr>
+<tr><td>String objects</td><td>Alphabetical order</td></tr>
+</table>
+<table>
+<tr><th>Need</th><th>Use</th></tr>
+<tr><td>No duplicates, no order needed, fast search</td><td>HashSet</td></tr>
+<tr><td>No duplicates, insertion order needed</td><td>LinkedHashSet</td></tr>
+<tr><td>No duplicates, sorted order needed</td><td>SortedSet / TreeSet</td></tr>
+<tr><td>Cache (no duplicates + insertion order)</td><td>LinkedHashSet</td></tr>
+</table>
+<table>
+<tr><th>Feature</th><th>HashSet</th><th>LinkedHashSet</th><th>SortedSet</th></tr>
+<tr><td>Duplicates</td><td>No</td><td>No</td><td>No</td></tr>
+<tr><td>Order</td><td>Hash-code based (unpredictable)</td><td>Insertion order</td><td>Sorting order</td></tr>
+<tr><td>Null allowed</td><td>Once</td><td>Once</td><td>Depends on implementation (TreeSet: generally no null)</td></tr>
+<tr><td>New interface methods</td><td>—</td><td>—</td><td>6 specific</td></tr>
+<tr><td>Best for</td><td>Search</td><td>Cache / ordered unique set</td><td>Sorted unique set</td></tr>
+</table>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Video</td><td>142 of 203</td></tr>
+<tr><td>Series</td><td>Durga Sir Core Java OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>Collections Part-7 — Set, HashSet, LinkedHashSet, SortedSet</td></tr>
+<tr><td>Source</td><td>YouTube auto-captions</td></tr>
+<tr><td>Output</td><td>142-set-sortedset.doc</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,242 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>105-java-lang-intro</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 105</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: java.lang.package Part-1 || Introduction</p>
+<h3>00:06 — Series opener: why `java.lang` matters for interviews</h3>
+<p>Durga Sir opens by saying the next topic is very important for the interview room and also for day-to-day coding. He normally spends about one week on it when time permits.</p>
+<p>Agenda for `java.lang` package (full series roadmap):</p>
+<ol><li>Introduction</li></ol>
+<ol><li>Object class</li></ol>
+<ol><li>String class</li></ol>
+<ol><li>StringBuffer class</li></ol>
+<ol><li>StringBuilder class (new in Java 1.5)</li></ol>
+<ol><li>Wrapper classes</li></ol>
+<ol><li>Autoboxing and autounboxing (also 1.5)</li></ol>
+<p>He stresses: out of all Core Java / SCJP topics, `java.lang` is priority #1 — not because he says every topic is equally important, but because this package is unavoidable in real programs.</p>
+<h3>00:40 — What is `java.lang`? (ASR: “java dlang” = `java.lang`)</h3>
+<ul><li>`java.lang` = Java Language package</li></ul>
+<ul><li>Contains the most commonly required classes and interfaces for writing any Java program — simple or complicated.</li></ul>
+<p>Can you write Java without other packages?</p>
+<p>Without java.lang you cannot:</p>
+<ul><li>Use the `class` keyword (every class ultimately ties to Object)</li></ul>
+<ul><li>Write `main(String[] args)` (String is in java.lang)</li></ul>
+<ul><li>Use `System.out.println` (System is in java.lang)</li></ul>
+<h3>05:15 — Board definition: grouped fundamentals</h3>
+<p>For writing any Java program (simple or complex), the most commonly required classes and interfaces are grouped into a separate package: `java.lang`.</p>
+<h3>11:46 — Special facility: no explicit import for `java.lang`</h3>
+<ul><li>We are not required to import java.lang explicitly.</li></ul>
+<ul><li>Reason: all classes/interfaces in java.lang are by default available to every Java program.</li></ul>
+<ul><li>Contrast: java.util, java.io, etc. require import when used.</li></ul>
+<p>Interview line: java.lang is a basic requirement concept for anything in Java.</p>
+<h3>14:15 — Transition to `Object` class</h3>
+<p>Next major topic: `Object` class — the most important first concept inside java.lang.</p>
+<h3>15:25 — Every class is a child of `Object`</h3>
+<p>Rule: Every class in Java is a child class of `Object` — either directly or indirectly.</p>
+<ul><li>String, StringBuffer, Student, Customer, etc. — all extend Object (directly or indirectly).</li></ul>
+<ul><li>Only `Object` is the root of the Java class hierarchy — not String, not StringBuffer.</li></ul>
+<p>Why `Object` is root: It holds the most commonly required methods for any Java object (hashCode, equals, etc.). By making every class extend Object, those methods become by default available to every class.</p>
+<p>Why not make `String` the root? String methods apply only to String objects. Object methods apply to any Java object.</p>
+<h3>23:21 — Interview trap: multilevel inheritance vs “two parents”</h3>
+<pre class='code'>class A extends B { }
+// B extends Object</pre>
+<p>If interviewer says “A has two parents — B and Object,” clarify:</p>
+<ul><li>This is multilevel inheritance, not multiple inheritance.</li></ul>
+<ul><li>Java does not support multiple inheritance with respect to classes (directly or indirectly).</li></ul>
+<p>Direct vs indirect child of `Object`:</p>
+<h3>31:43 — How many methods in `Object`? (Interview number: **11**)</h3>
+<p>Strictly speaking: Object contains 12 methods, but `registerNatives()` is:</p>
+<ul><li>private static native void registerNatives()</li></ul>
+<ul><li>Internally required by JVM / Object class</li></ul>
+<ul><li>Not available to child classes</li></ul>
+<ul><li>Not counted in the usual “11 methods” answer</li></ul>
+<p>The 11 methods (exam/interview list):</p>
+<ol><li>public String toString()</li></ol>
+<ol><li>public native int hashCode()</li></ol>
+<ol><li>public boolean equals(Object obj)</li></ol>
+<ol><li>protected native Object clone() throws CloneNotSupportedException</li></ol>
+<ol><li>protected void finalize() throws Throwable</li></ol>
+<ol><li>public final Class&lt;?&gt; getClass()</li></ol>
+<p>7–9. public final void wait() — 3 overloaded forms</p>
+<ol><li>public final native void notify()</li></ol>
+<ol><li>public final native void notifyAll()</li></ol>
+<p>Reflection demo — count methods at runtime:</p>
+<pre class='code'>import java.lang.reflect.*;
+
+class C {
+    public static void main(String[] args) throws ClassNotFoundException {
+        Class c = Class.forName(&quot;java.lang.Object&quot;);
+        Method[] a = c.getDeclaredMethods();
+        int count = 0;
+        for (Method m1 : a) {
+            System.out.println(m1.getName());
+            count++;
+        }
+        System.out.println(&quot;The number of methods: &quot; + count);
+    }
+}
+// Prints: getClass, hashCode, equals, clone, toString, notify, notifyAll,
+//         wait (x3), finalize, registerNatives
+// Output count: 12</pre>
+<h3>46:05 — `toString()` — purpose</h3>
+<p>Purpose: get string representation of an object.</p>
+<p>When invoked automatically: whenever you print an object reference, internally:</p>
+<pre class='code'>System.out.println(s);  // becomes effectively: System.out.println(s.toString());</pre>
+<h3>50:54 — Default `toString()` behavior demo (`Student` without override)</h3>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+
+    public static void main(String[] args) {
+        Student s1 = new Student(&quot;Durga&quot;, 101);
+        Student s2 = new Student(&quot;Ravi&quot;, 102);
+        System.out.println(s1);           // calls s1.toString()
+        System.out.println(s1.toString()); // same
+        System.out.println(s2);
+    }
+}</pre>
+<p>Output (representative — hash varies by JVM/run):</p>
+<p>Student@8759b751
+Student@8759b751
+Student@6e1408e</p>
+<ul><li>Printing s1 vs s1.toString() → same output</li></ul>
+<ul><li>Output is not name/rollNumber — it is `className@hashCodeInHex`</li></ul>
+<ul><li>Hex portion differs run-to-run / JVM-to-JVM</li></ul>
+<h3>1:03:51 — How `Object.toString()` is implemented (source-level)</h3>
+<p>Durga Sir shows Object.java:</p>
+<pre class='code'>public String toString() {
+    return getClass().getName() + &quot;@&quot; + Integer.toHexString(hashCode());
+}</pre>
+<p>Format: className + &#x27;@&#x27; + hashCode in hexadecimal form</p>
+<p>Example decode: Student@8759b751 → class name Student, @, then hex of hashCode().</p>
+<h3>1:09:21 — Overriding `toString()` for meaningful output</h3>
+<p>Requirement: when printing a Student reference, show name and roll number, not @hex.</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+
+    @Override
+    public String toString() {
+        return name + &quot;..&quot; + rollNumber;  // board: name + &quot;..&quot; + rollNumber
+    }
+
+    public static void main(String[] args) {
+        Student s1 = new Student(&quot;Durga&quot;, 101);
+        Student s2 = new Student(&quot;Ravi&quot;, 102);
+        System.out.println(s1);
+        System.out.println(s2);
+    }
+}</pre>
+<p>Output:</p>
+<p>Durga..101
+Ravi..102</p>
+<p>More formatted override (commented alternative on board):</p>
+<pre class='code'>@Override
+public String toString() {
+    return &quot;This is student with the name &quot; + name + &quot; and roll number &quot; + rollNumber;
+}</pre>
+<p>Output:</p>
+<p>This is student with the name Durga and roll number 101
+This is student with the name Ravi and roll number 102</p>
+<p>Rule: To provide our own string representation, override `toString()` in our class — highly recommended.</p>
+<h3>1:16:06 — Who already overrides `toString()`?</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = new String(&quot;Durga&quot;);
+        System.out.println(s);                    // Durga — String overrides toString
+
+        Integer i = new Integer(10);
+        System.out.println(i);                    // 10 — wrapper overrides toString
+
+        java.util.ArrayList l = new java.util.ArrayList();
+        l.add(&quot;a&quot;);
+        l.add(&quot;b&quot;);
+        System.out.println(l);                    // [a, b] — collection overrides
+
+        Test t = new Test();
+        System.out.println(t);                    // Test@... — NOT meaningful
+    }
+}</pre>
+<p>Summary table:</p>
+<p>After overriding in Test:</p>
+<p>@Override
+public String toString() {
+    return &quot;This is the test object&quot;;
+}
+// Prints: This is the test object</p>
+<p>Note for all wrapper classes, all collection classes, `String`, `StringBuffer`, `StringBuilder`: toString() is already overridden for meaningful representation — we should do the same in our classes.</p>
+<h3>1:25:30 — End of Part-1 (`toString()` completed)</h3>
+<p>Video ends after completing `toString()` as the first of the 11 Object methods. Remaining Object methods continue in later parts.</p>
+<h2>ASR decode notes (this video)</h2>
+<p>Java code block count: 9</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP (java.lang package series)</td></tr>
+<tr><td>Position</td><td>105 of 203</td></tr>
+<tr><td>Series</td><td>java.lang.package</td></tr>
+<tr><td>Topic</td><td>Introduction to java.lang; Object class; toString()</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 26m 52s</td></tr>
+<tr><td>Video ID</td><td>-qrKA1aWMZs</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=-qrKA1aWMZs</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Package</th><th>Can skip it?</th></tr>
+<tr><td>java.util</td><td>Yes — many programs possible without it</td></tr>
+<tr><td>java.io</td><td>Yes</td></tr>
+<tr><td>`java.lang`</td><td>No — impossible</td></tr>
+</table>
+<table>
+<tr><th>Situation</th><th>Relationship to Object</th></tr>
+<tr><td>class A { } — does not extend any other class</td><td>Direct child of Object</td></tr>
+<tr><td>class A extends B { }</td><td>Indirect child of Object (via B)</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>toString() overridden?</th><th>Print output</th></tr>
+<tr><td>String</td><td>Yes</td><td>Content: Durga</td></tr>
+<tr><td>Wrapper (Integer)</td><td>Yes</td><td>Content: 10</td></tr>
+<tr><td>Collections (ArrayList)</td><td>Yes</td><td>[a, b]</td></tr>
+<tr><td>Our class (Test)</td><td>No (unless we override)</td><td>Test@hex</td></tr>
+</table>
+<table>
+<tr><th>Heard (caption)</th><th>Intended</th></tr>
+<tr><td>java dlang / java dl / javal</td><td>java.lang</td></tr>
+<tr><td>yul / yut / util (mixed)</td><td>sometimes util, sometimes misheard lang — use context</td></tr>
+<tr><td>ting / to sting</td><td>toString</td></tr>
+<tr><td>ch method</td><td>toString method (child class context)</td></tr>
+<tr><td>object java dt</td><td>Object in java.lang</td></tr>
+<tr><td>vo / av class</td><td>every class</td></tr>
+<tr><td>sh code</td><td>hashCode</td></tr>
+<tr><td>register net / sus method</td><td>registerNatives()</td></tr>
+<tr><td>Greek and Latin</td><td>meaningless default toString() output</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,229 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>093-daemon-threads</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 093 — Daemon Threads</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-13 || Daemon Threads</p>
+<p>Source: real YouTube auto-captions (.transcripts/093-u5OunWJhKoE.txt). ASR decoded in place: demand / demon / deand / remon = daemon; threats = threads; garb / carb / turb collector = garbage collector; attach legioner / attachation / attach legar = Attach Listener; signal dispatcher = Signal Dispatcher; is a demand / is remon = isDaemon(); set a demand / set demand = setDaemon(); illegal third state / illegal Legal thread state = IllegalThreadStateException; Nan = non-daemon; JM / JDM = JVM; keep writing board headings from spoken “keeping demand threads.”</p>
+<p>This lecture defines daemon threads, movie-shooting analogy for their purpose, GC priority raise/lower story, isDaemon/setDaemon API and the “only before start” rule, default nature / inheritance, impossibility of changing main’s daemon nature, then the critical rule that when the last non-daemon dies all daemons are killed — proved with DaemonThreadDemo.</p>
+<h3>00:09 — Topic: Daemon threads</h3>
+<p>Board: Daemon threads. Important for interview entertainment / interview room.</p>
+<h3>00:30 — Definition + examples</h3>
+<p>Definition: The thread which is executing in the background is called a daemon thread.</p>
+<p>Best examples (system-level):</p>
+<ol><li>Garbage collector</li></ol>
+<ol><li>Attach Listener</li></ol>
+<ol><li>Signal Dispatcher</li></ol>
+<pre class='code'>// Board:
+ // The threads which are executing in the background
+ // are called daemon threads
+ // Examples: Garbage collector, Signal dispatcher, Attach listener etc.</pre>
+<h3>02:46 — Advantage / objective / purpose (movie analogy begins)</h3>
+<p>Purpose of daemon threads — long cinema / shooting-spot analogy:</p>
+<ul><li>On a 70 mm screen you see hero, heroine, character artists.</li></ul>
+<ul><li>To put those people on screen, huge background staff is required (producer, director, makeup, music director, choreographer, food, crowd control, buses, balloon sellers, ice-cream vendors walking in the park scene, etc.).</li></ul>
+<ul><li>On screen maybe 2 people talking in a park; surrounding support may be 100+ members / many buses.</li></ul>
+<ul><li>Producer / director / makeup rarely appear on screen, but without them the shoot cannot run.</li></ul>
+<p>Mapping:</p>
+<p>Main purpose of daemon threads: provide support for non-daemon threads.</p>
+<h3>08:34 — Concrete JVM example with garbage collector</h3>
+<p>Main thread is working. Suddenly main faces a memory problem. JVM runs the garbage collector (daemon) — may raise its priority, destroy useless objects, free memory — so main can continue.</p>
+<p>Who provided required memory for main? Indirectly the GC. Purpose of GC: support the main / non-daemon thread.</p>
+<pre class='code'> // Board (dictated):
+ // The main objective of daemon threads is
+ // to provide support for non-daemon threads (main thread)</pre>
+<p>Example flow dictated:</p>
+<pre class='code'> // If main thread runs with low memory
+ // then JVM runs garbage collector
+ // to destroy useless objects
+ // so that number of bytes of free memory will be improved
+ // With this free memory main thread can continue its execution</pre>
+<h3>12:08 — Priority of daemon threads</h3>
+<p>Usually daemon threads run with low priority.</p>
+<p>Story:</p>
+<ul><li>Assume main priority 5, GC priority 1 → main keeps executing.</li></ul>
+<ul><li>If memory problem: JVM may raise GC priority from 1 to 10 so GC can reclaim memory.</li></ul>
+<ul><li>Once enough free memory: JVM reduces GC priority back to 1 → main continues.</li></ul>
+<p>Important twist: Usually daemons have low priority, but based on requirement a daemon can run with high priority also. Do not say “daemon always low priority.”</p>
+<pre class='code'> // Board:
+ // Usually daemon threads having low priority
+ // But based on our requirement
+ // daemon threads can run with high priority also</pre>
+<h3>14:26 — How to check / change daemon nature (API)</h3>
+<p>Two methods on Thread:</p>
+<ol><li>public boolean isDaemon() — check whether thread is daemon.</li></ol>
+<ol><li>public void setDaemon(boolean b) — true → become daemon; false → become non-daemon.</li></ol>
+<h3>15:41 — Twist: change only BEFORE start</h3>
+<p>Changing daemon nature is possible only before starting the thread.</p>
+<p>If thread already start()ed and you call setDaemon(...) → runtime exception:</p>
+<pre class='code'> // IllegalThreadStateException
+public boolean isDaemon();
+public void setDaemon(boolean b);
+
+ // Changing daemon nature is possible before starting of a thread only
+ // After starting a thread, if we try to change daemon nature
+ // → RuntimeException: IllegalThreadStateException</pre>
+<h3>19:55 — Default nature</h3>
+<ul><li>By default main thread is always non-daemon.</li></ul>
+<ul><li>For all remaining threads, daemon nature is inherited from parent to child:</li></ul>
+<ul><li>If parent is daemon → child is daemon.</li></ul>
+<ul><li>If parent is non-daemon → child is non-daemon.</li></ul>
+<pre class='code'> // Board:
+ // By default main thread is always non-daemon
+ // And for all remaining threads
+ // daemon nature will be inherited from parent to child
+ // If parent is daemon → child is also daemon
+ // If parent is non-daemon → child is also non-daemon</pre>
+<h3>23:02 — Can we change daemon nature of main?</h3>
+<p>Impossible.</p>
+<p>Reason: main is already started by the JVM at the very beginning. Programmer never starts main. When control reaches programmer code, main has already started → setDaemon on main → IllegalThreadStateException.</p>
+<p>For threads you create: change daemon nature before start() — no problem.</p>
+<pre class='code'> // Board:
+ // It is impossible to change daemon nature of main thread
+ // because it is already started by JVM at the beginning</pre>
+<h3>25:07 — Live demo sketch: check main, fail to set main, succeed on child</h3>
+<pre class='code'>class MyThread extends Thread {
+}
+
+class Test {
+    public static void main(String[] args) {
+        // At this point: one thread = main
+        System.out.println(Thread.currentThread().isDaemon());
+        // prints false
+
+        Thread.currentThread().setDaemon(true);
+        // CE? No — compiles, but at runtime:
+        // Exception in thread &quot;main&quot; java.lang.IllegalThreadStateException
+
+        MyThread t = new MyThread(); // parent main = non-daemon → child non-daemon
+        System.out.println(t.isDaemon());
+        // prints false
+
+        t.setDaemon(true); // OK — not started yet
+        System.out.println(t.isDaemon());
+        // prints true
+    }
+}</pre>
+<p>He compiles/runs stepwise:</p>
+<ol><li>Only isDaemon on current thread → false.</li></ol>
+<ol><li>Add setDaemon(true) on current thread → IllegalThreadStateException.</li></ol>
+<ol><li>Create child, print isDaemon → false; setDaemon(true) then print → true.</li></ol>
+<h3>32:02 — Board form of the small Test example (outputs beside SOPs)</h3>
+<pre class='code'>class MyThread extends Thread {
+}
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(Thread.currentThread().isDaemon());
+        // prints false
+
+        Thread.currentThread().setDaemon(true);
+        // IllegalThreadStateException
+
+        MyThread t = new MyThread();
+        System.out.println(t.isDaemon());
+        // prints false
+
+        t.setDaemon(true);
+        System.out.println(t.isDaemon());
+        // prints true
+    }
+}</pre>
+<h3>33:32 — Last major point: when last non-daemon ends, daemons die</h3>
+<p>Return to purpose: daemons support non-daemons.</p>
+<p>Shooting completed / actors left → is makeup person still required? No. Cameraman? No.</p>
+<p>So: once the last non-daemon thread completes, daemon threads are no longer required.</p>
+<p>Rule: Whenever the last non-daemon thread terminates, all daemon threads will be terminated automatically, irrespective of their position (middle of work / beginning / end — they are killed).</p>
+<pre class='code'> // Board (dictated):
+ // Whenever last non-daemon thread terminates
+ // automatically all daemon threads will be terminated
+ // irrespective of their position</pre>
+<h3>36:42 — Program: `DaemonThreadDemo` (child loop + optional setDaemon)</h3>
+<pre class='code'>class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i &lt; 10; i++) {
+            System.out.println(&quot;Child Thread&quot;);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+            }
+        }
+    }
+}
+
+class DaemonThreadDemo {
+    public static void main(String[] args) {
+        MyThread t = new MyThread();
+        // Line 1:
+        t.setDaemon(true);
+        t.start();
+        System.out.println(&quot;End of main thread&quot;);
+    }
+}</pre>
+<h3>39:33 — Case A: comment Line 1 (`setDaemon`)</h3>
+<ul><li>Main = non-daemon, child = non-daemon (inherited).</li></ul>
+<ul><li>Both execute until their own completion.</li></ul>
+<ul><li>Child prints “Child Thread” 10 times even after “End of main thread”.</li></ul>
+<pre class='code'>// Typical when setDaemon commented:
+End of main thread
+Child Thread
+Child Thread
+... (10 times total)</pre>
+<h3>40:10 — Case B: Line 1 active (`t.setDaemon(true)`)</h3>
+<ul><li>Main = non-daemon, child = daemon.</li></ul>
+<ul><li>When main terminates, child is terminated automatically — child will not reliably finish 10 iterations.</li></ul>
+<p>He runs and shows: often only End of main thread, maybe zero or one “Child Thread” — no guarantee even for one print. Child does not execute 10 times.</p>
+<pre class='code'>// Possible outputs when daemon:
+End of main thread
+// or
+End of main thread
+Child Thread
+// Child does NOT run 10 times</pre>
+<h3>46:14 — Board theory beside the program</h3>
+<p>If commenting line 1 (`setDaemon`):</p>
+<ul><li>Both main and child are non-daemon.</li></ul>
+<ul><li>Hence both threads execute until their completion.</li></ul>
+<p>If not commenting line 1:</p>
+<ul><li>Main is non-daemon and child is daemon.</li></ul>
+<ul><li>Hence whenever main terminates, automatically child will be terminated.</li></ul>
+<p>In daemon case, possible outputs:</p>
+<ul><li>End of main thread followed by at most ~one Child Thread, or only End of main thread.</li></ul>
+<ul><li>Child executed 10 times? No — zero times or max one time typically.</li></ul>
+<h3>49:52 — Final conclusion</h3>
+<p>Whenever the last non-daemon thread terminates, automatically every daemon thread will be terminated by default. End of Part-13.</p>
+<p>` ```java ` block count: 12</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 93 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 13</td></tr>
+<tr><td>Topic</td><td>Daemon Threads</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>50m 20s</td></tr>
+<tr><td>Video ID</td><td>u5OunWJhKoE</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=u5OunWJhKoE</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Analogy</th><th>Threads</th></tr>
+<tr><td>Hero / heroine on screen</td><td>non-daemon threads (e.g. main)</td></tr>
+<tr><td>Background crew</td><td>daemon threads</td></tr>
+</table>
+</body></html>

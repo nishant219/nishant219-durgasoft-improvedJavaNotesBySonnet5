@@ -1,0 +1,409 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>154-concurrent-collections-need</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 154 — Concurrent Collections Part-1: Need of Concurrent Collections</h1>
+<h2>Video info</h2>
+<p>ASR decode notes: threats = threads; current / kant / concatenation = concurrent; CancelModificationException / CancelCurrentModificationException / current modification exception = ConcurrentModificationException; alist = ArrayList; table = Hashtable; chd / ch thread = child thread; thd = thread; matr = MyThread; enter your room / inner room = interview room; free heart cakes = free-hand cakes (easy interview wins); lcks = lakhs.</p>
+<h2>Session overview</h2>
+<p>This is Part-1 of Durga Sir’s Concurrent Collections module — the foundation lecture before Part-2 (Video 155: differences between traditional and concurrent collections) and the deep dives on ConcurrentHashMap, CopyOnWriteArrayList, etc. (Videos 156–160).</p>
+<p>Prerequisite: The course already spent ~30 hours on the Collections Framework — List, Set, Queue, Map, Comparable, Comparator, utility classes, cursors, and related APIs.</p>
+<p>Why this topic was added: Many students reported interview questions on concurrent collections even after the long collections module. Sir treats this as a very hot, very important interview topic — “free-hand cakes” in the interview room if you know it well.</p>
+<p>What this session covers:</p>
+<ol><li>Recap — why collections matter after 30 hours of study</li></ol>
+<ol><li>Need of concurrent collections — the central interview question</li></ol>
+<ol><li>Three major reasons to go for concurrent collections (not traditional ones)</li></ol>
+<ol><li>Reason 1 — most traditional collections are not thread-safe → data inconsistency</li></ol>
+<ol><li>Counter-question — “But Vector / Hashtable exist?” → yes, but they lead to Reason 2</li></ol>
+<ol><li>Reason 2 — legacy thread-safe collections have performance problems (whole-object lock)</li></ol>
+<ol><li>Reason 3 — ConcurrentModificationException while one thread iterates and another modifies</li></ol>
+<ol><li>Live demo — MyThread extends Thread with static ArrayList, iteration vs child-thread add</li></ol>
+<ol><li>Final recap of all three reasons + Java 1.5 introduction of concurrent collections</li></ol>
+<p>What this session does NOT cover (deferred to later videos):</p>
+<ul><li>Individual concurrent collection classes (ConcurrentHashMap, CopyOnWriteArrayList, …)</li></ul>
+<ul><li>How concurrent collections solve each problem (→ Video 155)</li></ul>
+<ul><li>Segment/bucket locking internals</li></ul>
+<ul><li>java.util.concurrent package API details</li></ul>
+<h2>00:24 — Opening: Collections recap &amp; interview importance</h2>
+<h3>Board context</h3>
+<p>Sir opens with a morning greeting and immediately connects to the previous ~30-hour collections marathon:</p>
+<ul><li>What is Collection?</li></ul>
+<ul><li>List, Set, Queue</li></ul>
+<ul><li>Map</li></ul>
+<ul><li>Utility classes — Comparable, Comparator</li></ul>
+<ul><li>Many more subtopics within collections</li></ul>
+<p>Even after that depth, the interview room may still ask new, important conclusions from collections — especially concurrent collections. Sir calls this topic:</p>
+<p>Very hot, very important in the interview room.</p>
+<h3>Student-driven curriculum addition</h3>
+<p>Several students came back saying:</p>
+<p>“Sir, today I have an interview — I faced questions from concurrent collections also. Can you please cover this topic?”</p>
+<p>Based on that requirement, Sir added concurrent collections to the curriculum.</p>
+<h3>Session goal (stated clearly)</h3>
+<p>First I will explain what is the need of concurrent collections — why we should go for concurrent collections rather than staying with traditional collections.</p>
+<p>Interview framing:</p>
+<p>If anyone asks — “Traditional collection vs concurrent collection — what is the difference and what is the purpose?” — you must have clear clarity. There are only three major reasons why we should go for concurrent collections.</p>
+<h2>01:47 — The central question: Need of concurrent collections</h2>
+<h3>Interview question (memorize)</h3>
+<p>Q: What is the need of concurrent collections? Why should we go for concurrent collections?</p>
+<p>A structure: Exactly three points — Sir repeats this multiple times in the lecture and at the end.</p>
+<p>Solution (preview): To overcome all three problems → go for concurrent collections (introduced in Java 1.5, package java.util.concurrent).</p>
+<h2>02:02 — Reason 1: Most traditional collections are NOT thread-safe</h2>
+<h3>Board statement</h3>
+<p>Most of the traditional collections are not thread-safe.</p>
+<h3>Examples (from prior collections lectures)</h3>
+<p>Sir’s estimate: ~90% of traditional collections are not thread-safe.</p>
+<h3>Why this matters in multi-threaded code</h3>
+<p>On these collection objects, multiple threads may operate simultaneously. When they do:</p>
+<ul><li>There is a chance of data inconsistency problems</li></ul>
+<ul><li>Reads and writes without synchronization can corrupt internal structure or lose updates</li></ul>
+<h3>Conceptual scenario (no code required on board — understanding only)</h3>
+<p>Thread-1: list.add(&quot;X&quot;)
+Thread-2: list.add(&quot;Y&quot;)   // both on same ArrayList — unsafe
+Thread-3: list.get(0)     // may see wrong/null/inconsistent state</p>
+<p>Exam line: Traditional collections like ArrayList, LinkedList, HashSet, HashMap are designed for single-threaded or externally synchronized use — not for unsynchronized multi-threaded access.</p>
+<h2>03:35 — Student counter-question: “Some thread-safe collections already exist”</h2>
+<h3>Expected interview follow-up</h3>
+<p>“Sir, even in traditional collections there are several thread-safe collections — can you give an example?”</p>
+<h3>Sir’s answer — legacy thread-safe options</h3>
+<p>So yes — in normal traditional collections we can still achieve thread safety using:</p>
+<ul><li>Built-in synchronized legacy classes (Vector, Hashtable)</li></ul>
+<ul><li>Synchronized wrapper factory methods on Collections class</li></ul>
+<p>But — and this is critical — the model used for that thread safety is itself the problem. That leads directly to Reason 2.</p>
+<h2>04:38 — Reason 2: Performance problem of thread-safe traditional collections</h2>
+<h3>How thread safety is achieved (the problem model)</h3>
+<p>On these thread-safe collection objects:</p>
+<p>At a time, only ONE thread is allowed to operate — for any operation.</p>
+<p>Mechanism:</p>
+<ol><li>First thread acquires lock on the entire collection object</li></ol>
+<ol><li>Second thread must wait until the first finishes</li></ol>
+<ol><li>Third thread waits for first and second</li></ol>
+<ol><li>This applies even for a read operation — only one thread at a time on the whole object</li></ol>
+<h3>Board notes (copy exactly)</h3>
+<p>Total collection object will be locked. It increases waiting time of threads and creates performance problems.</p>
+<h3>Why this is serious</h3>
+<h3>Summary of Reasons 1 &amp; 2 together</h3>
+<p>Second reason in one sentence: Even where thread safety exists in traditional collections, performance is a very big serious issue because every operation locks the total collection object.</p>
+<h2>06:17 — Reason 3: ConcurrentModificationException (the “dangerous” problem)</h2>
+<h3>Sir’s emphasis</h3>
+<p>This one is very dangerous — this is the main important reason why we should go for concurrent collections.</p>
+<h3>Scenario (board — conceptual)</h3>
+<p>Suppose we have a traditional collection object l — it may be:</p>
+<ul><li>ArrayList</li></ul>
+<ul><li>LinkedList</li></ul>
+<ul><li>Vector</li></ul>
+<ul><li>Any traditional collection</li></ul>
+<p>Thread-1 (main thread): Iterating the collection — getting objects one by one via Iterator (or enhanced for-loop).</p>
+<p>Thread-2 (child thread): By mistake (or by design in multi-threaded apps), tries to modify the same collection:</p>
+<ul><li>Adding a new object — l.add(...)</li></ul>
+<ul><li>Removing an existing object — l.remove(...)</li></ul>
+<ul><li>Any structural modification</li></ul>
+<h3>Result</h3>
+<p>Immediate iterator fails by raising `ConcurrentModificationException`.</p>
+<h3>Terminology (spell correctly in interviews)</h3>
+<p>Full class name: java.util.ConcurrentModificationException — unchecked (RuntimeException).</p>
+<h3>Rule (exam-ready)</h3>
+<p>While one thread is iterating a collection, if another thread tries to perform any structural modification (add / remove) on the underlying collection object, the iterator immediately fails with `ConcurrentModificationException`.</p>
+<h3>Why traditional collections fail scalable apps</h3>
+<p>Sir connects all three problems:</p>
+<ol><li>Most collections → no thread safety</li></ol>
+<ol><li>Legacy thread-safe ones → bad performance (one thread at a time on whole object)</li></ol>
+<ol><li>During iteration → no safe concurrent modification → CME</li></ol>
+<p>For an application where lots of threads — even thousands / lakhs of threads — operate on shared collections:</p>
+<ul><li>Each collection effectively allows only one thread at a time (if synchronized), or</li></ul>
+<ul><li>Thread safety is absent → inconsistency</li></ul>
+<p>Conclusion: Traditional collection objects are not suitable for multi-threaded scalable applications.</p>
+<p>Fix: Go for concurrent collections.</p>
+<h2>08:41 — Three reasons recap (before demo)</h2>
+<p>Sir consolidates before the program:</p>
+<h3>Reason 1 — Thread safety gap</h3>
+<p>Most already existing (traditional) collection objects are not thread-safe. Multiple threads operating → data inconsistency.</p>
+<h3>Reason 2 — Performance of legacy thread-safe collections</h3>
+<p>Very few traditional collections are thread-safe (Vector, Hashtable, synchronized list/set/map). Problem: at a time only one thread — even for read — total object locked → performance not up to the mark.</p>
+<h3>Reason 3 — ConcurrentModificationException</h3>
+<p>While one thread iterates, remaining threads are not allowed to modify. If they try → `ConcurrentModificationException`.</p>
+<h3>Interview tip</h3>
+<p>Interviewer may ask: “Can you explain ConcurrentModificationException?”</p>
+<p>Answer: While one thread is iterating, if another thread tries to modify the underlying collection object → `ConcurrentModificationException`.</p>
+<h2>10:19 — Demo: Program to prove ConcurrentModificationException</h2>
+<h3>Why a program now</h3>
+<p>Before discussing concurrent collection behavior, Sir wants a small program so you see CME in action.</p>
+<p>Interview question format:</p>
+<p>“Can you please demonstrate ConcurrentModificationException with a program / example?”</p>
+<p>This demo is the programmatic proof.</p>
+<h3>Design (board walkthrough)</h3>
+<h3>Thread timeline after `t.start()`</h3>
+<p>Before `start()`: Only main thread (default).</p>
+<p>After `t.start()`: Two threads — main thread + child thread.</p>
+<h3>Critical overlap (what causes CME)</h3>
+<p>Main thread:  while (itr.hasNext()) { print itr.next(); }   // iterating
+Child thread: l.add(&quot;D&quot;);                                     // structural modify</p>
+<p>While main thread is iterating, child thread tries to update the underlying list → `ConcurrentModificationException`.</p>
+<p>Sir’s board phrase (repeat in interviews):</p>
+<p>Main thread iterating list — child thread updating list — immediately we get ConcurrentModificationException.</p>
+<h2>10:38 — Full board program: `MyThread` demo</h2>
+<pre class='code'>import java.util.*;
+
+class MyThread extends Thread {
+
+    static List l = new ArrayList();   // shared static list (Sir uses raw types on board)
+
+    public void run() {
+        l.add(&quot;D&quot;);                    // child thread updating list
+    }
+
+    public static void main(String[] args) {
+        l.add(&quot;A&quot;);
+        l.add(&quot;B&quot;);
+        l.add(&quot;C&quot;);
+
+        MyThread t = new MyThread();
+        t.start();                     // now 2 threads: main + child
+
+        Iterator itr = l.iterator();
+        while (itr.hasNext()) {
+            System.out.println(
+                &quot;Main thread iterating list and current object is: &quot; + itr.next());
+        }
+    }
+}</pre>
+<h3>Step-by-step execution trace</h3>
+<ol><li>Main thread creates list (static, initially empty).</li></ol>
+<ol><li>Main thread adds &quot;A&quot;, &quot;B&quot;, &quot;C&quot; → list = [A, B, C].</li></ol>
+<ol><li>Main thread creates MyThread t and calls t.start() → JVM spawns child thread.</li></ol>
+<ol><li>Both threads now compete for CPU:</li></ol>
+<ul><li>Main obtains Iterator, enters while (itr.hasNext()) loop.</li></ul>
+<ul><li>Child runs l.add(&quot;D&quot;) — modCount of ArrayList changes.</li></ul>
+<ol><li>On next itr.next() (or internal checkForComodification), iterator detects collection was structurally modified outside its own remove() → throws `ConcurrentModificationException`.</li></ol>
+<h3>Why `Iterator` throws (conceptual — fail-fast)</h3>
+<ul><li>ArrayList maintains an internal modification count (modCount).</li></ul>
+<ul><li>When Iterator is created, it remembers expected modCount.</li></ul>
+<ul><li>If another thread (or even same thread outside iterator) structurally modifies the list, modCount changes.</li></ul>
+<ul><li>Iterator’s next() / hasNext() checks mismatch → fail-fast → ConcurrentModificationException.</li></ul>
+<p>Design intent: Detect unsynchronized concurrent modification early rather than silently returning wrong data.</p>
+<h2>14:52 — Compile, run, and observe output</h2>
+<h3>Commands (as on Sir’s board)</h3>
+<p>javac MyThread.java
+java MyThread</p>
+<h3>Typical output</h3>
+<p>Main thread iterating list and current object is: A
+Main thread iterating list and current object is: B
+Exception in thread &quot;main&quot; java.util.ConcurrentModificationException
+	at java.base/java.util.ArrayList$Itr.checkForComodification(ArrayList.java:1095)
+	at java.base/java.util.ArrayList$Itr.next(ArrayList.java:1049)
+	at MyThread.main(MyThread.java:21)</p>
+<p>Notes on output:</p>
+<ul><li>You may see one or two successful &quot;Main thread iterating...&quot; lines before the exception — depends on thread scheduling (race between main’s next() and child’s add(&quot;D&quot;)).</li></ul>
+<ul><li>The exception appears in thread `&quot;main&quot;` because the iterator loop runs in main.</li></ul>
+<ul><li>Child thread’s add(&quot;D&quot;) may or may not complete before crash — the point is CME is guaranteed when modify-during-iterate happens on fail-fast collections.</li></ul>
+<h3>What Sir wants you to observe</h3>
+<ol><li>Print lines show main thread iterating with current element.</li></ol>
+<ol><li>While iteration is in progress, child thread updates list.</li></ol>
+<ol><li>Program does not finish printing all three elements cleanly.</li></ol>
+<ol><li>`ConcurrentModificationException` in `main` — this is the programmatic proof.</li></ol>
+<h3>Same failure with enhanced for-loop (related exam point)</h3>
+<p>for (Object obj : l) {          // uses Iterator internally
+    System.out.println(obj);
+}
+// If another thread modifies l during this loop → same CME</p>
+<h2>15:33 — Interview wrap-up for the demo</h2>
+<h3>One-line demo explanation</h3>
+<p>Very simple: while one thread is iterating a collection object, if another thread tries to modify the underlying collection object, immediately we get `ConcurrentModificationException`.</p>
+<h3>Scope of the problem</h3>
+<p>ConcurrentModificationException is a very common problem for ALL traditional collections (when iterate + concurrent unsynchronized modify).</p>
+<p>This is not an ArrayList-only quirk — it affects fail-fast iterators on standard java.util collections.</p>
+<h2>16:07 — Final recap: Three reasons + Java 1.5</h2>
+<p>Sir repeats the full answer to “What is the need of concurrent collections?”</p>
+<h3>Reason 1 — Data inconsistency (not thread-safe)</h3>
+<p>Most traditional collections are not thread-safe. At a time, multiple threads are allowed to operate on collection objects (if you don’t synchronize externally) → data inconsistency problems.</p>
+<h3>Reason 2 — Performance (legacy thread-safe)</h3>
+<p>Very few traditional collections are thread-safe:</p>
+<ul><li>Vector</li></ul>
+<ul><li>Hashtable</li></ul>
+<ul><li>Collections.synchronizedList</li></ul>
+<ul><li>Collections.synchronizedSet</li></ul>
+<ul><li>Collections.synchronizedMap</li></ul>
+<p>Problem: at a time only one thread for any operation — total collection locked — even read operations → performance problems. Already existing thread-safe traditional objects are performance-wise not up to the mark.</p>
+<h3>Reason 3 — ConcurrentModificationException</h3>
+<p>While one thread is iterating, remaining threads are not allowed to perform modification to the underlying collection. Otherwise → `ConcurrentModificationException`.</p>
+<h3>The solution</h3>
+<p>To overcome these problems, we should go for concurrent collections.</p>
+<h3>Java version note (exam)</h3>
+<p>Interview closing: If asked need of concurrent collections — highlight these three reasons. Then mention they were added in 1.5 for scalable multi-threaded applications.</p>
+<h2>Deep dive supplements (exam enrichment)</h2>
+<h3>A. Thread-safe vs synchronized wrapper — still not enough</h3>
+<p>Even if you use:</p>
+<pre class='code'>List&lt;String&gt; syncList = Collections.synchronizedList(new ArrayList&lt;&gt;());</pre>
+<p>Problems remain:</p>
+<ol><li>Whole-collection lock — same performance issue as Vector</li></ol>
+<ol><li>CME risk — if you iterate without manually synchronizing on the list:</li></ol>
+<p>List&lt;String&gt; syncList = Collections.synchronizedList(new ArrayList&lt;&gt;());
+// ...
+Iterator&lt;String&gt; it = syncList.iterator();  // NOT synchronized
+// another thread modifies syncList → CME still possible</p>
+<p>Correct manual pattern (verbose — why concurrent collections are preferred):</p>
+<pre class='code'>synchronized (syncList) {
+    for (String s : syncList) {
+        System.out.println(s);
+    }
+}</pre>
+<h3>B. Structural vs non-structural modification</h3>
+<h3>C. Fail-fast vs fail-safe (forward reference to Video 160)</h3>
+<p>Video 154 establishes why fail-fast hurts multi-threaded apps. Video 155+ shows how concurrent collections avoid it.</p>
+<h3>D. Scalable multi-threaded applications</h3>
+<p>Sir’s scenario:</p>
+<p>In my application lakhs of threads — thousands of threads — are going to operate at a time.</p>
+<p>Traditional collections:</p>
+<ul><li>Unsafe → inconsistency, or</li></ul>
+<ul><li>Synchronized → one-at-a-time → bottleneck</li></ul>
+<p>Concurrent collections are designed for this scale (details in following videos).</p>
+<h2>Master summary table: Why concurrent collections?</h2>
+<h2>OCJP / SCJP exam checklist</h2>
+<ul><li>[ ] State three reasons for concurrent collections (thread safety, performance, CME)</li></ul>
+<ul><li>[ ] Name non-thread-safe examples: ArrayList, HashMap, HashSet, LinkedList</li></ul>
+<ul><li>[ ] Name legacy thread-safe: Vector, Hashtable, Stack, Properties</li></ul>
+<ul><li>[ ] Name synchronized wrappers: Collections.synchronizedList/Set/Map</li></ul>
+<ul><li>[ ] Explain whole-object lock performance problem</li></ul>
+<ul><li>[ ] Define ConcurrentModificationException — iterate + modify by another thread</li></ul>
+<ul><li>[ ] Write / explain `MyThread` demo with static ArrayList</li></ul>
+<ul><li>[ ] Know concurrent collections introduced in Java 1.5</li></ul>
+<ul><li>[ ] Know package: `java.util.concurrent`</li></ul>
+<ul><li>[ ] Explain why traditional collections unsuitable for lakhs/thousands of threads</li></ul>
+<h2>Interview Q&amp;A (rapid fire)</h2>
+<h2>What&#x27;s next</h2>
+<h2>Summary (one paragraph)</h2>
+<p>Video 154 opens Durga Sir’s Concurrent Collections module after ~30 hours of traditional collections study. The central interview question is why concurrent collections exist — and Sir gives exactly three reasons. First, most traditional collections are not thread-safe (ArrayList, HashMap, etc.), so multiple threads cause data inconsistency. Second, the few legacy thread-safe options (Vector, Hashtable, Collections.synchronizedList/Set/Map) lock the entire collection for every operation including reads, creating performance bottlenecks. Third — the most dangerous problem — ConcurrentModificationException: while one thread iterates, another must not structurally modify the collection; otherwise fail-fast iterators throw at runtime. Sir proves this with `MyThread extends Thread`, a static `ArrayList`, main-thread iteration, and child-thread l.add(&quot;D&quot;), showing ConcurrentModificationException in main. To overcome all three issues for scalable multi-threaded applications, Java 1.5 introduced concurrent collections in java.util.concurrent. Part-2 (Video 155) maps each problem to how concurrent collections solve it.</p>
+<p>End of Video 154 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>154 of 203</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Concurrent Collections Part-1 \</td><td>\</td><td>Need of Concurrent Collections</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>18m 15s</td><td></td><td></td></tr>
+<tr><td>Video ID</td><td>aAvnT3L6Mlo</td><td></td><td></td></tr>
+<tr><td>Watch URL</td><td>https://www.youtube.com/watch?v=aAvnT3L6Mlo</td><td></td><td></td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td><td></td></tr>
+<tr><td>Notes source</td><td>YouTube auto-captions (yt-dlp + node PO token)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Reason (one line)</th></tr>
+<tr><td>1</td><td>Most traditional collections are not thread-safe → data inconsistency when multiple threads operate</td></tr>
+<tr><td>2</td><td>Few legacy thread-safe collections exist, but performance is poor (whole collection locked)</td></tr>
+<tr><td>3</td><td>While one thread iterates, other threads cannot safely modify → ConcurrentModificationException</td></tr>
+</table>
+<table>
+<tr><th>Class</th><th>Thread-safe?</th></tr>
+<tr><td>ArrayList</td><td>No</td></tr>
+<tr><td>LinkedList</td><td>No</td></tr>
+<tr><td>HashSet</td><td>No</td></tr>
+<tr><td>TreeSet</td><td>No</td></tr>
+<tr><td>HashMap</td><td>No</td></tr>
+<tr><td>TreeMap</td><td>No</td></tr>
+<tr><td>… most others</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>Mechanism / Class</th><th>Notes</th></tr>
+<tr><td>`Vector`</td><td>Legacy synchronized resizable array — thread-safe</td></tr>
+<tr><td>`Hashtable`</td><td>Legacy synchronized hash table — thread-safe</td></tr>
+<tr><td>`Stack`</td><td>Extends Vector — thread-safe</td></tr>
+<tr><td>`Properties`</td><td>Extends Hashtable — thread-safe</td></tr>
+<tr><td>`Collections.synchronizedList(...)`</td><td>Wraps any List with synchronized methods</td></tr>
+<tr><td>`Collections.synchronizedSet(...)`</td><td>Wraps any Set</td></tr>
+<tr><td>`Collections.synchronizedMap(...)`</td><td>Wraps any Map</td></tr>
+</table>
+<table>
+<tr><th>Aspect</th><th>Behavior</th></tr>
+<tr><td>Lock scope</td><td>Entire collection (not a segment or bucket)</td></tr>
+<tr><td>Concurrent reads</td><td>Not allowed — even two read-only threads block each other</td></tr>
+<tr><td>Under load</td><td>Many threads queue up → high latency → throughput drops</td></tr>
+<tr><td>Sir’s verdict</td><td>Performance-wise not up to the mark</td></tr>
+</table>
+<table>
+<tr><th>Category</th><th>Count</th><th>Problem</th></tr>
+<tr><td>Not thread-safe (ArrayList, HashMap, …)</td><td>~90%</td><td>Data inconsistency</td></tr>
+<tr><td>Thread-safe (Vector, Hashtable, synchronized wrappers)</td><td>~10%</td><td>Performance — whole-object lock, one thread at a time</td></tr>
+</table>
+<table>
+<tr><th>Wrong (ASR)</th><th>Correct</th></tr>
+<tr><td>CancelModificationException</td><td>ConcurrentModificationException</td></tr>
+<tr><td>CancelCurrentModificationException</td><td>ConcurrentModificationException</td></tr>
+<tr><td>Current modification exception</td><td>ConcurrentModificationException</td></tr>
+<tr><td>Concurrency exception</td><td>ConcurrentModificationException</td></tr>
+</table>
+<table>
+<tr><th>Element</th><th>Detail</th></tr>
+<tr><td>Class name</td><td>MyThread</td></tr>
+<tr><td>Inheritance</td><td>extends Thread</td></tr>
+<tr><td>Shared data</td><td>Static List l = new ArrayList()</td></tr>
+<tr><td>Why static?</td><td>So both main thread and child thread access the same list object; no special reason beyond shared visibility</td></tr>
+<tr><td>Child run()</td><td>l.add(&quot;D&quot;) — child thread updating list</td></tr>
+<tr><td>Main main()</td><td>Adds &quot;A&quot;, &quot;B&quot;, &quot;C&quot;; starts child; iterates with Iterator</td></tr>
+</table>
+<table>
+<tr><th>Thread</th><th>Responsibility</th></tr>
+<tr><td>Main thread</td><td>Execute remaining code in main — iterate list with Iterator</td></tr>
+<tr><td>Child thread</td><td>Execute run() — l.add(&quot;D&quot;)</td></tr>
+</table>
+<table>
+<tr><th>Fact</th><th>Detail</th></tr>
+<tr><td>Introduced in</td><td>Java 1.5 (same release as autoboxing, enums, generics enhancements, java.util.concurrent)</td></tr>
+<tr><td>Primary package</td><td>java.util.concurrent</td></tr>
+<tr><td>Also related</td><td>java.util.concurrent.locks, concurrent collection implementations</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>Structural?</th><th>CME risk during iteration?</th></tr>
+<tr><td>add(), remove(), clear()</td><td>Yes</td><td>Yes (if unsynchronized)</td></tr>
+<tr><td>set(index, element) on ArrayList</td><td>No (replace element)</td><td>Usually no modCount change for set</td></tr>
+<tr><td>iterator.remove()</td><td>Yes, but via iterator</td><td>Safe — iterator coordinates modCount</td></tr>
+</table>
+<table>
+<tr><th>Iterator type</th><th>On concurrent modification</th><th>Examples</th></tr>
+<tr><td>Fail-fast</td><td>Throws ConcurrentModificationException</td><td>ArrayList, HashMap, HashSet iterators</td></tr>
+<tr><td>Fail-safe</td><td>No CME; weakly consistent / snapshot view</td><td>ConcurrentHashMap, CopyOnWriteArrayList</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Problem with traditional collections</th><th>Detail</th></tr>
+<tr><td>1</td><td>Not thread-safe (~90%)</td><td>ArrayList, LinkedList, HashSet, HashMap, … — multiple threads → data inconsistency</td></tr>
+<tr><td>2</td><td>Poor performance (~10% thread-safe)</td><td>Vector, Hashtable, synchronized wrappers — entire object locked; one thread at a time even for reads</td></tr>
+<tr><td>3</td><td>ConcurrentModificationException</td><td>One thread iterates + another modifies structurally → runtime failure (fail-fast iterators)</td></tr>
+</table>
+<table>
+<tr><th>Solution</th><th>Detail</th></tr>
+<tr><td>Concurrent collections</td><td>Introduced Java 1.5, java.util.concurrent — address all three problems (how → Video 155+)</td></tr>
+<tr><td>Best for</td><td>Scalable multi-threaded applications</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>What is the need of concurrent collections?</td><td>Three reasons: (1) most traditional not thread-safe, (2) legacy thread-safe poor performance, (3) CME on iterate+modify</td></tr>
+<tr><td>Are traditional collections thread-safe?</td><td>Most are not — only few like Vector/Hashtable</td></tr>
+<tr><td>How to make ArrayList thread-safe traditionally?</td><td>Collections.synchronizedList(new ArrayList&lt;&gt;()) — but performance + CME issues remain</td></tr>
+<tr><td>Why is Vector slow under concurrency?</td><td>Synchronized on entire object — one thread at a time for every operation</td></tr>
+<tr><td>What is ConcurrentModificationException?</td><td>Runtime exception when collection structurally modified during iteration (outside iterator’s own remove)</td></tr>
+<tr><td>When does CME occur in the demo?</td><td>Main iterates static ArrayList; child thread calls add(&quot;D&quot;)</td></tr>
+<tr><td>Which thread throws CME in demo?</td><td>Usually `main` (where iterator runs)</td></tr>
+<tr><td>Since when concurrent collections?</td><td>Java 1.5</td></tr>
+<tr><td>Traditional vs concurrent for scalable apps?</td><td>Traditional not suitable; use concurrent collections</td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th></tr>
+<tr><td>155</td><td>Concurrent Collections Part-2 — Diff B/W Traditional &amp; Concurrent Collections</td></tr>
+<tr><td>156</td><td>ConcurrentMap methods</td></tr>
+<tr><td>157–159</td><td>ConcurrentHashMap details &amp; programs</td></tr>
+<tr><td>160</td><td>HashMap vs ConcurrentHashMap (fail-fast vs fail-safe)</td></tr>
+</table>
+</body></html>

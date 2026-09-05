@@ -1,0 +1,273 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>117-object-class-part-12</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 117</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: java.lang.package Part-12 || object class || equals() || Hashcode()</p>
+<h3>00:07 — Session opener: `equals()` postmortem continues</h3>
+<p>Durga Sir resumes from the previous session’s postmortem on `equals()`.</p>
+<ul><li>Default Object.equals() performs reference comparison (same object in memory).</li></ul>
+<ul><li>We can override equals() for content comparison.</li></ul>
+<ul><li>Today’s focus: relation between `==` and `.equals()`, then differences, then `equals()`–`hashCode()` contract.</li></ul>
+<h3>01:43 — Relation between `==` and `.equals()`: four conclusions</h3>
+<p>Board heading: Relation between double equal operator and dot equals method.</p>
+<p>Setup: R1 and R2 are object references.</p>
+<h4>Conclusion 1 — `==` true ⇒ `.equals()` always true</h4>
+<p>If R1 == R2 is true (both point to the same object), then R1.equals(R2) is always true:</p>
+<ul><li>Without override: reference comparison → true.</li></ul>
+<ul><li>With content-based override: same object ⇒ same content ⇒ true.</li></ul>
+<p>Rule: If two objects are equal by ==, they are always equal by .equals().</p>
+<h4>Conclusion 2 — `==` false ⇒ `.equals()` inconclusive</h4>
+<p>If R1 == R2 is false (different objects), then R1.equals(R2) may be true or false:</p>
+<ul><li>Without override: false (reference comparison).</li></ul>
+<ul><li>With content override: may still be true if contents match.</li></ul>
+<p>Rule: If not equal by ==, we cannot conclude anything about .equals().</p>
+<h4>Conclusion 3 — `.equals()` true ⇒ `==` inconclusive</h4>
+<p>If R1.equals(R2) is true, then R1 == R2 may be true or false:</p>
+<ul><li>Same content, different objects ⇒ equals true, == false.</li></ul>
+<p>Rule: Equal by .equals() does not force equal by ==.</p>
+<h4>Conclusion 4 — `.equals()` false ⇒ `==` always false</h4>
+<p>If R1.equals(R2) is false, both are not the same object; therefore R1 == R2 is always false.</p>
+<p>Memory aid (internal concept, not rote):</p>
+<p>- == true → equals always true</p>
+<p>- == false → equals maybe</p>
+<p>- equals true → == maybe</p>
+<p>- equals false → == always false</p>
+<p>Exam tip: theoretical bits on these four rules are common in OCJP/SCJP-style interviews.</p>
+<h3>05:01 — Board writing: conclusion 2 (`==` false)</h3>
+<p>If R1 == R2 is false → both references point to different objects.</p>
+<p>Then R1.equals(R2):</p>
+<ul><li>Cannot say always false.</li></ul>
+<ul><li>Cannot say always true.</li></ul>
+<ul><li>May return true or false — depends on whether equals() is overridden for content.</li></ul>
+<p>Board line:</p>
+<p>If two objects are not equal by ==, we can&#x27;t conclude anything about .equals() — it may return true or false.</p>
+<h3>08:27 — Board writing: conclusions 3 and 4 (reverse direction)</h3>
+<p>Conclusion 3: If R1.equals(R2) is true → R1 == R2 may be true or false (content-equal but possibly different objects).</p>
+<p>Conclusion 4: If R1.equals(R2) is false → references cannot point to same object → R1 == R2 is always false.</p>
+<p>Durga Sir stresses: understand the internal concept; do not memorize blindly.</p>
+<p>Quick oral recap before moving on:</p>
+<p>| == true | equals always true |</p>
+<p>| == false | equals maybe |</p>
+<p>| equals true | == maybe |</p>
+<p>| equals false | == always false |</p>
+<h3>11:09 — Transition to differences + String/StringBuffer preview</h3>
+<p>After four relation rules, next topic: differences between `==` and `.equals()`.</p>
+<p>Before the summary table, a String vs StringBuffer example proves type rules for == (incomparable types) vs permissive .equals().</p>
+<h3>15:28 — Worked example: `String` vs `StringBuffer` with `==` and `equals()`</h3>
+<p>Board code (ASR decoded: durka / da = demo literal &quot;durga&quot;):</p>
+<p>String s1 = new String(&quot;durga&quot;);
+String s2 = new String(&quot;durga&quot;);
+StringBuffer sb1 = new StringBuffer(&quot;durga&quot;);
+StringBuffer sb2 = new StringBuffer(&quot;durga&quot;);
+
+System.out.print(s1 == s2);           // CE: none — prints false
+System.out.print(s1.equals(s2));      // prints true
+System.out.print(sb1 == sb2);         // prints false
+System.out.print(sb1.equals(sb2));    // prints false
+System.out.print(s1 == sb1);          // CE: incomparable types
+System.out.print(s1.equals(sb1));     // prints false</p>
+<p>Line-by-line CE / print annotations:</p>
+<p>Critical rule for `==` on references:</p>
+<p>To use == between reference types, there must be a type relation: same type, or parent–child (up/down castable). Otherwise → compile-time error: incomparable types.</p>
+<p>For .equals(): no such rule — pass any Object; returns false if not equal.</p>
+<h3>21:04 — Live demo: `class Test` through first four prints</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s1 = new String(&quot;durga&quot;);
+        String s2 = new String(&quot;durga&quot;);
+        StringBuffer sb1 = new StringBuffer(&quot;durga&quot;);
+        StringBuffer sb2 = new StringBuffer(&quot;durga&quot;);
+
+        System.out.print(s1 == s2);        // false
+        System.out.print(s1.equals(s2)); // true
+        System.out.print(sb1 == sb2);      // false
+        System.out.print(sb1.equals(sb2)); // false
+
+        // System.out.print(s1 == sb1);   // CE: incomparable types
+        System.out.print(s1.equals(sb1));  // false
+    }
+}</pre>
+<p>Executed output (concatenated prints): false true false false false</p>
+<p>Durga Sir runs javac Test.java and java Test — confirms the five boolean results.</p>
+<h3>23:58 — Board theory: type rules for `==` vs `equals()`</h3>
+<p>To use `==` (reference types):</p>
+<ul><li>Compulsory: some relation between argument types — child→parent, parent→child, or same type.</li></ul>
+<ul><li>Otherwise: compile-time error saying incomparable types.</li></ul>
+<p>If no relation between argument types:</p>
+<ul><li>.equals() → no compile/runtime error; simply returns `false`.</li></ul>
+<h3>29:40 — Differences between `==` and `.equals()` (full table)</h3>
+<p>Invalid primitive use (board):</p>
+<pre class='code'>// 10 == 20;           // valid — boolean result
+// s1.equals(s2);      // valid
+// 10.equals(20);      // CE: int cannot be dereferenced / invalid</pre>
+<p>One-line interview answer:</p>
+<p>Use == for reference comparison; use .equals() for content comparison (when overridden).</p>
+<h3>33:58 — Writing the differences table on board (row by row)</h3>
+<p>Durga Sir builds the full comparison table live:</p>
+<p>Row 1 — Operator vs method / applicability</p>
+<ul><li>==: operator; primitives and references (10 == 20 valid; s1 == s2 valid when types comparable).</li></ul>
+<ul><li>.equals(): method; objects only — 10.equals(20) → compile error.</li></ul>
+<p>Row 2 — Reference semantics</p>
+<ul><li>==: always reference/address comparison for objects.</li></ul>
+<ul><li>.equals(): default in Object is reference; overridable for content.</li></ul>
+<p>Row 3 — Overriding</p>
+<ul><li>==: cannot override (no operator overloading).</li></ul>
+<ul><li>.equals(): can override for content.</li></ul>
+<p>Row 4 — Unrelated types</p>
+<ul><li>==: compile error incomparable types.</li></ul>
+<ul><li>.equals(): returns `false`, no error.</li></ul>
+<p>One-line entry-room answer added below table:</p>
+<p>In general: == for reference comparison; .equals() for content comparison.</p>
+<h3>42:00 — Similarity: comparing any reference with `null`</h3>
+<p>For any object reference R:</p>
+<p>Thread t = new Thread();
+System.out.print(t == null);      // false
+System.out.print(t.equals(null)); // false</p>
+<p>Note: Both R == null and R.equals(null) always return false for any non-null reference R.</p>
+<p>(This is the one small similarity between == and .equals().)</p>
+<h3>44:49 — Hashing data structures and bucket rule (motivation for contract)</h3>
+<p>Before the contract, Durga Sir explains hashing-related collections (HashSet, HashMap, Hashtable):</p>
+<ul><li>They use bucket terminology.</li></ul>
+<ul><li>Objects are placed in buckets based on hash code.</li></ul>
+<ul><li>Fundamental rule: Two equivalent objects (equals returns true) must be placed in the same bucket.</li></ul>
+<ul><li>Converse is NOT true: Objects in the same bucket need not be equal.</li></ul>
+<p>Board note:</p>
+<p>Hashing related data structures follow: Two equivalent objects should be placed in same bucket.</p>
+<p>But: All objects in the same bucket need not be equal.</p>
+<h3>50:06 — Contract between `equals()` and `hashCode()`</h3>
+<p>Fundamental contract (one-line exam answer):</p>
+<p>If two objects are equal by .equals(), their hash codes must be equal.</p>
+<p>Equivalently: Two equivalent objects must have the same hash code.</p>
+<p>Formal board lines:</p>
+<ul><li>If two objects are equal by .equals() → their hash codes must be equal.</li></ul>
+<ul><li>If R1.equals(R2) is true → R1.hashCode() == R2.hashCode() must hold.</li></ul>
+<p>Why override `hashCode()` when overriding `equals()`:</p>
+<ul><li>Object.equals() and Object.hashCode() already satisfy the contract (same object ⇒ same hash code).</li></ul>
+<ul><li>When you override equals() for content equality, you must override hashCode() so equivalent objects share hash codes.</li></ul>
+<p>★ Star note: Whenever we override equals(), compulsorily override hashCode() to satisfy the contract.</p>
+<p>No compile/runtime error if you skip it — but bad programming practice; breaks hash-based collections.</p>
+<h3>57:44 — Reverse / partial rules involving `hashCode()`</h3>
+<p>Reason for last row: unequal hash codes ⇒ different buckets ⇒ cannot be equivalent objects.</p>
+<h3>1:03:22 — One-line contract answer + override obligation (exam star)</h3>
+<p>Interview one-liner:</p>
+<p>Two equivalent objects must have the same hash code.</p>
+<p>Override rule (star note):</p>
+<p>To satisfy contract between equals() and hashCode(): whenever overriding equals(), compulsorily override `hashCode()` using the same logical fields.</p>
+<ul><li>Skipping hashCode() → no compile/runtime error, but bad practice and breaks HashMap/HashSet behavior.</li></ul>
+<ul><li>Old OCJP direct MCQ: “When overriding equals(), which method must also be overridden?” → `hashCode()` (not clone(), not toString()).</li></ul>
+<p>Modern exams: given an equals() implementation, pick the `hashCode()` that keeps equal objects consistent.</p>
+<h3>1:06:10 — Demo: `String` — `equals()` and `hashCode()` both content-based</h3>
+<p>String s1 = new String(&quot;durga&quot;);
+String s2 = new String(&quot;durga&quot;);
+
+System.out.println(s1.equals(s2));   // true
+System.out.println(s1.hashCode());   // e.g. 95949803 (same on all JVMs for same content)
+System.out.println(s2.hashCode());   // same value as s1.hashCode()</p>
+<p>Executed output: true then two identical hash code integers (board showed 95949803 for both).</p>
+<p>Board theory:</p>
+<ul><li>In String class, equals() is overridden for content comparison.</li></ul>
+<ul><li>Hence hashCode() is also overridden to generate hash code based on content.</li></ul>
+<ul><li>Same content ⇒ same hash code on every system (deterministic).</li></ul>
+<h3>1:10:43 — Demo: `StringBuffer` — no content `equals()`, identity hash codes</h3>
+<p>StringBuffer sb1 = new StringBuffer(&quot;durga&quot;);
+StringBuffer sb2 = new StringBuffer(&quot;durga&quot;);
+
+System.out.println(sb1.equals(sb2));   // false
+System.out.println(sb1.hashCode());      // e.g. 1962141457 (varies by JVM/address)
+System.out.println(sb2.hashCode());      // different from sb1</p>
+<p>Executed output: false, then different hash codes (board example: 1962141457 vs 4872882).</p>
+<p>Board theory:</p>
+<ul><li>StringBuffer.equals() not overridden for content → reference comparison → false.</li></ul>
+<ul><li>hashCode() not overridden → based on object address → varies system to system.</li></ul>
+<p>Contrast: `String` hash = content-based (fixed); `StringBuffer` hash = identity-based (variable).</p>
+<h3>1:14:54 — Exam MCQ: appropriate `hashCode()` for a custom `Person` class</h3>
+<p>`Person` with content `equals()` on `name` and `age`:</p>
+<pre class='code'>class Person {
+    String name;
+    int age;
+
+    public boolean equals(Object obj) {
+        if (obj instanceof Person) {
+            Person p = (Person) obj;
+            if (name.equals(p.name) &amp;&amp; age == p.age)
+                return true;
+        }
+        return false;
+    }
+}</pre>
+<p>Which `hashCode()` is appropriate?</p>
+<pre class='code'>// Option 1 — WRONG
+public int hashCode() { return 100; }
+// Same hash for ALL persons → violates contract when equals differs
+
+// Option 2 — WRONG
+public int hashCode() { return age + socialSecurityNumber; }
+// Two persons equal by name+age can have different SSN → different hash codes
+
+// Option 3 — CORRECT
+public int hashCode() { return name.hashCode() + age; }
+// Equal persons (same name + age) → same hash code
+
+// Option 4 — &quot;No restrictions&quot; — WRONG</pre>
+<p>Counter-example for Option 2: Two Person objects both named Shiva, age 30, equal by equals(), but SSN 60 vs 90 → hash 90 vs 120 → contract violated.</p>
+<p>Best practice note:</p>
+<p>Based on which parameters you override equals(), use the same parameters when overriding hashCode().</p>
+<h3>1:21:24 — Board note: `equals()` override recommendation + session close</h3>
+<p>In all collection classes, all wrapper classes, and `String` class, equals() is overridden for content comparison.</p>
+<p>Hence it is highly recommended to override equals() in our classes for content comparison (and then hashCode() with matching fields).</p>
+<p>Session recap (1:28:26): == vs .equals() four rules, differences table, null similarity, hashing bucket motivation, `equals()`–`hashCode()` contract, String vs StringBuffer demos, Person MCQ, override recommendations.</p>
+<p>Java block count: 8</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP (java.lang package series)</td></tr>
+<tr><td>Position</td><td>117 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP — java.lang package</td></tr>
+<tr><td>Topic</td><td>Object class — == vs equals(), differences table, equals()–hashCode() contract</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 28m 45s (from transcript)</td></tr>
+<tr><td>Video ID</td><td>wJgua6AobQU</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=wJgua6AobQU</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Expression</th><th>Result</th><th>Reason</th></tr>
+<tr><td>s1 == s2</td><td>false</td><td>Different heap objects</td></tr>
+<tr><td>s1.equals(s2)</td><td>true</td><td>String.equals() overridden for content</td></tr>
+<tr><td>sb1 == sb2</td><td>false</td><td>Different objects</td></tr>
+<tr><td>sb1.equals(sb2)</td><td>false</td><td>StringBuffer does not override equals() → Object.equals() → reference comparison</td></tr>
+<tr><td>s1 == sb1</td><td>Compile-time error</td><td>incomparable types: java.lang.String and java.lang.StringBuffer</td></tr>
+<tr><td>s1.equals(sb1)</td><td>false</td><td>No compile/runtime error; unrelated types → false</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>== (equality operator)</th><th>.equals() (method)</th></tr>
+<tr><td>1</td><td>Operator in Java; applicable to primitives and reference types</td><td>Method; applicable only to reference types (not primitives)</td></tr>
+<tr><td>2</td><td>For references: always reference/address comparison</td><td>Default in Object: reference comparison; can override for content</td></tr>
+<tr><td>3</td><td>Cannot override (no operator overloading in Java)</td><td>Can override for content comparison</td></tr>
+<tr><td>4</td><td>Unrelated types → compile-time error (incomparable types)</td><td>Unrelated types → returns `false`, no error</td></tr>
+</table>
+<table>
+<tr><th>Condition</th><th>Conclusion about .equals()</th></tr>
+<tr><td>Equal by .equals()</td><td>Hash codes must be equal</td></tr>
+<tr><td>Not equal by .equals()</td><td>No restriction on hash codes (may be same or different)</td></tr>
+<tr><td>Hash codes equal</td><td>Cannot conclude about .equals() (may true or false)</td></tr>
+<tr><td>Hash codes not equal</td><td>Objects are always not equal by .equals()</td></tr>
+</table>
+</body></html>

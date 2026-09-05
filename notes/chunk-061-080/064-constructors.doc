@@ -1,0 +1,529 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>064-constructors</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 064 — Constructors</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: OOPs(Object Oriented Programming) Part-14 || constructors</p>
+<p>Source: real YouTube auto-captions (.transcripts/064-XWjhxt6ijLI.txt). ASR decoded in place: whoops = OOPs; Mis perspection = misconception; wum / W / vo / wide / y / qu / what mean / what it mean = void / public static void main; Dura / DGA / D / drugga = Durga; role / rle / RO / rule number = roll number; perect = yet; keep subing = keep writing (notes); string ARR a / string array a = String[] args; durga1 / ravi2 / ri2 / 1 not1 / 1 not2 = &quot;Durga&quot;, 101 / &quot;Ravi&quot;, 102; this of 10 = this(10); s of / sop = System.out.println; written / WR type = return type; Java C test.Java = javac Test.java; T do test = t.Test(); Val / value = valid / legal; ENT room / ENT person = interview room / interviewer; oldp / cjp / World student = OCJP student; compar / compil meod / compar eror = compile-time error; customizer = customized; array programmer = arey programmer; in i / dou D / Double D = int i / double d; static in count / static end count = static int count; instance block P followed by Constructor = instance block first, then constructor; modifier static not allowed here kept as the exact CE message.</p>
+<p>This video is OOPs Part 14, “the last topic mostly related to OOPs”: constructors. He kills the misconception that a constructor creates an object. Job of a constructor: initialize an object. new creates; the constructor initializes. He walks a Student with name / rollNumber through four bad initialization places (declaration, instance block, after-new assignments, and “do nothing and live with null/0”), then the constructor as the only place that keeps different values per object without exploding the line count. Then constructor vs instance block (DB row / count++), the interview program that prints how many objects were created, rules (name match; no return type, not even `void` — void Test() is a method, legal but “stupid”), which modifiers are allowed (public private protected default), and default constructor: compiler (not JVM) generates it only if we write none. Every class has a constructor — default or customized, never both.</p>
+<h3>00:04 — Topic: constructors; create vs initialize</h3>
+<p>Next topic: constructors. Last topic mostly related to OOPs.</p>
+<p>What is the need / purpose of a constructor? “Most of the people having misconception about constructor.” He asks the room: purpose — to create an object, or to initialize an object? Which is correct?</p>
+<p>Make sure: we use constructors to initialize an object, not to create an object. Constructor’s job is to initialize an object, not to create an object. He will explain in detail; the conclusion comes at the end.</p>
+<h3>01:00 — Board: `class Student`, two objects, then “600 students”</h3>
+<p>He writes class Student. For every student, name and roll number are compulsory. Then main:</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    public static void main(String[] args) {
+        Student s1 = new Student();
+        Student s2 = new Student();
+        // ... 600 Student objects
+    }
+}</pre>
+<p>Target: assume 600 student objects (s1, s2, …). First student, second student, … 600th student.</p>
+<p>For every student a separate copy of instance variables is created. Instance variable is always part of the object; for every object a separate copy by default.</p>
+<p>Heap picture he draws: each object has its own name and rollNumber.</p>
+<h3>02:55 — No initialization → JVM defaults: `null` and `0`</h3>
+<p>After creating the object we did not perform any initialization. JVM always provides default values for instance variables.</p>
+<ul><li>name is String → default `null`</li></ul>
+<ul><li>rollNumber is int → default `0`</li></ul>
+<pre class='code'>class Student {
+    String name;       // default null
+    int rollNumber;    // default 0
+
+    public static void main(String[] args) {
+        Student s1 = new Student();
+        Student s2 = new Student();
+        // s1: name = null, rollNumber = 0
+        // s2: name = null, rollNumber = 0
+        // ... all 600: name = null, rollNumber = 0
+    }
+}</pre>
+<p>He “asks” the first student: what is your name? “My name is null, my roll number is zero.” Second student: same. Last student: same. Every student: name null, roll number 0.</p>
+<h3>04:01 — All 600 students named `null`: not recommended</h3>
+<p>Take special care. Every student having the same name null, every student having the same roll number 0. Is it good programming practice? Meaningless. Within a class 600 students, all the same name null, all the same roll number 0. Not at all recommended.</p>
+<p>Once we create an object, compulsory we should perform initialization, then only that object is in a position to respond properly. Asking “what is your name?” and hearing null / 0 is meaningless.</p>
+<p>Suppose instead:</p>
+<pre class='code'>class StudentAfterInit {
+    String name;
+    int rollNumber;
+    // desired state after initialization — not how we get there yet:
+    // s1: name = &quot;Durga&quot;, rollNumber = 101
+    // s2: name = &quot;Ravi&quot;,  rollNumber = 102
+}</pre>
+<p>Now: “What is your name?” — “Durga.” “Roll number?” — “101.” Meaningful. Second: Ravi / 102. Meaningful.</p>
+<p>Object creation is not enough. Initialization is also very important. After creating an object, highly recommended to go for initialization, then only the object can respond properly.</p>
+<p>Point one is clear. Next: where do we perform initialization? Multiple places. He will suggest them and decide which is best.</p>
+<h3>06:05 — Dictation: initialization is essential</h3>
+<p>He repeats for notes (keep writing):</p>
+<p>Once we create an object, compulsory we should perform initialization. Then only the object is in a position to respond properly.</p>
+<p>Initialization is essential. Where? Observe: multiple places.</p>
+<h3>07:05 — Place 1: initialization at declaration — not recommended</h3>
+<p>First place: at the time of declaration.</p>
+<pre class='code'>class Student {
+    String name = &quot;Durga&quot;;
+    int rollNumber = 101;
+}</pre>
+<p>Recommended or not? Not recommended. Problem: for all students the same name Durga and the same roll number 101, because for every object these variables get that same initializer. All students Durga / 101 — as meaningless as all null / 0. Object-to-object, name and roll number should change. Never recommended to perform initialization at the time of declaration.</p>
+<h3>08:29 — Place 2: instance block — not recommended</h3>
+<p>Second option: curly braces open and close. What is this? Instance block.</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    {
+        name = &quot;Durga&quot;;
+        rollNumber = 101;
+    }
+}</pre>
+<p>Recommended or not? Not recommended. For every object the same block executes. All students same name, same roll number — meaningless. Never recommended to perform initialization of the object inside an instance block. Declaration: not recommended. Instance block: not recommended.</p>
+<h3>09:21 — Place 3: after `new`, `s1.name = ...` — different values, but line count explodes</h3>
+<p>Another solution:</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    public static void main(String[] args) {
+        Student s1 = new Student();
+        s1.name = &quot;Durga&quot;;
+        s1.rollNumber = 101;
+
+        Student s2 = new Student();
+        s2.name = &quot;Ravi&quot;;
+        s2.rollNumber = 102;
+        // ...
+    }
+}</pre>
+<p>Can we maintain different values for every object? Yes. Recommended? Not recommended. Problem: length of the code increases like anything. 600 objects → 600 × 2 = 1200 lines only for initialization. This example has only two properties. If the object contains 10 properties and we create 600 objects: 600 × 10 = 6000 lines only for initialization. Meaningless.</p>
+<p>We can meet different values, but length of the code increases like anything. Not recommended.</p>
+<h3>11:14 — Two problems; best place is the constructor</h3>
+<p>Two problems:</p>
+<ol><li>For every object we have to maintain different values.</li></ol>
+<ol><li>Length of the code should not be increased.</li></ol>
+<p>The best place that solves both is the constructor.</p>
+<h3>11:40 — Constructor: `Student(String name, int rollNumber)`</h3>
+<p>Listen a bit carefully. Run the show with constructor:</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+
+    public static void main(String[] args) {
+        Student s1 = new Student(&quot;Durga&quot;, 101);
+        Student s2 = new Student(&quot;Ravi&quot;, 102);
+    }
+}</pre>
+<p>What is this concept? Constructor. Student(String name, …): current object’s name is the provided name; current object’s roll number is the provided roll number.</p>
+<p>Whenever we create s1, automatically the constructor executes and assigns the provided values to the current object: s1 → Durga / 101. Whenever we create s2 with Ravi / 102, same constructor executes for that current object: Ravi / 102.</p>
+<h3>13:33 — Different values, and the two assignment lines are reused</h3>
+<p>First: can we maintain different values for the objects? Yes — name and roll number differ.</p>
+<p>Second: is the length of the code increasing? No. For the first student those two lines (this.name = name; this.rollNumber = rollNumber;) perform initialization. For the second student, the same two lines. Create 600 objects — same two lines are enough.</p>
+<p>Such a type of best place is the constructor.</p>
+<h3>14:04 — Role of constructor: initialize, not create</h3>
+<p>Role of constructor: to perform initialization of an object. Whenever we are creating an object, immediately some piece of code will be executed to perform initialization. That piece of code is the constructor. Constructor is a specially designed concept to perform initialization of an object.</p>
+<p>Instance block won’t work out. At the time of declaration won’t work out. For every object, separate after-new assignments won’t work out. Constructor is the best choice.</p>
+<h3>14:58 — Dictation: “this piece of code is nothing but constructor”</h3>
+<p>He dictates slowly (repeats each clause):</p>
+<p>Whenever we are creating an object, some piece of the code will be executed automatically to perform initialization of the object. This piece of the code is nothing but constructor.</p>
+<p>Hence the main purpose of constructor is to perform initialization of an object.</p>
+<p>He points at the constructor on the board: “Can you tell what is this concept? Constructor.”</p>
+<h3>17:01 — Full notes example + diagrams</h3>
+<p>Take this example (he wants diagrams too):</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+
+    Student(String name, int rollNumber) {
+        this.name = name;
+        this.rollNumber = rollNumber;
+    }
+
+    public static void main(String[] args) {
+        Student s1 = new Student(&quot;Durga&quot;, 101);
+        Student s2 = new Student(&quot;Ravi&quot;, 102);
+        // heap: s1 --&gt; name=&quot;Durga&quot;, rollNumber=101
+        //       s2 --&gt; name=&quot;Ravi&quot;,  rollNumber=102
+    }
+}</pre>
+<p>Role of constructor: to perform initialization of an object, not to create object. To create an object we have to use `new` operator. To perform initialization, constructor will be there.</p>
+<h3>19:09 — Note: initialize, but not create</h3>
+<p>“Can I complete it? Even the diagrams also I hope you took.” Take a note:</p>
+<p>The main purpose of constructor is to perform initialization of an object, but not to create object.</p>
+<p>That is the basic introduction: what is constructor.</p>
+<h3>20:16 — Heading: difference between constructor and instance block</h3>
+<p>There is already a concept named instance block. For every object creation, instance block also will be executed. So what is the difference between constructor and instance block?</p>
+<p>Keep writing: difference between constructor and instance block.</p>
+<h3>20:59 — Constructor initializes; instance block is “other than initialization”</h3>
+<p>Take special care about terminology.</p>
+<p>Purpose of constructor: to perform initialization of an object.</p>
+<p>Purpose of instance block: other than initialization, for every object creation I want to do certain activity. Not to initialize an object.</p>
+<p>Best examples he gives:</p>
+<ul><li>Updating one record in the database whenever an object is created.</li></ul>
+<ul><li>Incrementing a count — how many objects got created for this class.</li></ul>
+<p>Other than initialization, if we want to perform a certain activity for every object creation → instance block.</p>
+<p>Constructor job and instance block job are different. Replacing one concept with the other is not possible. “I want to replace constructor with instance block” — no. “I want to replace instance block with constructor” — no. Both have their own purpose.</p>
+<h3>22:59 — Dictation: constructor vs instance block</h3>
+<p>He dictates:</p>
+<p>The main purpose of constructor is to perform initialization of an object.</p>
+<p>But other than initialization, if we want to perform any activity for every object creation, then we should go for instance block (like updating one entry in the database for every object creation, or incrementing count value for every object creation, etc.).</p>
+<p>Both constructor and instance block have their own different purposes, and replacing one concept with another concept may not work always.</p>
+<p>Don’t feel it will always work. May not work.</p>
+<h3>27:22 — Both run per object; instance block **first**, then constructor</h3>
+<p>Before the example: constructor and instance block both will be executed for every object creation. But first which one? Instance block followed by constructor.</p>
+<p>Both constructor and instance block will be executed for every object creation, but instance block first, followed by constructor.</p>
+<h3>28:42 — Requirement: print how many objects were created</h3>
+<p>He wants to print the number of objects created for the class (“three objects created”, “two objects created”). How?</p>
+<pre class='code'>class Test {
+    static int count = 0;
+
+    Test() {
+    }
+
+    Test(int i) {
+    }
+
+    Test(double d) {
+    }
+
+    public static void main(String[] args) {
+        Test t1 = new Test();       // no-arg constructor
+        Test t2 = new Test(10);     // int constructor
+        Test t3 = new Test(10.5);   // double constructor
+    }
+}</pre>
+<p>One static variable static int count = 0. Three constructors based on requirement — we may call first, second, or third. t1 = new Test() → no-arg. t2 = new Test(10) → int constructor. t3 = new Test(10.5) → double constructor.</p>
+<p>Requirement: print how many objects were created for the class.</p>
+<h3>31:11 — Doing it only with constructors: `count++` in every constructor — not recommended</h3>
+<p>He pretends he does not know instance block. Run only with constructors. For every object creation, increment count. Where?</p>
+<p>First call hits no-arg → count++ there. Second call hits int → count++ there. Third hits double → count++ there.</p>
+<pre class='code'>class Test {
+    static int count = 0;
+
+    Test() {
+        count++;
+    }
+
+    Test(int i) {
+        count++;
+    }
+
+    Test(double d) {
+        count++;
+    }
+
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        Test t2 = new Test(10);
+        Test t3 = new Test(10.5);
+    }
+}</pre>
+<p>How many times do we write count++? Three times — because at runtime which constructor we call, we don’t know. First or second or third. So in every constructor, count++. Code redundancy.</p>
+<h3>32:00 — Second problem: `this(10)` makes `count++` run twice for **one** object</h3>
+<p>Sometimes, for the same object creation, by mistake if this(10) is also there: whenever we call this constructor, automatically the other one executes. As part of that we call the int constructor also. Then how many times is count incrementing? Two times — but for one object only. Two times count incrementing is always a problem.</p>
+<pre class='code'>class Test {
+    static int count = 0;
+
+    Test() {
+        this(10); // also runs Test(int)
+        count++;
+    }
+
+    Test(int i) {
+        count++;
+    }
+
+    Test(double d) {
+        count++;
+    }
+    // one object via new Test() → count incremented twice — wrong
+}</pre>
+<p>That’s why: for every object creation, other than initialization, if we want to do some activity, don’t run the show with constructor. Not recommended.</p>
+<h3>32:46 — Instance block: write `count++` **once**</h3>
+<p>Write an instance block and inside it count++.</p>
+<p>You may call the no-arg constructor: first instance block, then that constructor. You may call the int constructor: first instance block, then that constructor. You may call the double constructor: first instance block, then that constructor.</p>
+<p>How many times do we write count++ now? Only one time. Advantage.</p>
+<p>Other than initialization, if we want to perform any activity, highly recommended to go for instance block. Best suitable.</p>
+<p>Then print at the end of main:</p>
+<pre class='code'>class Test {
+    static int count = 0;
+
+    {
+        count++; // instance block — once per object, before constructor
+    }
+
+    Test() {
+    }
+
+    Test(int i) {
+    }
+
+    Test(double d) {
+    }
+
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        Test t2 = new Test(10);
+        Test t3 = new Test(10.5);
+        System.out.println(&quot;The number of objects created is &quot; + count);
+        // prints The number of objects created is 3
+    }
+}</pre>
+<p>Instance-block job you can’t replace with constructor; constructor job you can’t replace with instance block. Every concept has its own purpose. Replacing one with another is not at all recommended — may not work always.</p>
+<h3>34:19 — Interview trap: “write a program to print number of objects created”</h3>
+<p>Sometimes in the interview room they may ask: write a program to print number of objects created for your class. Internal intention: have you aware of instance-block concept or not? Just to check that, they may ask this. You should be in a position to tell.</p>
+<p>Is there any difference between instance block and constructor, or both are same? If both were same, why two concepts? Both are different; both have their own different purposes.</p>
+<h3>35:19 — Demo program (he writes it again for the notes)</h3>
+<p>Keep writing: demo program to print number of objects created for a class.</p>
+<pre class='code'>class Test {
+    static int count = 0;
+
+    {
+        count++; // instance block is the best choice for this requirement
+    }
+
+    Test() {
+    }
+
+    Test(int i) {
+    }
+
+    Test(double d) {
+    }
+
+    public static void main(String[] args) {
+        Test t1 = new Test();
+        Test t2 = new Test(10);
+        Test t3 = new Test(10.5);
+        System.out.println(&quot;The number of objects created is &quot; + count);
+        // prints The number of objects created is 3
+    }
+}</pre>
+<p>This is the demo of how to use instance block. Role of instance block vs constructor — the difference. Next heading.</p>
+<h3>37:18 — Heading: rules of writing constructors</h3>
+<p>Keep writing: rules of writing constructors. These rules are very important. Compulsory you people should be aware. Majority of people: at least one rule you should be able to spell out.</p>
+<h3>37:48 — Rule 1: class name and constructor name must be matched</h3>
+<p>Students: name of the class and name of the constructor must be same.</p>
+<p>Name of the class and name of the constructor must be matched.</p>
+<pre class='code'>class Test {
+    Test() { // name matches class name → constructor
+    }
+}</pre>
+<h3>38:35 — Rule 2: return type not applicable — **not even `void`**</h3>
+<p>Constructor executes automatically whenever we create an object:</p>
+<pre class='code'>class Test {
+    Test() {
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test(); // constructor executes; we are not calling it
+    }
+}</pre>
+<p>We are not calling. Whenever we create an object, automatically constructor executing. If we are not calling, we are not expecting any return type — if we were calling, we would expect some return type and use it in the next lines. We are not calling the constructor. That’s why return type concept is not applicable for the constructor.</p>
+<p>Constructor’s job is to initialize an object. Once initialization is complete, that’s it — it won’t return anything. Return type concept not applicable — even `void` also. Even void is a return type; such terminology is not applicable.</p>
+<p>Return type concept not applicable for constructor, even void also.</p>
+<h3>40:09 — Doubt: `void Test()` — compile error or not?</h3>
+<p>Listen a bit carefully.</p>
+<pre class='code'>class Test {
+    Test() { // this is a constructor
+    }
+}</pre>
+<p>By mistake he writes void:</p>
+<pre class='code'>class Test {
+    void Test() { // now what?
+    }
+}</pre>
+<p>Will the code compile or not? What compile-time error? “I’m declaring return type for the constructor.”</p>
+<p>The code compiles. We won’t get any compile-time error, because the compiler treats it as a method. It is a method but not constructor.</p>
+<p>By mistake if we try to take return type for the constructor, we won’t get any compile error, because it’s a method but not constructor.</p>
+<h3>41:24 — Can a method have the same name as the class?</h3>
+<p>Is it possible to declare a method whose name is exactly same as class name? Possible or not? Possible. Recommended or not? Not recommended. What kind of programming practice? This naming is already applicable for constructor — why pollute that concept for methods? Even though it is legal, it is not a good programming practice.</p>
+<h3>42:01 — Live: `Test.java` constructor prints; add `void` → nothing prints</h3>
+<p>He types Test.java. Class Test, constructor, print &quot;Constructor&quot;, main creates Test t = new Test().</p>
+<pre class='code'>class Test {
+    Test() {
+        System.out.println(&quot;Constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+    }
+}</pre>
+<p>javac Test.java — compiles fine. Code runs fine. Constructor got executed.</p>
+<p>Constructor</p>
+<p>If he takes void here:</p>
+<pre class='code'>class Test {
+    void Test() { // method, not constructor
+        System.out.println(&quot;Constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        // default constructor runs; this method is NOT executed automatically
+        // prints nothing
+    }
+}</pre>
+<p>Is it a method or constructor? Method. Whenever we create an object, will this execute automatically? No. If it were a constructor it would execute; it’s a method, it won’t. Code compiles fine. Answer: nothing.</p>
+<p>It is a method but not constructor. To execute it, call t.Test() — method name is Test only:</p>
+<pre class='code'>class Test {
+    void Test() { // method, not constructor
+        System.out.println(&quot;Constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.Test();
+        // prints Constructor
+    }
+}</pre>
+<p>By mistake if we take return type for the constructor, we won’t get any compile error, because it is a method but not constructor.</p>
+<h3>44:37 — Dictation: no CE; compiler treats it as a method</h3>
+<p>By mistake if we are trying to declare return type for the constructor, then we won’t get any compile-time error, because compiler treats it as a method.</p>
+<p>Take this example:</p>
+<pre class='code'>class Test {
+    void Test() {
+        // it is a method but not constructor
+    }
+}</pre>
+<h3>46:09 — “It is legal (but stupid)”</h3>
+<p>It is legal to have a method whose name is exactly same as class name. Yes. Recommended? Not recommended.</p>
+<p>Hence it is legal (but stupid) to have a method whose name is exactly same as class name.</p>
+<h3>47:41 — Complete example including how to call that method</h3>
+<p>Better to take the complete example, even how to call that method:</p>
+<pre class='code'>class Test {
+    void Test() { // method but not constructor, because we are keeping return type
+        System.out.println(&quot;Constructor&quot;);
+    }
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        t.Test();
+        // prints Constructor
+    }
+}</pre>
+<p>This is what you should be aware related to return type constraint for constructors.</p>
+<h3>49:11 — Funny experience: phone call in a VIP meeting</h3>
+<p>“Very very important point. I have one funny experience related to the next point.”</p>
+<p>Years earlier (3–5 years before this lecture) his habit was to share mobile number and mail ID with students after the batch, for doubts.</p>
+<p>One evening around 5:00 / 5:30 he was in an important discussion / meeting with a very superior person — he had waited almost a month / one and a half months to get the chance to talk. VIP meeting. Suddenly mobile ringing. He is not even in a position to check from where the call is coming. He disconnects (red button). Continues. Call comes again. Disconnects. Continues. Call comes again. This time while he is trying to disconnect, the other person (irritated): first check your phone, then we will talk. He steps out.</p>
+<p>Feeling: even after disconnect, continuously ringing — minimum the caller should understand he is busy. Number not saved, no name. He connects. First thing: “Hello.” Immediately the other side, no formalities (no hi, no “sir your student”), directly one point:</p>
+<p>“Which modifiers applicable for constructors?”</p>
+<p>He got shock. First feeling: am I maintaining a call center for Java doubts? At least minimum — you were an OCJP student. He answers a bit loud: why did you make a call, why are you asking this to me? Person realizes: sorry, I’m your old OCJP student, now I’m at interview hall. For every student the interviewer is asking only one question: which modifiers applicable for constructors. I am in a bit hurry, didn’t even introduce myself. Don’t mind — please tell.</p>
+<p>He had already told it in the notes. He asks the student: which modifiers? Student: public, private, protected, default. “You only told — you know the answer — why are you asking me once again, why a phone call?” Student: just to get confirmation. Life and death / job related — if by mistake I tell wrong, I may not get the job.</p>
+<p>This type of experience four or five times. Then he realized: not recommended to share mobile number to the students.</p>
+<p>Why he shared this: very important interview question — which modifiers applicable for constructors.</p>
+<h3>53:40 — Only applicable modifiers: `public`, `private`, `protected`, default</h3>
+<p>The only applicable modifiers for constructors are public, private, protected, default. That’s all. If we use any other modifier, immediately compile-time error.</p>
+<h3>54:09 — Board: `public` valid, `private` valid, `static` invalid</h3>
+<p>Assume this is the constructor:</p>
+<pre class='code'>class Test {
+    public Test() { // valid — no problem at all
+    }
+}</pre>
+<p>Instead of public, private:</p>
+<pre class='code'>class Test {
+    private Test() { // valid
+    }
+}</pre>
+<p>Instead of private, `static`: valid or invalid? Invalid. Immediately compile-time error:</p>
+<pre class='code'>class Test {
+    static Test() {
+    }
+    // CE: modifier static not allowed here
+}</pre>
+<p>He also lists protected and default (no modifier) as valid, same as public/private:</p>
+<pre class='code'>class Test {
+    protected Test() { // valid
+    }
+}
+class Test {
+    Test() { // default (package) — valid
+    }
+}</pre>
+<p>The only applicable modifiers: public, private, protected, default. By mistake any other → compile-time error.</p>
+<h3>55:16 — Dictation: applicable modifiers</h3>
+<p>The only applicable modifiers for constructors are public, private, protected, default. If we are trying to use any other modifier, we will get compile-time error.</p>
+<p>Notes example:</p>
+<pre class='code'>class Test {
+    static Test() {
+    }
+    // CE: modifier static not allowed here
+}</pre>
+<p>“Modifier static not allowed here” itself is the compile-time error. Terminology clear.</p>
+<h3>57:14 — Heading: default constructor</h3>
+<p>Next conclusion: there is one concept named default constructor. Keep writing: default constructor. Multiple things to conclude. Most people have wrong perception.</p>
+<h3>57:39 — Who generates it: compiler, **not JVM**</h3>
+<p>First thing: who is responsible to generate default constructor — compiler or JVM?</p>
+<p>Compiler is responsible to generate default constructor. If any extra code is required, compiler takes care, not JVM. JVM is responsible just simply to execute. JVM is not responsible to generate.</p>
+<p>Compiler is responsible to generate default constructor (but not JVM).</p>
+<p>Some faculty members or some books may use the word “JVM is responsible to generate default constructor.” No. Compiler is responsible.</p>
+<h3>58:16 — Compiler does **not** always generate it</h3>
+<p>Compiler will always generate default constructor — correct or not? No. Compiler will generate default constructor if and only if we are not writing any constructor. If we are writing at least one constructor, compiler won’t generate default constructor.</p>
+<h3>58:53 — `class Test { }` vs `class Test { Test(int i) { } }`</h3>
+<p>Best example: we didn’t write any constructor. Compiler feels: “arey programmer is the very poor person, he don’t know about constructor concept, that’s why let me provide some support.” Compiler generates default constructor.</p>
+<pre class='code'>class Test {
+    // no constructor written by programmer
+    // compiler generates: Test() { }
+}</pre>
+<p>Suppose we write:</p>
+<pre class='code'>class Test {
+    Test(int i) {
+    }
+    // programmer already wrote a constructor
+    // compiler will NOT generate Test()
+}</pre>
+<p>Whenever we write like this, compiler feels: “oh, programmer already aware constructor concept, why I have to generate default constructor? Not required.”</p>
+<p>If our class doesn’t contain any constructor, then only compiler will generate a default constructor. If our class contains at least one constructor, compiler feels programmer knows constructor concept — not required to generate default.</p>
+<p>Can we use the term “compiler will always generate default constructor”? No. If our class doesn’t contain any constructor, then only default constructor will be generated by compiler.</p>
+<h3>1:00:10 — Every class has a constructor — default **or** customized, **not both**</h3>
+<p>Take special care. Every class in Java contains constructor. It may be default constructor generated by compiler, or customized constructor provided by programmer, but not both simultaneously.</p>
+<p>When will compiler generate default constructor? If we are not writing any constructor. If we are writing any constructor, compiler won’t generate default. Is there any chance both exist simultaneously? Never. If we are not writing anything, compiler generates. If we are writing something, compiler won’t generate. That’s why customized programmer constructor and default constructor generated by compiler can’t exist both simultaneously.</p>
+<h3>1:01:14 — Dictation of the three default-constructor points</h3>
+<p>He repeats each clause for notes:</p>
+<p>Compiler is responsible to generate default constructor (but not JVM).</p>
+<p>If we are not writing any constructor, then only compiler will generate default constructor. That is, if we are writing at least one constructor, then compiler won’t generate default constructor.</p>
+<p>Hence every class in Java can contain constructor. It may be default constructor generated by compiler, or customized constructor explicitly provided by programmer, but not both simultaneously.</p>
+<h3>1:04:36 — Close of this lecture</h3>
+<p>“The compiler will generate default constructor always?” No. If we are not writing any constructor, then only compiler will generate default constructor. Clear for all of you.</p>
+<p>(The captions end here; next constructor rules / overloaded constructor continue in later OOPs parts.)</p>
+<h2>What this video actually taught (not a generic constructors lecture)</h2>
+<ol><li>Constructor initializes; it does not create. `new` creates the object; constructor runs immediately after to initialize it.</li></ol>
+<ol><li>Student without init: every object name = null, rollNumber = 0 — meaningless. Init at declaration and in an instance block still give the same values to every object. After-new field assignments give different values but 600 × properties lines. Constructor: different values, two assignment lines reused.</li></ol>
+<ol><li>Instance block is not a constructor substitute: it is for other than initialization on every object (DB insert, count++). Both run per object; instance block first, then constructor. count++ in every constructor is redundant and wrong under `this(...)` (two increments, one object). Interview program: instance block count++, then print count.</li></ol>
+<ol><li>Constructor name matches class name. No return type, not even `void`. void Test() compiles — it is a method, not a constructor; new Test() prints nothing until t.Test(). Legal but stupid.</li></ol>
+<ol><li>Only modifiers: `public`, `private`, `protected`, default. static Test() → `modifier static not allowed here`. Default constructor is generated by the compiler (not JVM), only if we write none. Every class has a constructor: default or customized, never both.</li></ol>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 64 of 203</td></tr>
+<tr><td>Series</td><td>OOPs · Part 14</td></tr>
+<tr><td>Topic</td><td>constructors</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 04m 57s</td></tr>
+<tr><td>Video ID</td><td>XWjhxt6ijLI</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=XWjhxt6ijLI</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,397 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>031-import-static-import</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 031 — import and static import</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-2 || import and static import</p>
+<p>Source: real YouTube auto-captions (031-aXA59eIWkw0.txt). ASR noise is decoded in place — UT / input = import, expit / expositive = explicit, keep subing = board heading, Hightech City = Hi-tech City, Amir pet = Ameerpet, uni remote object = UnicastRemoteObject, where AR methods = var-arg methods, Q&#x27;s = Queue, triop = flop, static UT = static import. He pronounces the concept static import but writes import static.</p>
+<h2>What this lecture covers</h2>
+<p>Last session: purpose of import — after writing import we can use short names (ArrayList, LinkedList) directly; import acts as a typing shortcut.</p>
+<p>This video: eight to nine cases, each an important exam conclusion, then static import (1.5, the “flop” feature).</p>
+<h2>Detailed notes</h2>
+<h3>[00:05] Recap</h3>
+<p>One agreement at the top of the file: the import statement. Wherever ArrayList is used, it means java.util.ArrayList.</p>
+<h3>[00:45] Case 1 — types of import statements</h3>
+<p>Board heading: types of import statements.</p>
+<p>Two types:</p>
+<ol><li>Explicit class import</li></ol>
+<ol><li>Implicit class import</li></ol>
+<pre class='code'>import java.util.ArrayList; // explicit — import this particular class
+import java.util.*; // implicit — import all classes present in util</pre>
+<p>Which is recommended — explicit, implicit, or depends?</p>
+<p>Classroom: depends on requirement. One or two classes → explicit; 20 classes from the same package → implicit.</p>
+<p>Make sure: even if you want 100 classes from the same package, go for explicit class import only. Implicit is never recommended — almost a banned terminology.</p>
+<h3>[04:39] Why implicit hurts — HDFC / ICICI story</h3>
+<p>Big program:</p>
+<pre class='code'>import com.hdfc.*;
+import com.icici.*;
+
+class Test {
+    void m1() {
+        Account a = new Account();
+        a.getInfo();
+        Loan l = new Loan();
+        l.getInterestRate();
+    }
+}</pre>
+<p>Code walk: where is Account.getInfo() implemented? Open com.hdfc — 15 minutes, no Account. Open com.icici — there it is. Later Loan.getInterestRate(): check ICICI, not there; check HDFC — Loan is there. Half an hour to find each class. Readability / maintainability down. You cannot see dependent classes directly.</p>
+<p>Solve with explicit imports:</p>
+<pre class='code'>import com.hdfc.Account;
+import com.icici.Loan;
+
+class Test {
+    void m1() {
+        Account a = new Account();
+        a.getInfo();
+        Loan l = new Loan();
+        l.getInterestRate();
+    }
+}</pre>
+<p>Loan is in ICICI. Account is in com.hdfc. More readable than * convention.</p>
+<p>Highly recommended: explicit class import — it improves readability. Typing is a one-time activity; reading / analysing the code is a many-times activity. Highest priority for readability, not typing.</p>
+<p>Hi-tech City (IT): readability is important → explicit.</p>
+<p>Ameerpet (typing factories): typing is important → implicit, and you are not delivering this to anyone.</p>
+<h3>[09:04] Case 1 on the board</h3>
+<p>Explicit class import</p>
+<pre class='code'>import java.util.ArrayList;</pre>
+<p>It is highly recommended to use explicit class import because it improves readability of the code. Best suitable for Hi-tech City where readability is important.</p>
+<p>Implicit class import</p>
+<pre class='code'>import java.util.*;</pre>
+<p>Not recommended to use because it reduces readability of the code. Best suitable for Ameerpet where typing is important.</p>
+<h3>[12:44] Case 2 — which import statements are meaningful?</h3>
+<p>Exam style: four or five imports — which are meaningful?</p>
+<pre class='code'>import java.util.ArrayList;   // 1 meaningful — explicit class import
+import java.util.ArrayList.*; // 2 NOT meaningful — star after class name
+import java.util.*;           // 3 meaningful — implicit class import
+import java.util;             // 4 NOT meaningful — semicolon after package</pre>
+<ol><li>java.util.ArrayList — explicit, meaningful.</li></ol>
+<ol><li>After class name, .* — meaning? Is there any class present inside ArrayList? No. Not meaningful. After class name, semicolon is required, not .*.</li></ol>
+<ol><li>java.util.* — import all classes and interfaces in util. Meaningful implicit import.</li></ol>
+<ol><li>After package name, semicolon — meaningless. After package name we must take .*.</li></ol>
+<p>Board heading: Which of the following import statements are meaningful</p>
+<p>Same four lines.</p>
+<h3>[16:52] Case 3 — FQN means you don’t need import</h3>
+<pre class='code'>class MyObject extends java.rmi.server.UnicastRemoteObject {
+}</pre>
+<p>(UnicastRemoteObject — he says RMI / unicast remote object; the class lives in java.rmi.server.)</p>
+<p>Two options:</p>
+<ol><li>The code compiles fine even though we are not writing import, because we used fully qualified name.</li></ol>
+<ol><li>You didn’t write import, so it won’t compile.</li></ol>
+<p>First option is correct. Compiles without import because of the fully qualified name.</p>
+<p>Whenever we use FQN, it is not required to write import. Whenever we write import, it is not required to use FQN. Import and fully qualified names are alternative concepts.</p>
+<p>Board:</p>
+<p>Consider the following code.</p>
+<pre class='code'>class MyObject extends java.rmi.server.UnicastRemoteObject {
+}</pre>
+<p>The code compiles fine even though we are not writing import statement because we used fully qualified name.</p>
+<p>Note:</p>
+<p>Whenever we are using fully qualified name it is not required to write import statement. Similarly whenever we are writing import statement it is not required to use fully qualified name.</p>
+<h3>[22:00] Case 4 — `Date` is ambiguous (dangerous)</h3>
+<pre class='code'>import java.util.*;
+import java.sql.*;
+
+class Test {
+    public static void main(String[] args) {
+        Date d = new Date();
+    }
+}</pre>
+<p>Date exists in both java.util and java.sql. Special significance.</p>
+<p>Story: he asks the compiler to compile. Compiler considers util Date. He wants SQL Date — left and right, don’t take the decision on your own. Next time compiler considers SQL Date. He now wants util. Compiler finally: come to room 402 — I don’t want to take any risk for stupid programmers like you. First let me know which Date you want.</p>
+<pre class='code'>// javac Test.java
+// CE: reference to Date is ambiguous</pre>
+<p>Both packages contain Date. You have to tell which one.</p>
+<p>He compiles the same program live: reference to Date is ambiguous.</p>
+<pre class='code'>import java.util.*;
+import java.sql.*;
+
+class Test {
+    public static void main(String[] args) {
+        Date d = new Date();
+    }
+}
+// CE: reference to Date is ambiguous</pre>
+<p>If you are not using Date d = new Date(), there is no ambiguity. The problem comes when you use the name.</p>
+<p>~5000 Java classes in different packages. Similar case besides Date? Two packages containing a class (or interface) with the same name?</p>
+<p>`List`. List is in java.util (List / Set / Map). List is also in java.awt (GUI component — list of options, like Frame, Panel). Same ambiguity possible.</p>
+<p>Board:</p>
+<p>Even in the case of List also we may get same ambiguity problem because it is available in both util and awt packages.</p>
+<pre class='code'>import java.util.*;
+import java.awt.*;
+
+class Test {
+    public static void main(String[] args) {
+        List l = null; // CE: reference to List is ambiguous
+    }
+}</pre>
+<h3>[32:33] Explicit beats implicit</h3>
+<p>Same Date program, but one import is explicit:</p>
+<pre class='code'>import java.util.Date; // explicit
+import java.sql.*;     // implicit</pre>
+<p>Which Date? Code compiles. Explicit class import is considered. Compiler gives more priority to explicit than implicit.</p>
+<h3>[33:35] Case 5 — order while resolving class names</h3>
+<p>Thumb rule. Highest priority:</p>
+<ol><li>Explicit class import</li></ol>
+<ol><li>Classes present in current working directory (default package)</li></ol>
+<ol><li>Then only implicit class import</li></ol>
+<p>If explicit matches — use that, even if CWD also has Date and java.sql.* also has Date → util `Date`.</p>
+<p>If you comment out the explicit line, only import java.sql.*: even then, current working directory `Date` is considered first. SQL Date only if CWD doesn’t contain Date.</p>
+<p>Board heading: while resolving class names</p>
+<p>Compiler will always give the precedence in the following order:</p>
+<p>1. explicit class import</p>
+<p>2. classes present in current working directory (default package)</p>
+<p>3. implicit class import</p>
+<p>Live: both implicit → reference to Date is ambiguous. Then util explicit + SQL implicit:</p>
+<pre class='code'>import java.util.Date;
+import java.sql.*;
+
+class Test {
+    public static void main(String[] args) {
+        Date d = new Date();
+        System.out.println(d.getClass().getName());
+    }
+}
+// prints java.util.Date</pre>
+<p>In the above example, util package `Date` got considered.</p>
+<h3>[40:23] Case 6 — importing a package does **not** import subpackages</h3>
+<p>Pattern (regular expressions) lives in `java.util.regex`.</p>
+<p>Which import is required to use Pattern?</p>
+<pre class='code'>import java.*;              // 1
+import java.util.*;         // 2
+import java.util.regex.*;   // 3
+// 4 no import required</pre>
+<p>Whenever we import a package, all classes and interfaces present in that package are available — but not subpackage classes. To use a subpackage class, write import until subpackage level.</p>
+<p>If subpackage classes were included automatically, only import java.*; would be enough (util, sql, io are subpackages of java). Then why would anyone write import java.util.* / import java.sql.*?</p>
+<p>To use Pattern (java.util.regex.Pattern) you must import until regex. Answer: 3.</p>
+<p>Practical proof: we don’t import java.lang. But `Method` is in `java.lang.reflect`. To use Method:</p>
+<pre class='code'>import java.lang.reflect.*;
+// or
+import java.lang.reflect.Method;</pre>
+<p>Lang classes are default-available; subpackage classes are not.</p>
+<p>Board:</p>
+<p>Whenever we are importing a Java package all classes and interfaces present in that package by default available but not sub package classes. If we want to use a sub package class compulsory we should write import statement until sub package level.</p>
+<p>Diagram: java → util → regex → Pattern.</p>
+<pre class='code'>import java.*;            // not enough for Pattern
+import java.util.*;       // not enough for Pattern
+import java.util.regex.*; // required
+// no import required     // wrong</pre>
+<p>Correct: `import java.util.regex.*;` (or import java.util.regex.Pattern;).</p>
+<h3>[50:05] Case 7 — two packages we are not required to import</h3>
+<p>All classes and interfaces in these two packages are by default available to every Java program.</p>
+<ol><li>`java.lang`</li></ol>
+<ol><li>Default package (current working directory)</li></ol>
+<p>Not only one — he wrote “two” on purpose.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = new String(&quot;Durga&quot;);
+        // String is in java.lang — no import required
+    }
+}</pre>
+<p>Compiles and runs.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Student s1 = new Student(&quot;Durga&quot;, 101);
+        System.out.println(s1.name + &quot;...&quot; + s1.rollNo);
+        // prints Durga...101
+    }
+}</pre>
+<p>He didn’t write Student in this file. Student.java is already in the current working directory (name + roll number). No import required.</p>
+<pre class='code'>// Student.java  (same folder — default package)
+class Student {
+    String name;
+    int rollNo;
+    Student(String name, int rollNo) {
+        this.name = name;
+        this.rollNo = rollNo;
+    }
+}</pre>
+<p>Board:</p>
+<p>All classes and interfaces present in the following packages are by default available to every Java program hence we are not required to write import statement.</p>
+<p>1. java.lang package</p>
+<p>2. default package (current working directory)</p>
+<h3>[56:02] Case 8 — import is a compile-time concept</h3>
+<p>Two programs, same work:</p>
+<p>Program 1 — fully qualified names every time (no import):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        java.util.ArrayList l = new java.util.ArrayList();
+    }
+}</pre>
+<p>Program 2 — short names + import:</p>
+<pre class='code'>import java.util.ArrayList;
+
+class Test {
+    public static void main(String[] args) {
+        ArrayList l = new ArrayList();
+    }
+}</pre>
+<p>Which takes more time to compile? Program 2. With FQN, complete information is already there — compiler has no confusion. With ArrayList, compiler must check which import relates to ArrayList, then realise java.util.ArrayList. More work for the compiler → more compile time. FQN compiles in less time.</p>
+<p>Which takes more time to run? If more execution time, not recommended (performance). Some people think: more compile time ⇒ more execution time. Wrong.</p>
+<p>If FQN really took more execution time we would not be allowed to use it — we can compromise with anything but not performance. This concept still exists because both programs take the same execution time.</p>
+<p>Import / short names apply only at compile time. At runtime there is no difference. Import is a purely compile-time related concept. More imports → more compile time; no effect on execution time (runtime).</p>
+<p>Board:</p>
+<p>Import statements is totally compile time related concept. If more number of imports then more will be the compile time but there is no effect on execution time (run time).</p>
+<h3>[1:02:49] Case 9 — C `#include` vs Java `import` (interview)</h3>
+<p>Fresher interview favourite. Faculty / books often say Java import is C #include. Functionality-wise there is a big difference. Don’t feel they are the same.</p>
+<pre class='code'>// C language (not Java) — static include at translation time:
+// #include &lt;stdio.h&gt;
+import java.io.*;</pre>
+<p>In C, at this line, all input/output header files are loaded at the beginning (translation time), whether you use one or two. Static include.</p>
+<p>In Java, at the import line, no class is loaded. At runtime, whenever we use a particular class (e.g. PrintWriter), then PrintWriter.class is loaded. Load on demand / load on fly / dynamic include.</p>
+<p>Which approach is good? Java’s. Loading all IO headers up front is not good practice. Loading all ~5000 Java classes at the beginning would waste memory and hurt performance.</p>
+<p>Interview: considerable difference; not equal functionality-wise / behaviour-wise.</p>
+<p>Board: difference between C language #include and Java language import statement</p>
+<p>In the case of C language #include all input output header files will be loaded at the beginning only (at translation time) hence it is static include.</p>
+<p>But in the case of Java import statement no .class file will be loaded at the beginning. Whenever we are using a particular class then only corresponding .class file will be loaded. This is like dynamic include / load on demand / load on fly.</p>
+<p>Nine loopholes related to import. Recap: two types; explicit recommended (readability). We generally don’t write imports by hand — Eclipse / MyEclipse generate them, and they are explicit. No IDE in the universe generates implicit imports.</p>
+<h3>[1:12:41] 1.5 version new features — then static import</h3>
+<p>Another type of import: static import, new in 1.5. Don’t write the heading yet — story first.</p>
+<p>Movies: no guarantee every release is a hit. Out of 100, maybe 25–30% hit. Producers still say it will break Tollywood / Bollywood records. Audience decide. Orange after Magadheera — flop. Audio functions create hype.</p>
+<p>Same publicity when versions release. Before 1.5, press meet: after 1.5 all remaining languages will be packed; we are redefining Java. Worldwide experts analysed 1.5 — really happy: each feature’s target is to simplify the programmer’s life.</p>
+<p>1.5 language-level list he writes:</p>
+<pre class='code'>// for-each loop
+// var-arg methods
+// autoboxing and auto-unboxing
+// generics
+// covariant return types
+// Queue
+// annotations
+// enum
+// static import</pre>
+<ul><li>for-each — we can skip a traditional for in many places</li></ul>
+<ul><li>var-arg methods</li></ul>
+<ul><li>autoboxing / auto-unboxing</li></ul>
+<ul><li>generics</li></ul>
+<ul><li>covariant return types (OOPS later): child method return type need not be same as parent; child type allowed — more flexibility</li></ul>
+<ul><li>Queue in collections — 1.5</li></ul>
+<ul><li>annotations — rolling everywhere (JSP, EJB, …)</li></ul>
+<ul><li>enum — 1.5</li></ul>
+<p>Super-duper concepts — except one flop concept in 1.5: static import. Not a hit.</p>
+<p>While releasing 1.6, people said: if there is no specific requirement, not recommended to use static import. Clear indication. For SCJP, one or two bits still possible — know advantage, disadvantage, Sun’s view, why not recommended.</p>
+<p>Board heading: 1.5 version new features — the list above (more major concepts exist; these are the language-level ones). Last on the list: static import.</p>
+<h3>[1:22:06] Static import — Sun vs worldwide experts</h3>
+<p>Board heading: static import. Came in 1.5.</p>
+<p>According to Sun: usage of static import reduces length of the code and improves readability.</p>
+<p>According to worldwide programming experts (like us): usage of static import creates confusion and reduces readability. Hence if there is no specific requirement, it is not recommended to use static import.</p>
+<h3>[1:26:37] Without static import vs with static import</h3>
+<p>Usually we access static members (method or variable) by using class name.</p>
+<p>Without static import:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(Math.sqrt(4));
+        System.out.println(Math.max(10, 20));
+        System.out.println(Math.random());
+    }
+}</pre>
+<p>sqrt / max / random are static methods of Math. If you want sqrt 20 times, 20 times Math. Why not remove the class name? Length down, readability up — that thought introduced static import.</p>
+<p>With static import — don’t use class name; write static import for that member:</p>
+<pre class='code'>import static java.lang.Math.sqrt;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+        System.out.println(max(10, 20));
+        System.out.println(random());
+    }
+}</pre>
+<p>Will this compile? No. Static import only for sqrt. max and random used without class name.</p>
+<p>Import all static members of Math:</p>
+<pre class='code'>import static java.lang.Math.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+        System.out.println(max(10, 20));
+        System.out.println(random());
+    }
+}</pre>
+<p>Now it compiles and runs.</p>
+<p>Need of static import: usually access static members by class name; if you want to access directly without class name, static import is required.</p>
+<p>While writing: `import static`. While pronouncing: static import. Don’t get confused.</p>
+<h3>[1:33:22] Live compile — three errors, then two, then none</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+        System.out.println(max(10, 20));
+        System.out.println(random());
+    }
+}
+// CE: cannot find symbol method sqrt
+// CE: cannot find symbol method max
+// CE: cannot find symbol method random</pre>
+<p>Three errors.</p>
+<pre class='code'>import static java.lang.Math.sqrt;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+        System.out.println(max(10, 20));
+        System.out.println(random());
+    }
+}
+// sqrt OK; still CE for max and random  (two errors)
+import static java.lang.Math.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+        System.out.println(max(10, 20));
+        System.out.println(random());
+    }
+}
+// compiles
+// prints 2.0     (sqrt return type is double)
+// 20
+// 0.582...       (random 0..1; changes run to run: 0.3484, 0.41, 0.26, ...)</pre>
+<p>You can drop the explicit sqrt import if Math.* is there — sqrt is included.</p>
+<h3>[1:35:56] Board recap — both examples side by side</h3>
+<p>Usually we can access static members by using class name. But whenever we are writing static import we can access static members directly without class name.</p>
+<p>Without static import:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(Math.sqrt(4));
+        System.out.println(Math.max(10, 20));
+        System.out.println(Math.random());
+    }
+}</pre>
+<p>With static import:</p>
+<pre class='code'>import static java.lang.Math.*;
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(sqrt(4));
+        System.out.println(max(10, 20));
+        System.out.println(random());
+    }
+}</pre>
+<p>Take special care. That’s all for this session (more static-import loopholes continue in the next part).</p>
+<p>Next video: 032-static-import.md</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 31 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 2 of 11</td></tr>
+<tr><td>Topic</td><td>Types of import; nine exam cases; #include vs import; 1.5 features; static import</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 39m 31s</td></tr>
+<tr><td>Video ID</td><td>aXA59eIWkw0</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=aXA59eIWkw0</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

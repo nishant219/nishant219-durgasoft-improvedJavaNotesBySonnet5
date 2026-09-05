@@ -1,0 +1,546 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>034-class-modifier-final</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 034 — Class level modifiers: final</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-5 || Class Level Modifiers: final</p>
+<p>YouTube captions are blocked on this upload. These notes follow Durga Sir’s Declarations board: the outer-class modifier list, public vs &lt;default&gt;, the public-class file-name rule, illegal top-level private / protected / static, then final class with String / System / Integer.</p>
+<h2>What this lecture covers</h2>
+<ol><li>After source-file structure, import, and package: class-level modifiers</li></ol>
+<ol><li>Which modifiers are legal on a top-level (outer) class vs an inner class</li></ol>
+<ol><li>public class vs &lt;default&gt; (package-level) class, with pack1 / pack2</li></ol>
+<ol><li>Public class file name must match the class name</li></ol>
+<ol><li>private class, protected class, static class at top level → CE</li></ol>
+<ol><li>final class A {} — we can create objects, we cannot extend</li></ol>
+<ol><li>API examples: String, System, Integer are final</li></ol>
+<ol><li>Why Java made those classes final (security / immutability / SCP)</li></ol>
+<ol><li>Advantage and disadvantage of a final class</li></ol>
+<ol><li>Methods inside a final class cannot be overridden (no child class exists)</li></ol>
+<h2>Detailed notes</h2>
+<h3>Where this sits in the syllabus</h3>
+<p>Declarations and Access Modifiers is the OCJP module after Language Fundamentals, Operators, and Flow-Control.</p>
+<p>Board order so far:</p>
+<ol><li>Java source file structure (package → import → class)</li></ol>
+<ol><li>import and static import</li></ol>
+<ol><li>package statement</li></ol>
+<ol><li>Now: modifiers we can write on the `class` declaration</li></ol>
+<p>Durga’s sentence: whenever we write a class, we can specify some modifiers. Those modifiers are class-level modifiers.</p>
+<h3>The only modifiers allowed on a top-level class</h3>
+<p>He writes this list and says memorize it. For an outer / top-level class, only these five are legal:</p>
+<pre class='code'>public class A {
+}
+
+class B {
+}
+
+final class C {
+}
+
+abstract class D {
+}
+
+strictfp class E {
+}</pre>
+<p>&lt;default&gt; is not a keyword. If you write no access modifier, that is default access.</p>
+<pre class='code'>class DefaultAccessDemo {
+    public static void main(String[] args) {
+        System.out.println(&quot;no modifier = default / package-level class&quot;);
+    }
+}</pre>
+<p>abstract is the next video. strictfp he only lists here: “strict floating-point” so float / double results are platform-independent. Implementation talk is later. This video’s modifier is `final`.</p>
+<h3>Inner classes get extra modifiers</h3>
+<p>For a top-level class, private, protected, and static are illegal. For an inner class they are legal. He puts this on the board so you do not mix the two lists.</p>
+<pre class='code'>class Outer {
+    public class PublicInner {
+    }
+
+    class DefaultInner {
+    }
+
+    private class PrivateInner {
+    }
+
+    protected class ProtectedInner {
+    }
+
+    static class StaticInner {
+    }
+
+    final class FinalInner {
+    }
+
+    abstract class AbstractInner {
+    }
+
+    strictfp class StrictInner {
+    }
+}</pre>
+<p>Exam trap: “Can a class be private?” Answer: not a top-level class. An inner class can.</p>
+<h3>`public` class — accessible from anywhere</h3>
+<p>If the class is public, any other class in any package can use it (after import, or with a fully qualified name).</p>
+<pre class='code'>package pack1;
+
+public class A {
+    public void m1() {
+        System.out.println(&quot;A class method&quot;);
+    }
+}</pre>
+<p>Same package:</p>
+<pre class='code'>package pack1;
+
+class B {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();
+        // prints A class method
+    }
+}</pre>
+<p>Other package — class A must be public, and we import pack1.A (or use pack1.A):</p>
+<pre class='code'>package pack2;
+
+import pack1.A;
+
+class C {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();
+        // prints A class method
+    }
+}</pre>
+<p>Compile / run the way he does it:</p>
+<pre class='code'>class CompilePublicClassDemo {
+    public static void main(String[] args) {
+        // javac -d . A.java
+        // javac -d . B.java
+        // javac -d . C.java
+        // java pack1.B
+        // java pack2.C
+        System.out.println(&quot;public class A is visible from pack1 and pack2&quot;);
+    }
+}</pre>
+<h3>`&lt;default&gt;` class — same package only</h3>
+<p>If we remove public from class A, it becomes a package-level class. Only classes in pack1 can see it.</p>
+<pre class='code'>package pack1;
+
+class A {
+    public void m1() {
+        System.out.println(&quot;A class method&quot;);
+    }
+}</pre>
+<p>Same package still compiles:</p>
+<pre class='code'>package pack1;
+
+class B {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();
+        // prints A class method
+    }
+}</pre>
+<p>Other package — CE, even if method m1 is public. You cannot use a type you cannot see.</p>
+<pre class='code'>package pack2;
+
+import pack1.A; // CE: pack1.A is not public; cannot be accessed from outside package
+
+class C {
+    public static void main(String[] args) {
+        A a = new A(); // CE
+        a.m1();
+    }
+}</pre>
+<p>Without the import, fully qualified name also fails:</p>
+<pre class='code'>package pack2;
+
+class C {
+    public static void main(String[] args) {
+        pack1.A a = new pack1.A(); // CE: pack1.A is not public
+    }
+}</pre>
+<p>Durga’s line: default = package-level access / package-private / friendly. Not a keyword. Do not write default class A.</p>
+<p>default class A { // CE: default is not a class modifier keyword here
+}</p>
+<h3>Public class file-name rule</h3>
+<p>If a class is public, the source file name must be ThatClassName.java. Otherwise CE.</p>
+<p>Legal — file A.java:</p>
+<pre class='code'>public class A {
+    public static void main(String[] args) {
+        System.out.println(&quot;file A.java, public class A&quot;);
+    }
+}</pre>
+<p>Illegal — file B.java containing public class A:</p>
+<pre class='code'>public class A { // CE: class A is public, should be declared in a file named A.java
+}</pre>
+<p>A file can have at most one public class. Extra non-public classes in the same file are allowed (source-file structure lecture).</p>
+<pre class='code'>public class A {
+}
+
+class B {
+}
+
+class C {
+}</pre>
+<p>If no class is public, the file name can be anything: A.java, B.java, Durga.java.</p>
+<pre class='code'>class A {
+}
+
+class B {
+}
+class FileNameDemo {
+    public static void main(String[] args) {
+        // save the two default classes above as Durga.java — valid
+        // javac Durga.java  → produces A.class and B.class
+        System.out.println(&quot;no public class → any file name&quot;);
+    }
+}</pre>
+<p>Two public classes in one file — CE (already hammered in Part-1; he repeats it):</p>
+<pre class='code'>public class A {
+}
+
+public class B { // CE: class B is public, should be declared in a file named B.java
+}</pre>
+<h3>`private class` at top level — CE</h3>
+<p>He writes it, compiles, shows the error. Modifier private not allowed here.</p>
+<p>private class A { // CE: modifier private not allowed here
+}</p>
+<p>Same for protected and static on an outer class:</p>
+<p>protected class A { // CE: modifier protected not allowed here
+}</p>
+<p>static class A { // CE: modifier static not allowed here
+}</p>
+<p>static on a class is only for inner classes (static nested class). Not for top-level.</p>
+<pre class='code'>class Outer {
+    static class Nested {
+        public static void main(String[] args) {
+            System.out.println(&quot;static nested class is legal&quot;);
+        }
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        Outer.Nested n = new Outer.Nested();
+        System.out.println(&quot;created static nested from outside&quot;);
+    }
+}</pre>
+<h3>What `final` means on a class</h3>
+<p>If a class is declared final, we cannot extend it. Parent–child is impossible. Inheritance is closed.</p>
+<p>final class A {
+}
+
+class B extends A { // CE: cannot inherit from final A
+}</p>
+<p>We can create objects of a final class. Final does not mean “cannot instantiate.” It means “cannot be a parent.”</p>
+<pre class='code'>final class A {
+    public void m1() {
+        System.out.println(&quot;final class method&quot;);
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();
+        // prints final class method
+    }
+}</pre>
+<p>Empty final class is legal:</p>
+<p>final class A {
+}</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        A a = new A();
+        System.out.println(a);
+        // prints A@hashcode  (Object.toString)
+    }
+}</pre>
+<h3>Why would we make a class final?</h3>
+<p>Durga’s board: security and guaranteed behaviour.</p>
+<p>If other people can extend our class and override methods, they can change behaviour. For some classes (String, class-loader names, password-style data) that is dangerous.</p>
+<p>If the implementation is complete and we do not want a child to change it, we mark the class final.</p>
+<p>Advantage: security; method behaviour cannot be overridden.</p>
+<p>Disadvantage: we cannot use inheritance, so we miss the main benefit of OOP. Use final on a class only when we really mean “no child.”</p>
+<h3>`String` is `final`</h3>
+<p>He writes extends String and compiles. CE.</p>
+<pre class='code'>class MyString extends String { // CE: cannot inherit from final java.lang.String
+}</pre>
+<p>We still use String every day. Using ≠ extending.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = new String(&quot;durga&quot;);
+        System.out.println(s);
+        // prints durga
+        String s2 = &quot;software&quot;;
+        System.out.println(s2);
+        // prints software
+    }
+}</pre>
+<p>StringBuffer and StringBuilder are also final:</p>
+<pre class='code'>class MyBuffer extends StringBuffer { // CE: cannot inherit from final java.lang.StringBuffer
+}
+class MyBuilder extends StringBuilder { // CE: cannot inherit from final java.lang.StringBuilder
+}
+class Test {
+    public static void main(String[] args) {
+        StringBuffer sb = new StringBuffer(&quot;durga&quot;);
+        System.out.println(sb);
+        // prints durga
+    }
+}</pre>
+<p>Why String is final (he lists these; details come in java.lang String videos):</p>
+<ol><li>Immutability — a child could add setters and break the immutability contract</li></ol>
+<ol><li>Security — class names, network, class loading use String</li></ol>
+<ol><li>String constant pool / performance — JVM can intern and cache hash codes safely only if no child can change the class</li></ol>
+<h3>`System` is `final`</h3>
+<pre class='code'>class MySystem extends System { // CE: cannot inherit from final java.lang.System
+}</pre>
+<p>We use System.out, we do not extend System.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;hello&quot;);
+        // prints hello
+    }
+}</pre>
+<h3>`Integer` is `final` (all wrapper classes)</h3>
+<pre class='code'>class MyInteger extends Integer { // CE: cannot inherit from final java.lang.Integer
+}</pre>
+<p>Same idea for the other wrappers:</p>
+<pre class='code'>class MyByte extends Byte { // CE
+}
+
+class MyShort extends Short { // CE
+}
+
+class MyLong extends Long { // CE
+}
+
+class MyFloat extends Float { // CE
+}
+
+class MyDouble extends Double { // CE
+}
+
+class MyCharacter extends Character { // CE
+}
+
+class MyBoolean extends Boolean { // CE
+}</pre>
+<p>We still create / use Integer objects:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Integer i = new Integer(10);
+        System.out.println(i);
+        // prints 10
+        Integer j = Integer.valueOf(20);
+        System.out.println(j);
+        // prints 20
+    }
+}</pre>
+<h3>Final class vs final method (preview)</h3>
+<p>A final class cannot have a child, so no method can be overridden. Every method is “final in effect.”</p>
+<pre class='code'>final class A {
+    public void m1() {
+        System.out.println(&quot;m1&quot;);
+    }
+
+    public void m2() {
+        System.out.println(&quot;m2&quot;);
+    }
+}
+
+class B extends A { // CE: cannot inherit from final A
+    public void m1() { // never reached — class B itself is illegal
+        System.out.println(&quot;override attempt&quot;);
+    }
+}</pre>
+<p>A non-final class can still mark selected methods final. Child can extend, but cannot override those methods. That is a member-level topic; he plants the seed here.</p>
+<pre class='code'>class Parent {
+    public final void m1() {
+        System.out.println(&quot;this method cannot be overridden&quot;);
+    }
+
+    public void m2() {
+        System.out.println(&quot;this method can be overridden&quot;);
+    }
+}
+
+class Child extends Parent {
+    public void m1() { // CE: m1() in Child cannot override m1() in Parent; overridden method is final
+        System.out.println(&quot;no&quot;);
+    }
+
+    public void m2() {
+        System.out.println(&quot;override ok&quot;);
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        Parent p = new Child();
+        p.m2();
+        // if m1 override is removed, prints: override ok
+    }
+}</pre>
+<h3>`final` + `abstract` on a class — illegal (he flags it; next video drills it)</h3>
+<p>final = cannot extend. abstract = must extend to complete the class. Opposite ideas.</p>
+<p>final abstract class Test { // CE: illegal combination of modifiers: abstract and final
+}</p>
+<p>A final class cannot contain an abstract method (that method would need a child implementation):</p>
+<pre class='code'>final class Test {
+    public abstract void m1(); // CE: Test is not abstract and does not override abstract method m1 / illegal combo
+}</pre>
+<h3>`public` + `final` is legal</h3>
+<pre class='code'>public final class Test {
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(&quot;public final class is valid&quot;);
+        // prints public final class is valid
+    }
+}</pre>
+<p>File must still be Test.java because the class is public.</p>
+<pre class='code'>public final class A {
+}
+class B extends A { // CE: cannot inherit from final A
+}</pre>
+<h3>`final` + `strictfp` is legal</h3>
+<pre class='code'>final strictfp class Calc {
+    public static void main(String[] args) {
+        System.out.println(10.0 / 3);
+    }
+}</pre>
+<h3>Recap of legal / illegal outer-class declarations</h3>
+<pre class='code'>public class A {
+}
+
+class B {
+}
+
+final class C {
+}
+
+abstract class D {
+}
+
+strictfp class E {
+}
+
+public final class F {
+}
+
+public abstract class G {
+}
+
+public strictfp class H {
+}
+
+final strictfp class I {
+}
+
+abstract strictfp class J {
+}
+
+private class K { // CE: modifier private not allowed here
+}
+
+protected class L { // CE: modifier protected not allowed here
+}
+
+static class M { // CE: modifier static not allowed here
+}
+
+final abstract class N { // CE: illegal combination of modifiers: abstract and final
+}
+
+default class O { // CE: not this kind of default
+}</pre>
+<h2>Code from the lecture</h2>
+<p>Full recap class for the final class story he compiles:</p>
+<pre class='code'>final class Parent {
+    public void m1() {
+        System.out.println(&quot;Parent m1&quot;);
+    }
+}
+
+class Child extends Parent { // CE: cannot inherit from final Parent
+}
+
+class Test {
+    public static void main(String[] args) {
+        Parent p = new Parent();
+        p.m1();
+        // prints Parent m1
+        String s = &quot;durga&quot;;
+        System.out.println(s);
+        // prints durga
+        Integer i = new Integer(10);
+        System.out.println(i);
+        // prints 10
+        System.out.println(&quot;System is used, not extended&quot;);
+        // prints System is used, not extended
+    }
+}</pre>
+<p>Public vs default recap:</p>
+<pre class='code'>package pack1;
+
+public class A {
+    public void m1() {
+        System.out.println(&quot;hello&quot;);
+    }
+}
+package pack2;
+
+import pack1.A;
+
+class B {
+    public static void main(String[] args) {
+        A a = new A();
+        a.m1();
+        // prints hello
+    }
+}</pre>
+<h2>Rules</h2>
+<ol><li>Outer class modifiers: public, &lt;default&gt;, final, abstract, strictfp only.</li></ol>
+<ol><li>Inner class may also be private, protected, static.</li></ol>
+<ol><li>public class → visible everywhere; file name = class name; at most one public class per file.</li></ol>
+<ol><li>Default class → visible only inside the same package.</li></ol>
+<ol><li>private / protected / static on a top-level class → CE (modifier … not allowed here).</li></ol>
+<ol><li>final class → objects yes, extends no.</li></ol>
+<ol><li>String, StringBuffer, StringBuilder, System, all wrappers (Integer, …) are final.</li></ol>
+<ol><li>final + abstract on a class → CE.</li></ol>
+<ol><li>public final class is legal.</li></ol>
+<h2>Exam / interview traps</h2>
+<ul><li>“Final class means we cannot create object” — false. We cannot extend.</li></ul>
+<ul><li>private class A {} at top level looks “more secure”; it is just CE.</li></ul>
+<ul><li>Default class with a public method: outside package still cannot use the class.</li></ul>
+<ul><li>File B.java + public class A → CE even if everything else is perfect.</li></ul>
+<ul><li>class MyString extends String is a favourite one-mark CE.</li></ul>
+<ul><li>default class A is not Java (the default keyword is for default methods in interfaces / switch — later).</li></ul>
+<h2>Recap</h2>
+<p>This video opens the class-modifier list and finishes `final` at class level. Next video is `abstract` at class level: the opposite idea — a class that must be extended.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 34 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 5 of 14</td></tr>
+<tr><td>Topic</td><td>Class-level modifiers, with final as the first modifier he drills</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 12m 44s (4364 seconds)</td></tr>
+<tr><td>Video ID</td><td>hNaCIwcUHi8</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=hNaCIwcUHi8</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

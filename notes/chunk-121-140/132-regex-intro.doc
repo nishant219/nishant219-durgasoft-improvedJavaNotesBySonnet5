@@ -1,0 +1,322 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>132-regex-intro</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 132</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: RegularExpresions Part-1 || Introduction</p>
+<h3>00:03 — Topic introduction: Regular Expressions</h3>
+<ul><li>Next topic in the series: Regular Expressions (ASR: &quot;regular expressions&quot;, &quot;regular expression&quot;).</li></ul>
+<ul><li>Part 1 = basic introduction: what is a regex, where it is used, first Java demo.</li></ul>
+<h3>00:23 — Informal vs real definition</h3>
+<p>Student joke answer: &quot;The expression which is regular is called regular expression.&quot;</p>
+<p>Real definition (board):</p>
+<p>If you want to represent a group of strings according to a particular pattern, then we should go for Regular Expression.</p>
+<ul><li>Not one string — a group of strings sharing structure.</li></ul>
+<ul><li>Pattern = rules all members must follow.</li></ul>
+<h3>01:23 — Example 1: Valid mobile numbers</h3>
+<p>Pattern rules (Indian mobile, as stated in class):</p>
+<ul><li>Exactly 10 digits.</li></ul>
+<ul><li>First digit: 7, 8, or 9.</li></ul>
+<ul><li>Remaining 9 digits: 0–9 (any digit).</li></ul>
+<p>All valid mobile numbers follow this pattern → one regex can represent the whole set.</p>
+<h3>02:14 — Example 2: Valid email IDs</h3>
+<ul><li>Every email ID follows a pattern (user@domain structure, etc.).</li></ul>
+<ul><li>We can write a regex to represent all valid mail IDs.</li></ul>
+<p>Board (decoded ASR *&quot;male ladies&quot;* → mail IDs):</p>
+<p>We can write a regular expression to represent all valid mobile numbers.</p>
+<p>We can write a regular expression to represent all mail IDs.</p>
+<p>Syntax of how to write regex → covered in later sessions (Part 2+).</p>
+<h3>03:19 — Board definition (formal notes)</h3>
+<p>If you want to represent a group of strings
+according to a particular pattern,
+then we should go for Regular Expression.</p>
+<p>Example 1: regex for all valid mobile numbers.</p>
+<p>Example 2: regex for all mail IDs.</p>
+<h3>05:14 — Where can we use Regular Expressions?</h3>
+<p>Three main application areas (plus two academic extras).</p>
+<h3>05:47 — Application area 1: Form validation / validation frameworks</h3>
+<p>Real-life scenario — online inquiry/registration form:</p>
+<p>Fields: Name, Mobile number, Mail ID, … → Submit.</p>
+<p>Student experience Durga Sir narrates:</p>
+<ol><li>Enter name Durga, mobile 9848022338, email durga → submit.</li></ol>
+<ol><li>Error: &quot;Please enter a valid mail ID&quot;.</li></ol>
+<ol><li>Change to durga@gmail → still invalid format.</li></ol>
+<ol><li>Enter complete durga@gmail.com → &quot;Request submitted&quot;.</li></ol>
+<ol><li>Later tries fake email aaa@bbbccc → accepted by form (format OK) but mail bounces — no such mailbox.</li></ol>
+<p>Key insight:</p>
+<ul><li>Form checks format / pattern, not whether mailbox physically exists.</li></ul>
+<ul><li>These validations = validation frameworks built internally on Regular Expressions.</li></ul>
+<p>Use cases:</p>
+<ul><li>Pre-check: is given mail ID format-valid?</li></ul>
+<ul><li>Pre-check: is given mobile number format-valid?</li></ul>
+<ul><li>Pattern-wise / format-wise checking → Regular Expressions.</li></ul>
+<h3>09:34 — Application area 2: Pattern matching applications</h3>
+<p>Anecdote (humor — Ctrl+C / Ctrl+V / Ctrl+F &quot;mantras&quot;):</p>
+<ul><li>Student asks how to become best software engineer.</li></ul>
+<ul><li>Durga Sir&#x27;s answer: master Copy (Ctrl+C), Paste (Ctrl+V), Find (Ctrl+F) — ~90% of industry work.</li></ul>
+<ul><li>Ctrl+F = search/find in document → classic pattern matching.</li></ul>
+<p>Ctrl+F behavior:</p>
+<ul><li>Prompt: &quot;Which thing you want to search?&quot;</li></ul>
+<ul><li>Enter e.g. SCJP → Find / Find All / Next / Previous.</li></ul>
+<ul><li>Shows count (e.g. 23 matches) and locations.</li></ul>
+<p>Pattern matching application:</p>
+<ul><li>Given a pattern, check if present in target text.</li></ul>
+<ul><li>If present → how many times? Where (indices)?</li></ul>
+<p>Implementation: internally uses Regular Expressions.</p>
+<h3>15:54 — Main purpose summary (two classroom focus areas)</h3>
+<ol><li>Develop validation frameworks (form validation).</li></ol>
+<ol><li>Implement pattern matching applications (Find, grep, etc.).</li></ol>
+<p>Third area mentioned but out of deep classroom scope: translators.</p>
+<h3>16:17 — Application area 3: Translators (lexical analysis)</h3>
+<p>Compiler phases (board):</p>
+<ol><li>Lexical analysis (also: tokenization, scanning)</li></ol>
+<ol><li>Syntax analysis (also: parsing)</li></ol>
+<ol><li>Semantic analysis</li></ol>
+<ol><li>Intermediate code generation &amp; optimization</li></ol>
+<ol><li>Target code generation</li></ol>
+<p>Lexical analysis internally implemented using Regular Expressions.</p>
+<p>Related academic subjects (not Java exam focus):</p>
+<ul><li>Compiler Design / Language Processors (LP)</li></ul>
+<ul><li>Theory of Computation (TOC)</li></ul>
+<ul><li>Automata Theory &amp; Formal Languages (AFL)</li></ul>
+<p>Designing a full compiler/assembler = ~6-month academic project — not in this course scope, but lexical phase uses regex.</p>
+<h3>19:11 — Classroom scope vs full list</h3>
+<p>Will discuss in classroom:</p>
+<ol><li>Form validation</li></ol>
+<ol><li>Pattern matching applications</li></ol>
+<p>Additional areas (awareness only, not programmer day-to-day):</p>
+<h3>22:23 — Extra application areas 4 &amp; 5</h3>
+<p>4. Digital circuits</p>
+<ul><li>Regular expression → can create Finite Automaton (FA).</li></ul>
+<ul><li>Special FA with output → Moore machine, Mealy machine.</li></ul>
+<ul><li>Used in digital circuit design (binary adder, multiplier, etc.).</li></ul>
+<ul><li>Not required for Java programmers.</li></ul>
+<p>5. Communication protocols</p>
+<ul><li>TCP/IP, UDP, etc. — protocol design may use regex internally.</li></ul>
+<ul><li>Not in programmer scope for this course.</li></ul>
+<p>Board extras:</p>
+<ul><li>To develop digital circuits</li></ul>
+<ul><li>To develop communication protocols (TCP/IP, UDP, etc.)</li></ul>
+<h3>25:49 — Recap before Java program</h3>
+<p>What is regex? Represent group of strings by pattern.</p>
+<p>Where used? Validation, pattern matching, translators (+ digital circuits, protocols academically).</p>
+<h3>26:03 — First Java program: pattern matching demo</h3>
+<p>Requirement:</p>
+<ul><li>Target string: &quot;abababa&quot; (board: a b a b a b a)</li></ul>
+<ul><li>Pattern to search: &quot;ab&quot;</li></ul>
+<ul><li>Answer needed:</li></ul>
+<ul><li>Is &quot;ab&quot; available? Yes</li></ul>
+<ul><li>How many times? 2</li></ul>
+<ul><li>Where? index 0 and index 3 (0-based)</li></ul>
+<p>Expected program output:</p>
+<p>0
+3
+The total number of occurrences is 2</p>
+<h3>28:15 — `RegExDemo` class (board)</h3>
+<pre class='code'>import java.util.regex.*;
+
+class RegExDemo {
+    public static void main(String[] args) {
+        String target = &quot;abababa&quot;;
+        String patternStr = &quot;ab&quot;;
+
+        // Step 1: create Pattern object
+        Pattern p = Pattern.compile(&quot;ab&quot;);
+
+        // Step 2: create Matcher for target
+        Matcher m = p.matcher(target);
+
+        int count = 0;
+        while (m.find()) {
+            System.out.println(m.start());  // start index of each match
+            count++;
+        }
+        System.out.println(&quot;The total number of occurrences is &quot; + count);
+    }
+}</pre>
+<p>Two-step process (board):</p>
+<p>Package:</p>
+<p>Pattern and Matcher are in `java.util.regex` (sub-package of java.util).</p>
+<pre class='code'>import java.util.regex.*;</pre>
+<p>NOT java.util alone — specifically `java.util.regex`.</p>
+<h3>31:41 — `while (m.find())` loop explained</h3>
+<ul><li>`find()` → attempts to locate next match in target.</li></ul>
+<ul><li>Returns `true` if next match exists → enter loop body.</li></ul>
+<ul><li>Returns `false` when no more matches → exit loop.</li></ul>
+<ul><li>For each match, print `m.start()` (start index).</li></ul>
+<ul><li>Increment `count` for total occurrences.</li></ul>
+<p>Live run output:</p>
+<p>0
+3
+The total number of occurrences is 2</p>
+<ul><li>Match 1: &quot;ab&quot; at index 0 (a at 0, b at 1).</li></ul>
+<ul><li>Match 2: &quot;ab&quot; at index 3.</li></ul>
+<h3>37:09 — Extended output: start, end, group</h3>
+<p>Add to loop body:</p>
+<pre class='code'>while (m.find()) {
+    System.out.println(
+        m.start() + &quot; &quot; + m.end() + &quot; &quot; + m.group());
+    count++;
+}</pre>
+<p>`end()` behavior (important exam detail):</p>
+<ul><li>Returns `endIndex + 1` of the match (exclusive end index in the API sense).</li></ul>
+<ul><li>First match &quot;ab&quot; at 0–1 → start()=0, end()=2.</li></ul>
+<ul><li>Second match at 3–4 → start()=3, end()=5.</li></ul>
+<p>Expected output:</p>
+<p>0 2 ab
+3 5 ab
+The total number of occurrences is 2</p>
+<p>`group()` method:</p>
+<ul><li>Returns the matched substring (what actually matched).</li></ul>
+<ul><li>Useful when pattern matches any digit, any letter, mobile number, etc. — you need to know which substring matched.</li></ul>
+<h3>40:48 — Change pattern: different search strings</h3>
+<p>Search for `&quot;ba&quot;` in &quot;abababa&quot;:</p>
+<ul><li>Matches at indices where b followed by a.</li></ul>
+<ul><li>2 matches (Durga Sir counts on board).</li></ul>
+<p>Search for `&quot;bb&quot;`:</p>
+<ul><li>1 match (only one bb substring in target).</li></ul>
+<p>Search for `&quot;bbbb&quot;` (four B&#x27;s):</p>
+<ul><li>No match → loop never prints indices.</li></ul>
+<p>Output:</p>
+<p>The total number of occurrences is 0</p>
+<h3>45:36 — Theory: Pattern class</h3>
+<p>Definition (board):</p>
+<p>A Pattern object is a compiled version of regular expression.</p>
+<p>It is the Java equivalent object of the regex pattern string.</p>
+<p>How to create:</p>
+<p>Pattern p = Pattern.compile(&quot;ab&quot;);
+// static method on Pattern class
+// argument: String regularExpression</p>
+<p>API signature (from screen):</p>
+<pre class='code'>public static Pattern compile(String regularExpression)</pre>
+<p>Example:</p>
+<p>Pattern p = Pattern.compile(&quot;ab&quot;);</p>
+<h3>49:22 — Theory: Matcher class</h3>
+<p>Definition (board):</p>
+<p>A Matcher object can be used to match the pattern in the given target string.</p>
+<p>How to create:</p>
+<p>Matcher m = p.matcher(&quot;abababa&quot;);
+// instance method on Pattern
+// argument: target String
+// returns Matcher</p>
+<p>API signature (from screen):</p>
+<pre class='code'>public Matcher matcher(String target)</pre>
+<p>Example:</p>
+<p>Matcher m = p.matcher(&quot;abababa&quot;);</p>
+<h3>52:44 — Important methods of Matcher class (board)</h3>
+<p>Usage pattern:</p>
+<pre class='code'>Pattern p = Pattern.compile(&quot;ab&quot;);
+Matcher m = p.matcher(&quot;abababa&quot;);
+while (m.find()) {
+    System.out.println(&quot;start=&quot; + m.start()
+        + &quot;, end=&quot; + m.end()
+        + &quot;, matched=&quot; + m.group());
+}</pre>
+<h3>55:50 — Package and Java version</h3>
+<p>Board note:</p>
+<p>Pattern and Matcher classes
+present in java.util.regex package
+introduced in Java 1.4 version</p>
+<ul><li>`regex` = regular expression (package name abbreviation).</li></ul>
+<ul><li>Not in Java 1.0 — came in 1.4.</li></ul>
+<h3>57:34 — Session wrap-up; preview Part 2</h3>
+<p>Completed in Part 1:</p>
+<ul><li>Definition of regular expression</li></ul>
+<ul><li>Application areas (validation, pattern matching, translators + extras)</li></ul>
+<ul><li>`Pattern` / `Matcher` classes</li></ul>
+<ul><li>Demo: find pattern in string, count, indices, group()</li></ul>
+<ul><li>`import java.util.regex.*`</li></ul>
+<p>Next session (Part 2) will cover:</p>
+<ul><li>Instead of literal &quot;ab&quot;, match any digit, any alphabet, mobile number pattern, etc.</li></ul>
+<ul><li>Regex syntax/meta-characters — what to write inside Pattern.compile(...).</li></ul>
+<p>Assignment-style closing:</p>
+<p>Can you write a simple pattern matching application using regular expressions? Target/pattern may change; process stays the same.</p>
+<h2>Complete demo (consolidated for notes)</h2>
+<pre class='code'>import java.util.regex.*;
+
+class RegExDemo {
+    public static void main(String[] args) {
+        String target = &quot;abababa&quot;;
+        Pattern p = Pattern.compile(&quot;ab&quot;);
+        Matcher m = p.matcher(target);
+
+        int count = 0;
+        while (m.find()) {
+            System.out.println(
+                m.start() + &quot; &quot; + m.end() + &quot; &quot; + m.group());
+            count++;
+        }
+        System.out.println(&quot;The total number of occurrences is &quot; + count);
+    }
+}</pre>
+<p>Print:</p>
+<p>0 2 ab
+3 5 ab
+The total number of occurrences is 2</p>
+<h2>Application areas summary table</h2>
+<h2>Key API cheat sheet</h2>
+<pre class='code'>import java.util.regex.*;          // Java 1.4+
+
+Pattern p = Pattern.compile(regex); // compiled regex
+Matcher m = p.matcher(target);      // bind to target string
+
+m.find();    // boolean — next match?
+m.start();   // int — start index
+m.end();     // int — end+1 index
+m.group();   // String — matched text</pre>
+<p>Java code block count: 12</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Position</td><td>132 of 203</td></tr>
+<tr><td>Series</td><td>Core Java With OCJP/SCJP</td></tr>
+<tr><td>Topic</td><td>Regular Expressions — Part 1: Introduction</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>58m 18s</td></tr>
+<tr><td>Video ID</td><td>vftR8LilgMw</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=vftR8LilgMw</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Platform</th><th>Pattern matching tool</th></tr>
+<tr><td>Windows</td><td>Ctrl+F (Find)</td></tr>
+<tr><td>Unix/Linux</td><td>`grep` command (also egrep, fgrep, variations)</td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Action</th><th>API</th></tr>
+<tr><td>1</td><td>Create Pattern object for regex</td><td>Pattern.compile(&quot;ab&quot;)</td></tr>
+<tr><td>2</td><td>Create Matcher on target string</td><td>p.matcher(target)</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Return</th><th>Purpose</th></tr>
+<tr><td>`find()`</td><td>boolean</td><td>Attempts to find next match; returns true if available, else false</td></tr>
+<tr><td>`start()`</td><td>int</td><td>Returns start index of the current match</td></tr>
+<tr><td>`end()`</td><td>int</td><td>Returns `end + 1` index of the match (exclusive end position)</td></tr>
+<tr><td>`group()`</td><td>String</td><td>Returns the matched pattern / matched substring</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Area</th><th>Examples</th><th>Classroom focus</th></tr>
+<tr><td>1</td><td>Validation frameworks</td><td>Email/mobile format check on forms</td><td>Yes</td></tr>
+<tr><td>2</td><td>Pattern matching</td><td>Ctrl+F (Windows), grep (Unix)</td><td>Yes</td></tr>
+<tr><td>3</td><td>Translators</td><td>Lexical analysis in compilers</td><td>Mentioned</td></tr>
+<tr><td>4</td><td>Digital circuits</td><td>Moore/Mealy machines</td><td>Awareness only</td></tr>
+<tr><td>5</td><td>Communication protocols</td><td>TCP/IP, UDP design</td><td>Awareness only</td></tr>
+</table>
+</body></html>

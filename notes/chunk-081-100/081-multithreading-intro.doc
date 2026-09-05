@@ -1,0 +1,150 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>081-multithreading-intro</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 081 — Multi Threading introduction</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Multi Threading Part-1 || Introduction</p>
+<p>Source: real YouTube auto-captions (.transcripts/081-Hysb7hXp8B0.txt). ASR decoded in place: keep subing / keep supporting = keep copying (board); ENT room / entry room / inter room = interview; runable = Runnable; threat / threats = thread(s); demand threats = daemon threads; JM / jum = JVM; Ideal Time = idle time; yet level / O level = OS level; SCJP / injp = OCJP/SCJP. This Part-1 is introduction only — he announces ways to define a thread, names, priorities, yield/join/sleep, synchronization, inter-thread communication, deadlock, daemon threads, and enhancements as the series agenda, then teaches multitasking theory through the keyword-search assignment story and Java’s rich API. No full start() demo program in this video.</p>
+<h3>00:07 — Why multi-threading (interview heavy)</h3>
+<p>Next topic: multi-threading. He calls it the most valuable concept especially for the interview. Even with sessions on YouTube, he gets minimum ~10,000 visitor requests asking to upload multi-threading videos.</p>
+<p>Collections vs multi-threading:</p>
+<ul><li>Collections is mostly API discussion — class, methods, sample examples. Beyond comparable / comparator you rarely need deep thinking.</li></ul>
+<ul><li>Multi-threading is not only an API topic; it is a language-level concept. Every area needs thinking; you gain confidence by understanding, not by memorizing method lists.</li></ul>
+<p>Take special care — very important for interview.</p>
+<h3>01:32 — Spoken agenda for the whole Multi Threading series</h3>
+<p>He will not finish all of this in Part-1. Board / spoken map of the series:</p>
+<ol><li>Introduction — what is multi-threading / multitasking; advantage of multitasking; how many types of multitasking (do not jump to Thread class first).</li></ol>
+<ol><li>Ways to define a thread — two ways (interview question #1):</li></ol>
+<ul><li>by extending Thread class</li></ul>
+<ul><li>by implementing Runnable interface</li></ul>
+<ul><li>later: which approach is best</li></ul>
+<ol><li>Getting and setting name of a thread — every thread has a name; getName / setName.</li></ol>
+<ol><li>Thread priorities — ~one and half hour planned; interview heavy.</li></ol>
+<ol><li>Methods to prevent thread execution — yield, join, sleep (sleep is “our favorite”); purpose of each; difference between any two is itself an interview question.</li></ol>
+<ol><li>Synchronization — most valuable; many people say “I know multi-threading but not synchronization”; ~3 hours planned; nursery-standard once you get the grip.</li></ol>
+<ol><li>Inter-thread communication — wait, notify, notifyAll.</li></ol>
+<ol><li>Deadlock — “a lock without key is nothing but deadlock”; how it comes; how to resolve.</li></ol>
+<ol><li>Daemon threads.</li></ol>
+<ol><li>Multi-threading enhancements — lock / ReentrantLock, ThreadGroup, ThreadLocal, Executor framework, etc.</li></ol>
+<p>That is the total agenda. Part-1 now starts basic introduction.</p>
+<h3>07:52 — Board: Introduction — what is multitasking?</h3>
+<p>Multitasking = executing multiple tasks simultaneously.</p>
+<p>Classroom-student analogy (best example):</p>
+<ol><li>Listening to the class (always).</li></ol>
+<ol><li>Taking running notes of important points (if faculty does not give notes).</li></ol>
+<ol><li>Checking mobile phone (ring / message / time) — very common.</li></ol>
+<ol><li>Sleeping — also very common (joke).</li></ol>
+<ol><li>Observing environment (heads turn ~60° when someone walks in) — “observing environment …”</li></ol>
+<p>A single student can do several of these at once → multitasking.</p>
+<h3>11:29 — Two types of multitasking</h3>
+<p>Total multitasking is divided into two categories:</p>
+<ol><li>Process-based multitasking</li></ol>
+<ol><li>Thread-based multitasking</li></ol>
+<p>You must know definitions and difference clearly.</p>
+<h3>12:06 — Process-based multitasking (definition + example)</h3>
+<p>Definition (board): executing several tasks simultaneously where each task is a separate independent program (process) — no dependency between process 1 and process 2, etc.</p>
+<p>Example:</p>
+<ul><li>Typing a Java program in an editor (EditPlus / Eclipse) — editor process.</li></ul>
+<ul><li>Listening MP3 / audio songs from the same system — player process (common even in software company cubicles with earphones).</li></ul>
+<ul><li>Downloading a file from the net — download process.</li></ul>
+<p>All three run simultaneously and independently → process-based multitasking.</p>
+<p>Where suitable: best suitable at OS (operating system) level, not at programmatic / application-requirement level.</p>
+<p>Client joke: if you boast “Java supports multitasking” and explain “while your app runs you can listen to MP3 and download files,” the client will ask whether listening/downloading is part of his programming requirement — no. So you cannot highlight process-based multitasking as a Java application benefit. At programmatic level you need thread-based multitasking.</p>
+<h3>17:27 — Thread-based multitasking (10,000-line program story)</h3>
+<p>Assume one Java program with 10,000 lines. JVM is an interpreter — executes top to bottom, line by line. Assume full run takes 10 hours.</p>
+<p>Analysis: first 5,000 lines and second 5,000 lines have no dependency (e.g. first customer vs second customer). Why wait for the first half to finish before starting the second?</p>
+<p>Start two flows of execution simultaneously on those two independent parts → finishes in roughly 5–6 hours.</p>
+<p>Definition (board): executing several tasks simultaneously where each task is a separate independent part of the same program.</p>
+<ul><li>How many programs? One.</li></ul>
+<ul><li>How many independent parts? Two (or several).</li></ul>
+<ul><li>Each independent part is called a thread (thread-1, thread-2, …).</li></ul>
+<p>Contrast again:</p>
+<ul><li>Process-based: several tasks, each a separate process → often three programs in the editor/MP3/download example.</li></ul>
+<ul><li>Thread-based: one program, multiple independent parts → best suitable at programmatic level.</li></ul>
+<h3>21:57 — Board copying pause: multitasking definitions</h3>
+<p>He dictates slowly for notebooks:</p>
+<p>Multitasking: executing several tasks simultaneously is the concept of multitasking.</p>
+<p>Two types:</p>
+<ol><li>Process-based multitasking</li></ol>
+<ol><li>Thread-based multitasking</li></ol>
+<p>Process-based: executing several tasks simultaneously where each task is a separate independent program (process) is called process-based multitasking.</p>
+<p>Example text on board: while typing a Java program in the editor we can listen to audio songs from the same system; at the same time we can download a file from the net; all these tasks will be executed simultaneously and independent of each other → hence process-based multitasking. Best suitable at OS level.</p>
+<p>Thread-based: executing several tasks simultaneously where each task is a separate independent part of the same program is called thread-based multitasking; each independent part is called a thread. Best suitable at programmatic level.</p>
+<h3>31:39 — OS academic differences (mention only)</h3>
+<p>In B.Tech / MCA OS subject: process vs thread multitasking — context switching costly for processes, cheaper for threads; separate address space per process vs shared address space for threads of one program. As a programmer at this course level you need the simple distinction: separate process vs independent part of same program. Beyond that, not required for now.</p>
+<h3>32:50 — Main advantage / objective of multitasking</h3>
+<p>Whether process-based or thread-based, main purpose:</p>
+<ul><li>reduce processor idle time</li></ul>
+<ul><li>reduce response time of the system</li></ul>
+<ul><li>improve performance</li></ul>
+<p>Processor should stay busy — better to do multiple tasks than one-by-one.</p>
+<p>Board line: whether process-based or thread-based, the main objective of multitasking is to reduce response time of the system and to improve performance.</p>
+<h3>36:05 — Application areas: 70 mm screen + Chicken 65 digression, then cinema analogy</h3>
+<p>He draws a rectangle (“70 mm screen”) and jokes about not knowing what “mm” means in theater marketing, and about “Chicken 65” (initially thought 65 rupees; class jokes about gravy %; he Googled — related to age/measurement of chicken). Then returns to the screen.</p>
+<p>On screen simultaneously: Balayya dancing, Namitha, another person, airplane, birds flying, rain falling — multiple activities.</p>
+<p>If only one task allowed at a time: while Balayya dances everyone else freezes; birds stop mid-air; plane stops; then Namitha’s turn; then next; each bird 10 minutes × 200 birds; each raindrop separately → finishing that shot would take ~365 days. Audience would cut the screen and leave.</p>
+<p>If everything happens simultaneously (each person / plane / bird / raindrop as a thread), the scene finishes in 5–6 minutes. People watch movies only when simultaneous action works.</p>
+<p>Conclusion: multi-threading best suitable for multimedia, graphics, animation, movies, and similar.</p>
+<h3>46:34 — Board: main important application areas of multi-threading</h3>
+<ol><li>To develop multimedia graphics</li></ol>
+<ol><li>To develop animations</li></ol>
+<ol><li>To develop video games</li></ol>
+<ol><li>To develop web servers and application servers, etc.</li></ol>
+<p>Server story: many requests arrive. If Gmail processed requests strictly one-by-one, with crores of users you might never get your turn in your lifetime. Servers must process requests simultaneously. Internally: multiple threads (e.g. 50–60). For every request the web container creates/associates a separate thread. All those threads run together so requests are processed together.</p>
+<p>He mentions Tomcat’s default predefined thread count as ~60 (simultaneous request support by default) — internal server design uses multi-threading.</p>
+<h3>50:16 — Freelancer keyword-search assignment (performance story)</h3>
+<p>Real assignment (foreign / America / freelancer site): given keywords (e.g. SCJP, SCWCD), open every file on the system (C:, D:, E:, F:, …); wherever keywords appear, print that file name to the console.</p>
+<p>They already had a program, but it took ~48–50 hours (lakhs of files, sequential walk).</p>
+<p>Original approach: finish all of C: (folders/files one by one), then D:, then E: — e.g. ~10h + ~15h + ~10h.</p>
+<p>First improvement: C:, D:, E: searches are independent → three threads T1/T2/T3 searching drives in parallel → ~15 hours. Client happy but still wants better.</p>
+<p>Second improvement: not just drive level — for every folder, create a separate thread (~50–60 threads automated). Search finished in ~20–30 minutes.</p>
+<p>Rule for applications: wherever independent jobs exist, identify them; for each independent job define a thread; multiple threads run multiple jobs → overall time drops, performance improves. Analogy: 1 person → 10 hours; 2 → ~5–6; 3 → ~3–4; 10 → ~1–2 hours.</p>
+<h3>57:03 — Why multi-threading in Java is easy (API)</h3>
+<p>Developing multi-threaded apps in Java is very easy vs old languages because ~90% of the work is done by API; programmer does ~10%.</p>
+<p>How to start a thread? Which method? `start`. He asks: am I responsible to implement start? No — just call start. That method contains a huge amount of internal code (~he says “70,000 lines”); programmer must not rewrite it.</p>
+<pre class='code'>// How to start a thread — call API start (do not reimplement it)
+t.start();</pre>
+<p>Rich API types he names on the board (class / interface):</p>
+<p>Thread t;        // java.lang.Thread — API class
+Runnable r;      // java.lang.Runnable — API interface
+ThreadGroup g;   // ThreadGroup ...</p>
+<p>Full board sentence (dictation): When compared with old languages, developing multi-threaded applications in Java is very easy because Java provides inbuilt support for multi-threading with the rich API (Thread, Runnable, ThreadGroup, …).</p>
+<pre class='code'>/*
+Board conclusion (Part-1 end):
+When compared with old languages, developing multi-threaded
+applications in Java is very easy because Java provides
+inbuilt support for multi-threading with rich API
+(Thread, Runnable, ThreadGroup, ...)
+*/</pre>
+<h3>59:55 — Close of Part-1</h3>
+<p>Basic introduction to multi-threading is complete; terminology should be clear. Next videos: ways of defining a thread (and the rest of the agenda).</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 81 of 203</td></tr>
+<tr><td>Series</td><td>Multi Threading · Part 1</td></tr>
+<tr><td>Topic</td><td>Introduction (multitasking, process vs thread based, application areas, Java API support)</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 00m 20s</td></tr>
+<tr><td>Video ID</td><td>Hysb7hXp8B0</td></tr>
+<tr><td>Watch URL</td><td>https://www.youtube.com/watch?v=Hysb7hXp8B0</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

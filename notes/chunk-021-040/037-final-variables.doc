@@ -1,0 +1,550 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>037-final-variables</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 037 — final variables</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Declarations and Access Modifiers Part-8||  final variables</p>
+<h2>What this lecture covers</h2>
+<ol><li>Recap: class-level modifiers and member access (public / private / protected / default) are done. This class is only final variables (~1½ hours — “big cinema”).</li></ol>
+<ol><li>All variables are instance, static, or local. He asks what happens when each is final.</li></ol>
+<ol><li>Final instance: JVM will not give a default; must initialize before constructor completion (declaration / instance block / constructor). Not inside a method.</li></ol>
+<ol><li>Final static: JVM will not give a default; must initialize before class-loading completion (declaration / static block). Not inside a method. final static vs static final both OK.</li></ol>
+<ol><li>Final local: JVM never defaults a local anyway. Initialize before use. If unused, even a blank final int x; is legal and Hello still prints.</li></ol>
+<ol><li>The only applicable modifier for a local variable is final. public/private/protected/static/transient/volatile on a local → illegal start of expression. Locals are not final by default.</li></ol>
+<ol><li>“No modifier means default” applies to instance and static only, not locals.</li></ol>
+<ol><li>Formal parameters act as local variables. They can be final; then reassignment inside the method is CE.</li></ol>
+<h2>Detailed notes</h2>
+<h3>[00:04] Agenda — three kinds of variables, then `final` on each</h3>
+<p>Last sessions: class-level modifiers and member modifiers (public, private, protected, default).</p>
+<p>Next heading: final variables. He already covered final class and final method; final variables get this whole video.</p>
+<p>All variables are divided into three types (language fundamentals):</p>
+<ol><li>Instance variables</li></ol>
+<ol><li>Static variables</li></ol>
+<ol><li>Local variables</li></ol>
+<p>This lecture: if the instance variable is final, if the static variable is final, if the local variable is final.</p>
+<h3>[01:19] Final instance variables — first, what is an instance variable?</h3>
+<p>He draws class Student. For every student, name and roll number are compulsory.</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Student s1 = new Student();
+        s1.name = &quot;Durga&quot;;
+        s1.rollNumber = 101;
+
+        Student s2 = new Student();
+        s2.name = &quot;Ravi&quot;;
+        s2.rollNumber = 102;
+
+        Student s600 = new Student();
+        s600.name = &quot;Shiva&quot;;
+        s600.rollNumber = 700;
+
+        System.out.println(s1.name + &quot; &quot; + s1.rollNumber);
+        // prints Durga 101
+        System.out.println(s2.name + &quot; &quot; + s2.rollNumber);
+        // prints Ravi 102
+        System.out.println(s600.name + &quot; &quot; + s600.rollNumber);
+        // prints Shiva 700
+    }
+}</pre>
+<p>If the value of a variable is varied from object to object, such variables are instance variables (object-level variables). For every object a separate copy is created. 600 students → 600 names and 600 roll numbers.</p>
+<h3>[06:09] Normal instance variable — JVM default `0`</h3>
+<p>He writes class Test with int x declared in the class directly (so it is an instance variable). He does not assign. He prints t.x.</p>
+<pre class='code'>class Test {
+    int x;
+
+    public static void main(String[] args) {
+        Test t = new Test();
+        System.out.println(t.x);
+        // prints 0
+    }
+}</pre>
+<p>For instance variables we are not required to perform initialization explicitly. JVM will always provide default values. He didn’t assign anything; still 0.</p>
+<h3>[08:48] If the instance variable is `final` — JVM will **not** default it</h3>
+<p>He declares final int x; and nothing else. Whether we use x or not, we must initialize explicitly. Otherwise CE:</p>
+<p>`variable x might not have been initialized`</p>
+<pre class='code'>class Test {
+    final int x;
+    // CE: variable x might not have been initialized
+}</pre>
+<p>He compiles two files live:</p>
+<pre class='code'>class Test {
+    int x;
+    // javac Test.java  → compiles fine (not final)
+}
+class Test {
+    final int x;
+    // javac Test.java
+    // CE: variable x might not have been initialized
+}</pre>
+<p>Board: if the instance variable is declared final, then compulsory we have to perform initialization explicitly, whether we are using or not, and JVM won’t provide default values.</p>
+<h3>[13:41] Rule — initialize **before constructor completion**</h3>
+<p>For final instance variables, compulsory we should perform initialization before constructor completion.</p>
+<p>Instance control flow reminder (OOPS later): identification of instance members → instance variable assignments and instance blocks → then constructor. So an assignment at declaration or in an instance block still happens before constructor completion.</p>
+<h3>[15:19] Three allowed places (only these)</h3>
+<p>1. At the time of declaration</p>
+<pre class='code'>class Test {
+    final int x = 10; // valid
+}</pre>
+<p>2. Inside instance block (instance block runs before constructor)</p>
+<pre class='code'>class Test {
+    final int x;
+    {
+        x = 10; // valid
+    }
+}</pre>
+<p>3. Inside constructor (still before constructor completion)</p>
+<pre class='code'>class Test {
+    final int x;
+
+    Test() {
+        x = 10; // valid
+    }
+}</pre>
+<p>These are the only possible places. Anywhere else → compile-time error.</p>
+<h3>[21:30] Not inside a method</h3>
+<p>A method always runs after constructor completion (you need an object to call it). So a method is not an allowed place.</p>
+<pre class='code'>class Test {
+    final int x;
+
+    public void m1() {
+        x = 10;
+        // CE: cannot assign a value to final variable x
+    }
+}</pre>
+<p>He demos on the board, one after another:</p>
+<pre class='code'>class Test {
+    final int x;
+    // invalid — variable x might not have been initialized
+}
+class Test {
+    final int x = 10;
+    // valid — declaration
+}
+class Test {
+    final int x;
+    {
+        x = 10;
+    }
+    // valid — instance block
+}
+class Test {
+    final int x;
+
+    Test() {
+        x = 10;
+    }
+    // valid — constructor
+}
+class Test {
+    final int x;
+
+    public void m1() {
+        x = 10;
+        // CE: cannot assign a value to final variable x
+    }
+}</pre>
+<h3>[25:14] Final static variables — first, what is a static variable?</h3>
+<p>Same Student class. Every student still needs name and roll number. He also writes college name. Three fields if all are instance: name, rollNumber, collegeName.</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+    String collegeName;
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Student s1 = new Student();
+        s1.name = &quot;Durga&quot;;
+        s1.rollNumber = 101;
+        s1.collegeName = &quot;DurgaSoft&quot;;
+
+        Student s2 = new Student();
+        s2.name = &quot;Ravi&quot;;
+        s2.rollNumber = 102;
+        s2.collegeName = &quot;DurgaSoft&quot;;
+
+        Student s600 = new Student();
+        s600.name = &quot;Shiva&quot;;
+        s600.rollNumber = 600;
+        s600.collegeName = &quot;DurgaSoft&quot;;
+    }
+}</pre>
+<p>Name and roll number vary from object to object. College name is the same for all 600 students in that college (DurgaSoft). If the value is not varied from object to object, never recommended to declare it as instance — 600 separate copies of &quot;DurgaSoft&quot; wastes memory and hurts performance.</p>
+<p>Declare such a variable at class level with `static`. Then one copy at class level is shared by every object.</p>
+<pre class='code'>class Student {
+    String name;
+    int rollNumber;
+    static String collegeName = &quot;DurgaSoft&quot;;
+}
+
+class Demo {
+    public static void main(String[] args) {
+        Student s1 = new Student();
+        s1.name = &quot;Durga&quot;;
+        s1.rollNumber = 101;
+        Student s2 = new Student();
+        s2.name = &quot;Ravi&quot;;
+        s2.rollNumber = 102;
+        System.out.println(s1.collegeName);
+        // prints DurgaSoft
+        System.out.println(s2.collegeName);
+        // prints DurgaSoft  — same single copy
+        System.out.println(Student.collegeName);
+        // prints DurgaSoft
+    }
+}</pre>
+<p>Board: if the value of a variable is not varied from object to object, such variables are not recommended to declare as instance variables; we have to declare those variables at class level by using the static modifier.</p>
+<p>Difference:</p>
+<ul><li>Instance: object-level; separate copy per object.</li></ul>
+<ul><li>Static: class-level; single copy created at class level and shared by every object of that class.</li></ul>
+<h3>[33:42] Normal static variable — JVM default `0`</h3>
+<pre class='code'>class Test {
+    static int x;
+
+    public static void main(String[] args) {
+        System.out.println(x);
+        // prints 0
+    }
+}</pre>
+<p>For static variables it is not required to perform initialization explicitly. JVM will always provide default values.</p>
+<h3>[36:15] If static is `final` — JVM will **not** default it</h3>
+<pre class='code'>class Test {
+    final static int x;
+    // CE: variable x might not have been initialized
+}</pre>
+<p>Order of modifiers does not matter: final static or static final; public static or static public — all acceptable.</p>
+<pre class='code'>class Test {
+    static final int x;
+    // same CE: variable x might not have been initialized
+}
+
+class OrderOk {
+    public static void main(String[] args) { }
+    static public void alsoOk() { }
+}</pre>
+<p>Board: if the static variable is declared final, then compulsory we should perform initialization explicitly; otherwise compile-time error, and JVM won’t provide any default values.</p>
+<h3>[39:49] Rule — initialize **before class-loading completion**</h3>
+<p>Final instance: before constructor completion.</p>
+<p>Final static: before class loading completion.</p>
+<h3>[41:48] Two allowed places (only these)</h3>
+<p>1. At the time of declaration (static variable assignment happens at class loading, before main)</p>
+<pre class='code'>class Test {
+    final static int x = 10; // valid
+}</pre>
+<p>2. Inside static block (static block also runs at class loading)</p>
+<pre class='code'>class Test {
+    final static int x;
+    static {
+        x = 10; // valid
+    }
+}</pre>
+<p>These are the only possible places. Anywhere else → CE.</p>
+<h3>[43:30] Not inside a method</h3>
+<pre class='code'>class Test {
+    final static int x;
+
+    public void m1() {
+        x = 10;
+        // CE: cannot assign a value to final variable x
+    }
+}</pre>
+<p>He also tries a static method (still a method — still too late):</p>
+<pre class='code'>class Test {
+    final static int x;
+
+    public static void m1() {
+        x = 10;
+        // CE: cannot assign a value to final variable x
+    }
+}</pre>
+<p>Live validity quiz he runs through:</p>
+<pre class='code'>class Test {
+    static int x;
+    // valid — JVM default
+}
+class Test {
+    final static int x;
+    // invalid — variable x might not have been initialized
+}
+class Test {
+    final static int x = 10;
+    // valid — declaration
+}
+class Test {
+    final static int x;
+    static {
+        x = 10;
+    }
+    // valid — static block
+}
+class Test {
+    final static int x;
+
+    public static void m1() {
+        x = 10;
+        // invalid — cannot assign a value to final variable x
+    }
+}</pre>
+<h3>[49:05] Final local variables — what is a local variable?</h3>
+<p>Variables declared:</p>
+<ul><li>inside a method</li></ul>
+<ul><li>inside a constructor</li></ul>
+<ul><li>inside a block ({ int x = 10; })</li></ul>
+<ul><li>inside a for loop (also a block)</li></ul>
+<pre class='code'>class Test {
+    Test() {
+        int inConstructor = 1; // local to constructor
+    }
+
+    {
+        int inBlock = 2; // local to instance block
+    }
+
+    static {
+        int inStaticBlock = 3; // local to static block
+    }
+
+    public void m1() {
+        int x = 10; // local to m1
+        for (int i = 0; i &lt; 5; i++) {
+            // i is local to the for loop
+        }
+        // i not available here
+    }
+}</pre>
+<p>These are temporary variables: needed while the for-loop / static block / m1 / constructor runs; after that we don’t want them.</p>
+<p>Other names he lists: temporary variables, stack variables (stored in stack memory), automatic variables (sometimes available, gone when the method/loop completes).</p>
+<p>Instance variable = part of the object. Static variable = part of the class. Local = temporary data.</p>
+<h3>[54:01] JVM will **not** default a local (even if it is **not** final)</h3>
+<p>For standard data (instance / static), JVM provides defaults. For temporary local data, JVM won’t provide any default values. Compulsory we should initialize explicitly — even if the local is not final.</p>
+<p>Twist: only before using. If we never use it, we need not initialize.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x;
+        System.out.println(&quot;Hello&quot;);
+        // valid — x unused
+        // prints Hello
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        int x;
+        System.out.println(x);
+        // CE: variable x might not have been initialized
+    }
+}</pre>
+<p>He compiles the first as Test.java, runs java Test → Hello. Then he changes to System.out.println(x) → CE variable x might not have been initialized.</p>
+<p>Board: for local variables JVM won’t provide any default values; compulsory we should perform initialization explicitly before using that local variable. If we are not using, then it is not required to perform initialization.</p>
+<h3>[1:01:42] Even a **final** local can stay blank if unused</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        final int x;
+        System.out.println(&quot;Hello&quot;);
+        // valid — still prints Hello
+        // unlike final instance / final static, unused blank final local is OK
+    }
+}</pre>
+<p>He also runs a line like:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        final int x;
+        System.out.println(&quot;hello take care&quot;);
+        // javac Test.java — compiles fine
+        // java Test
+        // prints hello take care
+    }
+}</pre>
+<p>If instance or static is final, initialize whether you use it or not. If local is final, initialize only before use. If not using, not required — even though it is final.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        final int x;
+        System.out.println(&quot;Hello&quot;);
+        // prints Hello
+    }
+}</pre>
+<h3>[1:06:26] Access modifiers apply to instance/static — **not** to locals</h3>
+<p>He writes all three in one class:</p>
+<pre class='code'>class Test {
+    int x;                 // instance
+    static int y;          // static
+
+    public static void main(String[] args) {
+        int z = 30;        // local
+    }
+}</pre>
+<p>Last video’s access rules apply to instance (and the same four to static):</p>
+<pre class='code'>class Test {
+    public int x;          // anywhere
+    int x2;                // default — current package
+    private int x3;        // same class
+    protected int x4;      // package + kids
+    public static int y;
+    static int y2;
+    private static int y3;
+    protected static int y4;
+}</pre>
+<p>A local can be accessed only inside that method/block. Scope is already fixed. So public / private / protected / default terminology is not applicable for local variables.</p>
+<p>The only applicable modifier for a local variable is `final`. Locals are not final by default — you may apply final if you want. Any other modifier → compile-time error.</p>
+<h3>[1:11:11] Illegal modifiers on locals — `illegal start of expression`</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        public int x = 10;       // CE: illegal start of expression
+        private int x = 10;      // CE: illegal start of expression
+        protected int x = 10;    // CE: illegal start of expression
+        static int x = 10;       // CE: illegal start of expression
+        transient int x = 10;    // CE: illegal start of expression
+        volatile int x = 10;     // CE: illegal start of expression
+        final int x = 10;        // valid — only this modifier
+        System.out.println(x);
+        // prints 10
+    }
+}</pre>
+<p>(Each illegal line is a separate CE if compiled alone; he lists them all on the board.)</p>
+<p>One-at-a-time:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        public int x = 10;
+        // CE: illegal start of expression
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        final int x = 10;
+        System.out.println(x);
+        // prints 10
+    }
+}</pre>
+<h3>[1:14:25] Story — “Java is not working on my system”</h3>
+<p>A working employee asked at the end of a session: some programs compile and run, some don’t — so she thought the JDK/path/classpath was broken. He asked her to write a small program that “doesn’t work”:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        public int x = 10;
+        System.out.println(x);
+        // CE: illegal start of expression
+        // problem is the program (public local), not Java
+    }
+}</pre>
+<p>If PATH/classpath were wrong, no program would work. The local was declared public; that terminology is not applicable. Problem with the program, not with Java.</p>
+<h3>[1:17:08] Note — “no modifier means default” is **not** for locals</h3>
+<pre class='code'>class Test {
+    int x = 10;            // instance, no modifier → default access
+    int y = 20;            // instance, default access — current package
+
+    public static void main(String[] args) {
+        int z = 30;        // local, no modifier — NOT “default access”
+        // z cannot be used outside main, regardless of “default”
+        System.out.println(z);
+        // prints 30
+    }
+}</pre>
+<p>If we are not declaring any modifier, then by default it is default — this rule is applicable only for instance and static variables, but not for local variables.</p>
+<pre class='code'>class Test {
+    static int x = 10;     // static with no access modifier → default access
+
+    public static void main(String[] args) {
+        int z = 30;        // local — only final is even allowed as a modifier
+        System.out.println(x + &quot; &quot; + z);
+        // prints 10 30
+    }
+}</pre>
+<h3>[1:20:08] Formal parameters act as local variables</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        m1(10, 20); // 10 and 20 = actual parameters / arguments
+    }
+
+    public static void m1(int x, int y) { // x, y = formal parameters
+        x = 100;
+        y = 200;
+        System.out.println(x + &quot;...&quot; + y);
+        // prints 100...200
+    }
+}</pre>
+<p>int x and int y are formal parameters. The values we pass (10, 20) are actual parameters (actual values / arguments).</p>
+<p>Formal parameters of a method simply act as local variables of that method. We can access x and y only inside m1.</p>
+<p>Because they are locals, we can declare a formal parameter final. Then we cannot reassign inside the method.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        m1(10, 20);
+    }
+
+    public static void m1(final int x, int y) {
+        x = 100;
+        // CE: cannot assign a value to final variable x
+        y = 200;
+        System.out.println(x + &quot;...&quot; + y);
+    }
+}</pre>
+<h3>[1:23:39] Exam-style options he reads out</h3>
+<p>Consider the final int x formal-parameter program. Options he lists:</p>
+<ol><li>There is no compile-time error.</li></ol>
+<ol><li>Compile-time error because formal parameter cannot be declared as final.</li></ol>
+<ol><li>Compile-time error because within the method we can’t perform reassignment for `x`.</li></ol>
+<ol><li>No compile / no error.</li></ol>
+<p>Answer: we are getting a compile-time error, and the reason is (3) — we can’t reassign that final. It does not mean we can’t declare a formal parameter as final. Happily we can declare it final; we just can’t reassign.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        m1(10, 20);
+    }
+
+    public static void m1(final int x, final int y) {
+        System.out.println(x + &quot;...&quot; + y);
+        // prints 10...20
+        // declaration as final is legal; just don’t reassign
+    }
+}</pre>
+<p>Board: formal parameters of a method simply act as local variables of that method; hence a formal parameter can be declared as final; if a formal parameter is declared final, then within the method we can’t perform reassignment.</p>
+<h3>[1:28:00] Close</h3>
+<p>This is the story of final variables: final instance, final static, final local, plus formal parameters as locals. Next stop continues other member modifiers.</p>
+<h2>Rules</h2>
+<ol><li>Final instance: no JVM default; initialize before constructor completion — declaration, instance block, or constructor. Not a method.</li></ol>
+<ol><li>Final static: no JVM default; initialize before class-loading completion — declaration or static block. Not a method. final static ≡ static final.</li></ol>
+<ol><li>Local (final or not): no JVM default; initialize before use. Unused blank local (even final) is legal.</li></ol>
+<ol><li>Only local modifier: `final`. Anything else → illegal start of expression. Locals are not final by default.</li></ol>
+<ol><li>“No modifier ⇒ default access” applies to instance and static only.</li></ol>
+<ol><li>Formal parameters act as locals; may be final; then no reassignment.</li></ol>
+<h2>Exam traps</h2>
+<ul><li>final int x; as an instance or static field is CE even if you never read x. A blank final int x; local that you never read is not CE.</li></ul>
+<ul><li>Assigning a blank final instance in m1() is CE `cannot assign a value to final variable x` (too late, and it is already conceptually “blank final”).</li></ul>
+<ul><li>Assigning a blank final static in a constructor is not one of his two allowed places (he only lists declaration and static block).</li></ul>
+<ul><li>public int x = 10; inside main is CE illegal start of expression — not a JVM/PATH problem.</li></ul>
+<ul><li>MCQ: “formal parameter cannot be declared final” is the wrong reason. Declaring it final is legal; reassignment is the CE.</li></ul>
+<ul><li>static int x; with no access modifier is default access. int z; inside main is not.</li></ul>
+<h2>Recap</h2>
+<p>He spends the whole class on final variables, not final class/method. Instance and static finals are “blank finals”: JVM refuses to default them, so you must fill them at the legal times (constructor-complete vs class-load-complete). Locals are the odd one out: unused blanks are fine even when final, and the only modifier you may write is final. Parameters are just locals you can mark final so the method cannot reassign them.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 37 of 203</td></tr>
+<tr><td>Series</td><td>Declarations and Access Modifiers · Part 8</td></tr>
+<tr><td>Topic</td><td>final instance variables, final static variables, final local variables, formal parameters</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 28m 32s</td></tr>
+<tr><td>Video ID</td><td>gDXucIITZqs</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=gDXucIITZqs</td></tr>
+<tr><td>Playlist link</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Captions</td><td>Real YouTube auto-captions (English). ASR: “IN X” / “intox” = int x, “duras soft” = DurgaSoft, “whoops” = OOPS, “analization” = initialization.</td></tr>
+</table>
+</body></html>

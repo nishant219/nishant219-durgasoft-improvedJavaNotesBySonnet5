@@ -1,0 +1,419 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>160-hashmap-vs-concurrenthashmap</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 160 — Concurrent Collections Part-7: HashMap vs ConcurrentHashMap</h1>
+<h2>Video info</h2>
+<p>ASR decode (this lecture): Ash map / hash M / hmap = HashMap; concurrent Ash map / concat map / concat a Map / current hash map = ConcurrentHashMap; threat / threats = thread(s); thread safe = thread-safe; fail first = fail-fast; inter room / ENT room = interview room; normal collection / current collection = normal collection vs concurrent collection; updation = modification/update; Valu = value.</p>
+<h2>Session overview</h2>
+<p>This is a pure comparison / interview-prep session. Sir does not write new demo code here — he consolidates everything already taught in Videos 157–159 into one definitive answer for the most common concurrent-collections interview question:</p>
+<p>What is the difference between HashMap and ConcurrentHashMap?</p>
+<p>Sir explicitly warns: Do not answer &quot;ConcurrentHashMap is concurrent — that is the difference.&quot; That is naming, not functionality. You must explain how they differ in thread safety, performance, exceptions, null rules, iterators, and version.</p>
+<p>Prerequisites (prior videos in this block):</p>
+<p>What this lecture covers (~8 min):</p>
+<ol><li>Six functional differences between HashMap and ConcurrentHashMap</li></ol>
+<ol><li>Fail-fast vs fail-safe iterators — conceptual model with diagram</li></ol>
+<ol><li>Full comparison table (board form)</li></ol>
+<ol><li>Interview one-liner summary</li></ol>
+<ol><li>Version history (1.2 vs 1.5)</li></ol>
+<p>What comes next (Sir&#x27;s closing hint): HashMap vs ConcurrentHashMap vs Hashtable three-way comparison, and ConcurrentHashMap vs CopyOnWriteArrayList — deferred to upcoming sessions.</p>
+<h2>00:26 — The interview question</h2>
+<p>Sir opens with a direct statement:</p>
+<p>&quot;Now I will cover one very important question for the interview room: What is the difference between HashMap and ConcurrentHashMap?&quot;</p>
+<p>Context framing:</p>
+<ul><li>We have already studied normal collections (HashMap, ArrayList, etc.) and concurrent collections (ConcurrentHashMap, CopyOnWriteArrayList, etc.).</li></ul>
+<ul><li>Our existing knowledge from the concurrent-collections module is more than enough to answer this question.</li></ul>
+<ul><li>The answer is very simple once you understand the prior lectures — this session is the revision and consolidation lecture.</li></ul>
+<p>Wrong answer (Sir rejects this immediately):</p>
+<p>&quot;Concurrent is the difference.&quot;</p>
+<p>That tells the interviewer nothing about behavior. You must compare functionality.</p>
+<h2>01:00 — Difference 1: Thread safety</h2>
+<h3>HashMap — not thread-safe</h3>
+<pre class='code'>import java.util.HashMap;
+import java.util.Map;
+
+Map&lt;Integer, String&gt; map = new HashMap&lt;&gt;();
+// Multiple threads can call put/get/remove simultaneously
+// → NO synchronization → data inconsistency possible</pre>
+<p>Board conclusion: On a normal HashMap object, multiple threads are allowed to perform operations simultaneously. There may be a chance of data inconsistency problems. That is why normal HashMap is not thread-safe.</p>
+<h3>ConcurrentHashMap — thread-safe</h3>
+<pre class='code'>import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+ConcurrentMap&lt;Integer, String&gt; map = new ConcurrentHashMap&lt;&gt;();
+// Multiple threads can operate safely
+// Updates use segment/bucket-level locks (Video 157)</pre>
+<p>Board conclusion: Even when multiple threads operate on ConcurrentHashMap, they do so in a safe manner only. That is why ConcurrentHashMap is always thread-safe.</p>
+<p>Interview one-liner: HashMap is not thread-safe; ConcurrentHashMap is thread-safe.</p>
+<h2>01:14 — Difference 2: ConcurrentModificationException (CME)</h2>
+<h3>What triggers CME on HashMap</h3>
+<p>While one thread is iterating over a HashMap (via keySet().iterator(), entrySet().iterator(), or enhanced for-loop), if another thread tries to modify the underlying map (add/remove entry), the iterator immediately fails by raising ConcurrentModificationException.</p>
+<p>This is the classic multithreading pitfall demonstrated programmatically in Video 159.</p>
+<h3>ConcurrentHashMap behavior</h3>
+<p>While one thread is iterating ConcurrentHashMap, other threads are allowed to modify the map object in a safe manner. ConcurrentHashMap never throws ConcurrentModificationException.</p>
+<p>Sir extends this rule: Not only ConcurrentHashMap — any concurrent collection never throws ConcurrentModificationException.</p>
+<p>Interview one-liner: HashMap → we will get ConcurrentModificationException. ConcurrentHashMap → we never get ConcurrentModificationException.</p>
+<h2>01:23 — Difference 3: Performance (relative)</h2>
+<h3>HashMap — high performance (no waiting)</h3>
+<p>Because HashMap is not synchronized, there is no lock contention:</p>
+<ul><li>Even one lakh (100,000) threads can simultaneously operate on a HashMap object.</li></ul>
+<ul><li>No thread needs to wait for another thread to finish.</li></ul>
+<ul><li>Trade-off: speed comes at the cost of thread safety.</li></ul>
+<h3>ConcurrentHashMap — relatively lower performance (some waiting)</h3>
+<p>ConcurrentHashMap uses segment/bucket-level locking (covered in Video 157):</p>
+<p>The 17th update thread must wait until one of the 16 segment locks is released. That waiting is why ConcurrentHashMap has relatively lower performance than HashMap.</p>
+<p>Sir&#x27;s exact wording:</p>
+<p>&quot;At a time how many threads are allowed to perform read operation? Any number of threads. But at a time how many threads are allowed to perform update operation? By default 16. If the 17th thread is coming, it has to wait. That&#x27;s why relatively performance is low — because sometimes threads are required to wait.&quot;</p>
+<p>Important nuance for interviews: ConcurrentHashMap is still much faster than Hashtable (which allows only one thread total for any operation). The &quot;low performance&quot; here is relative to HashMap, not absolute.</p>
+<p>Interview one-liner: HashMap — relatively high performance (no waiting). ConcurrentHashMap — relatively low performance (threads sometimes wait for segment locks).</p>
+<h2>02:11 — Difference 4: Iterator behavior — fail-fast vs fail-safe</h2>
+<p>This is a separate topic Sir will cover in more depth later, but the basic idea is compulsory for the interview room.</p>
+<h3>Fail-fast iterator (HashMap)</h3>
+<p>Definition (Sir&#x27;s board wording):</p>
+<p>If you modify the underlying collection while the iterator is active, the iterator immediately fails by raising ConcurrentModificationException. Such iterators are called fail-fast iterators. It fails very fast — hence &quot;fail-fast.&quot;</p>
+<p>Visual model:</p>
+<p>Collection object
+    │
+    ├── Thread-1: Iterator iterating...
+    │       while (it.hasNext()) { ... }
+    │
+    └── Thread-2: tries put/remove on same collection
+            ↓
+        Iterator FAILS IMMEDIATELY
+            ↓
+        ConcurrentModificationException</p>
+<p>HashMap iterator = fail-fast because while one thread iterates, if any other thread modifies the map, the iterator fails very fast by raising CME.</p>
+<h3>Fail-safe iterator (ConcurrentHashMap)</h3>
+<p>Definition (Sir&#x27;s board wording):</p>
+<p>While one thread is iterating in a safe way, remaining threads are allowed to modify the map object without raising ConcurrentModificationException. Such iterators are called fail-safe iterators.</p>
+<p>Visual model:</p>
+<p>ConcurrentHashMap object
+    │
+    ├── Thread-1: Iterator iterating...
+    │       while (it.hasNext()) { ... }
+    │
+    └── Thread-2: put/remove on same map (safe manner)
+            ↓
+        Iterator does NOT fail
+            ↓
+        No ConcurrentModificationException</p>
+<p>ConcurrentHashMap iterator = fail-safe because the iterator never fails and never raises CME, even when other threads modify the map concurrently.</p>
+<h3>Critical caveat from Video 159 (Sir&#x27;s programmatic proof)</h3>
+<p>While ConcurrentHashMap allows concurrent modification during iteration:</p>
+<ol><li>No CME — confirmed by the demo program.</li></ol>
+<ol><li>No guarantee that concurrent updates are visible to the iterator — the update may or may not appear in the iteration depending on whether the iterator cursor has already passed that bucket/cell.</li></ol>
+<ol><li>After iteration completes, if you print the map (System.out.println(m)), the update will be visible.</li></ol>
+<p>Sir&#x27;s conclusion from Video 159:</p>
+<p>&quot;While main thread is iterating, other thread is allowed to perform modification — but that update is not available to the iterator. There is no guarantee. At last when you print `m`, that update you can see.&quot;</p>
+<p>Interview one-liner: Iterator of HashMap is fail-fast. Iterator of ConcurrentHashMap is fail-safe.</p>
+<h2>01:57 — Difference 5: Null key and null value</h2>
+<p>Sir&#x27;s exact phrasing:</p>
+<p>&quot;Null is allowed for both key and value if it is normal HashMap. But ConcurrentHashMap — null, such a type of story not applicable — whether it is key or value.&quot;</p>
+<p>This matches Hashtable as well (Video 157 noted: null not allowed in Hashtable or ConcurrentHashMap).</p>
+<pre class='code'>// HashMap — OK
+Map&lt;String, String&gt; hm = new HashMap&lt;&gt;();
+hm.put(null, &quot;value&quot;);   // allowed
+hm.put(&quot;key&quot;, null);     // allowed
+
+// ConcurrentHashMap — NullPointerException
+ConcurrentMap&lt;String, String&gt; chm = new ConcurrentHashMap&lt;&gt;();
+chm.put(null, &quot;value&quot;);  // NullPointerException
+chm.put(&quot;key&quot;, null);    // NullPointerException</pre>
+<p>Interview one-liner: HashMap allows null for both key and value. ConcurrentHashMap does not allow null for key or value.</p>
+<h2>07:04 — Difference 6: Java version introduced</h2>
+<p>Concurrent collections as a whole came in 1.5 along with the java.util.concurrent package, locks, thread pools, etc. (Videos 096–098 in the multithreading block).</p>
+<p>Interview one-liner: HashMap — 1.2. ConcurrentHashMap — 1.5.</p>
+<h2>04:30 — Master comparison table (board form)</h2>
+<p>Sir puts all differences into one table for easy exam writing:</p>
+<h2>05:50 — Deep dive: CME scenario restated</h2>
+<p>Sir revisits the third row of the table with extra detail:</p>
+<h3>HashMap scenario</h3>
+<p>Thread-1: iterating HashMap (keySet iterator)
+Thread-2: tries to modify HashMap (put/remove)
+    → ConcurrentModificationException</p>
+<p>Why we get CME: HashMap&#x27;s iterator maintains an internal modification count (modCount). When the map is structurally modified during iteration, the iterator detects the change and throws CME immediately. This is by design — fail-fast behavior protects against undefined iteration results.</p>
+<h3>ConcurrentHashMap scenario</h3>
+<p>Thread-1: iterating ConcurrentHashMap
+Thread-2: modifies ConcurrentHashMap (put/remove) in safe manner
+    → NO ConcurrentModificationException
+    → Iterator continues (fail-safe)
+    → But update may not be visible to iterator (Video 159)</p>
+<h2>06:21 — Deep dive: fail-fast vs fail-safe restated</h2>
+<p>Sir emphasizes the word &quot;fail-fast&quot; is very important:</p>
+<p>Exam tip: Fail-fast and fail-safe are iterator properties, not collection properties per se — but Sir maps them directly: HashMap iterator = fail-fast; ConcurrentHashMap iterator = fail-safe.</p>
+<h2>Reference — Demo program from Video 159 (programmatic proof)</h2>
+<p>This program is not written live in Video 160, but Sir&#x27;s entire CME/fail-safe discussion assumes you have seen it. Included here because every board example must be actual Java.</p>
+<h3>Program A — ConcurrentHashMap: NO CME (fail-safe)</h3>
+<pre class='code'>import java.util.*;
+import java.util.concurrent.*;
+
+class MyThread extends Thread {
+    static ConcurrentMap&lt;Integer, String&gt; m = new ConcurrentHashMap&lt;&gt;();
+
+    public void run() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {}
+        System.out.println(&quot;Child thread updating map&quot;);
+        m.put(103, &quot;C&quot;);
+    }
+}
+
+public class Test {
+    public static void main(String[] args) throws InterruptedException {
+        MyThread.m.put(101, &quot;A&quot;);
+        MyThread.m.put(102, &quot;B&quot;);
+
+        MyThread t = new MyThread();
+        t.start();
+
+        Set&lt;Integer&gt; keys = MyThread.m.keySet();
+        Iterator&lt;Integer&gt; it = keys.iterator();
+        while (it.hasNext()) {
+            Integer key = it.next();
+            System.out.println(&quot;Main thread iterating map and current entry is &quot;
+                + key + &quot; &quot; + MyThread.m.get(key));
+            Thread.sleep(2000);
+        }
+    }
+}</pre>
+<p>Expected behavior:</p>
+<ul><li>Main thread iterates keys 101, 102 (order not guaranteed).</li></ul>
+<ul><li>Child thread updates map with 103=C while main thread is iterating.</li></ul>
+<ul><li>No ConcurrentModificationException.</li></ul>
+<ul><li>Update 103=C may not appear during iteration but will appear if you print m after the loop.</li></ul>
+<p>Sample output (from Video 159):</p>
+<p>Main thread iterating map and current entry is 102 B
+Child thread updating map
+Main thread iterating map and current entry is 101 A</p>
+<p>Notice: child already added 103=C, but iterator did not show it — no guarantee of visibility to iterator.</p>
+<h3>Program B — HashMap: CME thrown (fail-fast)</h3>
+<p>Same program, but replace ConcurrentHashMap with HashMap:</p>
+<pre class='code'>import java.util.*;
+
+class MyThread extends Thread {
+    static Map&lt;Integer, String&gt; m = new HashMap&lt;&gt;();  // ONLY CHANGE
+
+    public void run() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {}
+        System.out.println(&quot;Child thread updating map&quot;);
+        m.put(103, &quot;C&quot;);
+    }
+}
+
+public class Test {
+    public static void main(String[] args) throws InterruptedException {
+        MyThread.m.put(101, &quot;A&quot;);
+        MyThread.m.put(102, &quot;B&quot;);
+
+        MyThread t = new MyThread();
+        t.start();
+
+        Set&lt;Integer&gt; keys = MyThread.m.keySet();
+        Iterator&lt;Integer&gt; it = keys.iterator();
+        while (it.hasNext()) {
+            Integer key = it.next();
+            System.out.println(&quot;Main thread iterating map and current entry is &quot;
+                + key + &quot; &quot; + MyThread.m.get(key));
+            Thread.sleep(2000);
+        }
+    }
+}</pre>
+<p>Expected behavior:</p>
+<ul><li>Main thread starts iterating.</li></ul>
+<ul><li>Child thread calls m.put(103, &quot;C&quot;).</li></ul>
+<ul><li>Immediately: java.util.ConcurrentModificationException</li></ul>
+<p>This is the programmatic proof of the difference Sir summarizes in Video 160.</p>
+<h2>Reference — ConcurrentHashMap locking recap (from Video 157)</h2>
+<p>Video 160 assumes you know why ConcurrentHashMap has the performance characteristics it does. Quick recap for completeness:</p>
+<p>ConcurrentHashMap (default: 16 buckets, concurrency level 16)
+┌────────┬────────┬────────┬─────┬────────┐
+│Bucket 0│Bucket 1│Bucket 2│ ... │Bucket15│
+│ Lock 0 │ Lock 1 │ Lock 2 │ ... │Lock 15 │
+└────────┴────────┴────────┴─────┴────────┘
+
+Read operation  → NO lock required → unlimited concurrent reads
+Update operation → requires lock of THAT bucket/segment only
+                 → default 16 simultaneous updates
+                 → 17th update thread WAITS</p>
+<p>Contrast with HashMap:</p>
+<p>HashMap
+┌──────────────────────────────────────┐
+│         Single map object            │
+│    NO locks — all threads free       │
+│    → fast but NOT thread-safe        │
+└──────────────────────────────────────┘</p>
+<p>Contrast with Hashtable (for context — Video 157):</p>
+<p>Hashtable
+┌──────────────────────────────────────┐
+│         Single map object            │
+│    ONE lock for ENTIRE map           │
+│    → only 1 thread at a time         │
+│    → thread-safe but VERY slow       │
+└──────────────────────────────────────┘</p>
+<h2>07:16 — Interview answer template</h2>
+<p>Sir&#x27;s closing instruction:</p>
+<p>&quot;If any person is asking what is the difference between normal HashMap and ConcurrentHashMap, you should be in a position to tell ALL differences.&quot;</p>
+<h3>Full answer (structured)</h3>
+<ol><li>Thread safety: HashMap is not thread-safe. ConcurrentHashMap is thread-safe.</li></ol>
+<ol><li>ConcurrentModificationException: HashMap throws CME when one thread iterates and another modifies. ConcurrentHashMap never throws CME.</li></ol>
+<ol><li>Performance: HashMap has relatively high performance (no waiting). ConcurrentHashMap has relatively lower performance (update threads may wait; default 16 concurrent updates).</li></ol>
+<ol><li>Iterator: HashMap iterator is fail-fast. ConcurrentHashMap iterator is fail-safe.</li></ol>
+<ol><li>Null: HashMap allows null key and null value. ConcurrentHashMap allows neither.</li></ol>
+<ol><li>Version: HashMap since 1.2. ConcurrentHashMap since 1.5 (concurrent collections package).</li></ol>
+<h3>Ultra-short answer (if interviewer wants &quot;main difference&quot;)</h3>
+<p>HashMap is not thread-safe and throws ConcurrentModificationException during concurrent iteration+modification. ConcurrentHashMap is thread-safe, never throws CME, uses segment locking (16 default concurrent updates), does not allow null, and its iterator is fail-safe.</p>
+<h2>Quick revision cards</h2>
+<h2>When to use which</h2>
+<p>Sir&#x27;s statement from Video 159:</p>
+<p>&quot;Concurrent collections are best suitable for multithreaded scalable applications.&quot;</p>
+<h2>Exam traps and clarifications</h2>
+<ol><li>&quot;ConcurrentHashMap is slower&quot; — true relative to HashMap, but much faster than Hashtable. Always clarify the comparison baseline.</li></ol>
+<ol><li>&quot;Fail-safe means iterator sees all concurrent updates&quot; — FALSE. Fail-safe means no CME. Visibility of concurrent updates to the iterator is not guaranteed (Video 159 demo proves this).</li></ol>
+<ol><li>&quot;ConcurrentHashMap allows unlimited concurrent updates&quot; — FALSE. Default is 16 simultaneous update operations (concurrency level). Reads are unlimited.</li></ol>
+<ol><li>&quot;HashMap iterator is fail-safe&quot; — FALSE. HashMap iterator is fail-fast.</li></ol>
+<ol><li>&quot;We can use null in ConcurrentHashMap for value only&quot; — FALSE. Null is not allowed for either key or value.</li></ol>
+<ol><li>&quot;ConcurrentModificationException means two threads modified the map&quot; — not necessarily. Even one thread modifying via non-iterator path while another thread (or same thread) iterates can trigger CME on fail-fast collections.</li></ol>
+<ol><li>&quot;ConcurrentHashMap extends HashMap&quot; — FALSE. ConcurrentHashMap implements ConcurrentMap (which extends Map). Separate class hierarchy.</li></ol>
+<h2>Class hierarchy (for reference)</h2>
+<p>Map (interface)                          ← java.util
+ ├── HashMap (class)                     ← NOT thread-safe, 1.2
+ ├── Hashtable (class)                  ← thread-safe, entire-map lock, 1.0 legacy
+ └── ConcurrentMap (interface)         ← java.util.concurrent, 1.5
+      └── ConcurrentHashMap (class)      ← thread-safe, segment locking, 1.5</p>
+<h2>Summary table — one glance before exam</h2>
+<h2>Closing (07:40)</h2>
+<p>Sir ends with:</p>
+<p>&quot;That&#x27;s all.&quot;</p>
+<p>Next topics hinted at end of Video 159 (not covered in 160):</p>
+<ul><li>HashMap vs ConcurrentHashMap vs Hashtable (three-way)</li></ul>
+<ul><li>ConcurrentHashMap vs CopyOnWriteArrayList (fail-safe mechanisms differ internally)</li></ul>
+<p>Video 160 is the definitive HashMap vs ConcurrentHashMap answer sheet. Memorize the master table and be able to explain fail-fast vs fail-safe with the iteration+modification scenario.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Concurrent Collections Part-7 \</td><td>\</td><td>HashMap &amp; ConcurrentHashMap</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=c6u87_gMBDU</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>~8 minutes 05 seconds</td><td></td><td></td></tr>
+<tr><td>Position</td><td>160 of 203 in the Durga Sir OCJP/SCJP playlist</td><td></td><td></td></tr>
+<tr><td>Playlist</td><td>Core Java With OCJP/SCJP</td><td></td><td></td></tr>
+<tr><td>Package</td><td>java.util (HashMap) vs java.util.concurrent (ConcurrentHashMap)</td><td></td><td></td></tr>
+<tr><td>Source</td><td>YouTube auto-generated captions (ASR)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Video</th><th>Topic</th></tr>
+<tr><td>156</td><td>ConcurrentMap interface — putIfAbsent, conditional remove, replace</td></tr>
+<tr><td>157</td><td>ConcurrentHashMap internals — segment/bucket locking, concurrency level, constructors</td></tr>
+<tr><td>158</td><td>ConcurrentHashMap Program-1 — demo of ConcurrentMap special methods</td></tr>
+<tr><td>159</td><td>ConcurrentHashMap Program-2 — iteration + concurrent update demo; HashMap throws CME</td></tr>
+</table>
+<table>
+<tr><th></th><th>HashMap</th><th>ConcurrentHashMap</th></tr>
+<tr><td>Thread-safe?</td><td>NO</td><td>YES</td></tr>
+<tr><td>Mechanism</td><td>No synchronization; multiple threads may operate on the same HashMap object simultaneously</td><td>Multiple threads can operate, but updates happen in a safe manner via segment/bucket-level locking</td></tr>
+<tr><td>Risk</td><td>Data inconsistency problems are possible</td><td>Thread safety guaranteed by design</td></tr>
+</table>
+<table>
+<tr><th></th><th>HashMap</th><th>ConcurrentHashMap</th></tr>
+<tr><td>CME during iteration + modification?</td><td>YES — very common scenario</td><td>NO — never throws CME</td></tr>
+<tr><td>Applies to</td><td>Normal (non-concurrent) collections generally</td><td>Any concurrent collection — none throw CME</td></tr>
+</table>
+<table>
+<tr><th></th><th>HashMap</th><th>ConcurrentHashMap</th></tr>
+<tr><td>Relative performance</td><td>High</td><td>Low (relatively)</td></tr>
+<tr><td>Why</td><td>Threads are not required to wait to operate on HashMap</td><td>Threads are sometimes required to wait</td></tr>
+</table>
+<table>
+<tr><th>Operation type</th><th>How many threads at a time?</th></tr>
+<tr><td>Read (get, containsKey, etc.)</td><td>Any number — read operations do not require a lock</td></tr>
+<tr><td>Update (put, remove, replace, etc.)</td><td>By default 16 — one update per segment/bucket lock</td></tr>
+</table>
+<table>
+<tr><th></th><th>HashMap</th><th>ConcurrentHashMap</th></tr>
+<tr><td>Iterator type</td><td>Fail-fast</td><td>Fail-safe</td></tr>
+<tr><td>Modifies during iteration?</td><td>Other threads modifying → iterator fails immediately</td><td>Other threads modifying → iterator does not fail</td></tr>
+<tr><td>Exception</td><td>ConcurrentModificationException</td><td>Never CME</td></tr>
+</table>
+<table>
+<tr><th></th><th>HashMap</th><th>ConcurrentHashMap</th></tr>
+<tr><td>Null key</td><td>Allowed (only once — duplicate null key not possible anyway)</td><td>NOT allowed → NullPointerException</td></tr>
+<tr><td>Null value</td><td>Allowed (any number of entries can have null value)</td><td>NOT allowed → NullPointerException</td></tr>
+</table>
+<table>
+<tr><th></th><th>HashMap</th><th>ConcurrentHashMap</th></tr>
+<tr><td>Introduced in</td><td>Java 1.2</td><td>Java 1.5</td></tr>
+<tr><td>Category</td><td>Part of original Collections Framework (Map module)</td><td>Part of java.util.concurrent package (concurrent collections)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Property</th><th>HashMap (normal)</th><th>ConcurrentHashMap (concurrent)</th></tr>
+<tr><td>1</td><td>Thread safety</td><td>NOT thread-safe — multiple threads operate simultaneously → data inconsistency possible</td><td>Thread-safe — multiple threads operate in safe manner via segment/bucket locking</td></tr>
+<tr><td>2</td><td>Relative performance</td><td>High — threads not required to wait; even 1 lakh threads can operate simultaneously</td><td>Low (relatively) — update threads may wait; default 16 concurrent updates; reads unlimited</td></tr>
+<tr><td>3</td><td>ConcurrentModificationException</td><td>YES — while one thread iterates, other threads modifying → CME</td><td>NO — while one thread iterates, other threads can modify safely; never CME</td></tr>
+<tr><td>4</td><td>Iterator type</td><td>Fail-fast — iterator fails immediately on concurrent modification</td><td>Fail-safe — iterator never fails; never raises CME</td></tr>
+<tr><td>5</td><td>Null key / null value</td><td>Allowed for both key and value</td><td>NOT allowed for key or value</td></tr>
+<tr><td>6</td><td>Version introduced</td><td>1.2</td><td>1.5</td></tr>
+<tr><td>7</td><td>Package</td><td>java.util</td><td>java.util.concurrent</td></tr>
+<tr><td>8</td><td>Locking model</td><td>No locking</td><td>Segment/bucket-level locking; default concurrency level = 16</td></tr>
+<tr><td>9</td><td>Read operations</td><td>No lock concept (no thread safety)</td><td>Any number of concurrent reads — no lock required</td></tr>
+<tr><td>10</td><td>Update operations</td><td>Unlimited simultaneous (unsafe)</td><td>Default 16 simultaneous safe updates</td></tr>
+</table>
+<table>
+<tr><th>Term</th><th>Behavior</th><th>Collection example</th></tr>
+<tr><td>Fail-fast</td><td>While iterating, if anyone tries to modify → iterator fails very fast → CME</td><td>HashMap, ArrayList, HashSet, etc. (normal collections)</td></tr>
+<tr><td>Fail-safe</td><td>While iterating, other threads can modify → iterator never fails → no CME</td><td>ConcurrentHashMap, CopyOnWriteArrayList, etc. (concurrent collections)</td></tr>
+</table>
+<table>
+<tr><th>Question</th><th>Answer</th></tr>
+<tr><td>Is HashMap thread-safe?</td><td>No</td></tr>
+<tr><td>Is ConcurrentHashMap thread-safe?</td><td>Yes</td></tr>
+<tr><td>CME on HashMap during iteration?</td><td>Yes</td></tr>
+<tr><td>CME on ConcurrentHashMap?</td><td>Never</td></tr>
+<tr><td>HashMap performance vs CHM?</td><td>HashMap higher (no lock wait)</td></tr>
+<tr><td>Max concurrent updates on CHM (default)?</td><td>16</td></tr>
+<tr><td>Max concurrent reads on CHM?</td><td>Unlimited</td></tr>
+<tr><td>Null key in HashMap?</td><td>Allowed</td></tr>
+<tr><td>Null key in ConcurrentHashMap?</td><td>Not allowed (NPE)</td></tr>
+<tr><td>HashMap iterator?</td><td>Fail-fast</td></tr>
+<tr><td>CHM iterator?</td><td>Fail-safe</td></tr>
+<tr><td>HashMap introduced?</td><td>Java 1.2</td></tr>
+<tr><td>ConcurrentHashMap introduced?</td><td>Java 1.5</td></tr>
+<tr><td>CHM package?</td><td>java.util.concurrent</td></tr>
+</table>
+<table>
+<tr><th>Scenario</th><th>Use</th></tr>
+<tr><td>Single-threaded application</td><td>HashMap — simpler, faster, allows null</td></tr>
+<tr><td>Multi-threaded app, all access synchronized externally</td><td>HashMap + external sync, or Collections.synchronizedMap()</td></tr>
+<tr><td>Multi-threaded scalable app, frequent reads, concurrent updates</td><td>ConcurrentHashMap — best choice per Sir (Video 159)</td></tr>
+<tr><td>Legacy code requiring thread-safe map, no concurrent package</td><td>Hashtable (or prefer ConcurrentHashMap in modern code)</td></tr>
+<tr><td>Need null keys/values in shared map</td><td>HashMap with external synchronization (CHM forbids null)</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>HashMap</th><th>ConcurrentHashMap</th></tr>
+<tr><td>1</td><td>Not thread-safe</td><td>Thread-safe</td></tr>
+<tr><td>2</td><td>High performance (no wait)</td><td>Relatively low (update threads wait)</td></tr>
+<tr><td>3</td><td>CME during iterate + modify</td><td>Never CME</td></tr>
+<tr><td>4</td><td>Fail-fast iterator</td><td>Fail-safe iterator</td></tr>
+<tr><td>5</td><td>Null key ✓, null value ✓</td><td>Null key ✗, null value ✗</td></tr>
+<tr><td>6</td><td>Java 1.2</td><td>Java 1.5</td></tr>
+<tr><td>7</td><td>java.util</td><td>java.util.concurrent</td></tr>
+<tr><td>8</td><td>No locking</td><td>Segment lock; 16 default concurrent updates</td></tr>
+<tr><td>9</td><td>Unlimited unsafe concurrent access</td><td>Unlimited safe reads + 16 safe updates</td></tr>
+</table>
+</body></html>

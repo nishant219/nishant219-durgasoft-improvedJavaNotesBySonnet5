@@ -1,0 +1,300 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>100-innerclass-intro</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 100 — Inner Classes Part-1 Introduction</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Innerclass  Part- 1||Introduction</p>
+<p>ASR decode: keep subing / keep supporting = keep writing; n class / in our / NR = inner; GOI / GI / gii / aw GI = GUI; jit = JIT; whoops / easier = has-a / IS-A; Ned / Nest / inad = nested; meod local = method-local; anonimous = anonymous; dollar = $; outter = Outer; No Such method error colon mean = NoSuchMethodError: main; legend / Len = listen; injp / cjp / scjp = OCJP/SCJP; Yan entry = an entry.</p>
+<h3>00:05 — Inner classes: hard topic (with generics)</h3>
+<p>Next topic: inner classes — a bit difficult in total SCJP/OCJP. Only two “difficult” topics at core Java / OCJP level: generics and inner classes. Take special care (new syntax). Relatively simpler than generics. Board: Inner classes.</p>
+<h3>00:52 — Definition</h3>
+<p>A class declared inside another class is an inner class.</p>
+<pre class='code'>class Test {
+    class A {
+        // A is inner class of Test
+    }
+}
+// Board:
+// Sometimes we can declare a class inside another class
+// Such type of classes are called inner classes</pre>
+<h3>02:21 — History: why 1.1 introduced inner classes</h3>
+<p>Java 1.0 (1995): Sun hyped platform-independent, OOP, robust, secured, simple language. Experts happy, but found two weak areas:</p>
+<ol><li>Performance not up to mark vs C/C++.</li></ol>
+<ol><li>GUI concepts had many bugs.</li></ol>
+<p>Java 1.1 came in ~3 months targeting those:</p>
+<ul><li>Performance → JIT (Just-In-Time) compilers — he jokes improvement was tiny (0.00001%); performance still Java’s biggest pain even through 1.8 / “today.”</li></ul>
+<ul><li>GUI bugs → event handling / listeners.</li></ul>
+<p>As part of event handling, Sun first used class inside class → inner classes introduced in 1.1 to fix GUI bugs. Because of powerful features, programmers later used inner classes in regular coding too (not only GUI).</p>
+<pre class='code'>// Board:
+// Inner classes concept introduced in 1.1 version
+// to fix GUI bug as a part of event handling
+// but because of powerful features and benefits of inner classes
+// slowly programmers have started using in regular coding also</pre>
+<h3>09:34 — When to use inner classes (design rule)</h3>
+<p>If parent–child reuse → inheritance. For inner classes:</p>
+<p>Without existing one type of object, if there is no chance of existing another type of object → go for inner classes.</p>
+<p>Remember the line; three examples make it clear.</p>
+<pre class='code'>// Board:
+// Without existing one type of object
+// if there is no chance of existing another type of object
+// then we should go for inner classes</pre>
+<h3>12:21 — Example 1: University and Department</h3>
+<p>University has several departments (CS, Electronics, Electrical…). If government closes the university → all departments close. Department is always part of University — cannot exist alone.</p>
+<pre class='code'>class University {
+    class Department {
+        // Department is always part of University
+    }
+}
+// University = outer class; Department = inner class
+// Board Example 1:
+// University consists of several departments
+// Without existing University there is no chance of existing Department
+// Hence we have to declare Department class inside University class</pre>
+<h3>16:37 — Example 2: Car and Engine</h3>
+<p>Engine is major component of Car. Without Car object, no Engine object. Engine always part of Car.</p>
+<pre class='code'>class Car {
+    class Engine {
+        // Engine is always part of Car
+    }
+}
+// Car = outer; Engine = inner
+// Board Example 2:
+// Without existing Car object there is no chance of existing Engine object
+// Hence we have to declare Engine class inside Car class</pre>
+<h3>19:26 — Example 3: Map and Entry (from Java API)</h3>
+<p>Map = group of key–value pairs; each pair = an Entry. Without Map object, no Entry object. So `interface Entry` is defined inside `interface Map`.</p>
+<p>interface Map {
+    interface Entry {
+        // Entry is always part of Map
+    }
+}
+// Map = outer interface; Entry = inner interface</p>
+<pre class='code'>// Board Example 3:
+// Map is a group of key value pairs
+// and each key value pair is called an Entry
+// Without existing Map object there is no chance of existing Entry object
+// Hence interface Entry is defined inside Map interface</pre>
+<h3>24:07 — Note 1 from examples</h3>
+<pre class='code'>// Note 1:
+// Without existing outer class object
+// there is no chance of existing inner class object</pre>
+<h3>25:50 — Note 2: relation is has-a, not IS-A</h3>
+<p>Is outer parent and inner child? No. University has-a Department; Car has-a Engine; Map has-a Entry.</p>
+<pre class='code'>// Board:
+// The relation between outer class and inner class
+// is not IS-A relation
+// and it is has-a relationship
+// (composition or aggregation)</pre>
+<h3>27:58 — Four types of inner classes</h3>
+<p>Based on position of declaration and behavior, four types:</p>
+<ol><li>Normal or regular inner classes</li></ol>
+<ol><li>Method-local inner classes</li></ol>
+<ol><li>Anonymous inner classes</li></ol>
+<ol><li>Static nested classes</li></ol>
+<pre class='code'>// Board:
+// Based on position of declaration and behavior
+// all inner classes are divided into four types
+// 1. Normal or regular inner classes
+// 2. Method local inner classes
+// 3. Anonymous inner classes
+// 4. Static nested classes</pre>
+<p>Why “nested” not “inner” for type 4? Big reason later when teaching static nested classes — not namesake.</p>
+<h3>32:49 — Normal / regular inner class definition</h3>
+<pre class='code'>class Outer {
+    class Inner {
+    }
+}</pre>
+<p>Is this static nested? No (no static). Anonymous? No (has name). Method-local? No (not inside a method). Remaining → normal or regular inner class.</p>
+<p>Interview wording (don’t define by “not the other three” circularly — say positively):</p>
+<pre class='code'>// Board:
+// If we are declaring any named class
+// directly inside a class
+// without static modifier
+// such type of inner class is called
+// normal or regular inner class</pre>
+<h3>37:07 — Compiling Outer.java → two .class files</h3>
+<p>Saved as Outer.java. Compile → two .class files (one per class):</p>
+<ul><li>Outer → Outer.class</li></ul>
+<ul><li>Inner → `Outer$Inner.class` (dollar = inner-class marker)</li></ul>
+<pre class='code'>class Outer {
+    class Inner {
+    }
+}
+// javac Outer.java
+// produces: Outer.class  and  Outer$Inner.class</pre>
+<p>In JAR listings, $ in a class file name → clear indication of inner class. Before $ = outer name; after = inner name.</p>
+<h3>39:25 — Running without main → NoSuchMethodError</h3>
+<p>Neither Outer nor Inner has main:</p>
+<pre class='code'>class Outer {
+    class Inner {
+    }
+}</pre>
+<p># java Outer
+# Exception in thread &quot;main&quot; java.lang.NoSuchMethodError: main
+
+# java Outer$Inner
+# Exception in thread &quot;main&quot; java.lang.NoSuchMethodError: main</p>
+<p>(He also demos with JDK 1.6 path; compiles fine; same runtime errors.)</p>
+<h3>43:24 — Example 1 on board (compile + run outcomes)</h3>
+<pre class='code'>class Outer {
+    class Inner {
+    }
+}
+// Normal or regular inner class
+// javac Outer.java → Outer.class , Outer$Inner.class
+// java Outer        → NoSuchMethodError: main
+// java Outer$Inner  → NoSuchMethodError: main</pre>
+<h3>45:53 — Example 2: main inside Outer</h3>
+<pre class='code'>class Outer {
+    class Inner {
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;Outer class main method&quot;);
+        // prints Outer class main method
+    }
+}</pre>
+<p># javac Outer.java → two class files
+# java Outer       → prints Outer class main method
+# java Outer$Inner → NoSuchMethodError: main  (Inner has no main)</p>
+<h3>50:36 — Example 3: main inside Inner → CE</h3>
+<p>Without outer object, inner cannot exist → inner is instance related → static members not allowed inside normal inner class (including main).</p>
+<p>Many students expect: compile OK, java Outer$Inner prints. Reality: compile-time error.</p>
+<pre class='code'>class Outer {
+    class Inner {
+        public static void main(String[] args) {
+            System.out.println(&quot;Inner class main method&quot;);
+            // CE: inner classes cannot have static declarations
+        }
+    }
+}
+// Board:
+// Inside inner class we can&#x27;t declare any static members
+// hence we can&#x27;t declare main method
+// and we can&#x27;t run inner class directly from command prompt</pre>
+<p>Compiler message he stresses: inner classes cannot have static declarations.</p>
+<h3>58:02 — Instance method inside Inner is OK</h3>
+<p>Static not allowed, but instance methods are fine — otherwise no point to the class.</p>
+<pre class='code'>class Outer {
+    class Inner {
+        public void m1() {
+            System.out.println(&quot;Inner class method&quot;);
+            // prints Inner class method  (when called via inner object)
+        }
+    }
+}</pre>
+<h3>59:23 — Case 1: access inner code from **static** area of Outer</h3>
+<p>To call m1, need Inner object; without Outer object, no Inner object.</p>
+<pre class='code'>class Outer {
+    class Inner {
+        public void m1() {
+            System.out.println(&quot;Inner class method&quot;);
+        }
+    }
+
+    public static void main(String[] args) {
+        Outer o = new Outer();
+        Outer.Inner i = o.new Inner();
+        i.m1();
+        // prints Inner class method
+
+        // combine two lines:
+        Outer.Inner i2 = new Outer().new Inner();
+        i2.m1();
+
+        // combine three lines (create + call):
+        new Outer().new Inner().m1();
+        // prints Inner class method
+    }
+}</pre>
+<p>Note: .class file uses Outer$Inner, but in source refer as `Outer.Inner`. Creation: `outerRef.new Inner()`.</p>
+<pre class='code'>// Case 1 — Accessing inner class code from static area of outer class</pre>
+<h3>1:07:09 — Case 2: access from **instance** area of Outer (easier)</h3>
+<pre class='code'>class Outer {
+    class Inner {
+        public void m1() {
+            System.out.println(&quot;Inner class method&quot;);
+        }
+    }
+
+    public void m2() {
+        Inner i = new Inner(); // outer object already exists (this)
+        i.m1();
+        // prints Inner class method
+    }
+
+    public static void main(String[] args) {
+        Outer o = new Outer();
+        o.m2();
+    }
+}</pre>
+<p>Why new Inner() works in m2 without o.new? Entering m2 already required an Outer object — that outer exists as this.</p>
+<p>Instance area access is easier than static area (normal syntax, less “new Outer().new Inner()”).</p>
+<pre class='code'>// Case 2 — Accessing inner class code from instance area of outer class</pre>
+<p>OCJP may ask: from line of m2, which code properly calls m1?</p>
+<h3>1:13:29 — Case 3: access from **outside** Outer (same as Case 1)</h3>
+<pre class='code'>class Outer {
+    class Inner {
+        public void m1() {
+            System.out.println(&quot;Inner class method&quot;);
+        }
+    }
+}
+
+class Test {
+    public static void main(String[] args) {
+        Outer o = new Outer();
+        Outer.Inner i = o.new Inner();
+        i.m1();
+        // prints Inner class method
+
+        // or:
+        new Outer().new Inner().m1();
+    }
+}</pre>
+<p>Code same as accessing from static area of Outer.</p>
+<pre class='code'>// Case 3 — Accessing inner class code from outside of outer class</pre>
+<h3>1:17:47 — Summary of three cases</h3>
+<pre class='code'>// Accessing inner class code:
+
+// From static area of outer class OR from outside of outer class:
+Outer o = new Outer();
+Outer.Inner i = o.new Inner();
+i.m1();
+// or: new Outer().new Inner().m1();
+
+// From instance area of outer class:
+Inner i = new Inner();
+i.m1();</pre>
+<p>Must be familiar with both styles for OCJP.</p>
+<p>` ```java ` block count: 29</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 100 of 203</td></tr>
+<tr><td>Series</td><td>Inner Classes · Part 1</td></tr>
+<tr><td>Topic</td><td>Introduction to inner classes</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 21m 59s</td></tr>
+<tr><td>Video ID</td><td>DcFWgoKs5B0</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=DcFWgoKs5B0</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+</body></html>

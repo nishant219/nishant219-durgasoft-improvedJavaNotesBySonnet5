@@ -1,0 +1,1610 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>026-switch</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 026 — switch</h1>
+<h2>Video info</h2>
+<p>Title: Core Java with OCJP/SCJP: Flow-Control Part-3  || Selection Statements : switch</p>
+<p>This video is Java 7-era traditional `switch` (colon labels + break). He does not teach Java 14 switch expressions / arrow case -&gt; here. Every board program below is the OCJP form he writes.</p>
+<h2>What this lecture covers</h2>
+<p>Previous video: if-else. This video: the other selection statement — switch.</p>
+<p>He says switch looks simple, but the exam is full of loopholes: allowed types, case-label rules, fall-through, default position, wrapping/unwrapping, String from 1.7, enum from 1.5. Take special care. Keep copying.</p>
+<p>Conclusions he builds on the board:</p>
+<ol><li>Allowed argument types (and what is not allowed).</li></ol>
+<ol><li>Curly braces are mandatory. Both case and default are optional → empty switch is valid. Independent statements inside switch are not allowed.</li></ol>
+<ol><li>Three rules for every case label: compile-time constant, within range of the switch argument type, unique (no duplicate).</li></ol>
+<ol><li>default is optional, can appear anywhere, at most one. Fall-through until break or end of switch.</li></ol>
+<ol><li>Nested switch is allowed.</li></ol>
+<ol><li>Wrapping / unwrapping (1.5 autoboxing) when the argument is Byte / Short / Integer / Character.</li></ol>
+<ol><li>String switch (1.7) and enum switch (1.5).</li></ol>
+<ol><li>When to take switch vs if-else.</li></ol>
+<h2>Detailed notes</h2>
+<h3>Keep copying: selection statements → switch</h3>
+<p>Board heading: selection statements, under that if-else (already covered) and switch.</p>
+<p>if-else is for a boolean condition. switch is also selection, but it selects among several possible values of one expression. If the value is 0 do this, if 1 do that, if 2 do something else — that is the job of switch.</p>
+<h3>Syntax (for the sake of syllabus)</h3>
+<p>He writes the general form. x is the argument. Matching starts at the case whose constant equals x. break is optional. default is optional.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 1;
+        switch (x) {
+            case 0:
+                System.out.println(&quot;case 0&quot;);
+                break;
+            case 1:
+                System.out.println(&quot;case 1&quot;);
+                break;
+            case 2:
+                System.out.println(&quot;case 2&quot;);
+                break;
+            default:
+                System.out.println(&quot;default&quot;);
+                break;
+        }
+    }
+    // prints case 1
+}</pre>
+<p>He dictates: until a matching case is found, nothing runs. Once a matching case is found, that case and all following cases run until a break or the closing brace of switch. That later point is fall-through — do not forget it.</p>
+<h3>Allowed argument types — the first big conclusion</h3>
+<p>This is the point they ask in the exam. The argument to switch is not like if. if wants boolean. switch never wants boolean.</p>
+<p>Until 1.4, the only allowed argument types:</p>
+<ul><li>byte</li></ul>
+<ul><li>short</li></ul>
+<ul><li>char</li></ul>
+<ul><li>int</li></ul>
+<p>From 1.5, additionally:</p>
+<ul><li>corresponding wrapper classes: Byte, Short, Character, Integer</li></ul>
+<ul><li>enum type</li></ul>
+<p>From 1.7, additionally:</p>
+<ul><li>String</li></ul>
+<p>Never allowed (in this lecture / this exam syllabus):</p>
+<ul><li>boolean / Boolean</li></ul>
+<ul><li>long / Long</li></ul>
+<ul><li>float / Float</li></ul>
+<ul><li>double / Double</li></ul>
+<p>He dictates that table several times. Until 1.4: byte, short, char, int. 1.5: wrappers of those four, plus enum. 1.7: String. Not boolean, not long, not float, not double.</p>
+<h3>`byte` is allowed</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 10;
+        switch (b) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints ten
+}</pre>
+<p>100% pakka valid. byte is in the allowed list from day one.</p>
+<h3>`short` is allowed</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        short s = 20;
+        switch (s) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case 20:
+                System.out.println(&quot;twenty&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints twenty
+}</pre>
+<p>Valid. short is allowed.</p>
+<h3>`char` is allowed</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        char ch = &#x27;a&#x27;;
+        switch (ch) {
+            case &#x27;a&#x27;:
+                System.out.println(&quot;apple&quot;);
+                break;
+            case &#x27;b&#x27;:
+                System.out.println(&quot;ball&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints apple
+}</pre>
+<p>Valid. Internally char is an unsigned 16-bit integer, so switch is happy.</p>
+<h3>`int` is allowed — the most common</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 2;
+        switch (x) {
+            case 1:
+                System.out.println(&quot;one&quot;);
+                break;
+            case 2:
+                System.out.println(&quot;two&quot;);
+                break;
+            case 3:
+                System.out.println(&quot;three&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints two
+}</pre>
+<p>Valid. Most exam questions take int.</p>
+<h3>`boolean` is **not** allowed</h3>
+<p>Most people coming from if feel: switch of true/false should work. No. switch never expects boolean.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        boolean b = true;
+        switch (b) { // CE: incompatible types, found: boolean, required: int
+            case true:
+                System.out.println(&quot;true&quot;);
+                break;
+            case false:
+                System.out.println(&quot;false&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Compiler will give left and right. Incompatible types — found boolean, required int.</p>
+<p>Why not boolean? Only two possible values: true and false. For two values, if-else is enough. Why you required switch? Sun people said: no need. Not allowed.</p>
+<p>He dictates: the argument to the switch statement should not be boolean type. If you are trying to provide boolean, compile-time error.</p>
+<h3>`long` is **not** allowed</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        long x = 10L;
+        switch (x) { // CE: incompatible types, found: long, required: int
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+}</pre>
+<p>100% pakka invalid.</p>
+<p>Why not long? long range is huge — 19 digits. switch is implemented with a jump table / lookup table whose keys are int-sized. Allowing long is not convenient. If they really need to switch on a long, they should narrow it themselves (and accept the risk) — but the language does not allow switch(long).</p>
+<p>He says: do not feel “10L fits in int, so it should compile.” The type is long. Compiler looks at the type, not at the particular value 10.</p>
+<h3>`float` is **not** allowed</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        float f = 10.0f;
+        switch (f) { // CE: incompatible types, found: float, required: int
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+}</pre>
+<p>Invalid.</p>
+<h3>`double` is **not** allowed</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        double d = 10.0;
+        switch (d) { // CE: incompatible types, found: double, required: int
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+}</pre>
+<p>Invalid.</p>
+<p>Why not float / double? switch compares by exact equality. Floating-point values are not exact (10.0 vs 10.00 vs 10.0000001 after arithmetic). Not convenient. Use if-else with a delta if they must compare floats. switch will not take them.</p>
+<h3>Wrapper types from 1.5 — `Byte`, `Short`, `Integer`, `Character`</h3>
+<p>Because of autoboxing / unboxing (he says wrapping / unwrapping), from 1.5 the corresponding wrappers of the four primitives are also allowed.</p>
+<p>Byte is allowed:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Byte b = 10;
+        switch (b) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints ten
+}</pre>
+<p>Valid from 1.5. Internally unwrapping happens: Byte → byte, then it is a normal byte switch.</p>
+<p>Short is allowed:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Short s = 20;
+        switch (s) {
+            case 20:
+                System.out.println(&quot;twenty&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints twenty
+}</pre>
+<p>Valid. Unwrapping Short → short.</p>
+<p>Integer is allowed:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Integer i = 30;
+        switch (i) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case 30:
+                System.out.println(&quot;thirty&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints thirty
+}</pre>
+<p>Valid. Unwrapping Integer → int.</p>
+<p>Character is allowed:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Character ch = &#x27;A&#x27;;
+        switch (ch) {
+            case &#x27;A&#x27;:
+                System.out.println(&quot;capital A&quot;);
+                break;
+            case &#x27;a&#x27;:
+                System.out.println(&quot;small a&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints capital A
+}</pre>
+<p>Valid. Unwrapping Character → char.</p>
+<h3>Corresponding wrappers of the **forbidden** primitives are still forbidden</h3>
+<p>Boolean is not allowed:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Boolean b = true;
+        switch (b) { // CE: incompatible types, found: Boolean, required: int
+            case true:
+                System.out.println(&quot;true&quot;);
+        }
+    }
+}</pre>
+<p>Long is not allowed:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Long x = 10L;
+        switch (x) { // CE: incompatible types, found: Long, required: int
+            case 10:
+                System.out.println(&quot;ten&quot;);
+        }
+    }
+}</pre>
+<p>Float is not allowed:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Float f = 10.0f;
+        switch (f) { // CE: incompatible types, found: Float, required: int
+            case 10:
+                System.out.println(&quot;ten&quot;);
+        }
+    }
+}</pre>
+<p>Double is not allowed:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Double d = 10.0;
+        switch (d) { // CE: incompatible types, found: Double, required: int
+            case 10:
+                System.out.println(&quot;ten&quot;);
+        }
+    }
+}</pre>
+<p>He marks the board: only the wrappers of byte / short / char / int. Not Boolean, not Long, not Float, not Double. Most people see “wrapper” and tick every wrapper. Exam trap.</p>
+<h3>`enum` is allowed from 1.5</h3>
+<p>His favourite example: Beer. KF, KO, RC, FO.</p>
+<pre class='code'>enum Beer {
+    KF, KO, RC, FO
+}
+
+class Test {
+    public static void main(String[] args) {
+        Beer b = Beer.KF;
+        switch (b) {
+            case KF:
+                System.out.println(&quot;King Fisher&quot;);
+                break;
+            case KO:
+                System.out.println(&quot;Knock Out&quot;);
+                break;
+            case RC:
+                System.out.println(&quot;Royal Challenge&quot;);
+                break;
+            case FO:
+                System.out.println(&quot;Foster&quot;);
+                break;
+            default:
+                System.out.println(&quot;other brand&quot;);
+        }
+    }
+    // prints King Fisher
+}</pre>
+<p>Valid from 1.5. enum is a typed set of named constants — perfect for switch.</p>
+<h3>`String` is allowed from 1.7</h3>
+<p>Before 1.7, switch(&quot;durga&quot;) was a compile-time error. From 1.7 it is valid.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = &quot;durga&quot;;
+        switch (s) {
+            case &quot;durga&quot;:
+                System.out.println(&quot;Durga Software Solutions&quot;);
+                break;
+            case &quot;sunny&quot;:
+                System.out.println(&quot;Sunny Leone&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints Durga Software Solutions
+}</pre>
+<p>Valid from 1.7. Comparison is like equals — exact character sequence, case-sensitive. Not == of references. He will come back to String in detail after case-label rules.</p>
+<p>He recopies the allowed-type conclusion:</p>
+<ul><li>byte, short, char, int — always</li></ul>
+<ul><li>Byte, Short, Character, Integer — from 1.5</li></ul>
+<ul><li>enum — from 1.5</li></ul>
+<ul><li>String — from 1.7</li></ul>
+<ul><li>not boolean / long / float / double (and not their wrappers)</li></ul>
+<h3>Curly braces are **mandatory**</h3>
+<p>For if, curly braces are optional. For switch, curly braces are compulsory. The body of switch must be a block.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        switch (x); // CE: &#x27;{&#x27; expected
+    }
+}</pre>
+<p>Invalid. Semicolon is a valid empty statement for if (true); — that was yesterday. For switch, the compiler is expecting {. Without the block, compile-time error.</p>
+<p>He contrasts:</p>
+<ul><li>if (b) — braces optional</li></ul>
+<ul><li>switch (x) — braces mandatory</li></ul>
+<h3>Both `case` and `default` are optional — empty `switch` is valid</h3>
+<p>Most people feel: at least one case is required. No.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        switch (x) {
+        }
+    }
+}</pre>
+<p>100% pakka valid. No output. Empty switch. Both case and default are optional.</p>
+<p>Why would anyone write this? In generated code / incomplete editing it appears. Exam asks: compile or not? It compiles.</p>
+<p>He dictates: inside switch, both case and default are optional. Hence empty switch is valid.</p>
+<h3>Independent statements are **not** allowed</h3>
+<p>Every statement inside switch must sit under some case or default. A lone statement is illegal.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        switch (x) {
+            System.out.println(&quot;hello&quot;); // CE: case, default, or &#x27;}&#x27; expected
+        }
+    }
+}</pre>
+<p>Compiler is shocked: this println belongs to which case? Not allowed.</p>
+<p>With a label it is fine:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        switch (x) {
+            default:
+                System.out.println(&quot;hello&quot;);
+        }
+    }
+    // prints hello
+}</pre>
+<p>Valid. Only default, no case. Also allowed: only cases, no default.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        switch (x) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+        }
+    }
+    // prints ten
+}</pre>
+<p>Valid. If x were 11, no case matches, no default → no output, no error.</p>
+<h3>`case` label rules — three conclusions (the exam meat)</h3>
+<p>He boxes three rules. Every case label must satisfy all three.</p>
+<ol><li>It must be a compile-time constant (constant expression).</li></ol>
+<ol><li>The value must be within the range of the switch argument type (assignment compatible).</li></ol>
+<ol><li>Labels must be unique — duplicate case labels are not allowed.</li></ol>
+<h3>Rule 1 — compile-time constant required</h3>
+<p>Literals are constants. 10, &#x27;a&#x27;, &quot;durga&quot; — all fine.</p>
+<p>A final variable that is initialized with a constant at declaration is also a compile-time constant:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 20;
+        final int y = 20;
+        switch (x) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case y:
+                System.out.println(&quot;twenty&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints twenty
+}</pre>
+<p>Valid. y is final and initialized with the literal 20 in the same declaration → constant variable. case y is as good as case 20.</p>
+<p>If y is not final:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        int y = 20;
+        switch (x) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case y: // CE: constant expression required
+                System.out.println(&quot;twenty&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. y is a normal variable. Its value is known only at runtime. Case labels are wired into a jump table at compile time. Compiler will give left and right: constant expression required.</p>
+<p>Blank final assigned later is not a compile-time constant:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        final int y;
+        y = 20;
+        switch (x) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case y: // CE: constant expression required
+                System.out.println(&quot;twenty&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>This is the dangerous one. Students see final and tick valid. No. To be a constant variable, it must be final and initialized with a constant expression at declaration. Blank final is final, but not a compile-time constant.</p>
+<p>final whose initializer is a method call is also not a constant:</p>
+<pre class='code'>class Test {
+    public static int m() {
+        return 20;
+    }
+
+    public static void main(String[] args) {
+        int x = 10;
+        final int y = m();
+        switch (x) {
+            case y: // CE: constant expression required
+                System.out.println(&quot;twenty&quot;);
+        }
+    }
+}</pre>
+<p>Invalid. m() runs at runtime.</p>
+<p>Expressions made of constants are constants:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 30;
+        switch (x) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case 10 + 20:
+                System.out.println(&quot;thirty&quot;);
+                break;
+            case 5 * 8:
+                System.out.println(&quot;forty&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints thirty
+}</pre>
+<p>Valid. 10+20 is a constant expression; compiler folds it to 30. 5*8 folds to 40. Switch argument x itself need not be constant — only the case labels.</p>
+<p>Switch argument can be any expression of an allowed type:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 2;
+        int y = 1;
+        switch (x + y) {
+            case 1:
+                System.out.println(&quot;one&quot;);
+                break;
+            case 2:
+                System.out.println(&quot;two&quot;);
+                break;
+            case 3:
+                System.out.println(&quot;three&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints three
+}</pre>
+<p>Valid. x+y is evaluated at runtime to 3. Labels are still constants.</p>
+<p>But a case label that uses variables is illegal even if those variables look obvious:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 2;
+        int y = 1;
+        switch (x) {
+            case 1:
+                System.out.println(&quot;one&quot;);
+                break;
+            case x + y: // CE: constant expression required
+                System.out.println(&quot;sum&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. x+y as a case label is not a constant expression.</p>
+<p>Wrapper objects are not constant expressions, even if final:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        final Integer y = 10;
+        switch (x) {
+            case y: // CE: constant expression required
+                System.out.println(&quot;ten&quot;);
+        }
+    }
+}</pre>
+<p>Invalid. Integer is a reference. final Integer y = 10 is a constant reference to an object, not a constant expression of type int. Exam loves this.</p>
+<p>He dictates rule 1: case label should be a compile-time constant. Otherwise, constant expression required.</p>
+<h3>Rule 2 — value must be within range of the argument type</h3>
+<p>The case constant must be assignment compatible with the type of the switch argument.</p>
+<p>byte range is −128 to 127. 100 fits. 1000 does not.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 10;
+        switch (b) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case 100:
+                System.out.println(&quot;hundred&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints ten
+}</pre>
+<p>Valid. 10 and 100 both fit in byte.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 10;
+        switch (b) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case 100:
+                System.out.println(&quot;hundred&quot;);
+                break;
+            case 1000: // CE: possible loss of precision, found: int, required: byte
+                System.out.println(&quot;thousand&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. 1000 is an int literal. It cannot be assigned to byte without an explicit cast. Compiler: possible loss of precision — found int, required byte.</p>
+<p>Most people feel: b will be promoted to int inside switch, so case 1000 should work. Wrong. The switch argument type remains byte. Every case constant must be assignable to byte.</p>
+<p>The famous companion example — promote first, then 1000 is legal:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 10;
+        switch (b + 1) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case 100:
+                System.out.println(&quot;hundred&quot;);
+                break;
+            case 1000:
+                System.out.println(&quot;thousand&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints other
+}</pre>
+<p>Valid. b+1 is int (binary numeric promotion). Switch argument is int. 1000 fits in int. Output is other because b+1 is 11, which matches none of 10 / 100 / 1000.</p>
+<p>He puts the two programs side by side. Same labels. First CE, second valid. The only difference is switch(b) vs switch(b+1). This pair is 100% exam material.</p>
+<p>short range is −32768 to 32767. 32768 is out:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        short s = 10;
+        switch (s) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case 32768: // CE: possible loss of precision, found: int, required: short
+                System.out.println(&quot;too big&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid.</p>
+<p>char range is 0 to 65535. Negative is out:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        char ch = &#x27;a&#x27;;
+        switch (ch) {
+            case 97:
+                System.out.println(&quot;97 is a&quot;);
+                break;
+            case -1: // CE: possible loss of precision, found: int, required: char
+                System.out.println(&quot;negative&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. char cannot hold −1.</p>
+<p>If they explicitly cast, the constant is a byte, so it compiles — but the stored value wraps. He may mention it as a twist; usually the exam shows the uncast 1000.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = -24;
+        switch (b) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case (byte) 1000:
+                System.out.println(&quot;cast 1000&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints cast 1000
+}</pre>
+<p>(byte)1000 is a constant expression of type byte. 1000 truncated to 8 bits is −24. So this case matches b == -24. Legal, ugly, not the style he recommends. The exam version is almost always the CE without the cast.</p>
+<p>Same range rule after unwrapping: Byte argument still needs case values in byte range.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Byte b = 10;
+        switch (b) {
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            case 1000: // CE: possible loss of precision, found: int, required: byte
+                System.out.println(&quot;thousand&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. Unwrapping does not change the range rule.</p>
+<p>He dictates rule 2: the value of the case label should be within the range of the switch argument type. Otherwise possible loss of precision.</p>
+<h3>Rule 3 — duplicate case labels are not allowed</h3>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        switch (x) {
+            case 10:
+                System.out.println(&quot;first 10&quot;);
+                break;
+            case 10: // CE: duplicate case label
+                System.out.println(&quot;second 10&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. Two times 10. Jump table cannot have two entries for the same key.</p>
+<p>The one that traps everyone — `97` and `&#x27;a&#x27;`:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 97;
+        switch (x) {
+            case 97:
+                System.out.println(&quot;97&quot;);
+                break;
+            case &#x27;a&#x27;: // CE: duplicate case label
+                System.out.println(&quot;a&quot;);
+                break;
+            case 98:
+                System.out.println(&quot;98&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. &#x27;a&#x27; is a char literal whose integer value is 97. So case 97 and case &#x27;a&#x27; are the same label. Duplicate.</p>
+<p>He writes on the board: &#x27;a&#x27; means 97, &#x27;b&#x27; means 98, &#x27;A&#x27; means 65. Unicode / ASCII value. Compiler looks at the value, not at how they wrote it.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 65;
+        switch (x) {
+            case 65:
+                System.out.println(&quot;65&quot;);
+                break;
+            case &#x27;A&#x27;: // CE: duplicate case label
+                System.out.println(&quot;A&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Same idea. 65 and &#x27;A&#x27; are duplicates.</p>
+<p>Constant expressions that fold to the same value are also duplicates:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 20;
+        switch (x) {
+            case 20:
+                System.out.println(&quot;20&quot;);
+                break;
+            case 10 + 10: // CE: duplicate case label
+                System.out.println(&quot;10+10&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. 10+10 is 20.</p>
+<p>He dictates rule 3: duplicate case labels are not allowed. Compiler checks the value.</p>
+<h3>`default` — optional, anywhere, at most one</h3>
+<p>If no case matches, default runs (if present). If no case matches and no default, switch does nothing — valid, no output.</p>
+<p>default is commonly written last, but that is only convention. It can be first, middle, last. Matching is not “top to bottom until default”. The JVM jumps to the matching label.</p>
+<p>Normal last-default:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 3;
+        switch (x) {
+            case 0:
+                System.out.println(&quot;0&quot;);
+                break;
+            case 1:
+                System.out.println(&quot;1&quot;);
+                break;
+            case 2:
+                System.out.println(&quot;2&quot;);
+                break;
+            default:
+                System.out.println(&quot;default&quot;);
+                break;
+        }
+    }
+    // prints default
+}</pre>
+<p>Two defaults — illegal:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 1;
+        switch (x) {
+            case 1:
+                System.out.println(&quot;1&quot;);
+                break;
+            default:
+                System.out.println(&quot;d1&quot;);
+                break;
+            default: // CE: duplicate default label
+                System.out.println(&quot;d2&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. At most one default.</p>
+<h3>Fall-through — `break` is optional; without it, execution continues</h3>
+<p>This is the most important runtime behaviour. Once a matching label is entered, execution falls through every following statement — including later case / default labels — until break or the end of the switch.</p>
+<p>He writes this program and then changes x several times. Same code, different outputs. Keep copying.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 0;
+        switch (x) {
+            case 0:
+                System.out.println(&quot;0&quot;);
+            case 1:
+                System.out.println(&quot;1&quot;);
+                break;
+            case 2:
+                System.out.println(&quot;2&quot;);
+            default:
+                System.out.println(&quot;def&quot;);
+        }
+    }
+    // prints 0
+    // prints 1
+}</pre>
+<p>x is 0 → enter case 0 → print 0 → no break → fall into case 1 → print 1 → break → out. Output: 0 then 1.</p>
+<p>Same switch, x = 1:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 1;
+        switch (x) {
+            case 0:
+                System.out.println(&quot;0&quot;);
+            case 1:
+                System.out.println(&quot;1&quot;);
+                break;
+            case 2:
+                System.out.println(&quot;2&quot;);
+            default:
+                System.out.println(&quot;def&quot;);
+        }
+    }
+    // prints 1
+}</pre>
+<p>Enter case 1 → print 1 → break. Output: 1 only. case 0 is skipped.</p>
+<p>Same switch, x = 2:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 2;
+        switch (x) {
+            case 0:
+                System.out.println(&quot;0&quot;);
+            case 1:
+                System.out.println(&quot;1&quot;);
+                break;
+            case 2:
+                System.out.println(&quot;2&quot;);
+            default:
+                System.out.println(&quot;def&quot;);
+        }
+    }
+    // prints 2
+    // prints def
+}</pre>
+<p>Enter case 2 → print 2 → no break → fall into default → print def. Output: 2 then def.</p>
+<p>Same switch, x = 3 (no matching case — default):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 3;
+        switch (x) {
+            case 0:
+                System.out.println(&quot;0&quot;);
+            case 1:
+                System.out.println(&quot;1&quot;);
+                break;
+            case 2:
+                System.out.println(&quot;2&quot;);
+            default:
+                System.out.println(&quot;def&quot;);
+        }
+    }
+    // prints def
+}</pre>
+<p>No 3. Jump to default → print def → end of switch. Output: def.</p>
+<h3>`default` in the **middle** — the board program everyone fails</h3>
+<p>He moves default to the top. Matching still jumps. Fall-through still walks downward from the label that was entered. It does not wrap around to the top.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 0;
+        switch (x) {
+            default:
+                System.out.println(&quot;default&quot;);
+            case 0:
+                System.out.println(&quot;0&quot;);
+                break;
+            case 1:
+                System.out.println(&quot;1&quot;);
+            case 2:
+                System.out.println(&quot;2&quot;);
+        }
+    }
+    // prints 0
+}</pre>
+<p>x is 0 → jump directly to case 0 (not to default) → print 0 → break. Output: 0. Default is not “always first”. Default is only when nothing else matches.</p>
+<p>Same code, x = 1:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 1;
+        switch (x) {
+            default:
+                System.out.println(&quot;default&quot;);
+            case 0:
+                System.out.println(&quot;0&quot;);
+                break;
+            case 1:
+                System.out.println(&quot;1&quot;);
+            case 2:
+                System.out.println(&quot;2&quot;);
+        }
+    }
+    // prints 1
+    // prints 2
+}</pre>
+<p>Jump to case 1 → print 1 → no break → fall to case 2 → print 2. Output: 1 then 2. Default still skipped.</p>
+<p>Same code, x = 3 (no case matches):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 3;
+        switch (x) {
+            default:
+                System.out.println(&quot;default&quot;);
+            case 0:
+                System.out.println(&quot;0&quot;);
+                break;
+            case 1:
+                System.out.println(&quot;1&quot;);
+            case 2:
+                System.out.println(&quot;2&quot;);
+        }
+    }
+    // prints default
+    // prints 0
+}</pre>
+<p>Jump to default → print default → no break → fall into case 0 → print 0 → break. Output: default then 0.</p>
+<p>This is the example he wants in the notebook. Default is not last. Fall-through still happens from default into the next case. Most people print only default. They fail.</p>
+<p>He dictates: default can be anywhere. If no case matches, control goes to default and then fall-through continues until break or end.</p>
+<p>With break on every case including default, order of writing does not change output — only which label is entered.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 3;
+        switch (x) {
+            default:
+                System.out.println(&quot;default&quot;);
+                break;
+            case 0:
+                System.out.println(&quot;0&quot;);
+                break;
+            case 1:
+                System.out.println(&quot;1&quot;);
+                break;
+        }
+    }
+    // prints default
+}</pre>
+<p>Now only default. Break stopped the fall-through.</p>
+<h3>Intentional fall-through — grouping cases</h3>
+<p>Fall-through is not always a bug. To give several values the same action, list the cases with empty bodies and one shared block.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int day = 2;
+        switch (day) {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                System.out.println(&quot;weekday&quot;);
+                break;
+            case 6:
+            case 7:
+                System.out.println(&quot;weekend&quot;);
+                break;
+            default:
+                System.out.println(&quot;invalid day&quot;);
+        }
+    }
+    // prints weekday
+}</pre>
+<p>day is 2 → case 2 is empty → fall to 3 → 4 → 5 → print weekday → break.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int day = 7;
+        switch (day) {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                System.out.println(&quot;weekday&quot;);
+                break;
+            case 6:
+            case 7:
+                System.out.println(&quot;weekend&quot;);
+                break;
+            default:
+                System.out.println(&quot;invalid day&quot;);
+        }
+    }
+    // prints weekend
+}</pre>
+<p>This is the readable use of fall-through. In the exam, if they forget break it is usually a trick; if they stack cases it is the intended grouping.</p>
+<h3>Nested `switch` is allowed</h3>
+<p>A switch inside a switch is perfectly valid. Inner case labels live in the inner switch. The same number may appear in both — no duplicate-label conflict, because they are different switch blocks.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 1;
+        int y = 2;
+        switch (x) {
+            case 1:
+                System.out.println(&quot;outer 1&quot;);
+                switch (y) {
+                    case 1:
+                        System.out.println(&quot;inner 1&quot;);
+                        break;
+                    case 2:
+                        System.out.println(&quot;inner 2&quot;);
+                        break;
+                    default:
+                        System.out.println(&quot;inner default&quot;);
+                }
+                break;
+            case 2:
+                System.out.println(&quot;outer 2&quot;);
+                break;
+            default:
+                System.out.println(&quot;outer default&quot;);
+        }
+    }
+    // prints outer 1
+    // prints inner 2
+}</pre>
+<p>Valid. Outer matches 1, inner matches 2.</p>
+<p>break inside the inner switch breaks only the inner switch, not the outer:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 1;
+        switch (x) {
+            case 1:
+                switch (x) {
+                    case 1:
+                        System.out.println(&quot;inner&quot;);
+                        break;
+                }
+                System.out.println(&quot;still in outer case 1&quot;);
+                break;
+            default:
+                System.out.println(&quot;outer default&quot;);
+        }
+    }
+    // prints inner
+    // prints still in outer case 1
+}</pre>
+<p>After inner break, the outer case continues. To leave the outer switch they need another break (or a labeled break — next videos).</p>
+<p>College-style nested example he sometimes writes (year / branch):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int year = 2;
+        String branch = &quot;CSE&quot;;
+        switch (year) {
+            case 1:
+                System.out.println(&quot;electives: English, Algebra&quot;);
+                break;
+            case 2:
+                switch (branch) {
+                    case &quot;CSE&quot;:
+                    case &quot;IT&quot;:
+                        System.out.println(&quot;electives: ML, Big Data&quot;);
+                        break;
+                    case &quot;ECE&quot;:
+                        System.out.println(&quot;electives: Antenna&quot;);
+                        break;
+                    default:
+                        System.out.println(&quot;electives: Optimization&quot;);
+                }
+                break;
+            default:
+                System.out.println(&quot;invalid year&quot;);
+        }
+    }
+    // prints electives: ML, Big Data
+}</pre>
+<p>Valid. Inner switch is a String switch (1.7). Outer is int.</p>
+<h3>Wrapping vs unwrapping (autoboxing / auto-unboxing)</h3>
+<p>He connects this to the 1.5 operators lecture. Wrapping = primitive → wrapper object. Unwrapping = wrapper → primitive. From 1.5 the compiler does both automatically.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        Integer y = x;
+        int z = y;
+        System.out.println(z);
+    }
+    // prints 10
+}</pre>
+<p>Integer y = x is wrapping (autoboxing). int z = y is unwrapping (auto-unboxing).</p>
+<p>When switch receives a wrapper, it unwraps first, then matches cases as the primitive.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Integer i = 10;
+        switch (i) {
+            case 5:
+                System.out.println(&quot;five&quot;);
+                break;
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints ten
+}</pre>
+<p>Internally this is switch (i.intValue()). Case labels are still int constants, not Integer objects.</p>
+<p>Byte unwraps to byte (so range rule of byte applies, already shown). Character unwraps to char.</p>
+<h3>`null` wrapper → `NullPointerException` at runtime</h3>
+<p>If the wrapper reference is null, unwrapping calls intValue() on null → NPE. Compiles. Blows up at runtime. Exam asks compile / runtime / output.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        Integer i = null;
+        switch (i) { // compiles; NPE at runtime while unboxing
+            case 10:
+                System.out.println(&quot;ten&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+}</pre>
+<p>Valid compile. Runtime: NullPointerException. There is no case null in this Java 7 switch. null is not a constant int.</p>
+<h3>`String` switch in detail (1.7)</h3>
+<p>He comes back to String. Comparison is not ==. It is like equals. So content matters, case matters, spaces matter.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String city = &quot;Hyderabad&quot;;
+        switch (city) {
+            case &quot;Hyderabad&quot;:
+                System.out.println(&quot;Telangana&quot;);
+                break;
+            case &quot;Chennai&quot;:
+                System.out.println(&quot;Tamil Nadu&quot;);
+                break;
+            case &quot;Bangalore&quot;:
+                System.out.println(&quot;Karnataka&quot;);
+                break;
+            default:
+                System.out.println(&quot;other city&quot;);
+        }
+    }
+    // prints Telangana
+}</pre>
+<p>Case-sensitive — &quot;hyderabad&quot; is not &quot;Hyderabad&quot;:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String city = &quot;hyderabad&quot;;
+        switch (city) {
+            case &quot;Hyderabad&quot;:
+                System.out.println(&quot;Telangana&quot;);
+                break;
+            case &quot;hyderabad&quot;:
+                System.out.println(&quot;lowercase match&quot;);
+                break;
+            default:
+                System.out.println(&quot;other city&quot;);
+        }
+    }
+    // prints lowercase match
+}</pre>
+<p>Two different labels. Not duplicates. Strings that differ only in case are different constants.</p>
+<p>Fall-through works the same:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = &quot;a&quot;;
+        switch (s) {
+            case &quot;a&quot;:
+                System.out.println(&quot;A&quot;);
+            case &quot;b&quot;:
+                System.out.println(&quot;B&quot;);
+                break;
+            default:
+                System.out.println(&quot;D&quot;);
+        }
+    }
+    // prints A
+    // prints B
+}</pre>
+<p>null String → NPE (the switch argument is evaluated / unboxed-style null check before comparison):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = null;
+        switch (s) { // compiles; NPE at runtime
+            case &quot;durga&quot;:
+                System.out.println(&quot;durga&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+}</pre>
+<p>Compiles. Runtime NullPointerException. default does not catch null.</p>
+<p>case null is illegal in this traditional switch:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = &quot;durga&quot;;
+        switch (s) {
+            case null: // CE: constant string expression required / null not allowed
+                System.out.println(&quot;null&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+}</pre>
+<p>Invalid (Java 7 / 8 / OCJP syllabus). Case labels must be constant String expressions.</p>
+<p>String case labels must still be compile-time constants:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = &quot;durga&quot;;
+        String t = &quot;durga&quot;;
+        switch (s) {
+            case t: // CE: constant expression required
+                System.out.println(&quot;durga&quot;);
+        }
+    }
+}</pre>
+<p>Invalid. t is not final.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = &quot;durga&quot;;
+        final String t = &quot;durga&quot;;
+        switch (s) {
+            case t:
+                System.out.println(&quot;durga&quot;);
+                break;
+            default:
+                System.out.println(&quot;other&quot;);
+        }
+    }
+    // prints durga
+}</pre>
+<p>Valid. final String t = &quot;durga&quot; is a constant variable of type String.</p>
+<p>He also notes: interned or not does not matter for switch. &quot;durga&quot; created with new String(&quot;durga&quot;) still matches case &quot;durga&quot; because matching uses equals, not ==.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        String s = new String(&quot;durga&quot;);
+        switch (s) {
+            case &quot;durga&quot;:
+                System.out.println(&quot;matched&quot;);
+                break;
+            default:
+                System.out.println(&quot;not matched&quot;);
+        }
+    }
+    // prints matched
+}</pre>
+<p>If this were if (s == &quot;durga&quot;) it would print not matched (different objects). switch uses equals. Take special care.</p>
+<h3>`enum` switch in detail (1.5)</h3>
+<p>Case labels must be the unqualified enum constant names. The compiler already knows the type from the switch argument.</p>
+<p>Valid (unqualified):</p>
+<pre class='code'>enum Beer {
+    KF, KO, RC, FO
+}
+
+class Test {
+    public static void main(String[] args) {
+        Beer b = Beer.KO;
+        switch (b) {
+            case KF:
+                System.out.println(&quot;King Fisher&quot;);
+                break;
+            case KO:
+                System.out.println(&quot;Knock Out&quot;);
+                break;
+            case RC:
+                System.out.println(&quot;Royal Challenge&quot;);
+                break;
+            case FO:
+                System.out.println(&quot;Foster&quot;);
+                break;
+        }
+    }
+    // prints Knock Out
+}</pre>
+<p>Qualified name is a compile-time error:</p>
+<pre class='code'>enum Beer {
+    KF, KO, RC, FO
+}
+
+class Test {
+    public static void main(String[] args) {
+        Beer b = Beer.KF;
+        switch (b) {
+            case Beer.KF: // CE: an enum switch case label must be the unqualified name of an enumeration constant
+                System.out.println(&quot;King Fisher&quot;);
+                break;
+            case KO:
+                System.out.println(&quot;Knock Out&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. Outside switch they write Beer.KF. Inside case, only KF.</p>
+<p>Mixing a different enum is illegal:</p>
+<pre class='code'>enum Color {
+    RED, GREEN, BLUE
+}
+
+enum Beer {
+    KF, KO
+}
+
+class Test {
+    public static void main(String[] args) {
+        Beer b = Beer.KF;
+        switch (b) {
+            case KF:
+                System.out.println(&quot;KF&quot;);
+                break;
+            case RED: // CE: RED is not a constant of enum Beer
+                System.out.println(&quot;red&quot;);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. Case constants must belong to the enum being switched on.</p>
+<p>If every constant is listed, default is optional. If a new constant is added later, old switches silently do nothing for it unless they have default. He recommends default for safety.</p>
+<pre class='code'>enum Season {
+    SUMMER, WINTER, RAINY
+}
+
+class Test {
+    public static void main(String[] args) {
+        Season s = Season.RAINY;
+        switch (s) {
+            case SUMMER:
+                System.out.println(&quot;hot&quot;);
+                break;
+            case WINTER:
+                System.out.println(&quot;cold&quot;);
+                break;
+            case RAINY:
+                System.out.println(&quot;wet&quot;);
+                break;
+        }
+    }
+    // prints wet
+}</pre>
+<p>Valid without default because RAINY is listed.</p>
+<h3>Local variables inside `switch` — scope is the whole block</h3>
+<p>OCJP twist he includes with flow-control. A variable declared in one case is in scope for the entire switch block (until the closing }), not just that case. Cases are labels, not scopes.</p>
+<p>Redeclaring in another case is CE:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 1;
+        switch (x) {
+            case 1:
+                int y = 10;
+                System.out.println(y);
+                break;
+            case 2:
+                int y = 20; // CE: y is already defined in this switch block
+                System.out.println(y);
+                break;
+        }
+    }
+}</pre>
+<p>Invalid. One y for the whole switch.</p>
+<p>Reusing the same y is legal if they do not redeclare — but then case 2 cannot assume y was assigned (definite assignment). Safer pattern: extra braces per case.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 2;
+        switch (x) {
+            case 1: {
+                int y = 10;
+                System.out.println(y);
+                break;
+            }
+            case 2: {
+                int y = 20;
+                System.out.println(y);
+                break;
+            }
+        }
+    }
+    // prints 20
+}</pre>
+<p>Valid. Each { } is its own block. Two different ys.</p>
+<p>Without extra braces they can assign in a later case using the earlier declaration:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 2;
+        switch (x) {
+            case 1:
+                int y = 10;
+                System.out.println(y);
+                break;
+            case 2:
+                y = 20;
+                System.out.println(y);
+                break;
+        }
+    }
+    // prints 20
+}</pre>
+<p>Valid. y is declared in the switch block. case 2 assigns then prints. (If case 2 tried to read y without assigning, that can be “variable y might not have been initialized”.)</p>
+<h3>`switch` vs `if-else`</h3>
+<p>Last comparison on the board.</p>
+<p>switch can test only equality of one expression against compile-time constants (or enum constants / string constants). It cannot test x &gt; 10, ranges, &amp;&amp;, ||, != of two variables, etc.</p>
+<p>if-else can test any boolean condition: ranges, relations, compound predicates, method calls that return boolean.</p>
+<p>When the job is “this variable equals one of many known constants”, switch is cleaner and the compiler can emit a jump table. When the job is “between 1 and 100”, if-else is required.</p>
+<p>Range with if-else (cannot be a switch of 100 cases in a reasonable exam answer):</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 75;
+        if (x &lt; 0) {
+            System.out.println(&quot;negative&quot;);
+        } else if (x &lt; 50) {
+            System.out.println(&quot;small&quot;);
+        } else if (x &lt; 100) {
+            System.out.println(&quot;medium&quot;);
+        } else {
+            System.out.println(&quot;large&quot;);
+        }
+    }
+    // prints medium
+}</pre>
+<p>Trying to fake a range with switch is the wrong tool. Equality only:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 75;
+        switch (x) {
+            case 75:
+                System.out.println(&quot;exactly 75&quot;);
+                break;
+            default:
+                System.out.println(&quot;not 75&quot;);
+        }
+    }
+    // prints exactly 75
+}</pre>
+<p>switch does not have case x &gt; 50. That is not a constant.</p>
+<p>Same action for many values: switch fall-through grouping is shorter than a long if.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        char grade = &#x27;B&#x27;;
+        switch (grade) {
+            case &#x27;A&#x27;:
+            case &#x27;B&#x27;:
+            case &#x27;C&#x27;:
+                System.out.println(&quot;pass&quot;);
+                break;
+            case &#x27;D&#x27;:
+            case &#x27;F&#x27;:
+                System.out.println(&quot;fail&quot;);
+                break;
+            default:
+                System.out.println(&quot;invalid&quot;);
+        }
+    }
+    // prints pass
+}</pre>
+<p>Equivalent if-else is valid but noisier:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        char grade = &#x27;B&#x27;;
+        if (grade == &#x27;A&#x27; || grade == &#x27;B&#x27; || grade == &#x27;C&#x27;) {
+            System.out.println(&quot;pass&quot;);
+        } else if (grade == &#x27;D&#x27; || grade == &#x27;F&#x27;) {
+            System.out.println(&quot;fail&quot;);
+        } else {
+            System.out.println(&quot;invalid&quot;);
+        }
+    }
+    // prints pass
+}</pre>
+<p>He says: both can solve equality. switch is more convenient for many constants. if-else is more powerful for everything else. Use switch when they can; they cannot always.</p>
+<p>Also: if argument is boolean; switch argument is never boolean. Do not mix the two rules.</p>
+<h3>Empty `switch` vs empty `if` — recap pair</h3>
+<p>Yesterday: if (true); is valid (empty statement). Today: switch (x); is invalid (braces mandatory). Empty block switch (x) {} is valid.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+        if (true)
+            ;
+        switch (x) {
+        }
+        System.out.println(&quot;reached&quot;);
+    }
+    // prints reached
+}</pre>
+<p>Valid. Empty if-body via semicolon. Empty switch-body via braces. Then reached.</p>
+<h3>One more complete “all rules in one sitting” program</h3>
+<p>He likes to end by reading a messy switch out loud. Trace it.</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 2;
+        switch (b) {
+            default:
+                System.out.println(&quot;def&quot;);
+            case 0:
+                System.out.println(&quot;0&quot;);
+            case 1:
+                System.out.println(&quot;1&quot;);
+                break;
+            case 2:
+                System.out.println(&quot;2&quot;);
+        }
+    }
+    // prints 2
+}</pre>
+<p>b is 2 → jump to case 2 → print 2 → end. Default is not run.</p>
+<p>Change only the value to 3:</p>
+<pre class='code'>class Test {
+    public static void main(String[] args) {
+        byte b = 3;
+        switch (b) {
+            default:
+                System.out.println(&quot;def&quot;);
+            case 0:
+                System.out.println(&quot;0&quot;);
+            case 1:
+                System.out.println(&quot;1&quot;);
+                break;
+            case 2:
+                System.out.println(&quot;2&quot;);
+        }
+    }
+    // prints def
+    // prints 0
+    // prints 1
+}</pre>
+<p>No matching case → default → fall through 0 → 1 → break. Output: def, 0, 1. Not 2.</p>
+<p>That is the whole fall-through story in one pair.</p>
+<h2>Rules (as he states them)</h2>
+<ul><li>Allowed switch arguments: byte, short, char, int; from 1.5 also Byte, Short, Character, Integer, and enum; from 1.7 also String.</li></ul>
+<ul><li>Not allowed: boolean, long, float, double, and their wrappers Boolean, Long, Float, Double.</li></ul>
+<ul><li>Why not boolean: only two values; if-else is enough.</li></ul>
+<ul><li>Why not long: range too big for a jump table; type is long even if the value is 10.</li></ul>
+<ul><li>Why not float/double: exact equality is not convenient.</li></ul>
+<ul><li>Curly braces of switch are mandatory. switch(x); is CE. switch(x) {} is valid.</li></ul>
+<ul><li>case and default are both optional → empty switch is valid.</li></ul>
+<ul><li>Independent statements inside switch (not under case / default) → CE.</li></ul>
+<ul><li>Case label must be a compile-time constant. final int y = 20 is OK; int y = 20 is CE; blank final assigned later is CE; final Integer y = 10 is CE.</li></ul>
+<ul><li>Case value must be within range / assignment compatible. byte + case 1000 → possible loss of precision. switch(b+1) is int, so case 1000 is OK.</li></ul>
+<ul><li>Duplicate case labels are illegal. Compiler compares values: case 97 and case &#x27;a&#x27; are duplicates.</li></ul>
+<ul><li>default optional, anywhere, at most one. If no match: run default if present, else do nothing.</li></ul>
+<ul><li>break is optional. Without it: fall-through until break or end. Default in the middle still falls downward into later cases.</li></ul>
+<ul><li>Nested switch is allowed. Inner break leaves only the inner switch. Same case numbers in inner and outer are OK.</li></ul>
+<ul><li>Wrapper argument → unwrapping then primitive switch. null wrapper / null String → compiles, NPE at runtime. default does not handle null.</li></ul>
+<ul><li>String switch (1.7): like equals, case-sensitive. new String(&quot;durga&quot;) still matches case &quot;durga&quot;. Case labels must be constant strings. Unqualified? For enum: case labels must be unqualified enum constants (case KF, not case Beer.KF).</li></ul>
+<ul><li>Variable declared in one case is in scope for the whole switch block unless extra { } are added.</li></ul>
+<ul><li>switch tests equality against constants. if-else tests any boolean (ranges, relations, compounds). Prefer switch for many discrete values; use if-else when switch cannot express the condition.</li></ul>
+<h2>Exam traps (from this lecture)</h2>
+<h2>Recap</h2>
+<p>switch is the second selection statement. Argument types are a short closed list that grew in 1.5 and 1.7; boolean/long/float/double never joined. Case labels are compile-time constants, in range, unique. Braces mandatory; case/default optional; empty switch legal; stray statements illegal. Fall-through is the default behaviour — break stops it; default can sit anywhere and still fall downward. Wrappers unwrap (null → NPE). String uses equals. Enum cases are unqualified names. Use switch for equality against many constants; use if-else for everything switch cannot say.</p>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>Video 26 of 203</td></tr>
+<tr><td>Series</td><td>Flow-Control · Part 3</td></tr>
+<tr><td>Topic</td><td>Selection Statements : switch</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 11m 30s</td></tr>
+<tr><td>Video ID</td><td>bgA_xYjJ8xY</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=bgA_xYjJ8xY</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+<tr><td>Captions</td><td>None on YouTube. Notes reconstructed from this lecture topic as Durga Sir teaches it, with full Java board examples.</td></tr>
+</table>
+<table>
+<tr><th>Code</th><th>What most people say</th><th>Actual</th></tr>
+<tr><td>switch on boolean / long / float / double</td><td>valid</td><td>CE incompatible types</td></tr>
+<tr><td>switch on Boolean / Long</td><td>wrappers are allowed from 1.5</td><td>CE — only Byte/Short/Character/Integer</td></tr>
+<tr><td>switch(x);</td><td>valid empty, like if (true);</td><td>CE — { expected</td></tr>
+<tr><td>switch(x) {}</td><td>CE — empty</td><td>valid, no output</td></tr>
+<tr><td>statement inside switch with no case/default</td><td>valid</td><td>CE</td></tr>
+<tr><td>case y with int y = 20</td><td>valid</td><td>CE constant expression required</td></tr>
+<tr><td>case y with final int y; then y = 20;</td><td>valid because final</td><td>CE — not a compile-time constant</td></tr>
+<tr><td>case y with final Integer y = 10</td><td>valid</td><td>CE constant expression required</td></tr>
+<tr><td>byte b; case 1000</td><td>valid (promoted to int)</td><td>CE possible loss of precision</td></tr>
+<tr><td>switch(b+1) { case 1000 }</td><td>same CE</td><td>valid — argument is int</td></tr>
+<tr><td>case 97 and case &#x27;a&#x27;</td><td>both valid</td><td>CE duplicate case label</td></tr>
+<tr><td>default first, x matches a later case</td><td>default always runs</td><td>jump to the matching case; default skipped</td></tr>
+<tr><td>default first, no match, no break</td><td>only default prints</td><td>default and following cases until break</td></tr>
+<tr><td>Integer i = null; switch(i)</td><td>default / CE</td><td>compiles; NPE</td></tr>
+<tr><td>String s = null; switch(s)</td><td>default</td><td>compiles; NPE</td></tr>
+<tr><td>case Beer.KF</td><td>valid</td><td>CE — must be unqualified KF</td></tr>
+<tr><td>new String(&quot;durga&quot;) vs case &quot;durga&quot;</td><td>not matched (==)</td><td>matched (equals)</td></tr>
+<tr><td>&quot;Hyderabad&quot; vs &quot;hyderabad&quot;</td><td>same</td><td>different labels; case-sensitive</td></tr>
+<tr><td>two int y in two cases</td><td>valid</td><td>CE — y already defined in this switch</td></tr>
+</table>
+</body></html>

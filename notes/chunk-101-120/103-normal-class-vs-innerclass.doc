@@ -1,0 +1,300 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>103-normal-class-vs-innerclass</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 103</h1>
+<h2>Video info</h2>
+<p>Title: Core Java With OCJP/SCJP: Innerclass  Part- 4||normal java class vs inner class</p>
+<h3>00:03 — Recap: three types of anonymous inner classes</h3>
+<p>Previous session covered anonymous inner classes — three categories:</p>
+<ol><li>Anonymous class that extends a class</li></ol>
+<ol><li>Anonymous class that implements an interface</li></ol>
+<ol><li>Anonymous class defined inside method arguments</li></ol>
+<p>This session: Normal Java class vs anonymous inner class, then introduces static nested classes (4th type).</p>
+<h3>00:44 — Normal Java class vs anonymous inner class</h3>
+<p>Topic heading: Normal Java class vs Anonymous inner class — small behavioral differences.</p>
+<h3>01:19 — Difference 1: extends only one class (SAME)</h3>
+<p>Normal Java class:</p>
+<pre class='code'>class A extends B { }</pre>
+<p>A normal class can extend only one class at a time.</p>
+<p>Anonymous inner class extending a class:</p>
+<p>Popcorn p = new Popcorn() { };
+// writing a class that extends Popcorn — only one superclass</p>
+<p>Thread t = new Thread() { };
+// anonymous class extends Thread — only one class</p>
+<p>Conclusion: Both normal and anonymous can extend only one class — no difference on this point.</p>
+<h3>02:29 — Difference 2: implementing interfaces (DIFFERENT)</h3>
+<p>Normal Java class:</p>
+<pre class='code'>class A implements B, C, D { }
+// any number of interfaces simultaneously</pre>
+<p>Anonymous inner class:</p>
+<p>Runnable r = new Runnable() {
+    public void run() { }
+};
+// writing a class that implements Runnable — only ONE interface</p>
+<p>Conclusion:</p>
+<p>| | Normal Java class | Anonymous inner class |</p>
+<p>|--|-------------------|----------------------|</p>
+<p>| Implements interfaces | Any number | Only one |</p>
+<h3>03:37 — Difference 3: extend + implement simultaneously (DIFFERENT)</h3>
+<p>Normal Java class — valid:</p>
+<pre class='code'>class A extends B implements C, D, E { }
+// extend one class AND implement any number of interfaces — valid</pre>
+<p>Anonymous inner class:</p>
+<p>Can extend a class OR implement an interface — not both simultaneously (only one &quot;slot&quot;).</p>
+<p>Conclusion:</p>
+<p>| | Normal Java class | Anonymous inner class |</p>
+<p>|--|-------------------|----------------------|</p>
+<p>| Extend + implement together | Yes | No — one or the other |</p>
+<h3>04:48 — Board summary: first three points</h3>
+<ol><li>Normal class extends one class; anonymous also extends one class → same</li></ol>
+<ol><li>Normal class implements any number of interfaces; anonymous implements one → different</li></ol>
+<ol><li>Normal class can extend + implement together; anonymous cannot → different</li></ol>
+<h3>08:35 — Difference 4: constructors</h3>
+<p>Normal Java class:</p>
+<pre class='code'>class Test {
+    Test() { }
+    Test(int i) { }
+    // any number of constructors — valid
+}</pre>
+<p>Anonymous inner class:</p>
+<pre class='code'>Thread t = new Thread() {
+    // Thread() { }  // CE: cannot write constructor — no class name
+};</pre>
+<p>Rule: Constructor name must match class name. Anonymous inner class has no name → programmer cannot write any constructor explicitly.</p>
+<ul><li>Compiler may generate constructors calling super — but at programmer level, constructor concept not applicable</li></ul>
+<ul><li>Must depend on parent class constructor only, e.g. new Thread() { } calls Thread() super constructor</li></ul>
+<p>Conclusion:</p>
+<p>| | Normal Java class | Anonymous inner class |</p>
+<p>|--|-------------------|----------------------|</p>
+<p>| Constructors | Any number explicitly | Cannot write explicitly |</p>
+<h3>12:30 — When to use normal vs anonymous</h3>
+<p>Normal top-level class — when:</p>
+<ul><li>Requirement is standard</li></ul>
+<ul><li>Required several times (reused across application)</li></ul>
+<p>Anonymous inner class — when:</p>
+<ul><li>Requirement is temporary</li></ul>
+<ul><li>Required only once (instant / one-time use)</li></ul>
+<h3>15:12 — Best suitable area: GUI event handling</h3>
+<p>Anonymous inner classes are best suitable in GUI-based applications for event handling.</p>
+<p>Example: ATM-style screen with buttons — Withdraw, Get Balance, Change PIN, Mini Statement. Each button needs different one-time behavior tied to that button only.</p>
+<h3>17:31 — GUI example: `MyGUIFrame` with ActionListener</h3>
+<pre class='code'>import javax.swing.*;
+import java.awt.event.*;
+
+class MyGUIFrame extends JFrame {
+    JButton b1, b2, b3, b4, b5, b6;
+    // ... frame setup ...
+
+    void setupListeners() {
+        b1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // B1-specific functionality only
+            }
+        });
+
+        b2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // B2-specific functionality only
+            }
+        });
+    }
+}</pre>
+<p>Without anonymous classes: Need separate top-level classes:</p>
+<pre class='code'>class MyActionListener1 implements ActionListener { ... } // for B1
+class MyActionListener2 implements ActionListener { ... } // for B2
+// one top-level class per button — unnecessary</pre>
+<p>With anonymous classes: Define B1 logic right at b1.addActionListener(...), B2 logic at b2.addActionListener(...) — one top-level GUI class suffices.</p>
+<p>Board note: ActionListener is an interface; ActionEvent relates to event classes. Pattern same as new Runnable() { ... }.</p>
+<h3>26:41 — Live demo: `JarDemo.java` (WindowAdapter)</h3>
+<pre class='code'>import java.awt.*;
+import java.awt.event.*;
+
+class JarDemo {
+    public static void main(String[] args) {
+        Frame f = new Frame();
+        f.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                for (int i = 1; i &lt;= 10; i++) {
+                    System.out.println(&quot;closing window&quot;);
+                }
+                System.exit(0);
+            }
+        });
+        f.add(new Label(&quot;I can create executable jar file&quot;));
+        f.setSize(300, 200);
+        f.setVisible(true);
+    }
+}
+// On window close: prints &quot;closing window&quot; ten times, then JVM shuts down</pre>
+<p>What this is: Anonymous inner class that extends WindowAdapter (class, not interface).</p>
+<p>Demo flow:</p>
+<ol><li>javac JarDemo.java — compiles</li></ol>
+<ol><li>java JarDemo — window appears with label text</li></ol>
+<ol><li>Close window → windowClosing fires → prints &quot;closing window&quot; 10 times → System.exit(0)</li></ol>
+<p>Takeaway: GUI apps use anonymous inner classes frequently for event handling — no long explanation needed beyond seeing the pattern.</p>
+<h3>30:51 — Fourth type: static nested classes</h3>
+<p>After normal, method-local, and anonymous — fourth category:</p>
+<p>Static nested classes</p>
+<h3>31:16 — Why &quot;nested&quot; instead of &quot;inner&quot;?</h3>
+<p>Terminology shift is intentional, not accidental.</p>
+<p>Analogy with variables:</p>
+<pre class='code'>class Test {
+    int x = 10;        // instance variable — exists only with object
+    static int y = 20; // static variable — may exist without object
+}</pre>
+<ul><li>Instance variable: no Test object → no x</li></ul>
+<ul><li>Static variable: Test class loaded → y may exist without any object</li></ul>
+<p>Apply same logic to nested types:</p>
+<pre class='code'>class Outer {
+    class Inner { }           // non-static inner — like instance variable
+    static class Nested { }   // static nested — like static member
+}</pre>
+<p>Definition: Inner class declared with `static` modifier → static nested class.</p>
+<p>&quot;Nested&quot; = class physically inside another class, but no strong lifecycle binding to outer instance (like static members).</p>
+<h3>33:57 — First property: creating static nested object without outer object</h3>
+<pre class='code'>class Outer {
+    static class Nested {
+        public void m1() {
+            System.out.println(&quot;static nested class method&quot;);
+        }
+    }
+
+    public static void main(String[] args) {
+        Nested n = new Nested(); // no Outer object required
+        n.m1();
+    }
+}
+// prints static nested class method</pre>
+<p>Compare to normal inner class — would require:</p>
+<pre class='code'>Outer o = new Outer();
+Outer.Inner i = o.new Inner();</pre>
+<p>Internally compiler still generates Outer$Nested.class — don&#x27;t worry about bytecode name at usage time.</p>
+<p>From outside outer class:</p>
+<pre class='code'>Outer.Nested n = new Outer.Nested();
+n.m1();</pre>
+<p>Static member access pattern: `OuterClassName.NestedType`.</p>
+<h3>43:46 — Live compile/run (class renamed `Test` on board)</h3>
+<pre class='code'>class Test {
+    static class Nested {
+        public void m1() {
+            System.out.println(&quot;static nested class method&quot;);
+        }
+    }
+
+    public static void main(String[] args) {
+        Nested n = new Nested();
+        n.m1();
+    }
+}
+// prints static nested class method
+Within same outer class, class name prefix optional for static nested type: Nested n = new Nested();</pre>
+<h3>48:57 — Second difference: static members allowed (including `main`)</h3>
+<p>Normal inner class:</p>
+<pre class='code'>class Outer {
+    class Inner {
+        static int x = 10; // CE: Inner classes cannot have static declarations
+    }
+}</pre>
+<p>Static nested class:</p>
+<pre class='code'>class Test {
+    static class Nested {
+        public static void main(String[] args) {
+            System.out.println(&quot;static nested class main method&quot;);
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(&quot;outer class main method&quot;);
+    }
+}</pre>
+<p>Running from command prompt:</p>
+<p>javac Test.java
+java Test
+# prints outer class main method
+
+java Test$Nested
+# prints static nested class main method</p>
+<p>Rules:</p>
+<ul><li>Normal inner class → cannot declare static members → cannot declare main → cannot run inner class directly from command prompt</li></ul>
+<ul><li>Static nested class → can declare static members including main → invoke with `java OuterClass$NestedClass`</li></ul>
+<h3>51:32 — Live demo of dual main</h3>
+<p>Compiled Test.java:</p>
+<ul><li>java Test → outer class main method</li></ul>
+<ul><li>java Test$Nested → static nested class main method</li></ul>
+<p>Confirmed on execution.</p>
+<h3>56:37 — Third difference: accessing outer class members</h3>
+<p>Normal inner class — can access both static and non-static outer members directly.</p>
+<p>Static nested class — static context → only static outer members:</p>
+<pre class='code'>class Test {
+    int x = 10;
+    static int y = 20;
+
+    static class Nested {
+        public void m1() {
+            System.out.println(x); // CE: non-static variable x cannot be referenced from a static context
+            System.out.println(y); // prints 20
+        }
+    }
+}
+// CE: non-static variable x cannot be referenced from a static context</pre>
+<p>Live compile confirmed exact CE message.</p>
+<h3>58:41 — Board rules: member access comparison</h3>
+<p>From normal/regular inner class:</p>
+<ul><li>Access both static and non-static members of outer class directly</li></ul>
+<p>From static nested class:</p>
+<ul><li>Access only static members of outer class directly</li></ul>
+<ul><li>Cannot access non-static (instance) members directly</li></ul>
+<h3>1:03:15 — Summary table: normal inner vs static nested</h3>
+<p>Durga Sir builds comparison table — four rows:</p>
+<h3>1:05:20 — Table completion (board dictation)</h3>
+<p>Full table written point-by-point on board for exam revision — same four conclusions as above, expanded in sentence form for each column.</p>
+<h3>1:13:17 — Closing: four types of inner classes complete</h3>
+<p>With static nested classes, all four types covered:</p>
+<ol><li>Normal / regular inner class</li></ol>
+<ol><li>Method-local inner class</li></ol>
+<ol><li>Anonymous inner class</li></ol>
+<ol><li>Static nested class</li></ol>
+<p>Session ends after differences table between normal inner and static nested.</p>
+<p>Java block count: 20</p>
+<table>
+<tr><th>Field</th><th>Value</th></tr>
+<tr><td>Playlist</td><td>java tutorial by durga sir</td></tr>
+<tr><td>Position</td><td>103 of 203</td></tr>
+<tr><td>Series</td><td>Inner Classes · Part 4</td></tr>
+<tr><td>Topic</td><td>Normal Java class vs anonymous inner class; GUI event handling; static nested classes</td></tr>
+<tr><td>Instructor</td><td>Durga Sir</td></tr>
+<tr><td>Duration</td><td>1h 13m 48s</td></tr>
+<tr><td>Video ID</td><td>yB7dt-DDOgI</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=yB7dt-DDOgI</td></tr>
+<tr><td>Playlist URL</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<table>
+<tr><th>Type</th><th>Association with outer object</th></tr>
+<tr><td>Normal inner class</td><td>Without outer object → no inner object. Inner object strongly associated with outer object</td></tr>
+<tr><td>Static nested class</td><td>Without outer object → may create nested object. Not strongly associated with outer object</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Normal / regular inner class</th><th>Static nested class</th></tr>
+<tr><td>1. Object without outer instance</td><td>Without outer object → no inner object. Inner object strongly associated with outer object</td><td>Without outer object → may exist nested object. Not strongly associated with outer</td></tr>
+<tr><td>2. Static members inside</td><td>Cannot declare static members</td><td>Can declare static members</td></tr>
+<tr><td>3. main / command prompt</td><td>Cannot declare main; cannot invoke inner class directly from command prompt</td><td>Can declare main; invoke with java Outer$Nested</td></tr>
+<tr><td>4. Access outer members</td><td>Both static and non-static directly</td><td>Only static directly; non-static → CE</td></tr>
+</table>
+</body></html>

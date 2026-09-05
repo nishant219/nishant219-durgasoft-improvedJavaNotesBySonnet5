@@ -1,0 +1,473 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>141-collections-limitations-enumerations</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+pre, .code { font-family: Consolas, Courier New, monospace; font-size: 9pt;
+  background: #f4f4f4; padding: 8px; white-space: pre-wrap; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; }
+blockquote { margin-left: 16px; font-style: italic; color: #333; }
+</style>
+</head>
+<body>
+<h1>Video 141 — Collections Part-6: Limitations of Enumeration, Iterator &amp; ListIterator</h1>
+<h2>Video info</h2>
+<h2>Session overview</h2>
+<p>Continuation of the Three Cursors topic started in Video 140 (Enumeration demo). Video 141 completes the cursor hierarchy:</p>
+<ol><li>Recap — Enumeration from last session (last example covered)</li></ol>
+<ol><li>Limitations of Enumeration — why Iterator was introduced (Java 1.2)</li></ol>
+<ol><li>Iterator — universal cursor; methods; live demo (filter even numbers + remove odds)</li></ol>
+<ol><li>Limitations of Iterator — why ListIterator was introduced</li></ol>
+<ol><li>ListIterator — bidirectional cursor; 9 methods; live demo (remove, add, replace)</li></ol>
+<ol><li>Most powerful cursor — ListIterator (with its own limitation)</li></ol>
+<ol><li>Comparison table — Enumeration vs Iterator vs ListIterator (5 properties)</li></ol>
+<ol><li>Internal implementation — anonymous inner class / inner class names via getClass().getName()</li></ol>
+<p>Prerequisite from Video 140: To retrieve objects one-by-one from a collection, we need a cursor. The first cursor is Enumeration (Java 1.0, legacy only).</p>
+<h2>00:07 — Recap: Enumeration from previous session</h2>
+<h3>Purpose of cursors</h3>
+<p>If you want to get objects one by one from a collection, you must use a cursor.</p>
+<h3>Enumeration recap</h3>
+<p>Enumeration is the first cursor — but if a newer cursor (Iterator, ListIterator) exists, the old one must have problems/limitations. New concepts exist to overcome old limitations.</p>
+<h2>01:13 — Limitations of Enumeration</h2>
+<h3>Board heading (copy exactly)</h3>
+<p>Limitations of Enumeration</p>
+<h3>Limitation 1 — Not a universal cursor (legacy classes only)</h3>
+<p>Enumeration concept came in Java 1.0. It is applicable only for legacy classes.</p>
+<p>Board note:</p>
+<p>We can apply enumeration concept only for legacy classes, and it is not a universal cursor.</p>
+<p>You cannot apply Enumeration everywhere — only legacy classes (Vector, Hashtable, etc.) expose elements().</p>
+<pre class='code'>import java.util.*;
+
+public class EnumerationLegacyOnlyDemo {
+    public static void main(String[] args) {
+        // OK — Vector is legacy
+        Vector&lt;String&gt; v = new Vector&lt;&gt;();
+        v.add(&quot;A&quot;);
+        Enumeration&lt;String&gt; e = v.elements();
+        while (e.hasMoreElements()) {
+            System.out.println(e.nextElement());
+        }
+
+        // ArrayList has NO elements() method — cannot use Enumeration
+        ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;();
+        list.add(&quot;X&quot;);
+        // list.elements();  // CE: method does not exist on ArrayList
+    }
+}</pre>
+<h3>Limitation 2 — Read-only; no remove capability</h3>
+<p>Classroom analogy (mango box):</p>
+<p>Durga Sir gives a box of mangoes. You eat them one by one. When you pick the third mango and find it damaged, you have three options:</p>
+<ol><li>Throw it out (remove from box) — recommended</li></ol>
+<ol><li>Put it back in the box</li></ol>
+<ol><li>Eat it anyway (waste nothing)</li></ol>
+<p>For collections, option 1 (remove bad object while iterating) is the right approach — but Enumeration cannot remove.</p>
+<p>Enumeration has only 2 methods:</p>
+<p>No `remove()` method.</p>
+<p>Board note:</p>
+<p>By using enumeration we can get only read access. We can&#x27;t perform remove operation.</p>
+<h3>Overcoming Enumeration limitations → Iterator</h3>
+<p>Board note:</p>
+<p>To overcome above limitations, we should go for Iterator.</p>
+<h2>08:01 — Iterator (second cursor)</h2>
+<h3>First conclusion about Iterator</h3>
+<p>Board notes:</p>
+<ol><li>We can apply iterator concept for any collection object, and hence it is a universal cursor.</li></ol>
+<ol><li>By using iterator we can perform both read and remove operations.</li></ol>
+<p>Iterator came in Java 1.2 — shorter method names than Enumeration.</p>
+<h3>How to get Iterator object</h3>
+<p>Collection interface defines:</p>
+<pre class='code'>public Iterator iterator();</pre>
+<p>Example:</p>
+<p>Iterator it = c.iterator();</p>
+<p>Where `c` = any Collection object (ArrayList, LinkedList, Vector, HashSet, etc.).</p>
+<p>Board note:</p>
+<p>We can create Iterator object by using iterator() method of Collection interface.</p>
+<pre class='code'>public Iterator iterator();</pre>
+<h3>Iterator methods (3 methods)</h3>
+<p>Speciality vs Enumeration: Extra `remove()` capability.</p>
+<p>Compare naming:</p>
+<h2>12:54 — Iterator demo: print even numbers, remove odd numbers</h2>
+<h3>Problem statement</h3>
+<p>Create ArrayList with integers 0 through 10 (11 objects). Print only even numbers, and remove odd numbers from the list while iterating.</p>
+<h3>Step-by-step logic</h3>
+<ol><li>ArrayList l = new ArrayList();</li></ol>
+<ol><li>Add 0, 1, 2, … 10 via loop</li></ol>
+<ol><li>System.out.println(l); → [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</li></ol>
+<ol><li>Get iterator: Iterator it = l.iterator();</li></ol>
+<ol><li>while (it.hasNext())</li></ol>
+<ol><li>Integer I = (Integer) it.next(); — cast because we added int (auto-boxed)</li></ol>
+<ol><li>If even (I % 2 == 0) → print</li></ol>
+<ol><li>Else → it.remove() — odd numbers removed from list</li></ol>
+<ol><li>After loop, System.out.println(l); → [0, 2, 4, 6, 8, 10] only</li></ol>
+<p>Key point: This remove while iterating is not possible with Enumeration.</p>
+<h3>Full demo program</h3>
+<pre class='code'>import java.util.*;
+
+public class IteratorDemo {
+    public static void main(String[] args) {
+        ArrayList&lt;Integer&gt; l = new ArrayList&lt;&gt;();
+
+        for (int i = 0; i &lt;= 10; i++) {
+            l.add(i);
+        }
+
+        System.out.println(&quot;Before iteration: &quot; + l);
+        // Before iteration: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+        Iterator&lt;Integer&gt; it = l.iterator();
+
+        while (it.hasNext()) {
+            Integer I = it.next();
+
+            if (I % 2 == 0) {
+                System.out.println(I);   // prints 0, 2, 4, 6, 8, 10
+            } else {
+                it.remove();             // odd numbers removed from underlying list
+            }
+        }
+
+        System.out.println(&quot;After iteration: &quot; + l);
+        // After iteration: [0, 2, 4, 6, 8, 10]
+    }
+}</pre>
+<h3>Expected output</h3>
+<p>Before iteration: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+0
+2
+4
+6
+8
+10
+After iteration: [0, 2, 4, 6, 8, 10]</p>
+<p>Odd numbers are permanently removed from the list because of it.remove().</p>
+<h2>24:33 — Limitations of Iterator</h2>
+<p>Even Iterator has limitations (same pattern: old cursor → problems → new cursor).</p>
+<h3>Board heading</h3>
+<p>Limitations of Iterator</p>
+<h3>Limitation 1 — Single-direction cursor (forward only)</h3>
+<p>Both Enumeration and Iterator can move only in forward direction.</p>
+<p>List:  [ A ] [ B ] [ C ] [ D ]
+              ↑ cursor
+              → next → next → next   (only forward)</p>
+<p>You can ask &quot;what is the next element?&quot; but not &quot;what is the previous element?&quot; even though previous elements exist in the list.</p>
+<p>Board note:</p>
+<p>By using enumeration and iterator we can always move only towards forward direction, and we can&#x27;t move towards backward direction. These are single direction cursors (only forward), but not bidirectional cursors.</p>
+<h3>Limitation 2 — No add or replace; only read + remove</h3>
+<p>By using Iterator we can perform only:</p>
+<ul><li>Read operation</li></ul>
+<ul><li>Remove operation</li></ul>
+<p>We cannot:</p>
+<ul><li>Add new objects while iterating</li></ul>
+<ul><li>Replace existing object with a new object</li></ul>
+<p>Board note:</p>
+<p>By using iterator we can perform only read and remove operations. We can&#x27;t perform replacement and addition of new objects.</p>
+<h3>Overcoming Iterator limitations → ListIterator</h3>
+<p>Board note:</p>
+<p>To overcome above limitations, we should go for ListIterator.</p>
+<h2>30:33 — ListIterator (third cursor — most powerful)</h2>
+<h3>First conclusion — Bidirectional cursor</h3>
+<p>Board notes:</p>
+<ol><li>By using ListIterator we can move either to the forward direction or to the backward direction, and hence it is a bidirectional cursor.</li></ol>
+<ol><li>We can perform replacement and addition of new objects, in addition to read and remove operations.</li></ol>
+<h3>How to get ListIterator object</h3>
+<p>List interface defines:</p>
+<pre class='code'>public ListIterator listIterator();</pre>
+<p>Example:</p>
+<p>ListIterator ltr = l.listIterator();</p>
+<p>Where `l` = any List object (ArrayList, LinkedList, Vector, etc.) — must be a List, not any Collection.</p>
+<p>Board note:</p>
+<p>We can create ListIterator object by using listIterator() method of List interface.</p>
+<pre class='code'>public ListIterator listIterator();</pre>
+<h3>ListIterator extends Iterator</h3>
+<p>Important relationship:</p>
+<p>ListIterator is the child interface of Iterator.</p>
+<p>Therefore all 3 Iterator methods are by default available in ListIterator:</p>
+<ul><li>hasNext()</li></ul>
+<ul><li>next()</li></ul>
+<ul><li>remove()</li></ul>
+<p>Plus 6 additional methods → total 9 methods.</p>
+<h3>ListIterator — all 9 methods</h3>
+<p>Board heading: ListIterator defines the following nine methods.</p>
+<h4>Group A — Forward movement (3 methods)</h4>
+<h4>Group B — Backward movement (3 methods)</h4>
+<h4>Group C — Extra operations (3 methods)</h4>
+<p>Summary structure:</p>
+<ul><li>3 methods → forward movement</li></ul>
+<ul><li>3 methods → backward movement</li></ul>
+<ul><li>3 methods → extra operations (remove, add, replace)</li></ul>
+<p>ListIterator is the most powerful cursor because it is bidirectional and supports addition, replacement, remove, forward movement, and backward movement.</p>
+<h2>45:57 — ListIterator demo: remove, add, replace on LinkedList</h2>
+<h3>Setup</h3>
+<pre class='code'>LinkedList&lt;String&gt; l = new LinkedList&lt;&gt;();
+l.add(&quot;Balakrishna&quot;);
+l.add(&quot;Venkatesh&quot;);
+l.add(&quot;Chiranjeevi&quot;);</pre>
+<p>System.out.println(l); → [Balakrishna, Venkatesh, Chiranjeevi] (insertion order preserved)</p>
+<h3>Walk-through operations</h3>
+<pre class='code'>ListIterator&lt;String&gt; ltr = l.listIterator();
+
+while (ltr.hasNext()) {
+    String s = ltr.next();
+
+    if (s.equals(&quot;Venkatesh&quot;)) {
+        ltr.remove();                    // remove Venkatesh
+        ltr.add(&quot;Venkatesh2&quot;);           // add immediately after current position
+    }
+
+    if (s.equals(&quot;Chiranjeevi&quot;)) {
+        ltr.set(&quot;Charan&quot;);               // replace Chiranjeevi with Charan
+    }
+}</pre>
+<h3>State after each operation</h3>
+<h3>Full demo program</h3>
+<pre class='code'>import java.util.*;
+
+public class ListIteratorDemo {
+    public static void main(String[] args) {
+        LinkedList&lt;String&gt; l = new LinkedList&lt;&gt;();
+        l.add(&quot;Balakrishna&quot;);
+        l.add(&quot;Venkatesh&quot;);
+        l.add(&quot;Chiranjeevi&quot;);
+
+        System.out.println(&quot;Initial: &quot; + l);
+        // Initial: [Balakrishna, Venkatesh, Chiranjeevi]
+
+        ListIterator&lt;String&gt; ltr = l.listIterator();
+
+        while (ltr.hasNext()) {
+            String s = ltr.next();
+            System.out.println(&quot;Current: &quot; + s);
+
+            if (s.equals(&quot;Venkatesh&quot;)) {
+                ltr.remove();
+                ltr.add(&quot;Venkatesh2&quot;);
+            }
+
+            if (s.equals(&quot;Chiranjeevi&quot;)) {
+                ltr.set(&quot;Charan&quot;);
+            }
+        }
+
+        System.out.println(&quot;Final: &quot; + l);
+        // Final: [Balakrishna, Venkatesh2, Charan]
+    }
+}</pre>
+<h3>Expected output</h3>
+<p>Initial: [Balakrishna, Venkatesh, Chiranjeevi]
+Current: Balakrishna
+Current: Venkatesh
+Current: Chiranjeevi
+Final: [Balakrishna, Venkatesh2, Charan]</p>
+<p>Operations demonstrated:</p>
+<h2>53:31 — Most powerful cursor + its limitation</h2>
+<h3>Board conclusion</h3>
+<p>The most powerful cursor is ListIterator.</p>
+<p>But its limitation:</p>
+<p>It is applicable only for List objects — not a universal cursor.</p>
+<h2>55:07 — Comparison table of three cursors</h2>
+<h3>Board heading</h3>
+<p>Comparison table of three cursors</p>
+<h3>Quick exam memory chart</h3>
+<p>Enumeration  → legacy only  → read only           → 2 methods → Vector.elements()
+Iterator     → universal     → read + remove       → 3 methods → Collection.iterator()
+ListIterator → List only     → read+remove+add+set → 9 methods → List.listIterator()</p>
+<h2>1:05:08 — Internal implementation of cursors (important loophole)</h2>
+<h3>Student doubt</h3>
+<p>Enumeration, Iterator, and ListIterator are interfaces. We cannot create objects for interfaces directly. So how do we get &quot;enumeration object&quot;, &quot;iterator object&quot;, &quot;list iterator object&quot;?</p>
+<h3>Answer</h3>
+<p>We are NOT creating objects for the interface. We are getting objects of implementation classes that implement these interfaces internally.</p>
+<p>Vector v = new Vector();
+
+Enumeration e = v.elements();       // implementation class object, not interface object
+Iterator i = v.iterator();          // implementation class object
+ListIterator ltr = v.listIterator(); // implementation class object</p>
+<h3>Discover implementation class name</h3>
+<p>Use `getClass().getName()`:</p>
+<pre class='code'>System.out.println(e.getClass().getName());
+System.out.println(i.getClass().getName());
+System.out.println(ltr.getClass().getName());</pre>
+<h3>Full demo program</h3>
+<pre class='code'>import java.util.*;
+
+public class CursorImplementationDemo {
+    public static void main(String[] args) {
+        Vector v = new Vector();
+        v.add(&quot;A&quot;);
+        v.add(&quot;B&quot;);
+
+        Enumeration e = v.elements();
+        Iterator i = v.iterator();
+        ListIterator ltr = v.listIterator();
+
+        System.out.println(&quot;Enumeration impl: &quot; + e.getClass().getName());
+        System.out.println(&quot;Iterator impl:    &quot; + i.getClass().getName());
+        System.out.println(&quot;ListIterator impl:&quot; + ltr.getClass().getName());
+    }
+}</pre>
+<h3>Expected output (Vector)</h3>
+<p>Enumeration impl: java.util.Vector$1
+Iterator impl:    java.util.Vector$Itr
+ListIterator impl:java.util.Vector$ListItr</p>
+<h3>Meaning of class names</h3>
+<p>Dollar symbol rule:</p>
+<ul><li>Format: OuterClass$InnerClassName</li></ul>
+<ul><li>If number after $ (e.g. $1) → anonymous inner class (no name)</li></ul>
+<p>Board note:</p>
+<p>Internal implementation of cursors — inside Vector class, inner classes are present which implement these interfaces. We are getting implementation class objects, not interface objects.</p>
+<h2>Hierarchy diagram (conceptual)</h2>
+<p>                    Cursor (concept)
+                         |
+        +----------------+----------------+
+        |                |                |
+   Enumeration        Iterator       ListIterator
+   (Java 1.0)        (Java 1.2)      (Java 1.2)
+   legacy only       universal        List only
+   read only         read+remove      read+remove+add+set
+   forward only      forward only     forward + backward
+        |                |                |
+        |                +--------&gt; child interface
+        |                                 |
+   Vector.elements()              List.listIterator()
+   2 methods                       9 methods (3+3+3)</p>
+<h2>Exam checklist (must memorize)</h2>
+<ul><li>[ ] Three cursors: Enumeration, Iterator, ListIterator</li></ul>
+<ul><li>[ ] Enumeration limitations: legacy only + read only</li></ul>
+<ul><li>[ ] Iterator overcomes: universal + remove</li></ul>
+<ul><li>[ ] Iterator limitations: forward only + no add/replace</li></ul>
+<ul><li>[ ] ListIterator overcomes: bidirectional + add/replace/set</li></ul>
+<ul><li>[ ] ListIterator limitation: List objects only</li></ul>
+<ul><li>[ ] Most powerful cursor = ListIterator</li></ul>
+<ul><li>[ ] Universal cursor = Iterator</li></ul>
+<ul><li>[ ] Enumeration methods: hasMoreElements(), nextElement()</li></ul>
+<ul><li>[ ] Iterator methods: hasNext(), next(), remove()</li></ul>
+<ul><li>[ ] ListIterator: 9 methods (3 forward + 3 backward + 3 extra)</li></ul>
+<ul><li>[ ] iterator() from Collection interface; listIterator() from List interface</li></ul>
+<ul><li>[ ] Cursor objects are implementation class objects — use getClass().getName() to find them</li></ul>
+<ul><li>[ ] Vector inner classes: $1 (anonymous Enumeration), $Itr, $ListItr</li></ul>
+<h2>Common exam traps</h2>
+<ol><li>&quot;Can we use Enumeration on ArrayList?&quot; → No. Only legacy classes.</li></ol>
+<ol><li>&quot;Can Iterator move backward?&quot; → No. Forward only. Use ListIterator for backward.</li></ol>
+<ol><li>&quot;Can Iterator add elements while iterating?&quot; → No. Use ListIterator.add().</li></ol>
+<ol><li>&quot;Is ListIterator universal?&quot; → No. List objects only — but it is the most powerful.</li></ol>
+<ol><li>&quot;How many methods in ListIterator?&quot; → 9 (not 3 — it inherits 3 from Iterator + 6 own).</li></ol>
+<ol><li>&quot;What does set() do in ListIterator?&quot; → Replaces current element (replacement operation).</li></ol>
+<ol><li>&quot;What does add() do in ListIterator?&quot; → Adds permanently to list immediately after current position.</li></ol>
+<h2>Summary (one paragraph)</h2>
+<p>Video 141 completes Java&#x27;s three collection cursors. Enumeration (1.0) works only on legacy classes and supports read-only forward traversal. Iterator (1.2) is the universal cursor for any collection, adding remove() while still moving forward only. ListIterator (1.2), a child of Iterator, is the most powerful cursor — bidirectional with add/replace/remove — but restricted to List implementations. A five-property comparison table covers applicability, legacy status, movement direction, allowed operations, and how to obtain each cursor. Internally, concrete collection classes (e.g. Vector) use inner/anonymous inner classes to implement these interfaces; getClass().getName() reveals names like Vector$1, Vector$Itr, and Vector$ListItr.</p>
+<h2>What&#x27;s next</h2>
+<p>Video 142 continues the Collections series (next topic per playlist index).</p>
+<p>End of Video 141 notes.</p>
+<table>
+<tr><th>Field</th><th>Value</th><th></th><th></th></tr>
+<tr><td>Position</td><td>141 of 203</td><td></td><td></td></tr>
+<tr><td>Title</td><td>Core Java With OCJP/SCJP: Collections Part-6 \</td><td>\</td><td>limitations of enumerations</td></tr>
+<tr><td>URL</td><td>https://www.youtube.com/watch?v=E2uSAGD3-UY</td><td></td><td></td></tr>
+<tr><td>Duration</td><td>1h 15m 07s</td><td></td><td></td></tr>
+<tr><td>Source</td><td>YouTube auto-captions (yt-dlp + node PO token)</td><td></td><td></td></tr>
+<tr><td>Instructor</td><td>Durga Sir (OCJP/SCJP)</td><td></td><td></td></tr>
+</table>
+<table>
+<tr><th>Step</th><th>Code / concept</th></tr>
+<tr><td>Get Enumeration</td><td>Enumeration e = v.elements();</td></tr>
+<tr><td>Check more elements</td><td>e.hasMoreElements()</td></tr>
+<tr><td>Get next element</td><td>e.nextElement()</td></tr>
+</table>
+<table>
+<tr><th>Collection</th><th>Can get Enumeration?</th></tr>
+<tr><td>Vector</td><td>Yes</td></tr>
+<tr><td>Stack</td><td>Yes</td></tr>
+<tr><td>ArrayList</td><td>No</td></tr>
+<tr><td>LinkedList</td><td>No</td></tr>
+<tr><td>Any modern List</td><td>No</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Purpose</th></tr>
+<tr><td>boolean hasMoreElements()</td><td>Are more elements available?</td></tr>
+<tr><td>Object nextElement()</td><td>Return next element</td></tr>
+</table>
+<table>
+<tr><th>Point</th><th>Enumeration</th><th>Iterator</th></tr>
+<tr><td>Applicability</td><td>Legacy classes only</td><td>Any collection object</td></tr>
+<tr><td>Cursor type</td><td>Not universal</td><td>Universal cursor</td></tr>
+<tr><td>Operations</td><td>Read only</td><td>Read + Remove</td></tr>
+</table>
+<table>
+<tr><th>#</th><th>Method signature</th><th>Purpose</th></tr>
+<tr><td>1</td><td>public boolean hasNext()</td><td>Is next element available?</td></tr>
+<tr><td>2</td><td>public Object next()</td><td>Return next element</td></tr>
+<tr><td>3</td><td>public void remove()</td><td>Remove current element from underlying collection</td></tr>
+</table>
+<table>
+<tr><th>Enumeration (1.0)</th><th>Iterator (1.2)</th></tr>
+<tr><td>hasMoreElements()</td><td>hasNext()</td></tr>
+<tr><td>nextElement()</td><td>next()</td></tr>
+<tr><td>(none)</td><td>remove()</td></tr>
+</table>
+<table>
+<tr><th>Problem with Iterator</th><th>ListIterator solution</th></tr>
+<tr><td>Forward only</td><td>Can move forward OR backward</td></tr>
+<tr><td>Read + remove only</td><td>Read, remove, add, replace</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Purpose</th></tr>
+<tr><td>public boolean hasNext()</td><td>Is next element there?</td></tr>
+<tr><td>public Object next()</td><td>Return next element</td></tr>
+<tr><td>public int nextIndex()</td><td>Index of next element (List-specific)</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Purpose</th></tr>
+<tr><td>public boolean hasPrevious()</td><td>Is previous element there?</td></tr>
+<tr><td>public Object previous()</td><td>Return previous element</td></tr>
+<tr><td>public int previousIndex()</td><td>Index of previous element</td></tr>
+</table>
+<table>
+<tr><th>Method</th><th>Purpose</th></tr>
+<tr><td>public void remove()</td><td>Remove current element</td></tr>
+<tr><td>public void add(Object o)</td><td>Add new object immediately after current position (permanent add to list)</td></tr>
+<tr><td>public void set(Object o)</td><td>Replace current element with new object</td></tr>
+</table>
+<table>
+<tr><th>After step</th><th>List content</th></tr>
+<tr><td>Initial</td><td>[Balakrishna, Venkatesh, Chiranjeevi]</td></tr>
+<tr><td>After remove() on Venkatesh</td><td>[Balakrishna, Chiranjeevi]</td></tr>
+<tr><td>After add(&quot;Venkatesh2&quot;)</td><td>[Balakrishna, Venkatesh2, Chiranjeevi]</td></tr>
+<tr><td>After set(&quot;Charan&quot;) on Chiranjeevi</td><td>[Balakrishna, Venkatesh2, Charan]</td></tr>
+</table>
+<table>
+<tr><th>Operation</th><th>Method</th><th>Meaning</th></tr>
+<tr><td>Read</td><td>next()</td><td>Get current element</td></tr>
+<tr><td>Remove</td><td>remove()</td><td>Remove Venkatesh</td></tr>
+<tr><td>Add</td><td>add(&quot;Venkatesh2&quot;)</td><td>Insert new element after cursor</td></tr>
+<tr><td>Replace</td><td>set(&quot;Charan&quot;)</td><td>Replace Chiranjeevi with Charan</td></tr>
+</table>
+<table>
+<tr><th>Cursor</th><th>Scope</th></tr>
+<tr><td>Enumeration</td><td>Legacy classes only</td></tr>
+<tr><td>Iterator</td><td>Any collection (universal)</td></tr>
+<tr><td>ListIterator</td><td>List objects only (most powerful but restricted)</td></tr>
+</table>
+<table>
+<tr><th>Property</th><th>Enumeration</th><th>Iterator</th><th>ListIterator</th></tr>
+<tr><td>Where we can apply</td><td>Only for legacy classes</td><td>For any collection object</td><td>Only for List objects</td></tr>
+<tr><td>Is it Legacy?</td><td>Yes (Java 1.0)</td><td>No (Java 1.2)</td><td>No (Java 1.2)</td></tr>
+<tr><td>Movement</td><td>Single direction (only forward)</td><td>Single direction (only forward)</td><td>Bidirectional</td></tr>
+<tr><td>Allowed operations</td><td>Read only</td><td>Read + Remove</td><td>Read + Remove + Replace + Add</td></tr>
+<tr><td>How to get</td><td>elements() method of Vector class</td><td>iterator() method of Collection interface</td><td>listIterator() method of List interface</td></tr>
+<tr><td>Number of methods</td><td>2</td><td>3</td><td>9</td></tr>
+<tr><td>Method names</td><td>hasMoreElements(), nextElement()</td><td>hasNext(), next(), remove()</td><td>9 methods (3 forward + 3 backward + 3 extra)</td></tr>
+</table>
+<table>
+<tr><th>Output</th><th>Meaning</th></tr>
+<tr><td>java.util.Vector$1</td><td>Anonymous inner class inside Vector implementing Enumeration ($1 = numbered anonymous class)</td></tr>
+<tr><td>java.util.Vector$Itr</td><td>Named inner class Itr inside Vector implementing Iterator</td></tr>
+<tr><td>java.util.Vector$ListItr</td><td>Named inner class ListItr inside Vector implementing ListIterator</td></tr>
+</table>
+</body></html>

@@ -1,0 +1,384 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>001-identifiers-reserved-words</title>
+<style>
+body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.35;
+  max-width: 46em; }
+h1 { font-size: 18pt; }
+h2 { font-size: 14pt; border-bottom: 1px solid #ccc; padding-bottom: 2px; }
+h3 { font-size: 12pt; }
+h4 { font-size: 11pt; }
+pre, code { font-family: Consolas, Courier New, monospace; }
+pre { font-size: 9pt; background: #f4f4f4; padding: 8px; white-space: pre-wrap;
+  border-left: 3px solid #bbb; }
+code { font-size: 10pt; background: #f0f0f0; padding: 0 2px; }
+table { border-collapse: collapse; margin: 8px 0 16px 0; }
+td, th { border: 1px solid #666; padding: 4px 8px; vertical-align: top; }
+th { font-weight: bold; background: #eee; }
+blockquote { margin: 8px 0 8px 0; padding: 6px 12px; border-left: 4px solid #d0a000;
+  background: #fffbe6; }
+</style>
+</head>
+<body>
+<h1>Video 001 — Identifiers and Reserved Words</h1>
+<h2>Video info</h2>
+<table>
+<tr><th>Field</th><th>Detail</th></tr>
+<tr><td>Playlist</td><td>Core Java with OCJP/SCJP — Durga Sir</td></tr>
+<tr><td>Position</td><td>Video 1 of 203</td></tr>
+<tr><td>Series</td><td>Language Fundamentals · Part 1 of 16</td></tr>
+<tr><td>Topic</td><td>Identifiers and reserved words</td></tr>
+<tr><td>Instructor</td><td>Durga Sir (Durga Software Solutions)</td></tr>
+<tr><td>Duration</td><td>1h 16m 59s</td></tr>
+<tr><td>Watch</td><td>https://www.youtube.com/watch?v=eTXd89t8ngI</td></tr>
+<tr><td>Playlist</td><td>https://www.youtube.com/playlist?list=PLd3UqWTnYXOmx_J1774ukG_rvrpyWczm0</td></tr>
+</table>
+<blockquote>
+<p><b>How to read these notes.</b> Sections follow the lecture&#x27;s own timestamps. Two kinds of callout interrupt the lecture where it needs it: <b>⚠️ Modern Java</b> — what Sir taught was right for Java 6/7, and has since changed. <b>❗ Correction</b> — what was stated is not accurate, then or now. Everything else is Sir&#x27;s teaching, cleaned up.</p>
+</blockquote>
+<h2>What this lecture covers</h2>
+<p>Language Fundamentals is the first block of OCJP, roughly ten sessions:</p>
+<ol>
+<li>Identifiers ← <i>this video</i></li>
+<li>Reserved words ← <i>this video</i></li>
+<li>Data types</li>
+<li>Literals</li>
+<li>Arrays</li>
+<li>Types of variables</li>
+<li>Var-arg methods</li>
+<li><code>main</code> method</li>
+<li>Command-line arguments</li>
+<li>Java coding standards</li>
+</ol>
+<p>The material is basic, but Sir&#x27;s point is that OCJP tests the edges of it — the loopholes, not the headline rule.</p>
+<hr>
+<h2>03:38 — What an identifier is</h2>
+<blockquote>
+<p>An identifier is a <b>name in a Java program used for identification purposes</b>.</p>
+</blockquote>
+<p>Sir&#x27;s analogy: in a class of 100 students you identify each person by name. A program is the same — every thing you declare needs a name to refer to it.</p>
+<p>An identifier can be a:</p>
+<ul>
+<li>class name</li>
+<li>interface name</li>
+<li>method name</li>
+<li>variable name</li>
+<li>label name</li>
+</ul>
+<pre>class Test {
+    public static void main(String[] args) {
+        l1: {
+            l2: {
+                int x = 10;   // l1 and l2 are label names — also identifiers
+            }
+        }
+    }
+}</pre>
+<h3>06:13 — Count the identifiers</h3>
+<pre>class Test {
+    public static void main(String[] args) {
+        int x = 10;
+    }
+}</pre>
+<p>The classroom guesses three or four. The answer is <b>five</b>:</p>
+<table>
+<tr><th>#</th><th>Identifier</th><th>Why it counts</th></tr>
+<tr><td>1</td><td><code>Test</code></td><td>class name</td></tr>
+<tr><td>2</td><td><code>main</code></td><td>method name</td></tr>
+<tr><td>3</td><td><code>String</code></td><td>a predefined class name — still a name</td></tr>
+<tr><td>4</td><td><code>args</code></td><td>name of the array parameter</td></tr>
+<tr><td>5</td><td><code>x</code></td><td>variable name</td></tr>
+</table>
+<p><code>class</code>, <code>public</code>, <code>static</code>, <code>void</code> and <code>int</code> are <b>reserved words</b>, not identifiers. That distinction is the whole point of the exercise.</p>
+<hr>
+<h2>10:01 — The six rules</h2>
+<p>Sir&#x27;s framing: naming a child follows rules in every family; naming things in Java follows rules too, and breaking them is a compile-time error.</p>
+<h3>11:46 — Rule 1: allowed characters</h3>
+<p>An identifier may contain <b>letters, digits, `$` and `_`</b>.</p>
+<pre>int total_number = 10;   // valid
+int total# = 10;         // CE: &#x27;#&#x27; is not allowed
+int all@hands = 10;      // CE: &#x27;@&#x27; is not allowed</pre>
+<blockquote>
+<p>❗ <b>Correction — &quot;only `a–z`, `A–Z`, `0–9`, `$`, `_`&quot; is the ASCII subset, not the rule.</b> Java identifiers are defined over <b>Unicode</b>, not ASCII (JLS §3.8). The real test is <code>Character.isJavaIdentifierStart</code> for the first character and <code>Character.isJavaIdentifierPart</code> for the rest — which accepts letters from any script, currency symbols, and connecting punctuation:</p>
+<pre>int café    = 10;   // valid — é is a Unicode letter
+int π       = 3;    // valid — Greek letter
+int числа   = 5;    // valid — Cyrillic
+int €rate   = 7;    // valid — € is a currency symbol</pre>
+<p>Sir&#x27;s ASCII list is the practical rule for readable code and it is what the OCJP exam asks about. But &quot;any character other than these five groups is a compile error&quot; is false — memorise it as <i>the recommended set</i>, not the legal set.</p>
+</blockquote>
+<h3>14:58 — Rule 2: cannot start with a digit</h3>
+<pre>int total123 = 10;   // valid — digit not at the start
+int 123total = 10;   // CE: identifier cannot begin with a digit</pre>
+<p>Same rule as C and C++.</p>
+<h3>16:26 — Rule 3: identifiers are case sensitive</h3>
+<pre>class Test {
+    int number = 10;   // three genuinely different variables
+    int Number = 20;
+    int NUMBER = 30;
+}</pre>
+<p>Java as a language is case sensitive, so identifiers inherit that.</p>
+<h3>19:19 — Rule 4: no length limit</h3>
+<p>The classroom guesses 32, 64, 128, 256. The answer is that the <b>language specifies no limit</b>:</p>
+<pre>class Test {
+    public static void main(String[] args) {
+        int xxxxxxyyyyyyjjjjjjxxxxxxxxxyyyyyyyjjjjjj = 10;
+        System.out.println(xxxxxxyyyyyyjjjjjjxxxxxxxxxyyyyyyyjjjjjj);   // 10
+    }
+}</pre>
+<p>This compiles. Sir&#x27;s verdict on whether you should: an expert seeing this would give you &quot;left and right&quot; — all that length to declare one variable and print it. Readability collapses.</p>
+<blockquote>
+<p><b>Board:</b> There is no length limit for Java identifiers, but it is not recommended to use excessively long identifiers.</p>
+</blockquote>
+<blockquote>
+<p>❗ <b>Correction — there is a hard ceiling in practice.</b> The <i>language</i> imposes no limit, but the <i>class file format</i> does: every name is stored as a <code>CONSTANT_Utf8</code> entry, capped at <b>65,535 bytes</b> (JVMS §4.4.7). Sir&#x27;s &quot;you can take a one-crore-length identifier&quot; would fail at class-file generation, not at parsing. Unlimited in the JLS, 64 KB in reality.</p>
+</blockquote>
+<h3>23:28 — Rule 5: reserved words cannot be identifiers</h3>
+<pre>int x  = 10;   // valid
+int if = 20;   // CE: &#x27;if&#x27; is a reserved word</pre>
+<p><code>if</code> already carries meaning; you cannot repurpose it.</p>
+<h3>25:11 — Rule 6: predefined class and interface names <i>are</i> allowed</h3>
+<p>The classroom is certain this is invalid. It is not:</p>
+<pre>class Test {
+    public static void main(String[] args) {
+        int String = 38;
+        System.out.println(String);     // 38
+
+        int Runnable = 39;
+        System.out.println(Runnable);   // 39
+    }
+}</pre>
+<p>Rule 5 said <i>reserved words</i> cannot be identifiers. <code>String</code> and <code>Runnable</code> are class and interface names — they were never reserved words. This compiles and prints 38 then 39.</p>
+<p>Is it recommended? No. Readability drops and it actively confuses: your IDE colours <code>String</code> as a type while you are using it as an <code>int</code>.</p>
+<blockquote>
+<p><b>Board:</b> Even though it is valid, it is not good programming practice, because it reduces readability and creates confusion.</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <b>Modern Java — a few names have since become off-limits.</b> Rule 6 still holds for library classes, but Java has added <i>contextual</i> keywords that are restricted in specific positions:</p>
+<pre>int var = 10;        // still valid — var is fine as a variable name
+class var    { }     // CE: &#x27;var&#x27; not allowed here
+class record { }     // CE: &#x27;record&#x27; not allowed here
+class yield  { }     // CE: &#x27;yield&#x27; not allowed here
+class sealed { }     // CE: &#x27;sealed&#x27; not allowed here
+class permits{ }     // CE: &#x27;permits&#x27; not allowed here</pre>
+<p>So the modern rule is: predefined <b>library</b> names are fair game; a handful of <b>contextual keywords</b> are rejected, but only in the position where they would be ambiguous — which is why <code>var</code> may still name a variable but never a type.</p>
+</blockquote>
+<h3>31:13 — The six rules, recapped</h3>
+<ol>
+<li>The only allowed characters are letters, digits, <code>$</code> and <code>_</code>.</li>
+<li>An identifier must not start with a digit.</li>
+<li>Identifiers are case sensitive.</li>
+<li>There is no length limit.</li>
+<li>Reserved words cannot be used as identifiers.</li>
+<li>All predefined Java class and interface names can be used as identifiers.</li>
+</ol>
+<h3>31:51 — Exam drill: which are valid?</h3>
+<table>
+<tr><th>Identifier</th><th>Valid?</th><th>Reason</th></tr>
+<tr><td><code>total_number</code></td><td>✅ valid</td><td>allowed characters only</td></tr>
+<tr><td><code>total#</code></td><td>❌ CE</td><td><code>#</code> not allowed</td></tr>
+<tr><td><code>123total</code></td><td>❌ CE</td><td>starts with a digit</td></tr>
+<tr><td><code>total123</code></td><td>✅ valid</td><td>digit is not first</td></tr>
+<tr><td><code>ca$h</code></td><td>✅ valid</td><td><code>$</code> is allowed</td></tr>
+<tr><td><code>_$_</code></td><td>✅ valid</td><td><code>$</code> and <code>_</code> only</td></tr>
+<tr><td><code>all@hands</code></td><td>❌ CE</td><td><code>@</code> not allowed</td></tr>
+<tr><td><code>Java2Share</code></td><td>✅ valid</td><td>letters and digits</td></tr>
+<tr><td><code>Integer</code></td><td>✅ valid</td><td>predefined class name is fine</td></tr>
+<tr><td><code>Int</code></td><td>✅ valid</td><td>capital <code>I</code> — not a reserved word</td></tr>
+<tr><td><code>int</code></td><td>❌ CE</td><td>reserved word</td></tr>
+</table>
+<blockquote>
+<p>⚠️ <b>Modern Java — one entry on this list has changed.</b> A <b>bare `_`</b> was a legal identifier when this was recorded. It is not any more:</p>
+<table>
+<tr><th>Version</th><th><code>int _ = 10;</code></th></tr>
+<tr><td>Java 8 and earlier</td><td>valid (warning from Java 8)</td></tr>
+<tr><td>Java 9 – 21</td><td><b>compile error</b> — <code>_</code> became a keyword (JEP 213)</td></tr>
+<tr><td>Java 22+</td><td>valid again, but as an <b>unnamed variable</b> (JEP 456) — you cannot read it back</td></tr>
+</table>
+<p><code>_$_</code> from the drill above is unaffected — the restriction is only on <code>_</code> standing completely alone.</p>
+</blockquote>
+<hr>
+<h2>35:48 — Reserved words</h2>
+<blockquote>
+<p>In any language — spoken or programming — some words are reserved to represent a particular meaning or functionality.</p>
+</blockquote>
+<p>English reserves <i>cat</i>, <i>dog</i>, <i>apple</i>, <i>eat</i>, <i>sleep</i> — you cannot redefine them mid-sentence. English has an Oxford dictionary&#x27;s worth. Java has 53.</p>
+<h3>39:11 — The breakdown</h3>
+<pre>reserved words (53)
+├── keywords (50)
+│   ├── used keywords (48)     if, else, switch, …
+│   └── unused keywords (2)    goto, const
+└── reserved literals (3)      true, false, null</pre>
+<p>The keyword / reserved-literal split turns on <b>functionality</b>:</p>
+<ul>
+<li>carries functionality → <b>keyword</b></li>
+<li>carries only a value → <b>reserved literal</b></li>
+</ul>
+<p><code>true</code> and <code>false</code> denote boolean values and do nothing else; <code>null</code> denotes the default reference value. Hence three reserved literals.</p>
+<blockquote>
+<p>⚠️ <b>Modern Java — the count is no longer 53.</b></p>
+<table>
+<tr><th></th><th>Java 5–8</th><th>Java 21 / 25</th></tr>
+<tr><td>Keywords</td><td>50</td><td><b>51</b> (<code>_</code> added in Java 9)</td></tr>
+<tr><td>Reserved literals</td><td>3</td><td>3</td></tr>
+<tr><td><b>Reserved words</b></td><td><b>53</b></td><td><b>54</b></td></tr>
+<tr><td>Contextual keywords</td><td>—</td><td><b>17</b></td></tr>
+</table>
+<p>The 17 <b>contextual keywords</b> (JLS §3.9) are reserved only in the positions where they are meaningful, and remain usable as ordinary identifiers elsewhere:</p>
+<p><code>exports</code>, <code>module</code>, <code>non-sealed</code>, <code>open</code>, <code>opens</code>, <code>permits</code>, <code>provides</code>, <code>record</code>, <code>requires</code>, <code>sealed</code>, <code>to</code>, <code>transitive</code>, <code>uses</code>, <code>var</code>, <code>when</code>, <code>with</code>, <code>yield</code></p>
+<p>This is why <code>var</code> can still name a variable but not a class. If an interviewer asks &quot;how many keywords does Java have,&quot; the complete answer is <b>51 keywords + 3 reserved literals, plus 17 contextual keywords</b> — and saying so signals you have tracked the language past Java 8.</p>
+</blockquote>
+<h3>43:17 — Keywords for data types (8)</h3>
+<pre>byte   short   char   int   long   float   double   boolean</pre>
+<h3>44:42 — Keywords for flow control (11)</h3>
+<pre>if   else   switch   case   default   while   do   for   break   continue   return</pre>
+<h3>46:19 — Keywords for modifiers (11)</h3>
+<pre>public   private   protected   static   final   abstract
+synchronized   native   strictfp   transient   volatile</pre>
+<p>Java has twelve modifiers, but <i>default</i> access is expressed by writing nothing at all — there is no <code>default</code> access modifier keyword to write. So eleven appear on this list.</p>
+<blockquote>
+<p>❗ <b>Careful — `default` IS a keyword, just not here.</b> It appears in this lecture&#x27;s flow-control group (<code>switch</code> … <code>default</code>), and since Java 8 it also marks default methods in interfaces (<code>default void m() { }</code>). What Sir means is narrower and correct: there is no <code>default</code> <b>access modifier</b> you can type.</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <b>Modern Java — `strictfp` is now a no-op.</b> Since <b>Java 17</b> (JEP 306) all floating-point arithmetic is strict by default, which is what <code>strictfp</code> used to opt into. The keyword still parses and still compiles, but now changes nothing — and <code>javac -Xlint:strictfp</code> says so:</p>
+<pre>warning: [strictfp] as of release 17, all floating-point expressions are
+evaluated strictly and &#x27;strictfp&#x27; is not required</pre>
+<p>Historically it was worth marks. Today, writing it is dead code.</p>
+</blockquote>
+<h3>48:24 — Keywords for exception handling (6)</h3>
+<pre>try   catch   finally   throw   throws   assert</pre>
+<p><code>assert</code> arrived in <b>Java 1.4</b>, for debugging.</p>
+<h3>49:33 — Class-related keywords (6)</h3>
+<pre>class   interface   extends   implements   package   import</pre>
+<p>Note <code>import</code>, <b>not</b> <code>imports</code>. <code>enum</code> is counted separately below.</p>
+<h3>50:42 — Object-related keywords (4)</h3>
+<pre>new   instanceof   super   this</pre>
+<p><code>instanceof</code> is all lowercase — not <code>instanceOf</code>.</p>
+<p>There is <b>no `delete` keyword</b> in Java: destroying unreachable objects is the garbage collector&#x27;s job, not yours.</p>
+<h3>51:51 — The <code>void</code> return type keyword (1)</h3>
+<pre>class Test {
+    public m1() { }        // CE: invalid method declaration — return type required
+}
+
+class Test {
+    public void m1() { }   // valid — declares that m1 returns nothing
+}</pre>
+<p>In C the return type is optional and defaults to <code>int</code>. In Java the return type is <b>mandatory</b>; a method that returns nothing must say <code>void</code>.</p>
+<h3>54:31 — Unused keywords (2)</h3>
+<p><code>goto</code> and <code>const</code> are reserved but have <b>no use in Java</b>.</p>
+<ul>
+<li><b>`goto`</b> — its use caused enough damage in other languages that Java&#x27;s designers reserved the word and then refused to implement it.</li>
+<li><b>`const`</b> — its job is defining constants, which <code>final</code> already does.</li>
+</ul>
+<p>They are reserved precisely so you cannot use them, and so a C programmer&#x27;s <code>goto</code> produces a clear error rather than a confusing one:</p>
+<pre>class Test {
+    int goto  = 10;   // CE: &lt;identifier&gt; expected — &#x27;goto&#x27; is a reserved word
+    int const = 20;   // CE: &lt;identifier&gt; expected — &#x27;const&#x27; is a reserved word
+}</pre>
+<blockquote>
+<p><b>Board:</b> <code>goto</code> and <code>const</code> are unused keywords, and if we try to use them we get a compile-time error.</p>
+</blockquote>
+<p>Both remain reserved and unused in current Java — nothing here has changed.</p>
+<h3>58:25 — Reserved literals (3)</h3>
+<pre>class Test {
+    boolean flag  = true;    // boolean value
+    boolean flag2 = false;   // boolean value
+    String  ref   = null;    // default value for any object reference
+}</pre>
+<h3>1:00:08 — The <code>enum</code> keyword (Java 1.5)</h3>
+<p>Use <code>enum</code> when you want to define a <b>group of named constants</b>:</p>
+<pre>enum Month {
+    JAN, FEB, MAR, APR, MAY, JUN,
+    JUL, AUG, SEP, OCT, NOV, DEC
+}
+
+enum Beer {
+    KF, KO, RC, FO   // Kingfisher, Knock Out, Royal Challenge, Foster&#x27;s
+}</pre>
+<p>Sir defers the full <code>enum</code> treatment to a later session.</p>
+<h3>1:02:29 — The count, added up</h3>
+<table>
+<tr><th>Group</th><th>Count</th><th>Running total</th></tr>
+<tr><td>Data types</td><td>8</td><td>8</td></tr>
+<tr><td>Flow control</td><td>11</td><td>19</td></tr>
+<tr><td>Modifiers</td><td>11</td><td>30</td></tr>
+<tr><td>Exception handling</td><td>6</td><td>36</td></tr>
+<tr><td>Class related</td><td>6</td><td>42</td></tr>
+<tr><td>Object related</td><td>4</td><td>46</td></tr>
+<tr><td><code>void</code></td><td>1</td><td>47</td></tr>
+<tr><td>Unused (<code>goto</code>, <code>const</code>)</td><td>2</td><td>49</td></tr>
+<tr><td><code>enum</code></td><td>1</td><td>50</td></tr>
+<tr><td>Reserved literals</td><td>3</td><td><b>53</b></td></tr>
+</table>
+<hr>
+<h2>1:02:50 — Conclusions</h2>
+<p><b>1. Every reserved word is entirely lowercase.</b> No uppercase letters, no special characters. The ones people get wrong:</p>
+<table>
+<tr><th>Correct</th><th>Common mistake</th><th>What is wrong</th></tr>
+<tr><td><code>instanceof</code></td><td><code>instanceOf</code></td><td>the <code>o</code> is lowercase</td></tr>
+<tr><td><code>strictfp</code></td><td><code>strictFp</code></td><td>the <code>f</code> is lowercase</td></tr>
+<tr><td><code>null</code></td><td><code>NULL</code>, <code>Nul</code></td><td>Java has no uppercase <code>NULL</code>; that is C</td></tr>
+<tr><td><code>synchronized</code></td><td><code>synchronize</code></td><td>needs the <code>d</code></td></tr>
+<tr><td><code>extends</code></td><td><code>extend</code></td><td>plural</td></tr>
+<tr><td><code>implements</code></td><td><code>implement</code></td><td>plural</td></tr>
+<tr><td><code>import</code></td><td><code>imports</code></td><td>singular</td></tr>
+<tr><td><code>const</code></td><td><code>constant</code></td><td>the reserved word is <code>const</code></td></tr>
+</table>
+<blockquote>
+<p>⚠️ <b>Modern Java — one exception to &quot;all lowercase.&quot;</b> <code>non-sealed</code> (Java 17) contains a <b>hyphen</b> — the only reserved word in the language that is not a plain run of lowercase letters. It is a contextual keyword, so the conclusion holds for the 54 true reserved words.</p>
+</blockquote>
+<p><b>2. Java has `new` but no `delete`,</b> because destroying unreachable objects is the garbage collector&#x27;s responsibility.</p>
+<p><b>3. Keywords added after Java 1.0:</b></p>
+<table>
+<tr><th>Keyword</th><th>Version</th></tr>
+<tr><td><code>strictfp</code></td><td>1.2</td></tr>
+<tr><td><code>assert</code></td><td>1.4</td></tr>
+<tr><td><code>enum</code></td><td>1.5</td></tr>
+<tr><td><code>_</code></td><td>9</td></tr>
+</table>
+<hr>
+<h2>1:10:47 — Exam drill: which list contains <i>only</i> reserved words?</h2>
+<table>
+<tr><th>List</th><th>Problem</th></tr>
+<tr><td><code>new</code>, <code>delete</code></td><td><code>delete</code> does not exist in Java</td></tr>
+<tr><td><code>goto</code>, <code>constant</code></td><td>the keyword is <code>const</code>, not <code>constant</code></td></tr>
+<tr><td><code>break</code>, <code>continue</code>, <code>return</code>, <code>exit</code></td><td><code>exit</code> is a method (<code>System.exit</code>)</td></tr>
+<tr><td><code>final</code>, <code>finally</code>, <code>finalize</code></td><td><code>finalize</code> is a method on <code>Object</code></td></tr>
+<tr><td><code>throw</code>, <code>throws</code>, <code>thrown</code></td><td><code>thrown</code> is not a Java word at all</td></tr>
+<tr><td><code>notify</code>, <code>notifyAll</code></td><td>both are methods on <code>Object</code></td></tr>
+<tr><td><code>implements</code>, <code>extends</code>, <code>imports</code></td><td>the keyword is <code>import</code></td></tr>
+<tr><td><code>sizeof</code>, <code>instanceof</code></td><td><code>sizeof</code> does not exist in Java</td></tr>
+<tr><td><code>Byte</code>, <code>short</code>, <code>Int</code></td><td><code>Byte</code> is a class; <code>Int</code> is not a keyword (<code>int</code> is)</td></tr>
+<tr><td><b>none of the above</b></td><td>✅ <b>correct answer</b></td></tr>
+</table>
+<p>Sir&#x27;s practical trick: in any IDE, a reserved word renders in the keyword colour (blue in most themes). No colour change means it is not reserved. <code>delete</code>, <code>exit</code>, <code>finalize</code>, <code>thrown</code>, <code>notify</code>, <code>sizeof</code> all stay plain.</p>
+<h3>1:15:23 — The same test, on the program you already know</h3>
+<pre>class Test {
+    public static void main(String[] args) {
+    }
+}</pre>
+<table>
+<tr><th>Token</th><th>Reserved word?</th></tr>
+<tr><td><code>class</code></td><td>✅ yes</td></tr>
+<tr><td><code>public</code></td><td>✅ yes</td></tr>
+<tr><td><code>static</code></td><td>✅ yes</td></tr>
+<tr><td><code>void</code></td><td>✅ yes</td></tr>
+<tr><td><code>main</code></td><td>❌ no — just a method name</td></tr>
+<tr><td><code>String</code></td><td>❌ no — a predefined class (your IDE colours it as a type)</td></tr>
+<tr><td><code>args</code></td><td>❌ no — a variable name</td></tr>
+</table>
+<hr>
+<h2>Exam and interview points</h2>
+<ol>
+<li><b>Five identifiers</b> in the minimal <code>main</code> program — <code>String</code> and <code>args</code> are the two people miss.</li>
+<li><b>Predefined class names are legal identifiers.</b> <code>int String = 38;</code> compiles. Valid, never recommended.</li>
+<li><b>`goto` and `const` are reserved but unused</b> — using either is a compile error, and that is the whole reason they are reserved.</li>
+<li><b>All reserved words are lowercase.</b> <code>instanceOf</code>, <code>strictFp</code>, <code>NULL</code> are the planted traps.</li>
+<li><b>`exit`, `finalize`, `notify`, `notifyAll`, `sizeof`, `delete`, `thrown`, `constant`, `imports` are not reserved words</b> — most are methods, the rest do not exist.</li>
+<li><b>The count</b>: 53 for the OCJP exam this course targets; <b>54 keywords + literals, plus 17 contextual keywords</b> for a current interview. Know both, and know which one you are being asked for.</li>
+</ol>
+<hr>
+<p><b>Next:</b> Video 002 — Data Types Part 1</p>
+</body></html>
